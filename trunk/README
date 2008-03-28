@@ -1,0 +1,55 @@
+
+	  distcc-pump -- a free distributed C/C++ compiler system
+
+              originally by Martin Pool <mbp@samba.org>
+
+                    extended at Google Inc. 
+
+   by Fergus Henderson, Nils Klarlund, Manos Renieris, and Craig Silverstein
+
+
+distcc-pump improves on distcc by distributing not only compilation but also
+preprocessing to distcc servers. For an introduction to distcc, see
+distcc/README. 
+
+The distcc-pump contributes an include server process that exists during the
+build.  The include server parses and analyzes source and header files.  It runs
+on the workstation that initiates the build.  The include server analyzes each
+header file only a few times, sometimes just once.  In contrast, ordinary distcc
+invokes the preprocessor hundreds of times on average for each header file of a
+large build.
+
+With the distcc-pump, a static analysis algorithm inspects includes and computes
+their possible values according to an overapproximation semantics. The resulting
+dependency graph among header files is stored in the include server, which then
+acts as a cache for include analysis.  
+
+The include server compresses source files into a temporary directory as they
+are encountered. In this way, a given source file is compressed only once during
+the build.
+
+It may happen that a header file is included via an absolutely specified include
+directory such as -I/absolute/path. But on the compilation server the path
+-I/absolute/path does not exist; instead the server places foo.h under
+/server_temporary_path/absolute/path for some /server_temporary_path root
+directory. This directory has no meaning on the workstation.  Before compressing
+foo.h, the include server therefore inserts a #line directive in foo.h in such
+cases to inform the preprocessor that the real location is /absolute/path.
+
+The distcc-pump client asks the include server for the list of compressed files
+that constitute the transitive closure of the source file to be compiled. It
+then spools these files to a distcc-pump server. The distcc-pump server unpacks
+these files in the /server_temporary_path directory before preprocessing and
+compiling.  The server also rewrites include options, such as -I's, to reflect
+the new locations of the files on the server. The .d and the .o files are both
+returned to the distcc-pump client.
+
+The distcc-pump is able to distribute compilations up to 10X faster than distcc.
+But because building also involves linking and perhaps generation of source
+files the overall speed-up of the build time is variable.
+
+The distcc-pump was developed to be used with large clusters of distcc servers,
+providing hundreds of CPUs.  With versions of gcc >= 4.1.1, the distcc-pump will
+probably not show performance gains using clusters of say only ten CPUs. The
+preprocessor running on the workstation is fast enough to keep that many
+machines busy.

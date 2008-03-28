@@ -1,0 +1,39 @@
+
+To build: the simple way is to just do
+
+  run_all_autoconf.sh    # invokes autoconf and autoheader using
+                         # version info in the file version.sh
+  configure              # creates distcc/config.h and makefiles
+  make                   # build
+
+but the recommended way is to build in a different directory tree
+than the source tree:
+
+  run_all_autoconf.sh
+  mkdir obj
+  cd obj
+  ../configure
+  make
+
+Either of these methods will:
+
+ - compile distcc
+ - compile Python C extensions
+
+To test:
+
+   make check
+
+To test installation using your own machine as a distcc compilation server:
+
+ - start daemon (in one window):
+
+    distcc/distccd --wizard --allow 127.0.0.1
+
+ - compile (in another):
+
+    DISTCC_POTENTIAL_HOSTS=127.0.0.1 pump BUILDCOMMAND
+
+See the shell script pump in this directory.
+
+
