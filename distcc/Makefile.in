@@ -222,7 +222,7 @@ h_ccvers_obj = src/h_ccvers.o $(common_obj)
 h_dotd_obj = src/h_dotd.o $(common_obj)
 h_fix_debug_info = src/h_fix_debug_info.o $(common_obj)
 h_compile_obj = src/h_compile.o $(common_obj) src/compile.o src/timefile.o \
-                src/backoff.o src/emaillog.o src/remote.c src/clinet.o \
+                src/backoff.o src/emaillog.o src/remote.o src/clinet.o \
 	        src/clirpc.o src/include_server_if.o src/state.o src/where.o \
 		src/ssh.o src/strip.o src/cpp.o
 
