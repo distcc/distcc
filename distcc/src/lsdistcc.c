@@ -285,7 +285,7 @@ static void generate_query(void)
     const char* program = "int foo(){return 0;}";
     unsigned char lzod_program[1000];
     unsigned char lzo_work_mem[LZO1X_1_MEM_COMPRESS];
-    size_t lzod_program_len;
+    lzo_uint lzod_program_len;
 
     lzo1x_1_compress((const unsigned char *)program, strlen(program),
                      lzod_program, &lzod_program_len,
