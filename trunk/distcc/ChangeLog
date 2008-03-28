@@ -2,6 +2,98 @@
 # arch-tag: automatic-ChangeLog--mbp@sourcefrog.net--2004/distcc--devel--2
 #
 
+2005-10-05 00:04:18 GMT	Martin Pool <mbp@sourcefrog.net>	patch-166
+
+    Summary:
+      [patch] better checking for errors on connect()
+    Revision:
+      distcc--devel--2--patch-166
+
+
+    modified files:
+     ChangeLog NEWS src/clinet.c
+
+
+2005-09-05 01:36:22 GMT	Martin Pool <mbp@sourcefrog.net>	patch-165
+
+    Summary:
+      add hosts-from-dnsdomain patch from dan
+    Revision:
+      distcc--devel--2--patch-165
+
+
+    new files:
+     patches/.arch-ids/kegel-distcc-domain.patch.id
+     patches/kegel-distcc-domain.patch
+
+    modified files:
+     ChangeLog
+
+
+2005-08-16 01:39:54 GMT	Martin Pool <mbp@sourcefrog.net>	patch-164
+
+    Summary:
+      add note that the mDNS patch cannot be legally merged
+    Revision:
+      distcc--devel--2--patch-164
+
+
+    modified files:
+     ChangeLog patches/howl-mdns.diff
+
+
+2005-06-10 09:58:57 GMT	Martin Pool <mbp@sourcefrog.net>	patch-163
+
+    Summary:
+      todo
+    Revision:
+      distcc--devel--2--patch-163
+
+
+    modified files:
+     ChangeLog TODO
+
+
+2005-01-19 03:17:27 GMT	Martin Pool <mbp@sourcefrog.net>	patch-162
+
+    Summary:
+      manpage correction from Frerich
+    Revision:
+      distcc--devel--2--patch-162
+
+
+    modified files:
+     ChangeLog man/distcc.1
+
+
+2004-12-21 02:11:57 GMT	Martin Pool <mbp@sourcefrog.net>	patch-161
+
+    Summary:
+      args: -d must be local
+    Revision:
+      distcc--devel--2--patch-161
+
+
+    modified files:
+     ChangeLog NEWS src/arg.c test/testdistcc.py
+
+
+2004-12-20 12:40:10 GMT	Martin Pool <mbp@sourcefrog.net>	patch-160
+
+    Summary:
+      note on .incbin from asm()
+    Revision:
+      distcc--devel--2--patch-160
+
+
+    new files:
+     doc/todo/.arch-ids/unhandled-cases.txt.id
+     doc/todo/unhandled-cases.txt
+
+    modified files:
+     ChangeLog
+
+
 2004-12-15 00:11:05 GMT	Martin Pool <mbp@sourcefrog.net>	patch-159
 
     Summary:

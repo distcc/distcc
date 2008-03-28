@@ -87,6 +87,7 @@ int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
     int ret;
     char *s;
     int failed;
+    int connecterr;
     int tries = 3;
 
     dcc_sockaddr_to_string(sa, salen, &s);
@@ -108,17 +109,39 @@ int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
            (errno == EINTR || 
             (errno == EAGAIN && tries-- && poll(NULL, 0, 500) == 0)));
 
-    if (failed == -1 && errno != EINPROGRESS) {
-        rs_log(RS_LOG_ERR|RS_LOG_NONAME,
-               "failed to connect to %s: %s", s, strerror(errno));
-        ret = EXIT_CONNECT_FAILED;
-        goto out_failed;
-    }
+    do {
+       socklen_t len;
 
-    if ((ret = dcc_select_for_write(fd, dcc_connect_timeout))) {
-        rs_log(RS_LOG_ERR|RS_LOG_NONAME,
-               "timeout while connecting to %s", s);
-        goto out_failed;
+       if (failed == -1 && errno != EINPROGRESS) {
+           rs_log(RS_LOG_ERR|RS_LOG_NONAME,
+                  "failed to connect to %s: %s", s, strerror(errno));
+           ret = EXIT_CONNECT_FAILED;
+           goto out_failed;
+       }
+
+       if ((ret = dcc_select_for_write(fd, dcc_connect_timeout))) {
+           rs_log(RS_LOG_ERR|RS_LOG_NONAME,
+                  "timeout while connecting to %s", s);
+           goto out_failed;
+       }
+
+       connecterr = -1;
+       len = sizeof(connecterr);
+       if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *)&connecterr, &len) < 0) {
+               rs_log_error("getsockopt SO_ERROR failed?!");
+               ret = EXIT_CONNECT_FAILED;
+               goto out_failed;
+       }
+
+       /* looping is unlikely, but I believe I needed this in dkftpbench */
+       /* fixme: should reduce timeout on each time around this loop */
+    } while (connecterr == EINPROGRESS);
+
+    if (connecterr) {
+       rs_log(RS_LOG_ERR|RS_LOG_NONAME,
+                "nonblocking connect to %s failed: %s", s, strerror(connecterr));
+       ret = EXIT_CONNECT_FAILED;
+       goto out_failed;
     }
 
     *p_fd = fd;

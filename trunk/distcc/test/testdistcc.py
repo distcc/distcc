@@ -473,6 +473,9 @@ class ScanArgs_Case(SimpleDistCC_Case):
                  ("gcc -x assembler-with-cpp -c foo.c", "local"),
 
                  ("gcc -specs=foo.specs -c foo.c", "local"),
+
+                 # Fixed in 2.18.4 -- -dr writes rtl to a local file
+                 ("gcc -dr -c foo.c", "local"),
                  ]
         for tup in cases:
             apply(self.checkScanArgs, tup)

@@ -16,8 +16,18 @@ distcc-pump-1.0 "My prices are insane."   2008-??-??
       (so server paths are replaced with client paths), but this works for ELF
       code only.
 
+
+distcc-2.18.4  NOT RELEASED YET
 
+  BUG FIXES:
 
+   * gcc debug option -d must be run locally because it produces
+     secondary files.  Reported by Nadim Khemir.
+
+   * Improved checking for errors on socket connection.  Patch 
+     from Dan Kegel.
+
+^L
 distcc-2.18.3  "Porsche safari"  2004-11-30
 
   BUG FIXES:

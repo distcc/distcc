@@ -196,6 +196,10 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
             } else if (str_startswith("-x", a)) {
                 rs_log_info("gcc's -x handling is complex; running locally");
                 return EXIT_DISTCC_FAILED;
+            } else if (str_startswith("-dr", a)) {
+                rs_log_info("gcc's debug option %s may write extra files; "
+                            "running locally", a);
+                return EXIT_DISTCC_FAILED;
             } else if (!strcmp(a, "-c")) {
                 seen_opt_c = 1;
             } else if (!strcmp(a, "-o")) {
