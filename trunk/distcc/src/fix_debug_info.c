@@ -341,7 +341,12 @@ static void update_section(const char *path,
   if (FindElfSection(base, size, desired_section_name,
                      &desired_section, &desired_section_size)
       && desired_section_size > 0) {
-    int count = replace_string((void *) desired_section, desired_section_size,
+    // The local variable below works around a bug in some versions
+    // of gcc (4.2.1?), which issues an erroneous warning if
+    // 'desired_section_rw' is replaced with '(void *) desired_section'
+    // in the call below, causing compile errors with -Werror.
+    void *desired_section_rw = (void *) desired_section;
+    int count = replace_string(desired_section_rw, desired_section_size,
                                search, replace);
     if (count == 0) {
       rs_trace("\"%s\" section of file %s has no occurrences of \"%s\"",
