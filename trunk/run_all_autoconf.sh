@@ -7,8 +7,9 @@
 # We need a stamp file to compare version.sh against, see the Makefile.
 AUTOCONF_STAMP=autoconf_stamp
 
-if  ! [ $(basename $(pwd)) = "distcc_pump" ]; then
-  echo "Must be in distcc_pump directory" 1>&2;
+if  ! [ -e ./run_all_autoconf.sh ]; then
+  echo "Must run this script from the directory containing run_all_autoconf.sh"
+     1>&2;
   exit 1
 fi
 
