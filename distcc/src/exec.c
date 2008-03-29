@@ -59,6 +59,11 @@
 #include <sys/resource.h>
 #include <sys/poll.h>
 
+#ifdef __CYGWIN__
+	#define NOGDI
+	#include <windows.h>
+#endif
+
 #include "distcc.h"
 #include "trace.h"
 #include "util.h"
@@ -124,6 +129,101 @@ int dcc_redirect_fds(const char *stdin_file,
 }
 
 
+#ifdef __CYGWIN__
+/* Execute a process WITHOUT console window and correctly redirect output. */
+static void dcc_execvp_cyg(char **argv, const char *input_file, 
+	const char *output_file, const char *error_file)
+{
+	STARTUPINFO	m_siStartInfo;
+	PROCESS_INFORMATION m_piProcInfo;
+	char cmdline[MAX_PATH+1]={0}; 
+	HANDLE stdin_hndl=0, stdout_hndl=0, stderr_hndl=0;
+	char **ptr;
+	DWORD exit_code;
+	BOOL bRet=0;
+
+	ZeroMemory(&m_siStartInfo, sizeof(STARTUPINFO));
+	ZeroMemory( &m_piProcInfo, sizeof(PROCESS_INFORMATION) );
+
+	/* Open files for IO redirection */
+	if (input_file && strcmp(input_file,"/dev/null")!=0)
+	{
+		if ((stdin_hndl = CreateFile(input_file,FILE_READ_DATA,FILE_SHARE_READ,NULL,OPEN_ALWAYS,
+			FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE)
+			goto cleanup;
+	} else
+		stdin_hndl = GetStdHandle(STD_INPUT_HANDLE);
+
+	if (output_file && strcmp(output_file,"/dev/null")!=0)
+	{
+		if ((stdout_hndl = CreateFile(output_file,FILE_ALL_ACCESS,FILE_SHARE_READ,NULL,
+			CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE)
+			goto cleanup;
+	} else
+		stdout_hndl = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	if (error_file && strcmp(error_file,"/dev/null")!=0)
+	{
+		if ((stderr_hndl = CreateFile(error_file, FILE_WRITE_DATA,
+			FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,
+			OPEN_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE)
+			goto cleanup;
+		/* Seek to the end of file (ignore return code) */
+		SetFilePointer(stderr_hndl,0,NULL,FILE_END);
+
+	} else
+		stderr_hndl = GetStdHandle(STD_ERROR_HANDLE);
+
+	/* Ensure handles can be inherited */
+	SetHandleInformation(stdin_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
+	SetHandleInformation(stdout_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
+	SetHandleInformation(stderr_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
+
+	/*Set up members of STARTUPINFO structure.*/
+	m_siStartInfo.cb = sizeof(STARTUPINFO); 		
+	m_siStartInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+	m_siStartInfo.wShowWindow = SW_HIDE;
+	m_siStartInfo.hStdInput = stdin_hndl;
+	m_siStartInfo.hStdOutput = stdout_hndl;
+	m_siStartInfo.hStdError = stderr_hndl;
+
+	/* Create command line */
+	for (ptr=argv;*ptr!=NULL;ptr++)
+	{		
+		strcat(cmdline, *ptr);
+		strcat(cmdline, " ");
+	}
+	
+	/* Create the child process.  */
+	bRet = CreateProcess(NULL, 
+		cmdline, 	   /* applicatin name */
+		NULL, 		  /* process security attributes */
+		NULL, 		  /* primary thread security attributes */
+		TRUE, 		  /* handles are inherited */
+		CREATE_NEW_CONSOLE, /* creation flags */
+		NULL, 		  /* use parent's environment */
+		NULL, 		  /* use parent's current directory */
+		&m_siStartInfo,  /* STARTUPINFO pointer */
+		&m_piProcInfo);  /* receives PROCESS_INFORMATION */
+	if (!bRet)
+		goto cleanup;
+
+    WaitForSingleObject(m_piProcInfo.hProcess, (DWORD)(-1L));
+	/* return termination code and exit code*/
+	GetExitCodeProcess(m_piProcInfo.hProcess, &exit_code);
+    CloseHandle(m_piProcInfo.hProcess);
+
+	/* We can get here only if process creation failed */
+	cleanup:
+	if (stdin_hndl) CloseHandle(stdin_hndl);
+	if (stdout_hndl) CloseHandle(stdout_hndl);
+	if (stderr_hndl) CloseHandle(stderr_hndl);
+
+	if (bRet)
+	    ExitProcess(exit_code); //Return error code to parent process
+}
+#endif
+
 /**
  * Replace this program with another in the same process.
  *
@@ -187,12 +287,18 @@ static void dcc_inside_child(char **argv,
     /* Ignore failure */
     dcc_increment_safeguard();
 
+#ifndef __CYGWIN__
     /* do this last, so that any errors from previous operations are
      * visible */
     if ((ret = dcc_redirect_fds(stdin_file, stdout_file, stderr_file)))
         goto fail;
     
     dcc_execvp(argv);
+#else
+	/* This will execute compiler and CORRECTLY redirect output if
+	compiler is a native Windows application. */
+	dcc_execvp_cyg(argv, stdin_file, stdout_file, stderr_file);
+#endif
 
     ret = EXIT_DISTCC_FAILED;
 

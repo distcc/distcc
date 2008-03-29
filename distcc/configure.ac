@@ -209,7 +209,9 @@ AC_PROG_INSTALL
 # Perhaps it's reasonable to count on it always being "python2.2", but
 # that will break when we're on to a later version.
 
-AC_CHECK_PROGS(PYTHON, [python2.4 python2.3 python-2.3 python2.2 python-2.2 python])
+# We prefer to use the latest Python, but try to find an explicit version 
+# to make sure we don't get a really old one.
+AC_CHECK_PROGS(PYTHON, [python2.4 python-2.4 python2.3 python-2.3 python2.2 python-2.2 python])
 AC_ARG_VAR(PYTHON, [Python interpreter to use for running tests])
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.

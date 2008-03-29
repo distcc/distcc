@@ -10,7 +10,7 @@ if which $AUTOCONF > /dev/null
 then
     :
 else
-    echo "$0: need autoconf 2.53 or later to build distcc from CVS" >&2
+    echo "$0: need autoconf 2.53 or later to regenerate configure scripts" >&2
     exit 1
 fi
 

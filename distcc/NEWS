@@ -16,6 +16,16 @@ distcc-pump-1.0 "My prices are insane."   2008-??-??
       (so server paths are replaced with client paths), but this works for ELF
       code only.
 
+   * Fix failure of 'make maintainer-check' in non-English locales.
+     (Niklaus Giger)
+
+  PORTABILITY:
+
+   * Use python2.4 if available.
+
+   * Execute compiler with correctly redirected output using win32 apis on
+     Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
+
 
 distcc-2.18.4  NOT RELEASED YET
 

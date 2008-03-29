@@ -142,6 +142,9 @@ int dcc_select_for_write(int fd, int timeout)
         } else if (rs == -1) {
             rs_log_error("select failed: %s", strerror(errno));
             return EXIT_IO_ERROR;
+        } else if (rs == 0) {
+            rs_log_error("IO timeout");
+            return EXIT_IO_ERROR;
         } else {
             if (FD_ISSET(fd, &except_fds)) {
               rs_trace("error condition on fd%d", fd);
