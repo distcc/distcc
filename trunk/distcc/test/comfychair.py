@@ -62,6 +62,7 @@ class TestCase:
         os.makedirs(self.tmpdir)
         os.system("mkdir -p %s" % self.rundir)
         os.chdir(self.rundir)
+	os.environ['LANG'] = 'C'
 
     def _restore_directory(self):
         import os

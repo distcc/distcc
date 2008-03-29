@@ -49,6 +49,10 @@
 #include "snprintf.h"
 #include "exitcode.h"
 
+#ifdef __CYGWIN32__
+	#define NOGDI
+	#include <windows.h>
+#endif
 
 
 /**
@@ -164,6 +168,23 @@ int dcc_get_new_tmpdir(char **tempdir)
 
 int dcc_get_tmp_top(const char **p_ret)
 {
+#ifdef __CYGWIN32__
+    int ret;
+
+    char *s = malloc(MAXPATHLEN+1);
+    int f,ln;
+    GetTempPath(MAXPATHLEN+1,s);
+    /* Convert slashes */
+    for(f=0,ln=strlen(s);f!=ln;f++)
+	    if (s[f]=='\\') s[f]='/';
+
+    if ((ret = dcc_add_cleanup(s))) {
+	    free(s);
+	    return ret;
+    }
+    *p_ret = s;
+    return 0;
+#else
     const char *d;
 
     d = getenv("TMPDIR");
@@ -175,6 +196,7 @@ int dcc_get_tmp_top(const char **p_ret)
         *p_ret = d;
         return 0;
     }
+#endif
 }
 
 /**

@@ -2,6 +2,167 @@
 # arch-tag: automatic-ChangeLog--mbp@sourcefrog.net--2004/distcc--devel--2
 #
 
+2006-01-11 04:03:16 GMT	Martin Pool <mbp@sourcefrog.net>	patch-178
+
+    Summary:
+      set locale when running make maintainer-check
+    Revision:
+      distcc--devel--2--patch-178
+
+
+    modified files:
+     ChangeLog NEWS test/comfychair.py
+
+
+2006-01-11 03:58:36 GMT	Martin Pool <mbp@sourcefrog.net>	patch-177
+
+    Summary:
+      Update more benchmark project definitions
+    Revision:
+      distcc--devel--2--patch-177
+
+
+    modified files:
+     ChangeLog bench/ProjectDefs.py test/testdistcc.py
+
+
+2006-01-05 00:20:52 GMT	Martin Pool <mbp@sourcefrog.net>	patch-176
+
+    Summary:
+      update benchmark project urls and md5s
+    Revision:
+      distcc--devel--2--patch-176
+
+
+    modified files:
+     ChangeLog bench/ProjectDefs.py
+
+
+2006-01-05 00:12:56 GMT	Martin Pool <mbp@sourcefrog.net>	patch-175
+
+    Summary:
+      [patch] update stale benchmark source URLS (Dongmin Zhang)
+    Revision:
+      distcc--devel--2--patch-175
+
+    
+    
+
+    modified files:
+     ChangeLog bench/ProjectDefs.py
+
+
+2005-12-12 05:47:20 GMT	Martin Pool <mbp@sourcefrog.net>	patch-174
+
+    Summary:
+      update patch to fix up gdb line numbers
+    Revision:
+      distcc--devel--2--patch-174
+
+    Updated patch from Dan Kegel to workaround wrong source file names in debug
+    symbols for older versions of gcc.
+    
+    
+
+    new files:
+     patches/.arch-ids/fix-line-numbers.diff.id
+     patches/fix-line-numbers.diff
+
+    removed files:
+     patches/.arch-ids/distcc-line3.diff.id
+     patches/.arch-ids/timj-line1.diff.id patches/distcc-line3.diff
+     patches/timj-line1.diff
+
+    modified files:
+     ChangeLog
+
+
+2005-11-28 03:00:58 GMT	Martin Pool <mbp@sourcefrog.net>	patch-173
+
+    Summary:
+      [patch] cygwin improvements from Alex Besogonov
+    Revision:
+      distcc--devel--2--patch-173
+
+    
+    
+
+    modified files:
+     ChangeLog NEWS src/exec.c src/tempfile.c
+
+
+2005-11-28 02:50:23 GMT	Martin Pool <mbp@sourcefrog.net>	patch-172
+
+    Summary:
+      doc
+    Revision:
+      distcc--devel--2--patch-172
+
+
+    modified files:
+     ChangeLog src/exitcode.h
+
+
+2005-11-28 02:49:19 GMT	Martin Pool <mbp@sourcefrog.net>	patch-171
+
+    Summary:
+      doc
+    Revision:
+      distcc--devel--2--patch-171
+
+
+    modified files:
+     ChangeLog src/exitcode.h
+
+
+2005-10-05 00:44:49 GMT	Martin Pool <mbp@sourcefrog.net>	patch-170
+
+    Summary:
+      return error on timeout in dcc_select_for_write
+    Revision:
+      distcc--devel--2--patch-170
+
+
+    modified files:
+     ChangeLog src/io.c
+
+
+2005-10-05 00:14:16 GMT	Martin Pool <mbp@sourcefrog.net>	patch-169
+
+    Summary:
+      bump version number
+    Revision:
+      distcc--devel--2--patch-169
+
+
+    modified files:
+     ChangeLog configure.ac
+
+
+2005-10-05 00:07:50 GMT	Martin Pool <mbp@sourcefrog.net>	patch-168
+
+    Summary:
+      use python2.4 if available
+    Revision:
+      distcc--devel--2--patch-168
+
+
+    modified files:
+     ChangeLog NEWS configure.ac
+
+
+2005-10-05 00:05:20 GMT	Martin Pool <mbp@sourcefrog.net>	patch-167
+
+    Summary:
+      - better autogen message
+    Revision:
+      distcc--devel--2--patch-167
+
+
+    modified files:
+     ChangeLog autogen.sh
+
+
 2005-10-05 00:04:18 GMT	Martin Pool <mbp@sourcefrog.net>	patch-166
 
     Summary:

@@ -1499,8 +1499,12 @@ class EmptySource_Case(Compilation_Case):
     """Check compilation of empty source file
 
     It must be treated as preprocessed source, otherwise cpp will
-    insert a # line, which will give a false pass.  """
-    
+    insert a # line, which will give a false pass.
+
+    This test fails with GCC 3.4.x (see
+    http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20239
+    [3.4 Regression] ICE on empty preprocessed input)"""
+
     def source(self):
         return ''
 

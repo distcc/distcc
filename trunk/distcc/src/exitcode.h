@@ -32,8 +32,11 @@
 /**
  * Common exit codes for both client and server.
  *
- * These need to be in [1,255] so that they can be used as exit()
- * codes.
+ * These need to be in [1,255] so that they can be used as exit() codes.  They
+ * are fairly high so that they're not confused with the real error code from
+ * gcc.
+ *
+ * TODO: Put more of these into the manpage.
  **/
 enum dcc_exitcode {
     EXIT_DISTCC_FAILED            = 100, /**< General failure */
