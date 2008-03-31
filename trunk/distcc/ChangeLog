@@ -2,6 +2,77 @@
 # arch-tag: automatic-ChangeLog--mbp@sourcefrog.net--2004/distcc--devel--2
 #
 
+2006-04-05 23:35:36 GMT	Martin Pool <mbp@sourcefrog.net>	patch-183
+
+    Summary:
+      ignore tags file
+    Revision:
+      distcc--devel--2--patch-183
+
+
+    modified files:
+     ChangeLog {arch}/=tagging-method
+
+
+2006-04-03 17:56:54 GMT	Martin Pool <mbp@sourcefrog.net>	patch-182
+
+    Summary:
+      build fix for --as-needed
+    Revision:
+      distcc--devel--2--patch-182
+
+
+    modified files:
+     ChangeLog Makefile.in NEWS
+
+
+2006-03-03 00:10:56 GMT	Martin Pool <mbp@sourcefrog.net>	patch-181
+
+    Summary:
+      fix error check in dcc_connect_by_add
+    Revision:
+      distcc--devel--2--patch-181
+
+    Found in code review from recent list thread -- error check was done
+    incorrectly for nonblocking commits.
+    
+
+    modified files:
+     ChangeLog src/clinet.c
+
+
+2006-02-21 05:38:41 GMT	Martin Pool <mbp@sourcefrog.net>	patch-180
+
+    Summary:
+      draft patch for substituting compiler command name
+    Revision:
+      distcc--devel--2--patch-180
+
+    
+    
+
+    new files:
+     patches/.arch-ids/distcc-substitute-command.diff.id
+     patches/distcc-substitute-command.diff
+
+    modified files:
+     ChangeLog
+
+
+2006-01-20 23:40:53 GMT	Martin Pool <mbp@sourcefrog.net>	patch-179
+
+    Summary:
+      More details on error 110
+    Revision:
+      distcc--devel--2--patch-179
+
+    
+    
+
+    modified files:
+     ChangeLog man/distcc.1
+
+
 2006-01-11 04:03:16 GMT	Martin Pool <mbp@sourcefrog.net>	patch-178
 
     Summary:
