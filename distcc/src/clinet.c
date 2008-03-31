@@ -109,15 +109,15 @@ int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
            (errno == EINTR || 
             (errno == EAGAIN && tries-- && poll(NULL, 0, 500) == 0)));
 
+   if (failed == -1 && errno != EINPROGRESS) {
+       rs_log(RS_LOG_ERR|RS_LOG_NONAME,
+              "failed to connect to %s: %s", s, strerror(errno));
+       ret = EXIT_CONNECT_FAILED;
+       goto out_failed;
+   }
+
     do {
        socklen_t len;
-
-       if (failed == -1 && errno != EINPROGRESS) {
-           rs_log(RS_LOG_ERR|RS_LOG_NONAME,
-                  "failed to connect to %s: %s", s, strerror(errno));
-           ret = EXIT_CONNECT_FAILED;
-           goto out_failed;
-       }
 
        if ((ret = dcc_select_for_write(fd, dcc_connect_timeout))) {
            rs_log(RS_LOG_ERR|RS_LOG_NONAME,

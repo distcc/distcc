@@ -25,7 +25,9 @@ distcc-pump-1.0 "My prices are insane."   2008-??-??
 
    * Execute compiler with correctly redirected output using win32 apis on
      Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
-
+   
+   * Make distccmon-gnome link properly with gnu ld's new --as-needed 
+     flag.  (Ben Skeggs, Lisa Seelye)
 
 distcc-2.18.4  NOT RELEASED YET
 
