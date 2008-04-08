@@ -1,0 +1,130 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <string.h>
+#include <unistd.h>
+
+#include "emaillog.h"
+#include "distcc.h"
+#include "util.h"
+#include "trace.h"
+#include "bulk.h"
+
+/* if never_send_email is true, we won't send email 
+   even if should_send_email is true */
+static int should_send_email = 0;
+static int never_send_email = 0; 
+static char *email_fname;
+static int email_fileno = -1;
+static int email_errno;
+
+static const char logmailer[] = "/bin/mail";
+static const char email_subject[] = "distcc-pump email" ;
+static const char cant_send_message_format[] = 
+   "Please notify %s that distcc tried to send them email but failed";
+static const char will_send_message_format[] = "Will send an email to %s";
+
+static const char dcc_emaillog_whom_to_blame[] = DCC_EMAILLOG_WHOM_TO_BLAME;
+
+void dcc_please_send_email(void) {
+    should_send_email = 1;
+}
+
+void dcc_setup_log_email(void) {
+    never_send_email = !dcc_getenv_bool("DISTCC_ENABLE_DISCREPANCY_EMAIL", 0);
+    if (never_send_email)
+      return;
+     
+    /* email_fname lives until the program exits.
+       The file itself will eventually get unlinked by dcc_cleanup_tempfiles(),
+       but email_fileno survives until after we send email, so the file won't
+       get removed until the emailing (child) process is done.
+    */
+
+    dcc_make_tmpnam("distcc_error_log", "txt", &email_fname);
+
+    email_fileno = open(email_fname, O_RDWR | O_TRUNC);
+    if (email_fileno >= 0) {
+      rs_add_logger(rs_logger_file, RS_LOG_DEBUG, NULL, email_fileno);
+      rs_trace_set_level(RS_LOG_DEBUG);
+    } else {
+       email_errno = errno;
+    }
+}
+
+int dcc_add_file_to_log_email(const char *description, 
+                              const char *fname) {
+  char begin[] = "\nBEGIN ";
+  char end[] = "\nEND ";
+  int in_fd = 0;
+  off_t fsize;
+
+  if (never_send_email) return 0;
+
+  if (dcc_open_read(fname, &in_fd, &fsize))
+      return 1;
+
+  write(email_fileno, begin, strlen(begin));
+  write(email_fileno, description, strlen(description));
+  write(email_fileno, "\n", 1);
+
+  dcc_pump_readwrite(email_fileno, in_fd, fsize);
+
+  write(email_fileno, end, strlen(end));
+  write(email_fileno, description, strlen(description));
+  write(email_fileno, "\n", 1);
+
+  close(in_fd);
+
+  return 0;
+}
+
+void dcc_maybe_send_email(void) {
+  int child_pid = 0;
+  const char *whom_to_blame;
+  if ((whom_to_blame = getenv("DISTCC_EMAILLOG_WHOM_TO_BLAME")) 
+      != NULL) {
+    whom_to_blame = dcc_emaillog_whom_to_blame;
+  }
+  char *will_send_message_to;
+  char *cant_send_message_to;
+
+  if (should_send_email == 0) return;
+  if (never_send_email) return;
+
+  asprintf(&will_send_message_to, will_send_message_format, whom_to_blame);
+  asprintf(&cant_send_message_to, cant_send_message_format, whom_to_blame);
+
+  rs_log_warning(will_send_message_to);
+  free(will_send_message_to);
+
+  if (email_fileno < 0) {
+      errno = email_errno;
+      perror(cant_send_message_to);
+      free(cant_send_message_to);
+      return;
+  }
+
+  child_pid = fork();
+  if (child_pid == 0) {
+    if (dup2(email_fileno, 0) == -1 ||
+        lseek(email_fileno, 0, SEEK_SET) == -1 ||
+        execl(logmailer, 
+              logmailer, "-s", email_subject, whom_to_blame, 
+              (char*)NULL) == -1) {
+      perror(cant_send_message_to);
+      /* The fork succeeded but we didn't get to exec, or the exec
+         failed. We need to exit immediately, otherwise the cleanup
+         code will get executed twice.
+      */
+      _exit(1);
+    }
+  } else if (child_pid < 0) {
+      perror(cant_send_message_to);
+  }
+  free(cant_send_message_to);
+}

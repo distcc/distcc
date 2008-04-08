@@ -1,0 +1,444 @@
+#! /bin/bash
+#
+# Copyright 2007 Google Inc. All Rights Reserved.
+#
+# Authors: klarlund@google.com, fergus@google.com
+#
+# 'pump': a script for using distcc-pump with build commands.
+
+# This file is processed by configure,
+# which substitutes in the right value for @PYTHON@.
+PYTHON=@PYTHON@
+
+usage_string=\
+'Usage:
+    pump COMMAND [ARG...]
+or
+    pump --startup
+    pump --shutdown
+
+Description:
+  Pump, also known as distcc-pump, accelerates remote compilation with
+  distcc by also distributing preprocessing to the servers.
+
+  The simplest usage is the form "pump COMMAND [ARG...]".
+  This will start an include server for distcc-pump; set some environment
+  variables; change PATH to use the distcc-pump "distcc" client; execute
+  COMMAND with the specified ARG(s); and then shutdown the include server.
+  The COMMAND is typically a parallel build command, such as
+  "make -j80", that will do many concurrent invocations of distcc.
+
+  An alternative way of invoking pump is to explicitly invoke "pump --startup"
+  to start the include server and "pump --shutdown" to stop the include server.
+  The "pump --startup" command will start up the include server, and will print
+  out some environment variable settings.  These environment variables are used
+  to communicate between the distcc-pump "distcc" client and the include
+  server, and to communicate between "pump --startup" and "pump --shutdown".
+  The caller of "pump --startup" is responsible for setting those environment
+  variables before invoking "distcc" or "pump --shutdown".  For example:
+
+      eval `pump --startup`
+      make -j80
+      pump --shutdown
+
+  Note that distcc-pump assumes that sources files will not be modified during
+  the lifetime of the include server, so modifying source files during a build
+  may cause inconsistent results.
+
+Environment variables (all optional):
+  DISTCC_PUMP_LOCATION    The location of distcc-pump 'bin' directory, which is
+                          normally inferred from the link-resolved dirname of 
+                          argv[0]. If this location is in fact the bin directory
+                          inside an installation (as will be the case when the 
+                          'pump' script in the installation executes), then
+                          Python executables and distcc itself will be retrieved
+                          from the parent directory of the location.
+  DISTCC_POTENTIAL_HOSTS  The distcc servers that will be queried by lsdistcc
+                          in order to produce a value for DISTCC_HOSTS.
+                          This value may be unset or null. In such
+                          cases, use DISTCC_HOSTS.
+  DISTCC_HOSTS            This variable is passed through to distcc but only if 
+                          DISTCC_POTENTIAL_HOSTS is not set.
+  LSDISTCC_ARGS           Extra arguments to lsdistcc.
+  INCLUDE_SERVER_ARGS     Extra arguments to the include server.
+  PYTHONOPTIMIZE          If set to "", then Python optimization is disabled.
+
+Example: 
+  pump make
+'
+
+# Get the directory of a command. The argument is $0 as received from
+# argv[0].  If $0 is of the form /path/symlink and symlink points to
+# another directory than /path, then $(basename $0) does not return
+# the directory where the executable lives. We fix this here.
+GetScriptDir() {
+  if [ -h "$0" ]; then
+    link=$(readlink "$0")
+    linkdir=$(dirname "$link")
+    case $linkdir in
+         /*) echo "$linkdir" ;;
+         *)  echo "$(dirname "$0")/$linkdir"
+    esac 
+  else
+    dirname "$0"
+  fi
+}
+
+# Variables inherited from the environment of the caller.
+DISTCC_PUMP_LOCATION=${DISTCC_PUMP_LOCATION-$(GetScriptDir "$0")}
+
+# Variables used by this process.
+program_name=$0
+socket_dir=''           # Temporary directory created by this process.
+tmp_pid_file=''         # Temporary file created by this process.
+available_hosts_file='' # Temporary file for newline separated list of hosts.
+socket=''               # Temporary socket file, inside $socket_dir.
+include_server_stdout=''  # Temporary file, inside $socket_dir.
+include_server_stderr=''  # Temporary file, inside $socket_dir.
+include_server_pid=''
+include_server_started_successfully=0
+include_server_relative=''  # Set by Initialize(). This path is relative to
+                            # the 'bin' directory of a distcc-pump installation.
+distcc_location='' # Set by Initialize().  The directory of the distcc binary.
+verbose=1          # Print progress messages to stdout? (1 means yes.)
+redirect_io=0      # Redirect include server's I/O streams? (1 means yes.)
+
+# Make temp file using distinguishing prefix $1. Use optional argument
+# $2="-d" to make a directory. The name of the created temp file or
+# directory is written to stdout.
+MakeTmpFile() {
+  mktemp $2 /tmp/$1.XXXXXX || \
+      { echo "$program_name: Could not make temp \"$1\"" 1>&2; exit 1; }
+}
+
+CheckUsage() {
+  if [ "$1" = "" -o "$1" = '-h' -o "$1" = '--help' ]; then
+    echo "$usage_string"
+    exit 0
+  fi
+}
+
+
+Initialize() {
+  # We know the value of $PYTHON when this function is executed. The value is
+  # set when the 'pump' script is made from 'pump.in'. Use this value in the
+  # formation of the relative path that takes us from the 'bin' directory of an
+  # installation to the 'include_server' directory.
+  include_server_relative="../lib/$PYTHON/site-packages/include_server"
+
+  # We use a little heuristic to determine whether this pump script is part of
+  # an installation. Specifically, we check whether we're a bin directory, and
+  # more importantly, we look for the include_server.py script. If we're running
+  # out of the distcc_pump source directory, both conditions below will fail.
+  if [ $(basename $DISTCC_PUMP_LOCATION) = 'bin' ] \
+     && [ -f "$DISTCC_PUMP_LOCATION/$include_server_relative/\
+include_server.py" ]; \
+  then
+    # Running from installed directory.
+    is_in_installation=true
+  else
+    # Running from configured directory, usually the source directory.
+    is_in_installation=""
+  fi
+
+  if [ $is_in_installation ]; then 
+    distcc_location="$DISTCC_PUMP_LOCATION"
+  else
+    distcc_location="$DISTCC_PUMP_LOCATION/distcc"
+  fi
+
+  # Check that we're getting exactly the distcc client we want: the
+  # one that is part of this build.
+  if ! [ -x "$distcc_location/distcc" ]; then
+    echo "$0: error: can't find distcc (looked in $distcc_location)" 1>&2
+    exit 1
+  fi
+}
+
+Announce() {
+  echo "__________Using distcc-pump from $(readlink -f $DISTCC_PUMP_LOCATION)"
+}
+
+# Starts up the include server.
+# Sets $socket, $socket_dir, $include_server_pid, and
+# $include_server_started_successfully.
+# If successful, sets exported variable $INCLUDE_SERVER_PORT
+# to the socket file ($socket), to tell the distcc clients
+# where to find the include server.
+shopt -s extglob  # allow +(...) construct below
+StartIncludeServer() {
+  # Locate include server depending on whether in installation.
+  if [ $is_in_installation ]; then
+    local include_server_location="$DISTCC_PUMP_LOCATION/\
+$include_server_relative"
+    local pythonpath=$include_server_location
+  else
+    # When run from the source code directory (assuming that we configured in
+    # the distcc_pump top-level directory) we pick up .py files from the
+    # include_server directory and pick up the .so file from the
+    # include_server/build/libXXX/include_server directory. When configured in a
+    # separate directory, we pick up .py files also from include_server/build.
+    local include_server_location=${DISTCC_PUMP_LOCATION}/include_server
+    # Now locate the single directory containing the .so file from the build
+    # directory. Possibly there may be more than one such file; first identify
+    # them all.
+    so_files=$(ls ${DISTCC_PUMP_LOCATION}/include_server/\
+build/lib.*/include_server/distcc_pump_c_extensions.so)
+    if echo $so_files | grep -q ' '; then
+      include_server_started_successfully=0
+      echo \
+        '__________Shared libraries for multiple architectures discovered.'
+      echo \
+        "__________Cannot determine which one to use among: $so_files"
+      echo \
+        '__________Could not start distcc-pump include server'
+      return 0
+    else
+      # There was only one such file.	
+      local so_dir=$(dirname $so_files)
+    fi
+    local pythonpath="${DISTCC_PUMP_LOCATION}/include_server:$so_dir"
+  fi
+
+  # Create a temporary directory $socket_dir.
+  socket_dir=$(MakeTmpFile "distcc-pump" -d)
+
+  # The socket file on which the include server accepts connections.
+  socket=$socket_dir/socket
+
+  # Files for the include server's stdout/stderr.
+  # When a build tool invokes 'pump --startup', stdout/stderr may be
+  # pipes, in which case the invocation may hang unless the include
+  # server process closes them.  So to avoid this, we need to redirect
+  # the include server's output to temporary files.
+  # We print these files during shutdown; better late than never!
+  include_server_stdout=$socket_dir/stdout
+  include_server_stderr=$socket_dir/stderr
+
+  # File for the include server process id.
+  tmp_pid_file=$(MakeTmpFile "distcc-pump-pid")
+
+  # Start include server in optimized mode (no assertions) and with
+  # debug level 1 for tracing warnings.
+  # The include server will fork off
+  # a background process to handle the requests;
+  # the main process will exit only when the background
+  # process is ready to accept connections.
+
+  (
+    # Optionally redirect the I/O streams for the include server.
+    case $redirect_io in
+      1) exec < /dev/null            \
+           > $include_server_stdout  \
+           2> $include_server_stderr
+         ;;
+      *)
+          rm -f $include_server_stdout $include_server_stderr
+          ;;
+    esac
+
+    PYTHONOPTIMIZE=${PYTHONOPTIMIZE-1} \
+    PYTHONPATH=$pythonpath           \
+    $PYTHON                          \
+        $include_server_location/include_server.py \
+        --port $socket               \
+        --pid_file "$tmp_pid_file"   \
+        --email                      \
+        --email_bound=5              \
+        -d1                          \
+        $INCLUDE_SERVER_ARGS
+  )
+
+  include_server_pid=$(cat $tmp_pid_file)
+  rm $tmp_pid_file
+
+  if [ ! -S "$socket" ]; then
+    include_server_started_successfully=0
+  else
+    case $include_server_pid in
+      +([0-9]))
+        # That's what we expect: a number.
+        include_server_started_successfully=1
+        # Tell the distcc clients where to find it.
+        INCLUDE_SERVER_PORT=$socket
+        export INCLUDE_SERVER_PORT
+        ;;
+      *)
+        # This indicates that the socket is not working.
+        include_server_pid=''
+        include_server_started_successfully=0
+        ;;
+    esac
+  fi
+  if [ "$verbose" = 1 ]; then
+    if [ "$include_server_started_successfully" = 1 ]; then
+      echo '__________Started distcc-pump include server'
+    else
+      echo '__________Could not start distcc-pump include server' 1>&2
+    fi
+  fi
+}
+
+ShutDown() {
+  # Always -- at exit -- shut down include_server and remove $socket_dir
+  if [ "$include_server_pid" ] && \
+     ps --pid "$include_server_pid" > /dev/null; then
+    echo '__________Shutting down distcc-pump include server'
+    kill $include_server_pid
+  fi
+
+  if [ -f "$include_server_stdout" ]; then
+    cat $include_server_stdout
+  fi
+  if [ -f "$include_server_stderr" ]; then
+    cat $include_server_stderr >&2
+  fi
+
+  if [ "$socket_dir" ];  then
+    rm -rf "$socket_dir"
+  fi
+  if [ "$tmp_pid_file" ]; then
+    rm -f "$tmp_pid_file"
+  fi
+  if [ "$available_hosts_file" ]; then
+    rm -f "$available_hosts_file"
+  fi
+}
+
+# Invokes lsdistcc to find the available servers. This list is
+# \n-separated and written to the filepath provided as $1.
+AvailableHosts() {
+  local available_hosts=$1
+  local lsdistcc=$DISTCC_PUMP_LOCATION/distcc/lsdistcc
+  if [ ! -x $lsdistcc ]; then
+     lsdistcc=$DISTCC_PUMP_LOCATION/lsdistcc
+     if [ ! -x $lsdistcc ]; then
+       echo "$0: error: can't find lsdistcc (looked in $DISTCC_PUMP_LOCATION" \
+            " and $DISTCC_PUMP_LOCATION/distcc)" 1>&2
+       exit 1
+     fi
+   fi
+  # Call lsdistcc and let it wait no more than 150ms unless overridden in
+  # LSDISTCC_ARGS.
+  $lsdistcc -c150 $LSDISTCC_ARGS $DISTCC_POTENTIAL_HOSTS > $available_hosts
+}
+
+# Exports DISTCC_HOSTS as a function of global variables
+#  -  $include_server_started_successfully and
+#  -  $available_hosts_file.
+ExportDISTCC_HOSTS() {
+  local opts=''
+  if [ "$include_server_started_successfully" = 1 ]; then
+    # The include server is up.
+    # Make 'cpp' mode (with lzo) the default.
+    opts=",cpp,lzo"
+  else
+    # The include server is not ready.
+    # Make 'lzo' mode the default.
+    if [ "$?" = 1 ]; then
+      echo "__________Warning: distcc-pump include server failed;" \
+        "running unpumped" 1>&2
+    fi
+    opts=",lzo"
+  fi
+  # When calculating final value of DISTCC_HOSTS, we get rid of
+  # newlines (thanks to "$(...)").
+  export DISTCC_HOSTS="--randomize $(sed s/'$'/$opts/ $available_hosts_file)"
+  if [ "$verbose" = 1 ]; then
+    echo "__________Found" \
+         "$(wc -l < $available_hosts_file) available distcc servers"
+  fi
+}
+
+StartIncludeServerAndDetermineHosts() {
+  if [ "$DISTCC_POTENTIAL_HOSTS" ]; then
+    # Probe the distcc servers. It may take up to a second. But
+    # starting the include server takes about 150ms. Make these
+    # activities happen in parallel. First, the lsdistcc command goes
+    # in the background.
+    available_hosts_file=$(MakeTmpFile "distcc-pump-hosts")
+    AvailableHosts $available_hosts_file &
+
+    # The include server goes in the foreground so variables can be set.
+    StartIncludeServer
+
+    # Await for AvailableHosts to finish.
+    wait 
+    ExportDISTCC_HOSTS $available_hosts_file
+    rm -f $available_hosts_file
+  else
+    if [ -z "$DISTCC_HOSTS" ] &&
+       [ -z "$DISTCC_DIR" -o ! -f "$DISTCC_DIR/hosts" ] &&
+       [ -z "$HOME" -o ! -f "$HOME/.distcc/hosts" ] &&
+       [ ! -f "/etc/distcc/hosts" ]
+    then
+      echo "$program_name:" \
+              "expected environment variables \"DISTCC_HOSTS\" or" \
+              "\"DISTCC_POTENTIAL_HOSTS\" to be set, or to find a" \
+              "distcc hosts file in \"\$DISTCC_DIR/hosts\"," \
+              "\"\$HOME/.distcc/hosts\", or \"/etc/distcc/hosts\"." \
+              1>&2
+      exit 1
+    fi
+    StartIncludeServer
+  fi
+}
+
+# Prints out environment variable settings, for the --startup option.
+DumpEnvironmentVariables() {
+  # Variables used by "pump --shutdown"
+  echo export INCLUDE_SERVER_PID=\'$include_server_pid\'
+  echo export INCLUDE_SERVER_DIR=\'$socket_dir\'
+  # Variables used by the distcc client
+  echo export INCLUDE_SERVER_PORT=\'$INCLUDE_SERVER_PORT\'
+  if [ "$DISTCC_HOSTS" ]; then
+    echo export DISTCC_HOSTS=\'$DISTCC_HOSTS\'
+  fi
+  echo export PATH=\'$distcc_location:$PATH\'
+}
+
+Main() {
+
+  CheckUsage "$@"
+
+  Initialize
+
+  case "$*" in
+    --startup)
+      # Don't put ordinary progress messages on stdout,
+      # because they interfere with the environment variable
+      # settings that we print out.
+      verbose=0
+      # Redirect the include server's stdin/stdout/stderr
+      redirect_io=1
+      trap 'ShutDown' EXIT  # In case we get interrupted.
+      StartIncludeServerAndDetermineHosts
+      trap '' EXIT
+      if [ $include_server_started_successfully = 1 ]; then
+        DumpEnvironmentVariables
+        exit 0
+      else
+        exit 1
+      fi
+      ;;
+    --shutdown)
+      include_server_pid=$INCLUDE_SERVER_PID
+      socket_dir=$INCLUDE_SERVER_DIR
+      include_server_stdout=$socket_dir/stdout
+      include_server_stderr=$socket_dir/stderr
+      ShutDown
+      exit 0
+      ;;
+    *)
+      trap 'ShutDown' EXIT
+      Announce
+      StartIncludeServerAndDetermineHosts
+      # Now execute the command that is the argument of 'pump'.
+      PATH="$distcc_location:$PATH" \
+        "$@"
+      # When we exit, the ShutDown function will be called.
+      ;;
+  esac
+}
+
+Main "$@"

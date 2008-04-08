@@ -1,0 +1,111 @@
+# This Makefile just delegates all the work to the Makefiles
+# in the subdirectories.
+#
+SUBDIRS = distcc include_server
+INSTALL_TARGETS = $(SUBDIRS:%=install-%)
+CHECK_TARGETS = $(SUBDIRS:%=check-%)
+CLEAN_TARGETS = $(SUBDIRS:%=clean-%)
+MAINTAINER_CHECK_TARGETS = $(SUBDIRS:%=maintainer-check-%)
+
+# A timestamp file to reliably tell us when autoreconf was last run.
+AUTOCONF_STAMP = @srcdir@/autoconf_stamp
+
+# A stamp file AUTOCONF_SANITY that tells us the last time either:
+#
+#  - autoreconf was run, or
+#
+#  - configure was run.
+#
+# AUTORECONF cannot be a phony target.  Below we make the Makefile itself
+# dependent on AUTOCONF_SANITY.  After the Makefile is regenerated, as part of
+# GNU make's feature of remaking the current Makefile if it is out of date, a
+# dependency on a phony target would make 'make' make the Makefile again. An
+# infinite regression would result.  So, we must record the time of
+# AUTOCONF_SANITY in a file.
+AUTOCONF_SANITY = autoconf_sanity
+# TODO(klarlund): substitute autoconf_sanity for AUTOCONF_SANITY? Same for 
+# AUTOCONF_STAMP.
+
+# Autoconf configuration variables.
+# DESTDIR is for building rpm's. It's a temporary filesystem root 
+# where the rpm bulding process puts all its files.
+DESTDIR =
+prefix = $(DESTDIR)@prefix@
+exec_prefix = $(DESTDIR)@exec_prefix@
+bindir = $(DESTDIR)@bindir@
+srcdir = @srcdir@
+VPATH = @srcdir@
+INSTALL = @INSTALL@
+PYTHON = @PYTHON@
+
+# I swear, this is the code that Python's distutils uses.
+PYTHON_VERSION = $(shell $(PYTHON) -c \
+   'import sys; import string; print string.split(sys.version)[0][:3]')
+
+# TODO(klarlund,fergus): 
+# - invoke distcc/configure before make in distcc/
+
+.PHONY: all $(SUBDIRS) 
+all: $(AUTOCONF_SANITY) $(SUBDIRS) pump
+$(SUBDIRS): %:
+	$(MAKE) --directory=$@
+
+.PHONY: install $(INSTALL_TARGETS)
+install: $(AUTOCONF_SANITY) $(INSTALL_TARGETS) install-local
+$(INSTALL_TARGETS): install-%:
+	$(MAKE) --directory=$* install
+
+.PHONY: check $(CHECK_TARGETS)
+check: $(AUTOCONF_SANITY) $(CHECK_TARGETS)
+$(CHECK_TARGETS): check-%:
+	$(MAKE) --directory=$* check
+
+.PHONY: maintainer-check $(MAINTAINER_CHECK_TARGETS)
+maintainer-check: $(AUTOCONF_SANITY) $(MAINTAINER_CHECK_TARGETS)
+$(MAINTAINER_CHECK_TARGETS): maintainer-check-%:
+	$(MAKE) --directory=$* maintainer-check
+
+.PHONY: clean $(CLEAN_TARGETS)
+clean: $(CLEAN_TARGETS)
+$(CLEAN_TARGETS): clean-%:
+	$(MAKE) --directory=$* clean
+
+.PHONY: install-local
+install-local: pump
+	$(INSTALL) -d $(bindir)
+	$(INSTALL) pump $(bindir)
+
+pump: $(AUTOCONF_SANITY) pump.in
+	./config.status
+
+Makefile: $(AUTOCONF_SANITY) Makefile.in 
+	./config.status
+
+# SANITY CHECKS
+
+# Here we set up AUTOCONF_SANITY so that it works as described.  It verifies
+# that 
+#
+#   - autoconf has been run after its dependencies have changed (see rule for
+#     $(AUTOCONF_STAMP)) below, and
+#
+#   - the time of this event, recorded by AUTOCONF_STAMP, is before that of
+#     config.status (see rule for config.status below).
+#
+# We need the touch: without it 'make' will invoke itself in an infinite loop,
+# because the Makefile is dependent on AUTOCONF_SANITY.
+
+$(AUTOCONF_SANITY): $(AUTOCONF_STAMP) config.status
+	touch $(AUTOCONF_SANITY)
+
+# Check that autoreconf was run after changes to version.sh or
+# config.status.  This regenerates distcc/src/config.h.in.
+$(AUTOCONF_STAMP): version.sh configure.ac
+	@echo "Please run ./run_all_autoconf.sh now."
+	@exit 1
+
+# Check that the generated configure was run after autoreconf. The modification
+# time of the configure.status file is updated by configure.
+config.status: $(AUTOCONF_STAMP)
+	@echo "Please run ./configure now."
+	@exit 1
