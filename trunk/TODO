@@ -1,6 +1,6 @@
 TODO list for distcc
 
-See also TODO comments in source files and doc/todo/
+See also TODO and FIXME comments in source files and doc/todo/
 
 
 should probably actually check the number of CPUs for use on localhost

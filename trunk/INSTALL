@@ -1,15 +1,25 @@
+Installation instructions for distcc                  -*- indented-text -*-
+
+distcc is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version. distcc comes with ABSOLUTELY NO WARRANTY,
+for details see the licence.
+
+Please report any problems to distcc@googlegroups.com.
+
 
 To build: the simple way is to just do
 
-  run_all_autoconf.sh    # invokes autoconf and autoheader using
-                         # version info in the file version.sh
-  configure              # creates distcc/config.h and makefiles
-  make                   # build
+  ./run_all_autoconf.sh    # invokes autoconf and autoheader using
+                           # version info in the file version.sh
+  ./configure              # creates distcc/config.h and makefiles
+  make                     # build
 
 but the recommended way is to build in a different directory tree
 than the source tree:
 
-  run_all_autoconf.sh
+  ./run_all_autoconf.sh
   mkdir obj
   cd obj
   ../configure
@@ -37,3 +47,175 @@ To test installation using your own machine as a distcc compilation server:
 See the shell script pump in this directory.
 
 
+Prerequisites
+-------------
+
+To build distcc you need
+
+   GNU Make
+   A C compiler
+
+You can optionally have
+
+   libpopt
+
+     If this is not found on your system, it will be statically linked in.
+
+   Python >=2.4
+
+     To use the "pump" include server, or to run the test suite with
+     "make maintainer-check", or to run the benchmarks.
+
+   linuxdoc SGML tools
+
+     To rebuild the documentation from its SGML source.
+
+   autoconf >=2.5
+
+     To rebuild the configure scripts if you edit configure.ac.
+
+To build the optional GNOME monitor (--with-gnome), you need the
+GNOME2 development libraries, and in particular
+
+  gtk+ >=2.0
+  libgnome >=2.0
+  libgnomeui >= 2.0
+  libglade >= 2.0
+  libpango
+
+The monitor can also be built without GNOME desktop integration
+(--with-gtk), in which case you need only
+
+  gtk+ >=2.0
+  libglade >= 2.0
+
+
+Preliminaries
+-------------
+
+distcc can be installed and used without requiring root access.
+Adjust directories appropriately when installing.
+
+
+Compiling distcc
+----------------
+
+Note that the default GNU "sysconfdir" is /usr/local/etc.  You may
+want to change this to /etc.
+
+  $ ./configure --sysconfdir=/etc
+
+You can set an installation prefix if you want to put distcc in /opt:
+
+  $ ./configure --prefix=/opt/distcc/
+
+distcc needs to be installed on all client and server machines.
+
+If you would like a graphical client-side monitor to show running
+jobs, you can choose either --with-gnome or --with-gtk.
+
+If you would like to try running distcc over IPv6, use
+--enable-rfc2553.  You must have a reasonably recent operating system
+or this is likely to fail in complex ways.
+
+
+Starting the daemon
+-------------------
+
+This stage is only required if you want to run distcc over TCP
+sockets, rather than SSH connections.  TCP is faster but less secure
+and should only be used on trusted networks.
+
+In TCP mode distccd can run either from inetd or as a standalone
+daemon.  Running standalone is recommended.
+
+To run standalone, run a command like this, either from the command
+line or from the system startup scripts.
+
+  distccd --daemon
+
+If the daemon is started from an rc script, then make sure that it
+sees a PATH setting which can find any compilers installed in
+nonstandard directories.
+
+You should create a "distcc" account on server machines so that distcc
+can run with minimal privilege.  It is not necessary for this account
+to own any files or have a home directory.  If this account doesn't
+exist, distccd uses the "nobody" account.
+
+By default distccd writes messages to the "daemon" syslog, which
+typically ends up in /var/log/messages or /var/log/daemon.
+
+You can set IP-based access control using the --allow and --listen
+options, in either inetd or daemon mode:
+
+  distccd --allow 10.4.20.0/24
+
+distccd does not need to run on machines that will only act as
+clients.
+
+See the manual for more information.
+
+
+Set up the host list
+--------------------
+
+On the client machines, store a list of servers names in
+~/.distcc/hosts.  If you're using TCP connections, it should look like
+this:
+
+  localhost red green blue
+
+For SSH connections
+
+  localhost @red @green @blue
+
+The hosts should be listed in descending order of speed.  localhost
+should normally be first, unless it is signficantly slower than
+another machine.
+
+The host list also needs ",cpp,lzo" after each host if you're using
+pump mode - see README.pump for details.
+
+See the manual for more information.
+
+
+Create the masquerade directories
+---------------------------------
+
+The easiest way to use distcc is in "masquerade" mode, where it is
+installed on the path to "catch" calls to the compiler and redirect
+them over the network.  Other options are discussed in the manual.
+
+For instance, you could create the directory named /usr/lib/distcc/bin
+and populate it with links.
+
+# mkdir /usr/lib/distcc/bin
+# cd /usr/lib/distcc/bin
+# ln -s ../../../bin/distcc gcc
+# ln -s ../../../bin/distcc cc
+# ln -s ../../../bin/distcc g++
+# ln -s ../../../bin/distcc c++
+
+Do this for all compiler names that you use.
+
+Then, to use distcc, a user just needs to put the directory
+/usr/lib/distcc/bin early in the PATH and distcc will handle the rest.
+
+  export PATH=/usr/lib/distcc/bin:$PATH
+
+
+Use with ccache
+---------------
+
+The best way to use is to set up a similar masquerade directory for
+ccache, and put it on the path before distcc.
+
+NOTE: Use of ccache is incompatible with use of distcc's "pump" mode.
+
+
+Complete the survey
+-------------------
+
+Once you have distcc working for your own application, please complete
+and mail in the survey in survyey.txt.
