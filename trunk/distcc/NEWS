@@ -19,6 +19,10 @@ distcc-pump-1.0 "My prices are insane."   2008-??-??
    * Fix failure of 'make maintainer-check' in non-English locales.
      (Niklaus Giger)
 
+   * Locks taken through F_SETLK or lockf() must be explicitly released,
+     because closing the file does not do so.
+     (Sascha Demetrio)
+
   PORTABILITY:
 
    * Use python2.4 if available.

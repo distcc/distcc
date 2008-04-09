@@ -176,6 +176,30 @@ static int sys_lock(int fd, int block)
 
 int dcc_unlock(int lock_fd)
 {
+#if defined(F_SETLK)
+    struct flock lockparam;
+
+    lockparam.l_type = F_UNLCK;
+    lockparam.l_whence = SEEK_SET;
+    lockparam.l_start = 0;
+    lockparam.l_len = 0;
+
+    if (fcntl(lock_fd, F_SETLK, &lockparam) == -1) {
+        rs_log_error("fcntl(fd%d, F_SETLK, F_UNLCK) failed: %s",
+                     lock_fd, strerror(errno));
+        close(lock_fd);
+        return EXIT_IO_ERROR;
+    }
+#elif defined (HAVE_FLOCK)
+    /* flock() style locks are released when the fd is closed */
+#elif defined (HAVE_LOCKF)
+    if (lockf(lock_fd, F_ULOCK, 0) == -1) {
+        rs_log_error("lockf(fd%d, F_ULOCK, 0) failed: %s",
+                     lock_fd, strerror(errno));
+        close(lock_fd);
+        return EXIT_IO_ERROR;
+    }
+#endif
     rs_trace("release lock fd%d", lock_fd);
     /* All our current locks can just be closed */
     if (close(lock_fd)) {
