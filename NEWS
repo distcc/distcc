@@ -1,39 +1,14 @@
-distcc-pump-1.0 "My prices are insane."   2008-??-??
+distcc-3.0 "My prices are insane."   2008-??-??
 
   FEATURES:
 
-   * New protocol, version 3, allowing for preprocessing on distcc servers.
+   * New protocol, version 3, allowing for preprocessing on distcc
+     servers ("pump" mode).
 
    * New component: an include server for incremental static analysis of include
      dependencies.  This software is written in Python 2.4.
 
-  BUG FIXES (TODO: include all kegel, manos, dongmin, et al patches):
-
-
-  PORTABILITY:	
-
-    * Tested under Linux only.  Processing of object code rewrites debug info
-      (so server paths are replaced with client paths), but this works for ELF
-      code only.
-
-   * Fix failure of 'make maintainer-check' in non-English locales.
-     (Niklaus Giger)
-
-   * Locks taken through F_SETLK or lockf() must be explicitly released,
-     because closing the file does not do so.
-     (Sascha Demetrio)
-
-  PORTABILITY:
-
-   * Use python2.4 if available.
-
-   * Execute compiler with correctly redirected output using win32 apis on
-     Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
-   
-   * Make distccmon-gnome link properly with gnu ld's new --as-needed 
-     flag.  (Ben Skeggs, Lisa Seelye)
-
-distcc-2.18.4  NOT RELEASED YET
+   * Support for getting hosts via avahi (Lennart Poettering)
 
   BUG FIXES:
 
@@ -43,6 +18,26 @@ distcc-2.18.4  NOT RELEASED YET
    * Improved checking for errors on socket connection.  Patch 
      from Dan Kegel.
 
+  PORTABILITY:	
+
+   * "Pump" code tested under Linux only.  Processing of object code
+      rewrites debug info (so server paths are replaced with client
+      paths), but this works for ELF code only.
+
+   * Fix failure of 'make maintainer-check' in non-English locales.
+     (Niklaus Giger)
+
+   * Locks taken through F_SETLK or lockf() must be explicitly released,
+     because closing the file does not do so.
+     (Sascha Demetrio)
+
+   * Use python2.4 if available.
+
+   * Execute compiler with correctly redirected output using win32 apis on
+     Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
+   
+   * Make distccmon-gnome link properly with gnu ld's new --as-needed 
+     flag.  (Ben Skeggs, Lisa Seelye)
 ^L
 distcc-2.18.3  "Porsche safari"  2004-11-30
 
