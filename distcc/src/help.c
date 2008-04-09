@@ -64,6 +64,9 @@ int dcc_show_version(const char *prog)
 "distcc comes with ABSOLUTELY NO WARRANTY.  distcc is free software, and\n"
 "you may use, modify and redistribute it under the terms of the GNU \n"
 "General Public License version 2 or later.\n"
+#ifdef HAVE_AVAHI
+"\nBuilt with Zeroconf support.\n"
+#endif
 "\n"
 "Please report bugs to %s\n"
 "\n"

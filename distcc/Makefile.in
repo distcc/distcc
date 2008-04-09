@@ -176,6 +176,7 @@ distcc_obj = src/backoff.o						\
 	src/timefile.o src/traceenv.o					\
 	src/include_server_if.o						\
 	src/where.o							\
+	@ZEROCONF_DISTCC_OBJS@						\
 	src/emaillog.o							\
 	$(common_obj)
 
@@ -187,6 +188,7 @@ distccd_obj = src/access.o						\
 	src/serve.o src/setuid.o src/srvnet.o src/srvrpc.o src/state.o	\
 	src/stats.o							\
 	src/fix_debug_info.o						\
+	@ZEROCONF_DISTCCD_OBJS@						\
 	$(common_obj) @BUILD_POPT@
 
 lsdistcc_obj = src/lsdistcc.o 						\

@@ -59,7 +59,7 @@ int dcc_parse_hosts_file(const char *fname,
     if ((ret = dcc_load_file_string(fname, &body)) != 0)
         return ret;
 
-    ret = dcc_parse_hosts(body, fname, ret_list, ret_nhosts);
+    ret = dcc_parse_hosts(body, fname, ret_list, ret_nhosts, NULL);
 
     free(body);
 

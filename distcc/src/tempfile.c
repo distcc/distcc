@@ -298,7 +298,7 @@ int dcc_get_top_dir(char **path_ret)
  * Return a subdirectory of the DISTCC_DIR of the given name, making
  * sure that the directory exists.
  **/
-static int dcc_get_subdir(const char *name,
+int dcc_get_subdir(const char *name,
                           char **dir_ret)
 {
     int ret;

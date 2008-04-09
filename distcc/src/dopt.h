@@ -42,3 +42,7 @@ extern int opt_log_stderr;
 extern int opt_lifetime;
 extern char *opt_listen_addr;
 extern int opt_niceness;
+
+#ifdef HAVE_AVAHI
+extern int opt_zeroconf;
+#endif

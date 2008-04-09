@@ -121,7 +121,7 @@ int dcc_parse_hosts_env(struct dcc_hostdef **ret_list,
                         int *ret_nhosts);
 int dcc_parse_hosts(const char *where, const char *source_name,
                     struct dcc_hostdef **ret_list,
-                    int *ret_nhosts);
+                    int *ret_nhosts, struct dcc_hostdef **ret_prev);
 
 /* ncpu.c */
 int dcc_ncpus(int *);
@@ -251,6 +251,7 @@ int dcc_make_tmpnam(const char *, const char *suffix, char **);
 int dcc_get_new_tmpdir(char **tmpdir);
 int dcc_mk_tmpdir(const char *path);
 int dcc_mkdir(const char *path);
+int dcc_get_subdir(const char *name, char **path_ret) WARN_UNUSED;
 
 int dcc_get_lock_dir(char **path_ret) WARN_UNUSED;
 int dcc_get_state_dir(char **path_ret) WARN_UNUSED;

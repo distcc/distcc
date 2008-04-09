@@ -84,6 +84,9 @@ static void dcc_show_usage(void)
 "   COMPILER                   defaults to \"cc\"\n"
 "   --help                     explain usage and exit\n"
 "   --version                  show version and exit\n"
+"   --show-hosts               show host list and exit\n"
+"   -j                         calculate the concurrency level from\n"
+"                              the host list.\n"
 "\n"
 "Environment variables:\n"
 "   See the manual page for a complete list.\n"
@@ -137,7 +140,46 @@ static void dcc_client_catch_signals(void)
     signal(SIGHUP, &dcc_client_signalled);
 }
 
+static void dcc_free_hostlist(struct dcc_hostdef *list) {
+    while (list) {
+        struct dcc_hostdef *l = list;
+        list = list->next;
+        dcc_free_hostdef(l);
+    }
+}
 
+static void dcc_show_hosts(void) {
+    struct dcc_hostdef *list, *l;
+    int nhosts;
+    
+    if (dcc_get_hostlist(&list, &nhosts) != 0) {
+        rs_log_crit("Failed to get host list");
+        return;
+    }
+
+    for (l = list; l; l = l->next)
+        printf("%s\n", l->hostdef_string);
+
+    dcc_free_hostlist(list);
+}
+
+static void dcc_concurrency_level(void) {
+    struct dcc_hostdef *list, *l;
+    int nhosts;
+    int nslots = 0;
+    
+    if (dcc_get_hostlist(&list, &nhosts) != 0) {
+        rs_log_crit("Failed to get host list");
+        return;
+    }
+
+    for (l = list; l; l = l->next)
+        nslots += l->n_slots;
+
+    dcc_free_hostlist(list);
+
+    printf("%i\n", nslots);
+}
 
 /**
  * distcc client entry point.
@@ -182,6 +224,18 @@ int main(int argc, char **argv)
         }
         if (!strcmp(argv[1], "--version")) {
             dcc_show_version("distcc");
+            ret = 0;
+            goto out;
+        }
+
+        if (!strcmp(argv[1], "--show-hosts")) {
+            dcc_show_hosts();
+            ret = 0;
+            goto out;
+        }
+
+        if (!strcmp(argv[1], "-j")) {
+            dcc_concurrency_level();
             ret = 0;
             goto out;
         }
