@@ -181,7 +181,7 @@ int dcc_readx(int fd, void *buf, size_t len)
                 return ret;
             else
                 continue;
-        } else if (r == -1 && errno == EAGAIN) {
+        } else if (r == -1 && errno == EINTR) {
             continue;
         } else if (r == -1) {
 	    rs_log_error("failed to read: %s", strerror(errno));
@@ -223,9 +223,6 @@ int dcc_writex(int fd, const void *buf, size_t len)
         } else if (r == -1) {
             rs_log_error("failed to write: %s", strerror(errno));
             return EXIT_IO_ERROR;
-        } else if (r == 0) {
-            rs_log_error("unexpected eof on fd%d", fd);
-            return EXIT_TRUNCATED;
         } else {
             buf = &((char *) buf)[r];
             len -= r;

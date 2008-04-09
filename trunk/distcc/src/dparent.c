@@ -70,6 +70,7 @@
 #include "types.h"
 #include "daemon.h"
 #include "netutil.h"
+#include "zeroconf.h"
 
 static void dcc_nofork_parent(int listen_fd) NORETURN;
 static void dcc_detach(void);
@@ -94,6 +95,9 @@ int dcc_standalone_server(void)
     int listen_fd;
     int n_cpus;
     int ret;
+#ifdef HAVE_AVAHI
+    void *avahi = NULL;
+#endif
 
     if ((ret = dcc_socket_listen(arg_port, &listen_fd, opt_listen_addr)) != 0)
         return ret;
@@ -131,6 +135,14 @@ int dcc_standalone_server(void)
     /* Don't catch signals until we've detached or created a process group. */
     dcc_daemon_catch_signals();
 
+#ifdef HAVE_AVAHI      
+    /* Zeroconf registration */
+    if (opt_zeroconf) {
+        if (!(avahi = dcc_zeroconf_register((uint16_t) arg_port, n_cpus)))
+            return EXIT_CONNECT_FAILED;
+    }
+#endif
+        
     /* This is called in the master daemon, whether that is detached or
      * not.  */
     dcc_master_pid = getpid();
@@ -138,10 +150,21 @@ int dcc_standalone_server(void)
     if (opt_no_fork) {
         dcc_log_daemon_started("non-forking daemon");   
         dcc_nofork_parent(listen_fd);
+        ret = 0;
     } else {
         dcc_log_daemon_started("preforking daemon");
-        return dcc_preforking_parent(listen_fd);
+        ret = dcc_preforking_parent(listen_fd);
     }
+
+#ifdef HAVE_AVAHI
+    /* Remove zeroconf registration */
+    if (opt_zeroconf) {
+        if (dcc_zeroconf_unregister(avahi) != 0)
+            return EXIT_CONNECT_FAILED;
+    }
+#endif
+    
+    return ret;
 }
 
 

@@ -106,6 +106,10 @@
 #include "hosts.h"
 #include "exitcode.h"
 #include "snprintf.h"
+#ifdef HAVE_AVAHI
+#include "zeroconf.h"
+#define ZEROCONF_MAGIC "+zeroconf"
+#endif
 
 const int dcc_default_port = DISTCC_DEFAULT_PORT;
 
@@ -156,9 +160,12 @@ int dcc_get_hostlist(struct dcc_hostdef **ret_list,
     char *path, *top;
     int ret;
 
+    *ret_list = NULL;
+    *ret_nhosts = 0;
+
     if ((env = getenv("DISTCC_HOSTS")) != NULL) {
         rs_trace("read hosts from environment");
-        return dcc_parse_hosts(env, "$DISTCC_HOSTS", ret_list, ret_nhosts);
+        return dcc_parse_hosts(env, "$DISTCC_HOSTS", ret_list, ret_nhosts, NULL);
     }
 
     /* $DISTCC_DIR or ~/.distcc */
@@ -185,7 +192,7 @@ int dcc_get_hostlist(struct dcc_hostdef **ret_list,
         rs_trace("not reading %s: %s", path, strerror(errno));
         free(path);
     }
-    
+
     /* FIXME: Clearer message? */
     rs_log_warning("no hostlist is set; can't distribute work");
 
@@ -433,17 +440,19 @@ int dcc_get_protover_from_features(enum dcc_compress compr,
  **/
 int dcc_parse_hosts(const char *where, const char *source_name,
                     struct dcc_hostdef **ret_list,
-                    int *ret_nhosts)
+                    int *ret_nhosts, struct dcc_hostdef **ret_prev)
 {
     int ret, flag_randomize = 0;
-    struct dcc_hostdef *prev, *curr;
+    struct dcc_hostdef *curr, *_prev;
+
+    if (!ret_prev) {
+        ret_prev = &_prev;
+        _prev = NULL;
+    }
 
     /* TODO: Check for '/' in places where it might cause trouble with
      * a lock file name. */
 
-    prev = NULL;
-    *ret_list = NULL;
-    *ret_nhosts = 0;
     /* A simple, hardcoded scanner.  Some of the GNU routines might be
      * useful here, but they won't work on less capable systems.
      *
@@ -502,6 +511,15 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             }
 	}
 
+#ifdef HAVE_AVAHI
+        if (token_len == sizeof(ZEROCONF_MAGIC)-1 && 
+            !strncmp(token_start, ZEROCONF_MAGIC, (unsigned) token_len)) {
+            if ((ret = dcc_zeroconf_add_hosts(ret_list, ret_nhosts, 4, ret_prev) != 0))
+                return ret;
+            goto skip;
+        }
+#endif
+
         /* Allocate new list item */
         curr = calloc(1, sizeof(struct dcc_hostdef));
         if (!curr) {
@@ -519,8 +537,8 @@ int dcc_parse_hosts(const char *where, const char *source_name,
         }
 
         /* Link into list */
-        if (prev) {
-            prev->next = curr;
+        if (*ret_prev) {
+            (*ret_prev)->next = curr;
         } else {
             *ret_list = curr;   /* first */
         }
@@ -553,10 +571,15 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             rs_trace("host %s is down", curr->hostdef_string);
 	}
 
+        (*ret_nhosts)++;
+        *ret_prev = curr;
+
+#ifdef HAVE_AVAHI
+        skip:
+#endif
+        
         /* continue to next token if any */
         where = token_start + token_len;
-        prev = curr;
-        (*ret_nhosts)++;
     }
     
     if (*ret_nhosts) {

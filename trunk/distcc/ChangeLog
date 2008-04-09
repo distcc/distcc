@@ -8,10 +8,19 @@
       because closing the file does not do so.
       (Sascha Demetrio)
 	
+
+2007-09-22 21:32:03 +1000 Martin Pool <mbp@sourcefrog.net>      revno: 3
+
+    message:
+      merge avahi patch from Lennart Poettering
+      (http://0pointer.de/public/distcc-avahi.patch)
+
+
 2007-09-22 21:32:03 +1000 Martin Pool <mbp@sourcefrog.net>      revno: 2
 
     message:
       Add more ignored files
+
 
 ## These changes are from when development was done under arch.
 ## arch-tag: automatic-ChangeLog--mbp@sourcefrog.net--2004/distcc--devel--2

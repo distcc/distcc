@@ -100,6 +100,10 @@ enum {
     opt_log_level
 };
 
+#ifdef HAVE_AVAHI
+/* Flag for enabling/disabling Zeroconf using Avahi */
+int opt_zeroconf = 0;
+#endif
 
 const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
@@ -125,6 +129,9 @@ const struct poptOption options[] = {
     { "wizard", 'W',     POPT_ARG_NONE, 0, 'W', 0, 0 },
     { "stats", 0,        POPT_ARG_NONE, &arg_stats, 0, 0, 0 },
     { "stats-port", 0,   POPT_ARG_INT, &arg_stats_port, 0, 0, 0 },
+#ifdef HAVE_AVAHI
+    { "zeroconf", 0,     POPT_ARG_NONE, &opt_zeroconf, 0, 0, 0 },
+#endif
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 
@@ -150,6 +157,9 @@ static void distccd_show_usage(void)
 "    -a, --allow IP[/BITS]      client address access control\n"
 "    --stats                    enable statistics reporting via HTTP server\n"
 "    --stats-port PORT          TCP port to listen on for statistics requests\n"
+#ifdef HAVE_AVAHI
+"    --zeroconf                 register via mDNS/DNS-SD\n"
+#endif
 "  Debug and trace:\n"
 "    --log-level=LEVEL          set detail level for log file\n"
 "      levels: critical, error, warning, notice, info, debug\n"
