@@ -46,6 +46,6 @@ variable.
 
 The distcc-pump was developed to be used with large clusters of distcc
 servers, providing hundreds of CPUs. With versions of gcc >= 4.1.1,
-the distcc-pump will probably not show performance gains using
-clusters of (say) only ten CPUs. The preprocessor running on the
+the distcc-pump will probably not show major performance gains using
+clusters of less than ten CPUs. The preprocessor running on the
 workstation is fast enough to keep that many machines busy.
