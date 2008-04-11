@@ -67,6 +67,7 @@ ext = Extension(
     extra_link_args = ['-Wall', '-Wextra', '-Werror'],
 )
 
+# TODO(csilvers): get the version number from configure.ac
 args = {
   'name': "include_server",
   'package_dir': {'include_server':'.'},

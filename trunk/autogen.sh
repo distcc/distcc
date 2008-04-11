@@ -3,6 +3,7 @@
 # Run this script to build distcc from CVS.
 
 ## first try the default names
+ACLOCAL="aclocal"
 AUTOHEADER="autoheader"
 AUTOCONF="autoconf"
 
@@ -13,6 +14,9 @@ else
     echo "$0: need autoconf 2.53 or later to regenerate configure scripts" >&2
     exit 1
 fi
+
+echo "$0: running $ACLOCAL"
+$ACLOCAL -I distcc/m4 || exit 1
 
 echo "$0: running $AUTOHEADER"
 $AUTOHEADER || exit 1

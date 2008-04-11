@@ -1,6 +1,8 @@
 #!/bin/sh
 # Simple shell script to build distcc SRPM and RPM from sources
 
+# TODO(csilvers): move this to the Makefile.
+
 # When releasing a new version, you need to do four things:
 # 1. edit the 'Release' field of the spec file
 # 2. add a comment to the %changelog section of the spec file
