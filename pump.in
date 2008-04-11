@@ -100,6 +100,8 @@ include_server_started_successfully=0
 include_server_relative=''  # Set by Initialize(). This path is relative to
                             # the 'bin' directory of a distcc-pump installation.
 distcc_location='' # Set by Initialize().  The directory of the distcc binary.
+# TODO(csilvers): rename to distcc once the distcc/ directory goes away.
+DISTCC='distcc-bin'   # the name of the distcc binary
 verbose=1          # Print progress messages to stdout? (1 means yes.)
 redirect_io=0      # Redirect include server's I/O streams? (1 means yes.)
 
@@ -141,15 +143,11 @@ include_server.py" ]; \
     is_in_installation=""
   fi
 
-  if [ $is_in_installation ]; then 
-    distcc_location="$DISTCC_PUMP_LOCATION"
-  else
-    distcc_location="$DISTCC_PUMP_LOCATION/distcc"
-  fi
+  distcc_location="$DISTCC_PUMP_LOCATION"
 
   # Check that we're getting exactly the distcc client we want: the
   # one that is part of this build.
-  if ! [ -x "$distcc_location/distcc" ]; then
+  if ! [ -x "$distcc_location/$DISTCC" ]; then
     echo "$0: error: can't find distcc (looked in $distcc_location)" 1>&2
     exit 1
   fi
@@ -182,9 +180,15 @@ $include_server_relative"
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_files=$(ls ${DISTCC_PUMP_LOCATION}/include_server/\
-build/lib.*/include_server/distcc_pump_c_extensions.so)
-    if echo $so_files | grep -q ' '; then
+    so_files=$(ls ${DISTCC_PUMP_LOCATION}/_builddir\
+/lib.*/include_server/distcc_pump_c_extensions.so)
+    if [ -z "$so_files" ]; then
+      echo \
+        '__________Couuld not find shared libraries for distcc-pump'
+      echo \
+        '__________Could not start distcc-pump include server'
+      return 0
+    elif echo $so_files | grep -q ' '; then
       include_server_started_successfully=0
       echo \
         '__________Shared libraries for multiple architectures discovered.'
@@ -309,14 +313,10 @@ ShutDown() {
 # \n-separated and written to the filepath provided as $1.
 AvailableHosts() {
   local available_hosts=$1
-  local lsdistcc=$DISTCC_PUMP_LOCATION/distcc/lsdistcc
+  local lsdistcc=$DISTCC_PUMP_LOCATION/lsdistcc
   if [ ! -x $lsdistcc ]; then
-     lsdistcc=$DISTCC_PUMP_LOCATION/lsdistcc
-     if [ ! -x $lsdistcc ]; then
-       echo "$0: error: can't find lsdistcc (looked in $DISTCC_PUMP_LOCATION" \
-            " and $DISTCC_PUMP_LOCATION/distcc)" 1>&2
-       exit 1
-     fi
+     echo "$0: error: can't find lsdistcc (looked in $DISTCC_PUMP_LOCATION)" 1>&2
+     exit 1
    fi
   # Call lsdistcc and let it wait no more than 150ms unless overridden in
   # LSDISTCC_ARGS.
