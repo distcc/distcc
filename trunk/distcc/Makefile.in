@@ -532,8 +532,12 @@ valgrind-check:
 # This is an integration test which runs the distcc tests
 # using distcc-pump.  So you need to build distcc-pump first.
 # Run "make" in the distcc_pump directory before running this test.
+# We need to set DISTCC_HOSTS, otherwise "pump" complains,
+# but it doesn't matter what we set it to, because testdistcc.py
+# will set it again anyway.
 pump-check:
-	$(srcdir)/../pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
+	DISTCC_HOSTS='<invalid>' \
+		$(srcdir)/../pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 # TODO(fergus): Move this rule to ../Makefile.in.
 
 # The following target is useful for running a single test at a time.
