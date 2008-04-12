@@ -16,7 +16,7 @@ else
 fi
 
 echo "$0: running $ACLOCAL"
-$ACLOCAL -I distcc/m4 || exit 1
+$ACLOCAL -I m4 || exit 1
 
 echo "$0: running $AUTOHEADER"
 $AUTOHEADER || exit 1

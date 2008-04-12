@@ -12,7 +12,7 @@ dnl Process this file with autoconf to produce a configure script
 AC_PREREQ(2.53)
 AC_INIT(distcc, 3.0-prerelease1, distcc@googlegroups.com)
 
-AC_CONFIG_HEADERS(distcc/src/config.h)
+AC_CONFIG_HEADERS(src/config.h)
 AC_CANONICAL_HOST
 
 # FreeBSD installs its version of libpopt into /usr/local/, but does
@@ -292,10 +292,10 @@ AC_CACHE_SAVE
 AC_MSG_CHECKING([whether to use included libpopt])
 if test x"$with_included_popt" = x"yes"
 then
-    AC_MSG_RESULT($srcdir/distcc/popt)
+    AC_MSG_RESULT($srcdir/popt)
     # popt_OBJS gets appended to distccd object list
     BUILD_POPT='$(popt_OBJS)'
-    CPPFLAGS="$CPPFLAGS -I$srcdir/distcc/popt"
+    CPPFLAGS="$CPPFLAGS -I$srcdir/popt"
 else
     LIBS="$LIBS -lpopt"
     AC_MSG_RESULT(no)
@@ -310,7 +310,7 @@ AC_TYPE_SIGNAL
 
 ########################################################################
 # Checks for library functions, using libraries discovered above
-CPPFLAGS="$CPPFLAGS -I$srcdir/distcc/src"
+CPPFLAGS="$CPPFLAGS -I$srcdir/src"
 
 AC_CHECK_FUNCS([getpagesize])
 AC_CHECK_FUNCS([sendfile setsid flock lockf hstrerror strerror setuid setreuid])
@@ -409,8 +409,8 @@ PKG_CHECK_MODULES(AVAHI, [avahi-client >= 0.6],
 [AC_DEFINE(HAVE_AVAHI, 1, [defined if Avahi is available])
 CFLAGS="$CFLAGS $AVAHI_CFLAGS"
 LIBS="$LIBS $AVAHI_LIBS"
-ZEROCONF_DISTCC_OBJS="distcc/src/zeroconf.o"
-ZEROCONF_DISTCCD_OBJS="distcc/src/zeroconf-reg.o"],
+ZEROCONF_DISTCC_OBJS="src/zeroconf.o"
+ZEROCONF_DISTCCD_OBJS="src/zeroconf-reg.o"],
 [ZEROCONF_DISTCC_OBJS=""
 ZEROCONF_DISTCCD_OBJS=""])
 AC_SUBST(ZEROCONF_DISTCC_OBJS)
@@ -429,7 +429,7 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(BUILD_POPT)
 AC_SUBST(GNOME_BIN)
 AC_DEFINE_UNQUOTED(GNU_HOST, ["$host"], [Your gnu-style host triple])
-AC_CONFIG_FILES([Makefile] distcc/popt/.stamp-conf distcc/lzo/.stamp-conf)
+AC_CONFIG_FILES([Makefile] popt/.stamp-conf lzo/.stamp-conf)
 AC_CONFIG_FILES([pump], [chmod +x pump])
 AC_OUTPUT
 

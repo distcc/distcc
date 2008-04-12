@@ -1,4 +1,4 @@
-# distcc/benchmark -- automated system for testing distcc correctness
+# benchmark -- automated system for testing distcc correctness
 # and performance on various source trees.
 
 # Copyright (C) 2002, 2003 by Martin Pool
@@ -73,4 +73,3 @@ class Summary:
                     print "%9s" % "n/a"
                 else:
                     print "%8.4fs" % sd
-

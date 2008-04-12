@@ -89,7 +89,7 @@ def InitializeClientRoot(generation):
                (client_root, why))
       
 
-# For automated emails, see also distcc/src/emaillog.h.
+# For automated emails, see also src/emaillog.h.
 DCC_EMAILLOG_WHOM_TO_BLAME = os.getenv("DISTCC_EMAILLOG_WHOM_TO_BLAME",
                                        "distcc-pump-errors") 
 EMAIL_SUBJECT = "distcc-pump include server email"
@@ -171,7 +171,7 @@ BAD_REALPATH_WARNING_MSG = (
 # out how to install GNU Objective C++.  We need to test it before
 # enabling it.)
 # To enable, uncomment the code below and the test case
-# ObjectiveC(PlusPlus)_Case in ../distcc/test/testdistcc.py.)
+# ObjectiveC(PlusPlus)_Case in ../test/testdistcc.py.)
 
 LANGUAGES = set(["c", "c++"])
 #LANGUAGES = set(["c", "c++", "objective-c", "objective-c++"])

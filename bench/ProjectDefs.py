@@ -1,4 +1,4 @@
-# distcc/benchmark -- automated system for testing distcc correctness
+# benchmark -- automated system for testing distcc correctness
 # and performance on various source trees.
 
 # Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -110,5 +110,3 @@ Project(url='http://us1.samba.org/samba/ftp/old-versions/samba-3.0.20.tar.gz',
         configure_cmd='./configure --with-included-popt',
         pre_build_cmd = 'make proto', 
         ).register()
-
-
