@@ -24,7 +24,7 @@ CC = @CC@
 CPP = @CPP@
 # TODO(csilvers): revisit.  Why is some CPPFLAGS stuff done here and
 #                 some in configure.ac?
-CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -I$(srcdir)/distcc/src -I$(srcdir)/distcc/lzo
+CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -I$(srcdir)/src -I$(srcdir)/lzo
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -72,7 +72,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 PYTHON = @PYTHON@
 
 dist_files =							\
-	distcc/src/config.h.in					\
+	src/config.h.in					\
 	$(dist_lzo)						\
 	$(dist_contrib)						\
 	$(dist_patches)						\
@@ -94,46 +94,46 @@ dist_files =							\
 
 dist_dirs = include_server/test_data
 
-dist_lzo = distcc/lzo/minilzo.c distcc/lzo/minilzo.h distcc/lzo/lzoconf.h distcc/lzo/.stamp-conf.in
+dist_lzo = lzo/minilzo.c lzo/minilzo.h lzo/lzoconf.h lzo/.stamp-conf.in
 
-dist_contrib = distcc/contrib/distcc-absolutify	\
-	distcc/contrib/distcc.sh		\
-	distcc/contrib/distccd-init		\
-	distcc/contrib/dmake			\
-	distcc/contrib/make-j			\
-	distcc/contrib/netpwd			\
-	distcc/contrib/stage-cc-wrapper.patch	\
-	distcc/contrib/redhat/init		\
-	distcc/contrib/redhat/logrotate		\
-	distcc/contrib/redhat/sysconfig		\
-	distcc/contrib/redhat/xinetd
+dist_contrib = contrib/distcc-absolutify	\
+	contrib/distcc.sh		\
+	contrib/distccd-init		\
+	contrib/dmake			\
+	contrib/make-j			\
+	contrib/netpwd			\
+	contrib/stage-cc-wrapper.patch	\
+	contrib/redhat/init		\
+	contrib/redhat/logrotate		\
+	contrib/redhat/sysconfig		\
+	contrib/redhat/xinetd
 
 dist_include_server_SH = \
 	pump.in
 
-bench_PY = distcc/bench/Build.py \
-	distcc/bench/Project.py \
-	distcc/bench/ProjectDefs.py \
-	distcc/bench/Summary.py \
-	distcc/bench/actions.py \
-	distcc/bench/benchmark.py \
-	distcc/bench/buildutil.py \
-	distcc/bench/compiler.py \
-	distcc/bench/statistics.py
+bench_PY = bench/Build.py \
+	bench/Project.py \
+	bench/ProjectDefs.py \
+	bench/Summary.py \
+	bench/actions.py \
+	bench/benchmark.py \
+	bench/buildutil.py \
+	bench/compiler.py \
+	bench/statistics.py
 
 pkgdoc_DOCS = AUTHORS COPYING NEWS \
 	README README.pump \
 	INSTALL \
 	TODO \
-	distcc/doc/protocol-1.txt distcc/doc/status-1.txt \
-	distcc/doc/protocol-2.txt \
-	distcc/doc/reporting-bugs.txt \
-	distcc/survey.txt
+	doc/protocol-1.txt doc/status-1.txt \
+	doc/protocol-2.txt \
+	doc/reporting-bugs.txt \
+	survey.txt
 
 example_DOCS = \
-	distcc/doc/example/init distcc/doc/example/init-suse	\
-	distcc/doc/example/logrotate				\
-	distcc/doc/example/xinetd				\
+	doc/example/init doc/example/init-suse	\
+	doc/example/logrotate				\
+	doc/example/xinetd				\
 
 include_server_PY = \
 	include_server/__init__.py \
@@ -164,8 +164,8 @@ mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
 man1dir = $(mandir)/man1
 man8dir = $(mandir)/man8
 
-test_SOURCE = distcc/test/comfychair.py				\
-	distcc/test/testdistcc.py			
+test_SOURCE = test/comfychair.py				\
+	test/testdistcc.py			
 
 dist_common = Makefile.in install-sh configure configure.ac \
 	config.guess config.sub mkinstalldirs autogen.sh
@@ -190,153 +190,153 @@ tarball_bz2 = $(tarball).bz2
 tarball_sig = $(tarball_bz2).asc
 distnews = $(PACKAGE_TARNAME)-$(VERSION).NEWS
 
-common_obj = distcc/src/arg.o distcc/src/argutil.o					\
-	distcc/src/cleanup.o distcc/src/compress.o					\
-	distcc/src/trace.o distcc/src/util.o distcc/src/io.o distcc/src/exec.o			\
-	distcc/src/rpc.o distcc/src/tempfile.o distcc/src/bulk.o distcc/src/help.o distcc/src/filename.o	\
-	distcc/src/lock.o							\
-	distcc/src/netutil.o							\
-	distcc/src/pump.o							\
-	distcc/src/sendfile.o							\
-	distcc/src/safeguard.o distcc/src/snprintf.o distcc/src/timeval.o			\
-	distcc/src/dotd.o 							\
-	distcc/src/hosts.o distcc/src/hostfile.o					\
-	distcc/src/implicit.o distcc/src/loadfile.o					\
-	distcc/lzo/minilzo.o
+common_obj = src/arg.o src/argutil.o					\
+	src/cleanup.o src/compress.o					\
+	src/trace.o src/util.o src/io.o src/exec.o			\
+	src/rpc.o src/tempfile.o src/bulk.o src/help.o src/filename.o	\
+	src/lock.o							\
+	src/netutil.o							\
+	src/pump.o							\
+	src/sendfile.o							\
+	src/safeguard.o src/snprintf.o src/timeval.o			\
+	src/dotd.o 							\
+	src/hosts.o src/hostfile.o					\
+	src/implicit.o src/loadfile.o					\
+	lzo/minilzo.o
 
-distcc_obj = distcc/src/backoff.o						\
-	distcc/src/climasq.o distcc/src/clinet.o distcc/src/clirpc.o				\
-	distcc/src/compile.o distcc/src/cpp.o						\
-	distcc/src/distcc.o							\
-	distcc/src/remote.o							\
-	distcc/src/ssh.o distcc/src/state.o distcc/src/strip.o				\
-	distcc/src/timefile.o distcc/src/traceenv.o					\
-	distcc/src/include_server_if.o						\
-	distcc/src/where.o							\
+distcc_obj = src/backoff.o						\
+	src/climasq.o src/clinet.o src/clirpc.o				\
+	src/compile.o src/cpp.o						\
+	src/distcc.o							\
+	src/remote.o							\
+	src/ssh.o src/state.o src/strip.o				\
+	src/timefile.o src/traceenv.o					\
+	src/include_server_if.o						\
+	src/where.o							\
 	@ZEROCONF_DISTCC_OBJS@						\
-	distcc/src/emaillog.o							\
+	src/emaillog.o							\
 	$(common_obj)
 
-distccd_obj = distcc/src/access.o						\
-	distcc/src/daemon.o  distcc/src/dopt.o distcc/src/dparent.o distcc/src/dsignal.o		\
-	distcc/src/ncpus.o							\
-	distcc/src/prefork.o							\
-	distcc/src/stringmap.o							\
-	distcc/src/serve.o distcc/src/setuid.o distcc/src/srvnet.o distcc/src/srvrpc.o distcc/src/state.o	\
-	distcc/src/stats.o							\
-	distcc/src/fix_debug_info.o						\
+distccd_obj = src/access.o						\
+	src/daemon.o  src/dopt.o src/dparent.o src/dsignal.o		\
+	src/ncpus.o							\
+	src/prefork.o							\
+	src/stringmap.o							\
+	src/serve.o src/setuid.o src/srvnet.o src/srvrpc.o src/state.o	\
+	src/stats.o							\
+	src/fix_debug_info.o						\
 	@ZEROCONF_DISTCCD_OBJS@						\
 	$(common_obj) @BUILD_POPT@
 
-lsdistcc_obj = distcc/src/lsdistcc.o 						\
-	distcc/src/clinet.o distcc/src/io.o distcc/src/netutil.o distcc/src/trace.o distcc/src/util.o 	\
-	distcc/src/rslave.o 							\
-	distcc/lzo/minilzo.o
+lsdistcc_obj = src/lsdistcc.o 						\
+	src/clinet.o src/io.o src/netutil.o src/trace.o src/util.o 	\
+	src/rslave.o 							\
+	lzo/minilzo.o
 
 # Objects that need to be linked in to build monitors
 mon_obj =								\
-	distcc/src/cleanup.o							\
-	distcc/src/filename.o							\
-	distcc/src/io.o							\
-	distcc/src/mon.o							\
-	distcc/src/netutil.o							\
-	distcc/src/argutil.o							\
-	distcc/src/rpc.o							\
-	distcc/src/snprintf.o distcc/src/state.o 					\
-	distcc/src/tempfile.o distcc/src/trace.o distcc/src/traceenv.o			\
-	distcc/src/util.o
+	src/cleanup.o							\
+	src/filename.o							\
+	src/io.o							\
+	src/mon.o							\
+	src/netutil.o							\
+	src/argutil.o							\
+	src/rpc.o							\
+	src/snprintf.o src/state.o 					\
+	src/tempfile.o src/trace.o src/traceenv.o			\
+	src/util.o
 
-gnome_obj = distcc/src/history.o distcc/src/mon-gnome.o				\
-	distcc/src/renderer.o
+gnome_obj = src/history.o src/mon-gnome.o				\
+	src/renderer.o
 
-h_exten_obj = distcc/src/h_exten.o $(common_obj)
-h_issource_obj = distcc/src/h_issource.o $(common_obj)
-h_scanargs_obj = distcc/src/h_scanargs.o $(common_obj)
-h_hosts_obj = distcc/src/h_hosts.o $(common_obj)
-h_argvtostr_obj = distcc/src/h_argvtostr.o $(common_obj)
-h_strip_obj = distcc/src/h_strip.o $(common_obj) distcc/src/strip.o
-h_parsemask_obj = distcc/src/h_parsemask.o $(common_obj) distcc/src/access.o
-h_sa2str_obj = distcc/src/h_sa2str.o $(common_obj) distcc/src/srvnet.o distcc/src/access.o
-h_ccvers_obj = distcc/src/h_ccvers.o $(common_obj)
-h_dotd_obj = distcc/src/h_dotd.o $(common_obj)
-h_fix_debug_info = distcc/src/h_fix_debug_info.o $(common_obj)
-h_compile_obj = distcc/src/h_compile.o $(common_obj) distcc/src/compile.o distcc/src/timefile.o \
-                distcc/src/backoff.o distcc/src/emaillog.o distcc/src/remote.o distcc/src/clinet.o \
-	        distcc/src/clirpc.o distcc/src/include_server_if.o distcc/src/state.o distcc/src/where.o \
-		distcc/src/ssh.o distcc/src/strip.o distcc/src/cpp.o
+h_exten_obj = src/h_exten.o $(common_obj)
+h_issource_obj = src/h_issource.o $(common_obj)
+h_scanargs_obj = src/h_scanargs.o $(common_obj)
+h_hosts_obj = src/h_hosts.o $(common_obj)
+h_argvtostr_obj = src/h_argvtostr.o $(common_obj)
+h_strip_obj = src/h_strip.o $(common_obj) src/strip.o
+h_parsemask_obj = src/h_parsemask.o $(common_obj) src/access.o
+h_sa2str_obj = src/h_sa2str.o $(common_obj) src/srvnet.o src/access.o
+h_ccvers_obj = src/h_ccvers.o $(common_obj)
+h_dotd_obj = src/h_dotd.o $(common_obj)
+h_fix_debug_info = src/h_fix_debug_info.o $(common_obj)
+h_compile_obj = src/h_compile.o $(common_obj) src/compile.o src/timefile.o \
+                src/backoff.o src/emaillog.o src/remote.o src/clinet.o \
+	        src/clirpc.o src/include_server_if.o src/state.o src/where.o \
+		src/ssh.o src/strip.o src/cpp.o
 
 # All source files, for the purposes of building the distribution
-SRC =	distcc/src/stats.c							\
-	distcc/src/access.c distcc/src/arg.c distcc/src/argutil.c				\
-	distcc/src/backoff.c distcc/src/bulk.c					\
-	distcc/src/cleanup.c							\
-	distcc/src/climasq.c distcc/src/clinet.c distcc/src/clirpc.c distcc/src/compile.c		\
-	distcc/src/compress.c distcc/src/cpp.c					\
-	distcc/src/daemon.c distcc/src/distcc.c distcc/src/dsignal.c				\
-	distcc/src/dopt.c distcc/src/dparent.c distcc/src/exec.c distcc/src/filename.c		\
-	distcc/src/h_argvtostr.c						\
-	distcc/src/h_exten.c distcc/src/h_hosts.c distcc/src/h_issource.c distcc/src/h_parsemask.c	\
-	distcc/src/h_sa2str.c distcc/src/h_scanargs.c distcc/src/h_strip.c			\
-	distcc/src/h_dotd.c distcc/src/h_compile.c                                    \
-	distcc/src/help.c distcc/src/history.c distcc/src/hosts.c distcc/src/hostfile.c		\
-	distcc/src/implicit.c distcc/src/io.c						\
-	distcc/src/loadfile.c distcc/src/lock.c 					\
-	distcc/src/mon.c distcc/src/mon-notify.c distcc/src/mon-text.c			\
-	distcc/src/mon-gnome.c							\
-	distcc/src/ncpus.c distcc/src/netutil.c					\
-	distcc/src/prefork.c distcc/src/pump.c					\
-	distcc/src/remote.c distcc/src/renderer.c distcc/src/rpc.c				\
-	distcc/src/safeguard.c distcc/src/sendfile.c distcc/src/setuid.c distcc/src/serve.c		\
-	distcc/src/snprintf.c distcc/src/state.c					\
-	distcc/src/srvnet.c distcc/src/srvrpc.c distcc/src/ssh.c 				\
-	distcc/src/stringmap.c distcc/src/strip.c					\
-	distcc/src/tempfile.c distcc/src/timefile.c                     		\
-	distcc/src/timeval.c distcc/src/traceenv.c					\
-	distcc/src/trace.c distcc/src/util.c distcc/src/where.c				\
-	distcc/src/lsdistcc.c	distcc/src/rslave.c					\
-	distcc/src/dotd.c distcc/src/include_server_if.c				\
-	distcc/src/emaillog.c \
-	distcc/src/fix_debug_info.c
+SRC =	src/stats.c							\
+	src/access.c src/arg.c src/argutil.c				\
+	src/backoff.c src/bulk.c					\
+	src/cleanup.c							\
+	src/climasq.c src/clinet.c src/clirpc.c src/compile.c		\
+	src/compress.c src/cpp.c					\
+	src/daemon.c src/distcc.c src/dsignal.c				\
+	src/dopt.c src/dparent.c src/exec.c src/filename.c		\
+	src/h_argvtostr.c						\
+	src/h_exten.c src/h_hosts.c src/h_issource.c src/h_parsemask.c	\
+	src/h_sa2str.c src/h_scanargs.c src/h_strip.c			\
+	src/h_dotd.c src/h_compile.c                                    \
+	src/help.c src/history.c src/hosts.c src/hostfile.c		\
+	src/implicit.c src/io.c						\
+	src/loadfile.c src/lock.c 					\
+	src/mon.c src/mon-notify.c src/mon-text.c			\
+	src/mon-gnome.c							\
+	src/ncpus.c src/netutil.c					\
+	src/prefork.c src/pump.c					\
+	src/remote.c src/renderer.c src/rpc.c				\
+	src/safeguard.c src/sendfile.c src/setuid.c src/serve.c		\
+	src/snprintf.c src/state.c					\
+	src/srvnet.c src/srvrpc.c src/ssh.c 				\
+	src/stringmap.c src/strip.c					\
+	src/tempfile.c src/timefile.c                     		\
+	src/timeval.c src/traceenv.c					\
+	src/trace.c src/util.c src/where.c				\
+	src/lsdistcc.c	src/rslave.c					\
+	src/dotd.c src/include_server_if.c				\
+	src/emaillog.c \
+	src/fix_debug_info.c
 
 
-HEADERS = distcc/src/stats.h							\
-	distcc/src/access.h							\
-	distcc/src/bulk.h							\
-	distcc/src/clinet.h distcc/src/compile.h					\
-	distcc/src/daemon.h							\
-	distcc/src/distcc.h distcc/src/dopt.h distcc/src/exitcode.h				\
-	distcc/src/fix_debug_info.h						\
-	distcc/src/hosts.h distcc/src/implicit.h					\
-	distcc/src/mon.h							\
-	distcc/src/netutil.h							\
-	distcc/src/renderer.h distcc/src/rpc.h					\
-	distcc/src/snprintf.h distcc/src/state.h		 			\
-	distcc/src/stringmap.h							\
-	distcc/src/timefile.h distcc/src/timeval.h distcc/src/trace.h			\
-	distcc/src/types.h							\
-	distcc/src/util.h							\
-	distcc/src/exec.h distcc/src/lock.h distcc/src/where.h distcc/src/srvnet.h			\
-	distcc/src/rslave.h							\
-	distcc/src/dotd.h distcc/src/include_server_if.h				\
-	distcc/src/emaillog.h \
-	distcc/src/zeroconf.h
+HEADERS = src/stats.h							\
+	src/access.h							\
+	src/bulk.h							\
+	src/clinet.h src/compile.h					\
+	src/daemon.h							\
+	src/distcc.h src/dopt.h src/exitcode.h				\
+	src/fix_debug_info.h						\
+	src/hosts.h src/implicit.h					\
+	src/mon.h							\
+	src/netutil.h							\
+	src/renderer.h src/rpc.h					\
+	src/snprintf.h src/state.h		 			\
+	src/stringmap.h							\
+	src/timefile.h src/timeval.h src/trace.h			\
+	src/types.h							\
+	src/util.h							\
+	src/exec.h src/lock.h src/where.h src/srvnet.h			\
+	src/rslave.h							\
+	src/dotd.h src/include_server_if.h				\
+	src/emaillog.h \
+	src/zeroconf.h
 
-man1_MEN = distcc/man/distcc.1 distcc/man/distccd.1 distcc/man/distccmon-text.1 
-man_HTML = distcc/man/distcc_1.html distcc/man/distccd_1.html distcc/man/distccmon_text_1.html
+man1_MEN = man/distcc.1 man/distccd.1 man/distccmon-text.1 
+man_HTML = man/distcc_1.html man/distccd_1.html man/distccmon_text_1.html
 MEN = $(man1_MEN) 
 
-gnome_data = distcc/gnome/distccmon-gnome-icon.png	\
-	distcc/gnome/distccmon-gnome.desktop
+gnome_data = gnome/distccmon-gnome-icon.png	\
+	gnome/distccmon-gnome.desktop
 
-popt_OBJS=distcc/popt/findme.o  distcc/popt/popt.o  distcc/popt/poptconfig.o \
-	distcc/popt/popthelp.o distcc/popt/poptparse.o
+popt_OBJS=popt/findme.o  popt/popt.o  popt/poptconfig.o \
+	popt/popthelp.o popt/poptparse.o
 
-popt_SRC=distcc/popt/findme.c  distcc/popt/popt.c  distcc/popt/poptconfig.c			 \
-	distcc/popt/popthelp.c distcc/popt/poptparse.c
+popt_SRC=popt/findme.c  popt/popt.c  popt/poptconfig.c			 \
+	popt/popthelp.c popt/poptparse.c
 
-popt_HEADERS = distcc/popt/findme.h distcc/popt/popt.h distcc/popt/poptint.h distcc/popt/system.h
+popt_HEADERS = popt/findme.h popt/popt.h popt/poptint.h popt/system.h
 
-popt_EXTRA = distcc/popt/README.popt distcc/popt/.stamp-conf.in
+popt_EXTRA = popt/README.popt popt/.stamp-conf.in
 
 
 # You might think that distccd ought to be in sbin, because it's a
@@ -351,9 +351,8 @@ popt_EXTRA = distcc/popt/README.popt distcc/popt/.stamp-conf.in
 # Package maintainers can override this if absolutely necessary, but I
 # would prefer that they do not. -- mbp
 
-# TODO(csilvers): change distcc-bin back to distcc after distcc/ goes away.
 bin_PROGRAMS = \
-	distcc-bin@EXEEXT@ \
+	distcc@EXEEXT@ \
 	distccd@EXEEXT@ \
 	distccmon-text@EXEEXT@ \
 	lsdistcc@EXEEXT@ \
@@ -400,8 +399,8 @@ check_include_server_PY = \
 
 all: $(bin_PROGRAMS) include-server
 
-#  distcc/src/config.h.in is used by config.status
-Makefile: Makefile.in distcc/src/config.h.in config.status
+#  src/config.h.in is used by config.status
+Makefile: Makefile.in src/config.h.in config.status
 	./config.status
 
 ## BUILD targets
@@ -411,36 +410,35 @@ Makefile: Makefile.in distcc/src/config.h.in config.status
 # as a result of running config.status (a feature of autoconf), then
 # config.status will be rerun every time. That's confusing. So, the rule
 #
-# distcc/src/config.h: distcc/src/config.h.in
+# src/config.h: src/config.h.in
 #        ./config.status
 #
 # is not sufficient.
 
-distcc/src/config.h: distcc/src/config.h.stamp
+src/config.h: src/config.h.stamp
 
-distcc/src/config.h.stamp: distcc/src/config.h.in
+src/config.h.stamp: src/config.h.in
 	echo path: $$PATH
 	./config.status
-	touch distcc/src/config.h.stamp
+	touch src/config.h.stamp
 
 pump: pump.in config.status
 	./config.status
 
 # Grab the dependency files generated by gcc's -MD option.
--include distcc/*/*.d
+-include */*.d
 
-# Disable some warnings for distcc/popt/*.c.
+# Disable some warnings for popt/*.c.
 $(popt_OBJS): CFLAGS += $(POPT_CFLAGS)
 
-# TODO(csilvers): rename back to distcc after the directory reorg
-distcc-bin@EXEEXT@: $(distcc_obj)
+distcc@EXEEXT@: $(distcc_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(distcc_obj) $(LIBS)
 
 distccd@EXEEXT@: $(distccd_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(distccd_obj) $(LIBS)	
 
-distccmon-text@EXEEXT@: $(mon_obj) distcc/src/mon-text.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(mon_obj) distcc/src/mon-text.o $(LIBS)
+distccmon-text@EXEEXT@: $(mon_obj) src/mon-text.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(mon_obj) src/mon-text.o $(LIBS)
 
 lsdistcc@EXEEXT@: $(lsdistcc_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(lsdistcc_obj) $(LIBS)
@@ -482,20 +480,20 @@ h_compile@EXEEXT@: $(h_compile_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_compile_obj) $(LIBS)
 
 
-distcc/src/h_fix_debug_info.o: distcc/src/fix_debug_info.c
+src/h_fix_debug_info.o: src/fix_debug_info.c
 	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) \
 		-DTEST \
-		$(srcdir)/distcc/src/fix_debug_info.c
+		$(srcdir)/src/fix_debug_info.c
 
-distcc/src/mon-gnome.o: distcc/src/mon-gnome.c
+src/mon-gnome.o: src/mon-gnome.c
 	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) \
 		$(GNOME_CFLAGS) \
-		$(srcdir)/distcc/src/mon-gnome.c
+		$(srcdir)/src/mon-gnome.c
 
-distcc/src/renderer.o: distcc/src/renderer.c
+src/renderer.o: src/renderer.c
 	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS)			\
 		$(GNOME_CFLAGS) \
-		$(srcdir)/distcc/src/renderer.c
+		$(srcdir)/src/renderer.c
 
 distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
@@ -562,14 +560,14 @@ dist-files: $(dist_files)
 	done
 
 ## BUILD manual targets
-distcc/man/distcc_1.html: distcc/man/distcc.1
-	troff2html -man distcc/man/distcc.1 > $@
+man/distcc_1.html: man/distcc.1
+	troff2html -man man/distcc.1 > $@
 
-distcc/man/distccd_1.html: distcc/man/distccd.1
-	troff2html -man distcc/man/distccd.1 > $@
+man/distccd_1.html: man/distccd.1
+	troff2html -man man/distccd.1 > $@
 
-distcc/man/distccmon_text_1.html: distcc/man/distccmon-text.1
-	troff2html -man distcc/man/distccmon-text.1 > $@
+man/distccmon_text_1.html: man/distccmon-text.1
+	troff2html -man man/distccmon-text.1 > $@
 
 
 ######################################################################
@@ -590,7 +588,7 @@ maintainer-check: check_programs install-for-include-server-tests
 	@if test x$(PYTHON) != x; then \
 	$(PYTHON) -c 'import sys; print sys.version'; \
 	PATH=`pwd`:/usr/local/bin:/bin:/usr/bin && export PATH; \
-        $(PYTHON) $(srcdir)/distcc/test/testdistcc.py $(TESTDISTCC_OPTS); \
+        $(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
 	cd $(include_server_testdir) && \
 	  for p in $(check_include_server_PY); do \
 	    echo -n "Running $$p... "; \
@@ -613,7 +611,7 @@ maintainer-installcheck: check_programs install-for-include-server-tests
 	@if test x$(PYTHON) != x; then \
 	$(PYTHON) -c 'import sys; print sys.version'; \
 	PATH="$(bindir):`pwd`:$$PATH" && export PATH; \
-        $(PYTHON) $(srcdir)/distcc/test/testdistcc.py; \
+        $(PYTHON) $(srcdir)/test/testdistcc.py; \
 	cd $(include_server_testdir) && \
 	  for p in $(check_include_server_PY); do \
 	    echo -n "Running $$p... "; \
@@ -667,7 +665,7 @@ pump-installcheck:
 TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
 single-test: check_programs
 	PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
-	    $(PYTHON) $(srcdir)/distcc/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
+	    $(PYTHON) $(srcdir)/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
 
 ######################################################################
 ## BENCHMARK targets
@@ -687,7 +685,7 @@ benchmark:
 	@echo "Pass BENCH_ARGS to make to specify which benchmarks to run."
 	@echo
 	@sleep 5
-	cd distcc/bench && $(PYTHON) benchmark.py $(BENCH_ARGS)
+	cd bench && $(PYTHON) benchmark.py $(BENCH_ARGS)
 
 
 ## CLEAN targets
@@ -698,8 +696,8 @@ benchmark:
 # Also clean binaries which are optionally built. Also remove .d files; old ones
 # may confuse 'make'.
 clean: clean-autoconf clean-lzo clean-include-server
-	rm -f distcc/src/*.[od] distcc/popt/*.[od]
-	rm -f distcc/test/*.pyc
+	rm -f src/*.[od] popt/*.[od]
+	rm -f test/*.pyc
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
@@ -711,7 +709,7 @@ clean-autoconf:
 	rm -f config.cache config.log
 
 clean-lzo:
-	rm -f distcc/lzo/*.[od] distcc/lzo/testmini
+	rm -f lzo/*.[od] lzo/testmini
 
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 clean-include-server:
@@ -729,11 +727,11 @@ maintainer-clean: distclean \
 
 # configure and co are distributed, but not in CVS
 maintainer-clean-autoconf:
-	rm -f configure distcc/src/config.h.in distcc/src/config.h.stamp
+	rm -f configure src/config.h.in src/config.h.stamp
 
 distclean-autoconf:
-	rm -f Makefile distcc/src/config.h pump
-	rm -f distcc/popt/.stamp-conf distcc/lzo/.stamp-conf
+	rm -f Makefile src/config.h pump
+	rm -f popt/.stamp-conf lzo/.stamp-conf
 	rm -f config.status config.cache config.log aclocal.m4
 	rm -rf autom4te.cache
 
@@ -747,7 +745,7 @@ distclean: distclean-autoconf clean
 upload-man: $(man_HTML)
 	rsync -avz $(man_HTML) \
 		--exclude CVS --exclude '*~' --exclude '*.latte' \
-		samba.org:/home/httpd/distcc/man/
+		samba.org:/home/httpd/man/
 
 upload-dist:
 	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/

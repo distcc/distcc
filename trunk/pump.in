@@ -100,8 +100,7 @@ include_server_started_successfully=0
 include_server_relative=''  # Set by Initialize(). This path is relative to
                             # the 'bin' directory of a distcc-pump installation.
 distcc_location='' # Set by Initialize().  The directory of the distcc binary.
-# TODO(csilvers): rename to distcc once the distcc/ directory goes away.
-DISTCC='distcc-bin'   # the name of the distcc binary
+DISTCC='distcc'    # the name of the distcc binary
 verbose=1          # Print progress messages to stdout? (1 means yes.)
 redirect_io=0      # Redirect include server's I/O streams? (1 means yes.)
 

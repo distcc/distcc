@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# distcc/benchmark -- automated system for testing distcc correctness
+# benchmark -- automated system for testing distcc correctness
 # and performance on various source trees.
 
 # Copyright (C) 2002, 2003, 2004 by Martin Pool

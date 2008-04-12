@@ -1,4 +1,4 @@
-# distcc/benchmark -- automated system for testing distcc correctness
+# benchmark -- automated system for testing distcc correctness
 # and performance on various source trees.
 
 # Copyright (C) 2002, 2003 by Martin Pool
@@ -46,4 +46,3 @@ def rm_files(file_list):
     for f in file_list:
         if os.path.exists(f):
             os.unlink(f)
-

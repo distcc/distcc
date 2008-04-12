@@ -1,6 +1,6 @@
 #! /usr/bin/env python2.2
 
-# distcc/benchmark -- automated system for testing distcc correctness
+# benchmark -- automated system for testing distcc correctness
 # and performance on various source trees.
 
 # Copyright (C) 2003 by Martin Pool
