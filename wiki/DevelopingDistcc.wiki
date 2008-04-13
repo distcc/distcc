@@ -8,7 +8,7 @@ Click on the "Source" tab above for instructions on how to download the sources.
 
 {{{
 cd distcc-pump
-sh run_all_autoconf
+sh autogen.sh
 sh configure
 make
 }}}
