@@ -46,22 +46,22 @@ Description:
   may cause inconsistent results.
 
 Environment variables (all optional):
-  DISTCC_PUMP_LOCATION    The location of distcc-pump 'bin' directory, which is
-                          normally inferred from the link-resolved dirname of 
-                          argv[0]. If this location is in fact the bin directory
-                          inside an installation (as will be the case when the 
-                          'pump' script in the installation executes), then
-                          Python executables and distcc itself will be retrieved
-                          from the parent directory of the location.
-  DISTCC_POTENTIAL_HOSTS  The distcc servers that will be queried by lsdistcc
-                          in order to produce a value for DISTCC_HOSTS.
-                          This value may be unset or null. In such
-                          cases, use DISTCC_HOSTS.
-  DISTCC_HOSTS            This variable is passed through to distcc but only if 
-                          DISTCC_POTENTIAL_HOSTS is not set.
-  LSDISTCC_ARGS           Extra arguments to lsdistcc.
-  INCLUDE_SERVER_ARGS     Extra arguments to the include server.
-  PYTHONOPTIMIZE          If set to "", then Python optimization is disabled.
+  DISTCC_LOCATION        The location of the distcc 'bin' directory, which is
+                         normally inferred from the link-resolved dirname of 
+                         argv[0]. If this location is in fact the bin directory
+                         inside an installation (as will be the case when the 
+                         'pump' script in the installation executes), then
+                         Python executables and distcc itself will be retrieved
+                         from the parent directory of the location.
+  DISTCC_POTENTIAL_HOSTS The distcc servers that will be queried by lsdistcc
+                         in order to produce a value for DISTCC_HOSTS.
+                         This value may be unset or null. In such
+                         cases, use DISTCC_HOSTS.
+  DISTCC_HOSTS           This variable is passed through to distcc but only if 
+                         DISTCC_POTENTIAL_HOSTS is not set.
+  LSDISTCC_ARGS          Extra arguments to lsdistcc.
+  INCLUDE_SERVER_ARGS    Extra arguments to the include server.
+  PYTHONOPTIMIZE         If set to "", then Python optimization is disabled.
 
 Example: 
   pump make
@@ -85,7 +85,7 @@ GetScriptDir() {
 }
 
 # Variables inherited from the environment of the caller.
-DISTCC_PUMP_LOCATION=${DISTCC_PUMP_LOCATION-$(GetScriptDir "$0")}
+DISTCC_LOCATION=${DISTCC_LOCATION-$(GetScriptDir "$0")}
 
 # Variables used by this process.
 program_name=$0
@@ -131,8 +131,8 @@ Initialize() {
   # an installation. Specifically, we check whether we're a bin directory, and
   # more importantly, we look for the include_server.py script. If we're running
   # out of the distcc_pump source directory, both conditions below will fail.
-  if [ $(basename $DISTCC_PUMP_LOCATION) = 'bin' ] \
-     && [ -f "$DISTCC_PUMP_LOCATION/$include_server_relative/\
+  if [ $(basename $DISTCC_LOCATION) = 'bin' ] \
+     && [ -f "$DISTCC_LOCATION/$include_server_relative/\
 include_server.py" ]; \
   then
     # Running from installed directory.
@@ -142,7 +142,7 @@ include_server.py" ]; \
     is_in_installation=""
   fi
 
-  distcc_location="$DISTCC_PUMP_LOCATION"
+  distcc_location="$DISTCC_LOCATION"
 
   # Check that we're getting exactly the distcc client we want: the
   # one that is part of this build.
@@ -153,7 +153,7 @@ include_server.py" ]; \
 }
 
 Announce() {
-  echo "__________Using distcc-pump from $(readlink -f $DISTCC_PUMP_LOCATION)"
+  echo "__________Using distcc-pump from $(readlink -f $DISTCC_LOCATION)"
 }
 
 # Starts up the include server.
@@ -166,7 +166,7 @@ shopt -s extglob  # allow +(...) construct below
 StartIncludeServer() {
   # Locate include server depending on whether in installation.
   if [ $is_in_installation ]; then
-    local include_server_location="$DISTCC_PUMP_LOCATION/\
+    local include_server_location="$DISTCC_LOCATION/\
 $include_server_relative"
     local pythonpath=$include_server_location
   else
@@ -175,18 +175,19 @@ $include_server_relative"
     # include_server directory and pick up the .so file from the
     # include_server/build/libXXX/include_server directory. When configured in a
     # separate directory, we pick up .py files also from include_server/build.
-    local include_server_location=${DISTCC_PUMP_LOCATION}/include_server
+    local include_server_location=${DISTCC_LOCATION}/include_server
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_files=$(ls ${DISTCC_PUMP_LOCATION}/_builddir\
+    so_files=$(ls ${DISTCC_LOCATION}/_builddir\
 /lib.*/include_server/distcc_pump_c_extensions.so)
     if [ -z "$so_files" ]; then
+      include_server_started_successfully=0
       echo \
-        '__________Couuld not find shared libraries for distcc-pump'
+        '__________Could not find shared libraries for distcc-pump'
       echo \
         '__________Could not start distcc-pump include server'
-      return 0
+      return 0  # the return status is not used
     elif echo $so_files | grep -q ' '; then
       include_server_started_successfully=0
       echo \
@@ -195,12 +196,12 @@ $include_server_relative"
         "__________Cannot determine which one to use among: $so_files"
       echo \
         '__________Could not start distcc-pump include server'
-      return 0
+      return 0  # the return status is not used
     else
       # There was only one such file.	
       local so_dir=$(dirname $so_files)
     fi
-    local pythonpath="${DISTCC_PUMP_LOCATION}/include_server:$so_dir"
+    local pythonpath="${DISTCC_LOCATION}/include_server:$so_dir"
   fi
 
   # Create a temporary directory $socket_dir.
@@ -312,9 +313,9 @@ ShutDown() {
 # \n-separated and written to the filepath provided as $1.
 AvailableHosts() {
   local available_hosts=$1
-  local lsdistcc=$DISTCC_PUMP_LOCATION/lsdistcc
+  local lsdistcc=$DISTCC_LOCATION/lsdistcc
   if [ ! -x $lsdistcc ]; then
-     echo "$0: error: can't find lsdistcc (looked in $DISTCC_PUMP_LOCATION)" 1>&2
+     echo "$0: error: can't find lsdistcc (looked in $DISTCC_LOCATION)" 1>&2
      exit 1
    fi
   # Call lsdistcc and let it wait no more than 150ms unless overridden in
@@ -432,6 +433,9 @@ Main() {
       trap 'ShutDown' EXIT
       Announce
       StartIncludeServerAndDetermineHosts
+      if [ $include_server_started_successfully = 0 ]; then
+        exit 1
+      fi
       # Now execute the command that is the argument of 'pump'.
       PATH="$distcc_location:$PATH" \
         "$@"
