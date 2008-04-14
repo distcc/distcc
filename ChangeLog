@@ -1,3 +1,116 @@
+## These changes were made internally to Google, and not integrated
+## into the main distcc distribution until 2008.  The dates here are
+## the dates they were applied to the internal-Google branch, and
+## interleave with the changes to the main branch, below.
+
+* Thu Jun 14 2007 Manos Renieris <opensource@google.com>
+- Added all the distcc-pump related parts to distcc.spec.
+- Changed the way the package is built.
+- Remove source package generation.
+- Man pages are now unzipped.
+				   
+* Mon May 29 2007 Dongmin Zhang <opensource@google.com>
+- Add -r<PORT> option to lsdistcc to specify which port to connect to.
+  ("-p", "-o", and "-t" were already taken.)
+- Fix a bug where "lsdistcc distcc%d" was only returning the first host.
+- Add some unit tests for lsdistcc.
+- Also tidy up the usage message a little.
+
+* Mon Feb 8 2007 Dongmin Zhang <opensource@google.com>
+- Added hosts list option to lsdistcc, such that lsdistcc can check only the
+  hosts listed on the given list. The host list is given in command line.
+
+* Wed Jan 31 2007 Dongmin Zhang <opensource@google.com>
+- Added _libdir definition in rpms.epc.
+- Changed Name, Version, and Release to the ones passed by --define.
+- Updated the server init script to give different path of ACL files for grhat
+  and goobuntu as suggested by Arthur Hyun <opensource@google.com>.
+
+* Mon Jan 22 2007 Dongmin Zhang <opensource@google.com>
+- Fixed a bug in timeout patch. Added sigaction to catch SIGCHLD such that the
+  select() in dcc_collect_child() could break out when the file is finished to
+  compile.
+
+* Fri Dec 1 2006 Ollie Wild <opensource@google.com>
+- Removed the 01-distcc-gdb-20051210.patch patch.  The parser in this was too
+  naive to deal with output generate with the -directives-only flag.  Also, it
+  should no longer be needed with recent versions of gcc.
+- Removed the 10-distcc-before-cpp_locking-sub-gdb.patch and
+  12-distcc-after-cpp_locking-add-gdb.patch patches.  These were just modifying
+  the former patch.
+
+* Fri Sep 8 2006 Michael Moss <opensource@google.com>
+- Update install and init scripts to work on Debian and Red Hat (allowing the
+  .rpm to be converted to .deb with alien, and then installed on Debian).
+  Some noteworthy changes:
+  - Deb - Remove unused defaults file /etc/default/distcc.
+  - Deb - No longer uses debconf.
+  - RH  - useradd is run in post- rather than pre- install.
+  - RH  - distcc server is automatically started.
+- Added enable/disable commands to init scripts so the daemon can be
+  "permanently" disabled on misbehaving hosts.
+- Added patches to allow building LSB-compliant binaries.
+- Reorganized some existing patches to better partition functionality.
+
+* Tue Feb 28 2006 Dan Kegel <dank@kegel.com>
+- removed cache again
+
+* Mon Feb 20 2006 Dan Kegel <dank@kegel.com>
+- added cache
+
+* Mon Feb 6 2006 Dan Kegel <dank@kegel.com>
+- use Josh's randomize patch instead of Michael's,
+  since Josh's seems to perform better in our tests
+- added disk space statistic on http interface
+- lsdistcc now has -x option to output info even on down hosts (will be useful for server side caching)
+
+* Tue Jan 2 2006 Dan Kegel <dank@kegel.com>
+- removed load shedding patch (we have swap turned on, so overload isn't as bad)
+- added stats for timeout
+
+* Wed Dec 8 2005 Dan Kegel <dank@kegel.com>
+- lsdistcc now has -l option, better -v output
+- distccd now has nicer logging, --limit-load option, bugfixes in load shedding
+
+* Tue Nov 22 2005 Dan Kegel <dank@kegel.com>
+- rejects jobs if load too high
+- serves up stats via http on port 3633
+- lsdistcc now has new -p and -c0 options
+
+* Wed Nov  2 2005 Dan Kegel <dank@kegel.com>
+- updated lsdistcc to use the longer of the two of HOST and HOSTNAME
+  to handle shells that set HOST to the nonqualified hostname,
+  but HOSTNAME to the FQDN
+
+* Thu Oct 13 2005 Dan Kegel <dank@kegel.com>
+- updated lsdistcc patch
+- removed gcc as a dependency, since we want to use it with
+  a wide range of other compilers (and in our case, not the
+  standard gcc), and it's impractical to list them all as dependencies
+
+* Fri Sep 16 2005 Dan Kegel <dank@kegel.com>
+- now reads /etc/distcc/hosts instead of /usr/etc/distcc/hosts
+- replaced distcc-2.18.3-rhl.patch with distcc-2.18.3-stringmap.patch
+  The stringmap patch updates the rhl init.d script to know about
+  all installed crosstool toolchains, and enables fuzzy path matching
+  This is useful if the toolchains are not installed at the same
+  prefix on all systems
+- removed distcc-domain.patch
+- added distcc-2.18.3-lsdistcc.patch
+
+* Sat Sep  3 2005 Dan Kegel <dank@kegel.com>
+- now reads /etc/distcc/hosts instead of /usr/etc/distcc/hosts
+- applied distcc-domain-2.patch
+
+* Thu Jun 15 2005 Dan Kegel <dank@kegel.com>
+- Updated to 2.18.3
+- applied --randomize patch and cpp_locking patch
+- redhat init.d script reads /etc/distccd.allow to construct --allow arguments
+- added scriptlets from dag's package, but don't start service on install,
+  and call it distcc rather than distccd (to match the current 
+  packaging's old practice)
+
+
 ## These changes are from when development was done under bzr.
 ## bzr branch: http://bazaar.launchpad.net/%7Embp/distcc/trunk/
 
