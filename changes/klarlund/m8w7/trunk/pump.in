@@ -151,9 +151,9 @@ Initialize() {
 }
 
 PrintIncludeServerStatusMessage() {
-  include_server_started_successfully=$1
+  local include_server_status=$1
   if [ "$verbose" = 1 ]; then
-    if [ "$include_server_started_successfully" = 1 ]; then
+    if [ "$include_server_status" = 0 ]; then
       echo '__________Started distcc-pump include server'
     else
       echo '__________Could not start distcc-pump include server' 1>&2
@@ -326,9 +326,9 @@ AvailableHosts() {
 # Exports DISTCC_HOSTS as a function of the single argument and the global
 # variable $available_hosts_file.
 ExportDISTCC_HOSTS() {
-  include_server_started_successfully=$1
+  local include_server_status=$1
   local opts=''
-  if [ "$include_server_started_successfully" = 1 ]; then
+  if [ "$include_server_status" = 0 ]; then
     # The include server is up.
     # Make 'cpp' mode (with lzo) the default.
     opts=",cpp,lzo"
@@ -351,7 +351,7 @@ ExportDISTCC_HOSTS() {
 }
 
 StartIncludeServerAndDetermineHosts() {
-  local include_server_started_successfully=0
+  local include_server_status=1 # ie, not running (yet)
   if [ "$DISTCC_POTENTIAL_HOSTS" ]; then
     # Probe the distcc servers. It may take up to a second. But
     # starting the include server takes about 150ms. Make these
@@ -362,11 +362,11 @@ StartIncludeServerAndDetermineHosts() {
     AvailableHosts $available_hosts_file &
 
     # Second, the include server goes in the foreground so variables can be set.
-    StartIncludeServer && include_server_started_successfully=1
+    StartIncludeServer && include_server_status=0
 
     # Await for AvailableHosts to finish.
     wait 
-    ExportDISTCC_HOSTS $include_server_started_successfully
+    ExportDISTCC_HOSTS $include_server_status
     rm -f $available_hosts_file
   else
     if [ -z "$DISTCC_HOSTS" ] &&
@@ -382,10 +382,9 @@ StartIncludeServerAndDetermineHosts() {
               1>&2
       exit 1
     fi
-    StartIncludeServer && include_server_started_successfully=1
+    StartIncludeServer && include_server_status=0
   fi
-  # Negate $include_server_started_successfully to get return status.
-  return $((!($include_server_started_successfully)))
+  return $include_server_status
 }
 
 # Prints out environment variable settings, for the --startup option.
@@ -417,9 +416,9 @@ Main() {
       redirect_io=1
       trap 'ShutDown' EXIT  # In case we get interrupted.
       StartIncludeServerAndDetermineHosts
-      include_server_started_successfully=$((!($?))) # 0 to 1, others to 0
+      include_server_status=$?
       trap '' EXIT
-      if [ $include_server_started_successfully = 1 ]; then
+      if [ $include_server_status = 0 ]; then
         DumpEnvironmentVariables
         exit 0
       else
