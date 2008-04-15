@@ -6,8 +6,11 @@
 #
 # 'pump': a script for using distcc-pump with build commands.
 
-# This file is processed by configure,
-# which substitutes in the right value for @PYTHON@.
+# This file is processed by configure, which substitutes in the right value for
+# @PYTHON@.
+#
+# TODO(klarlund): Rid this script of bash-isms.
+
 PYTHON=@PYTHON@
 
 usage_string=\
@@ -96,7 +99,6 @@ socket=''               # Temporary socket file, inside $socket_dir.
 include_server_stdout=''  # Temporary file, inside $socket_dir.
 include_server_stderr=''  # Temporary file, inside $socket_dir.
 include_server_pid=''
-include_server_started_successfully=0
 include_server_relative=''  # Set by Initialize(). This path is relative to
                             # the 'bin' directory of a distcc-pump installation.
 distcc_location='' # Set by Initialize().  The directory of the distcc binary.
@@ -132,8 +134,7 @@ Initialize() {
   # more importantly, we look for the include_server.py script. If we're running
   # out of the distcc_pump source directory, both conditions below will fail.
   if [ $(basename $DISTCC_LOCATION) = 'bin' ] \
-     && [ -f "$DISTCC_LOCATION/$include_server_relative/\
-include_server.py" ]; \
+     && [ -f "$DISTCC_LOCATION/$include_server_relative/include_server.py" ]; \
   then
     # Running from installed directory.
     is_in_installation=true
@@ -152,22 +153,30 @@ include_server.py" ]; \
   fi
 }
 
+PrintIncludeServerStatusMessage() {
+  local include_server_status=$1
+  if [ "$verbose" = 1 ]; then
+    if [ "$include_server_status" = 0 ]; then
+      echo '__________Started distcc-pump include server'
+    else
+      echo '__________Could not start distcc-pump include server' 1>&2
+    fi
+  fi
+}
+
 Announce() {
   echo "__________Using distcc-pump from $(readlink -f $DISTCC_LOCATION)"
 }
 
-# Starts up the include server.
-# Sets $socket, $socket_dir, $include_server_pid, and
-# $include_server_started_successfully.
-# If successful, sets exported variable $INCLUDE_SERVER_PORT
-# to the socket file ($socket), to tell the distcc clients
-# where to find the include server.
+# Starts up the include server.  Sets $socket, $socket_dir, and
+# $include_server_pid.  If successful (with exit status 0), sets exported
+# variable $INCLUDE_SERVER_PORT to the socket file ($socket), to tell the distcc
+# clients where to find the include server.
 shopt -s extglob  # allow +(...) construct below
 StartIncludeServer() {
   # Locate include server depending on whether in installation.
   if [ $is_in_installation ]; then
-    local include_server_location="$DISTCC_LOCATION/\
-$include_server_relative"
+    local include_server_location="$DISTCC_LOCATION/$include_server_relative"
     local pythonpath=$include_server_location
   else
     # When run from the source code directory (assuming that we configured in
@@ -179,24 +188,22 @@ $include_server_relative"
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_files=$(ls ${DISTCC_LOCATION}/_builddir\
-/lib.*/include_server/distcc_pump_c_extensions.so)
+    so_files=$(ls ${DISTCC_LOCATION}/_builddir/lib.*/include_server/\
+distcc_pump_c_extensions.so)
     if [ -z "$so_files" ]; then
-      include_server_started_successfully=0
       echo \
-        '__________Could not find shared libraries for distcc-pump'
-      echo \
-        '__________Could not start distcc-pump include server'
-      return 0  # the return status is not used
+        '__________Could not find shared libraries for distcc-pump' 1>&2
+      PrintIncludeServerStatusMessage 1
+      return 1
     elif echo $so_files | grep -q ' '; then
-      include_server_started_successfully=0
       echo \
-        '__________Shared libraries for multiple architectures discovered.'
+        '__________Shared libraries for multiple architectures discovered.' \
+        1>&2
       echo \
-        "__________Cannot determine which one to use among: $so_files"
-      echo \
-        '__________Could not start distcc-pump include server'
-      return 0  # the return status is not used
+        "__________Cannot determine which one to use among: $so_files" \
+        1>&2
+      PrintIncludeServerStatusMessage 1 
+      return 1
     else
       # There was only one such file.	
       local so_dir=$(dirname $so_files)
@@ -253,34 +260,30 @@ $include_server_relative"
         $INCLUDE_SERVER_ARGS
   )
 
+  if [ ! -S "$socket" ]; then
+    echo "__________Expected a socket at '$socket'" 1>&2
+    PrintIncludeServerStatusMessage 1
+    return 1
+  fi
+
   include_server_pid=$(cat $tmp_pid_file)
   rm $tmp_pid_file
 
-  if [ ! -S "$socket" ]; then
-    include_server_started_successfully=0
-  else
-    case $include_server_pid in
-      +([0-9]))
-        # That's what we expect: a number.
-        include_server_started_successfully=1
-        # Tell the distcc clients where to find it.
-        INCLUDE_SERVER_PORT=$socket
-        export INCLUDE_SERVER_PORT
-        ;;
-      *)
-        # This indicates that the socket is not working.
-        include_server_pid=''
-        include_server_started_successfully=0
-        ;;
-    esac
-  fi
-  if [ "$verbose" = 1 ]; then
-    if [ "$include_server_started_successfully" = 1 ]; then
-      echo '__________Started distcc-pump include server'
-    else
-      echo '__________Could not start distcc-pump include server' 1>&2
-    fi
-  fi
+  case $include_server_pid in
+    +([0-9]))
+      # That's what we expect: a number.  Tell the distcc clients where to find
+      # it.
+      INCLUDE_SERVER_PORT=$socket
+      export INCLUDE_SERVER_PORT
+      ;;
+    *)
+      # This indicates that the socket is not working.
+      include_server_pid=''
+      PrintIncludeServerStatusMessage 1
+      return 1
+      ;;
+  esac
+  PrintIncludeServerStatusMessage 0
 }
 
 ShutDown() {
@@ -323,12 +326,12 @@ AvailableHosts() {
   $lsdistcc -c150 $LSDISTCC_ARGS $DISTCC_POTENTIAL_HOSTS > $available_hosts
 }
 
-# Exports DISTCC_HOSTS as a function of global variables
-#  -  $include_server_started_successfully and
-#  -  $available_hosts_file.
+# Exports DISTCC_HOSTS as a function of the single argument and the global
+# variable $available_hosts_file.
 ExportDISTCC_HOSTS() {
+  local include_server_status=$1
   local opts=''
-  if [ "$include_server_started_successfully" = 1 ]; then
+  if [ "$include_server_status" = 0 ]; then
     # The include server is up.
     # Make 'cpp' mode (with lzo) the default.
     opts=",cpp,lzo"
@@ -351,20 +354,22 @@ ExportDISTCC_HOSTS() {
 }
 
 StartIncludeServerAndDetermineHosts() {
+  local include_server_status=1 # ie, not running (yet)
   if [ "$DISTCC_POTENTIAL_HOSTS" ]; then
     # Probe the distcc servers. It may take up to a second. But
     # starting the include server takes about 150ms. Make these
-    # activities happen in parallel. First, the lsdistcc command goes
-    # in the background.
+    # activities happen in parallel. 
+
+    # First, the lsdistcc command goes in the background.
     available_hosts_file=$(MakeTmpFile "distcc-pump-hosts")
     AvailableHosts $available_hosts_file &
 
-    # The include server goes in the foreground so variables can be set.
-    StartIncludeServer
+    # Second, the include server goes in the foreground so variables can be set.
+    StartIncludeServer && include_server_status=0
 
     # Await for AvailableHosts to finish.
     wait 
-    ExportDISTCC_HOSTS $available_hosts_file
+    ExportDISTCC_HOSTS $include_server_status
     rm -f $available_hosts_file
   else
     if [ -z "$DISTCC_HOSTS" ] &&
@@ -380,8 +385,9 @@ StartIncludeServerAndDetermineHosts() {
               1>&2
       exit 1
     fi
-    StartIncludeServer
+    StartIncludeServer && include_server_status=0
   fi
+  return $include_server_status
 }
 
 # Prints out environment variable settings, for the --startup option.
@@ -413,8 +419,9 @@ Main() {
       redirect_io=1
       trap 'ShutDown' EXIT  # In case we get interrupted.
       StartIncludeServerAndDetermineHosts
+      include_server_status=$?
       trap '' EXIT
-      if [ $include_server_started_successfully = 1 ]; then
+      if [ $include_server_status = 0 ]; then
         DumpEnvironmentVariables
         exit 0
       else
@@ -432,10 +439,7 @@ Main() {
     *)
       trap 'ShutDown' EXIT
       Announce
-      StartIncludeServerAndDetermineHosts
-      if [ $include_server_started_successfully = 0 ]; then
-        exit 1
-      fi
+      StartIncludeServerAndDetermineHosts || exit 1
       # Now execute the command that is the argument of 'pump'.
       PATH="$distcc_location:$PATH" \
         "$@"
