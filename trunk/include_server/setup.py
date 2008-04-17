@@ -16,7 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-"""Build the include server module"""
+"""Build the include server module.
+
+Note: the version number should be passed to this script through
+the environment variable DISTCC_VERSION.
+"""
 
 __author__ = "Manos Renieris"
 
@@ -54,6 +58,8 @@ ext = Extension(
     include_dirs = ["../src", 
                     "../lzo",
                     os.path.join(os.getenv("BUILDDIR") or "", 
+                                 "src"),
+                    os.path.join(os.getenv("BUILDDIR") or "", 
                                  "../src"),
                     os.path.join(os.getenv("BUILDDIR") or "", 
                                  "../../src"),
@@ -67,11 +73,10 @@ ext = Extension(
     extra_link_args = ['-Wall', '-Wextra', '-Werror'],
 )
 
-# TODO(csilvers): get the version number from configure.ac
 args = {
   'name': "include_server",
   'package_dir': {'include_server':'.'},
-  'version': '1.00',
+  'version': os.getenv("DISTCC_VERSION") or 'unknown',
   'description': "Include server for distcc-pump",
   'author': "Nils Klarlund",
   'author_email': "opensource@google.com",
