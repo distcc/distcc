@@ -162,8 +162,8 @@ dist_extra =							\
 	packaging/RedHat/logrotate.d/distcc \
 	packaging/RedHat/init.d/distcc \
 	packaging/RedHat/xinetd.d/distcc \
-##	packaging/deb.sh \
-##	packaging/rpm.sh
+	packaging/deb.sh \
+	packaging/rpm.sh
 
 
 mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
@@ -768,19 +768,19 @@ upload-dist:
 	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/
 
 
-## rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
-## 	@cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
-## 
-## # This uses the output of 'make rpm' to convert rpm files to deb files
-## deb: rpm packaging/deb.sh
-## 	@cd packaging && ./deb.sh *.rpm
-## 
-## # deb creates rpm files first, which in turn creates .gz files
-## alldist: deb
-## 	@echo dist files created:
-## 	@ls -1 "$(tarball_gz)" "$(tarball_bz2)"
-## 	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.rpm
-## 	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.deb
+rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
+	@cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
+
+# This uses the output of 'make rpm' to convert rpm files to deb files
+deb: rpm packaging/deb.sh
+	@cd packaging && ./deb.sh *.rpm
+
+# deb creates rpm files first, which in turn creates .gz files
+alldist: deb
+	@echo dist files created:
+	@ls -1 "$(tarball_gz)" "$(tarball_bz2)"
+	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.rpm
+	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.deb
 
 ### INSTALL targets
 
