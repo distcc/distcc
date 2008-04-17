@@ -22,9 +22,9 @@ POPT_CFLAGS = @POPT_CFLAGS@
 LDFLAGS = @LDFLAGS@
 CC = @CC@
 CPP = @CPP@
-# TODO(csilvers): revisit.  Why is some CPPFLAGS stuff done here and
-#                 some in configure.ac?
-CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -I$(srcdir)/src -I$(srcdir)/lzo
+# We add a few cppflags.
+# -Isrc is so src .h-files are available to files in the tests directory.
+CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -Isrc -Ilzo -I$(srcdir)/src -I$(srcdir)/lzo
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -155,10 +155,16 @@ include_server_PY = \
 include_server_SRC = \
 	include_server/c_extensions/distcc_pump_c_extensions_module.c
 
-# These are included in the distribution but not installed into the
-# doc dir.
+# These are included in the distribution but not installed anywhere.
 dist_extra =							\
-	README.packaging ChangeLog
+	README.packaging ChangeLog \
+	packaging/RedHat/rpm.spec \
+	packaging/RedHat/logrotate.d/distcc \
+	packaging/RedHat/init.d/distcc \
+	packaging/RedHat/xinetd.d/distcc \
+##	packaging/deb.sh \
+##	packaging/rpm.sh
+
 
 mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
 man1dir = $(mandir)/man1
@@ -176,18 +182,19 @@ dist_common = Makefile.in install-sh configure configure.ac \
 dist_patches = 
 
 TAR = tar
-GZIP = gzip
-GZIP_OPT = -9v
+GZIP_BIN = gzip
+# This is set on the environment, and automatically read by gzip.
+# This way we always get best compression, even when gzip is run in a
+# script we call, rather than being called by us directly.
+GZIP = -9v
+BZIP2_BIN = bzip2
 
-BZIP2 = bzip2
-
-distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
-
-# TODO(csilvers): add a .gz in addition to a .bz2
 distdir = $(PACKAGE_TARNAME)-$(VERSION)
 tarball = $(PACKAGE_TARNAME)-$(VERSION).tar
 tarball_bz2 = $(tarball).bz2
-tarball_sig = $(tarball_bz2).asc
+tarball_gz = $(tarball).gz
+tarball_sig_bz2 = $(tarball_bz2).asc
+tarball_sig_gz = $(tarball_gz).asc
 distnews = $(PACKAGE_TARNAME)-$(VERSION).NEWS
 
 common_obj = src/arg.o src/argutil.o					\
@@ -502,11 +509,13 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 
 # The include-server is a python app, so we use Python's build system.
 # The jumping through hoops with cd is to normalize builddir if it's relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 include-server:
 	test x$(PYTHON) != x &&				\
 	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
+	DISTCC_VERSION="$(VERSION)"			\
 	$(PYTHON) ./setup.py				\
 	    build 					\
 	       --build-base="$$BUILDDIR" 		\
@@ -526,23 +535,40 @@ include-server:
 
 # TODO(csilvers): add 'make rpm' and 'make deb'.
 
-dist: 
+dist:
 	-rm -fr $(distdir)
 	$(MAKE) dist-files 
 	$(TAR) cf $(tarball) $(distdir)
-	$(BZIP2) -vf $(tarball)
+	$(GZIP_BIN) --help >/dev/null && \
+		$(GZIP_BIN) -fc $(tarball) > $(tarball_gz)
+	$(BZIP2_BIN) --help 2>/dev/null && \
+		$(BZIP2_BIN) -vfc $(tarball) > $(tarball_bz2)
+	rm -f $(tarball)
 	rm -r $(distdir)
 	cp NEWS $(distnews)
 
-# TODO(csilvers): add a "$(MAKE) distclean" and verify no extra files
-#                 are left lying around (compare to tarfile).
+# We create two new directories: one for the build and one to install,
+# and make sure we can build and install from different directories
+# than the source directory.  Then we run a "make distclean" and
+# verify it got rid of everything not in the tarball by deleting every
+# file mentioned in the tarball, and then making sure nothing is left.
 distcheck: dist
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
-	cd '+distcheck' && bunzip2 < ../$(tarball_bz2) | $(TAR) xv && \
-	cd $(distdir) && ./configure --prefix=`pwd`/prefix && \
-	$(MAKE) && $(MAKE) install && $(MAKE) maintainer-check && \
-	$(MAKE) clean
+	cd '+distcheck' && $(GZIP_BIN) -d < ../$(tarball_gz) | $(TAR) xv
+	mkdir +distcheck/$(distdir)/_build
+	mkdir +distcheck/$(distdir)/_inst
+	dc_install_base=`cd +distcheck/$(distdir)/_inst && pwd` \
+	&& cd +distcheck/$(distdir)/_build \
+	&& ../configure --srcdir=.. --prefix="$$dc_install_base" \
+	&& $(MAKE) && $(MAKE) maintainer-check \
+	&& $(MAKE) install && $(MAKE) maintainer-installcheck \
+	&& $(MAKE) distclean
+	test `find +distcheck/$(distdir)/_build -type f -print | wc -l` -eq 0 \
+		|| { echo "ERROR: files left in build-dir after distclean:"; \
+                     find +distcheck/$(distdir)/_build -type f -print; \
+	             rm -rf '+distcheck'; \
+	             exit 1; }
 	rm -rf '+distcheck'
 
 dist-sign:
@@ -580,50 +606,38 @@ check_programs: $(check_PROGRAMS) $(bin_PROGRAMS)
 
 TESTDISTCC_OPTS =
 
-# WARNING: This resets the path to avoid any confusion caused by
-# having distcc masquerades already on the path.  If you have gcc
-# installed elsewhere this won't work....
-# TODO(csilvers): reverse the sense of the if
-maintainer-check: check_programs install-for-include-server-tests
-	@if test x$(PYTHON) != x; then \
-	$(PYTHON) -c 'import sys; print sys.version'; \
-	PATH=`pwd`:/usr/local/bin:/bin:/usr/bin && export PATH; \
-        $(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
+# This is for internal use by maintainer-check and maintainer-installcheck.
+# These rules differ only in their choice of path.  This is only called
+# when python is installed, and when the caller has set up PATH appropriately.
+maintainer-check-no-set-path:
+	$(PYTHON) -c 'import sys; print sys.version'
+	$(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS)
 	cd $(include_server_testdir) && \
 	  for p in $(check_include_server_PY); do \
 	    echo -n "Running $$p... "; \
-            if PYTHONPATH=python/`dirname $$p` $(PYTHON) python/$$p \
+	    if PYTHONPATH=python/`dirname $$p` $(PYTHON) python/$$p \
 		> `basename $$p`.out 2>&1; then \
 	      echo "PASS"; else echo "FAIL"; cat `basename $$p`.out; exit 1; \
-            fi \
-	  done && \
-	echo Filtering c_extensions_test.py.out && \
-	cat c_extensions_test.py.out \
+	    fi \
+	  done
+	echo Filtering c_extensions_test.py.out
+	cat $(include_server_testdir)/c_extensions_test.py.out
 		| grep -v 'distcc_include_server\[.*\] (dcc_r_token_int) ERROR: protocol derailment: expected token "XXXX"' \
 		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'; \
+
+# WARNING: This resets the path to avoid any confusion caused by
+# having distcc masquerades already on the path.  If you have gcc
+# installed elsewhere this won't work....
+maintainer-check: check_programs install-for-include-server-tests
+	if test x$(PYTHON) != x; then PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
+	                              $(MAKE) maintainer-check-no-set-path; \
 	else echo "WARNING: python not found; tests skipped"; \
 	fi
 
 # NB: This does not depend upon install; you might want to test another version.
-# TODO(csilvers): how is this supposed to differ from 'maintainer-check'?
-#                 maybe use a combined script somehow (or recursive make)?
 maintainer-installcheck: check_programs install-for-include-server-tests
-	@if test x$(PYTHON) != x; then \
-	$(PYTHON) -c 'import sys; print sys.version'; \
-	PATH="$(bindir):`pwd`:$$PATH" && export PATH; \
-        $(PYTHON) $(srcdir)/test/testdistcc.py; \
-	cd $(include_server_testdir) && \
-	  for p in $(check_include_server_PY); do \
-	    echo -n "Running $$p... "; \
-            if PYTHONPATH=python/`dirname $$p` $(PYTHON) python/$$p \
-		> `basename $$p`.out 2>&1; then \
-	       echo "PASS"; else echo "FAIL"; exit 1; \
-            fi \
-	  done && \
-	echo Filtering c_extensions_test.py.out && \
-	cat c_extensions_test.py.out \
-		| grep -v 'distcc_include_server\[.*\] (dcc_r_token_int) ERROR: protocol derailment: expected token "XXXX"' \
-		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'; \
+	if test x$(PYTHON) != x; then PATH="$(bindir):`pwd`:$$PATH" \
+	                              $(MAKE) maintainer-check-no-set-path; \
 	else echo "WARNING: python not found; tests skipped"; \
 	fi
 
@@ -702,6 +716,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
 	rm -rf testtmp
+	rm -rf +distcheck
 	rm -rf $(include_server_testdir)
 	rm -rf $(include_server_builddir)
 
@@ -712,11 +727,13 @@ clean-lzo:
 	rm -f lzo/*.[od] lzo/testmini
 
 # The jumping through hoops with cd is to normalize build/destdir if relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 clean-include-server:
 	test x$(PYTHON) != x &&				\
 	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
+	DISTCC_VERSION="$(VERSION)"			\
 	$(PYTHON) ./setup.py clean			\
 	   --build-base="$$BUILDDIR" 			\
 	   --build-temp="$$BUILDDIR"
@@ -727,10 +744,10 @@ maintainer-clean: distclean \
 
 # configure and co are distributed, but not in CVS
 maintainer-clean-autoconf:
-	rm -f configure src/config.h.in src/config.h.stamp
+	rm -f configure src/config.h.in
 
 distclean-autoconf:
-	rm -f Makefile src/config.h pump
+	rm -f Makefile src/config.h src/config.h.stamp pump
 	rm -f popt/.stamp-conf lzo/.stamp-conf
 	rm -f config.status config.cache config.log aclocal.m4
 	rm -rf autom4te.cache
@@ -745,12 +762,25 @@ distclean: distclean-autoconf clean
 upload-man: $(man_HTML)
 	rsync -avz $(man_HTML) \
 		--exclude CVS --exclude '*~' --exclude '*.latte' \
-		samba.org:/home/httpd/man/
+		samba.org:/home/httpd/distcc/man/
 
 upload-dist:
 	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/
 
 
+## rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
+## 	@cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
+## 
+## # This uses the output of 'make rpm' to convert rpm files to deb files
+## deb: rpm packaging/deb.sh
+## 	@cd packaging && ./deb.sh *.rpm
+## 
+## # deb creates rpm files first, which in turn creates .gz files
+## alldist: deb
+## 	@echo dist files created:
+## 	@ls -1 "$(tarball_gz)" "$(tarball_bz2)"
+## 	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.rpm
+## 	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.deb
 
 ### INSTALL targets
 
@@ -774,19 +804,21 @@ showpaths:
 
 install: showpaths install-doc install-man install-programs install-include-server install-for-include-server-tests install-example @INSTALL_GNOME@ 
 
-# TODO(csilvers): replace non-portable $^ with a repetition of the deps var
 install-programs: $(bin_PROGRAMS) pump
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	for p in $^; do				\
+	for p in $(bin_PROGRAMS) pump; do			\
 	$(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir) || exit 1;	\
 	done
 
 # The jumping through hoops with cd is to normalize build/destdir if relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 install-include-server: include-server
 	test x$(PYTHON) != x &&				\
-	CURDIR=`pwd` && cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
+	CURDIR=`pwd` && 				\
+	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $(DESTDIR) && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
 	cd $(srcdir)/include_server && 			\
+	DISTCC_VERSION="$(VERSION)"			\
 	$(PYTHON) ./setup.py 				\
 	    build 					\
 	       --build-base="$$BUILDDIR" 		\
@@ -804,16 +836,22 @@ install-include-server: include-server
 # TODO(csilvers): see if we can remove the -f.  As it is, this forces a
 #                 rebuild of much of distcc every time we call it.
 # The jumping through hoops with cd is to normalize testdir if it's relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 install-for-include-server-tests:
 	mkdir -p $(include_server_testdir)
+	mkdir -p $(include_server_builddir)
 	if [ -h $(include_server_testdir)/test_data ]; then             \
 	  rm -f $(include_server_testdir)/test_data;                    \
 	fi
-	ln -s  $(realpath $(srcdir)/include_server/test_data)          \
-	       $(include_server_testdir)/test_data
+	CURDIR=`pwd` && cd $(srcdir)/include_server/test_data && \
+		TESTDATADIR=`pwd` && cd $$CURDIR &&               \
+		ln -s $$TESTDATADIR $(include_server_testdir)/test_data
 	test x$(PYTHON) != x &&				\
-	CURDIR=`pwd` && cd $(include_server_testdir) && TESTDIR=`pwd` && export TESTDIR && \
+	CURDIR=`pwd` && 				\
+	cd $(include_server_testdir) && TESTDIR=`pwd` && export TESTDIR && \
+	cd $$CURDIR && cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
+	DISTCC_VERSION="$(VERSION)"			\
 	$(PYTHON) ./setup.py 				\
 	    build -f					\
 	       --build-base="$$TESTDIR" 		\
@@ -824,24 +862,24 @@ install-for-include-server-tests:
 
 install-man: $(man1_MEN)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
-	for p in $^; do				\
+	for p in $(man1_MEN); do				\
 	$(INSTALL_DATA)	$$p $(DESTDIR)$(man1dir) || exit 1;	\
 	done
 
 install-doc: $(pkgdoc_DOCS)
 	$(mkinstalldirs) $(DESTDIR)$(docdir)
-	for p in $^; do				\
+	for p in $(pkgdoc_DOCS); do				\
 	$(INSTALL_DATA) $$p $(DESTDIR)$(docdir) || exit 1;	\
 	done
 
 install-example: $(example_DOCS)
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/example
-	for p in $^; do				\
+	for p in $(example_DOCS); do				\
 	$(INSTALL_DATA) $$p $(DESTDIR)$(docdir)/example || exit 1;	\
 	done
 
 install-gnome-data: $(gnome_data)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	for p in $^; do				\
+	for p in $(gnome_data); do				\
 	$(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir) || exit 1;	\
 	done

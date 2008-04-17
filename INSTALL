@@ -11,11 +11,13 @@ Please report any problems to distcc@googlegroups.com.
 
 To build: the simple way is to just do
 
+  ./autogen.sh    # if "configure" does not already exist in this directory
   ./configure && make
 
 but the recommended way is to build in a different directory tree
 than the source tree:
 
+  ./autogen.sh    # if "configure" does not already exist in this directory
   mkdir obj
   cd obj
   ../configure && make

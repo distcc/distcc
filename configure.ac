@@ -10,7 +10,7 @@ dnl Process this file with autoconf to produce a configure script
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
 AC_PREREQ(2.53)
-AC_INIT(distcc, 3.0-prerelease1, distcc@googlegroups.com)
+AC_INIT(distcc, 3.0prerelease1, distcc-pump@google.com)
 
 AC_CONFIG_HEADERS(src/config.h)
 AC_CANONICAL_HOST
@@ -191,6 +191,7 @@ AC_ISC_POSIX
 
 
 # This is needed for our included version of popt.
+# TODO(csilvers): figure out what that above comment means, and if it's true.
 CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"
 
 # Needed to get various GNU-only functions.  They're all autodetected
