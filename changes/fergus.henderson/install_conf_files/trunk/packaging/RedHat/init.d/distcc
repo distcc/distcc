@@ -44,12 +44,16 @@ EXEC="/usr/bin/distccd"
 
 
 if [ -f /etc/sitename.install ]; then
-        # goobuntu
+        # Debian?
         DOMAIN=`cat /etc/sitename.install`
-        CONFIGDIR=/etc/site/current/distcc
+	if [ -d /etc/site/current/distcc ]; then
+	  CONFIGDIR=/etc/site/current/distcc
+	else
+	  CONFIGDIR=/etc/distcc
+	fi
 	NORESTART=$CONFIGDIR/no-restart
 else
-        # grhat
+        # RedHat?
         DOMAIN=`/bin/dnsdomainname`
         CONFIGDIR=/etc/distcc
 	NORESTART=$CONFIGDIR/no-restart
@@ -123,6 +127,8 @@ elif test -f $CONFIGDIR/commands.allow.sh; then
         COMMANDFILE=$CONFIGDIR/commands.allow.sh
 fi
 
+mkdir -p /var/state/distcc
+CMDLIST=/var/state/distcc/commands.allow
 
 rh_start() {
 	echo -n "Starting $PROG"
@@ -135,6 +141,7 @@ rh_start() {
 
 	env="TMPDIR=$TMPDIR"
 	if [ -n "$COMMANDFILE" ]; then
+	  : > $CMDLIST
 	  . $COMMANDFILE
 	  if [ "$DISTCC_CMDLIST" ]; then
 	    env="$env DISTCC_CMDLIST=$DISTCC_CMDLIST"
@@ -201,6 +208,8 @@ deb_start() {
 	fi
 
 	if [ -n "$COMMANDFILE" ]; then
+	  : > $CMDLIST
+	  CMDLIST=$COMMANDFILE
 	  . $COMMANDFILE
 	  export DISTCC_CMDLIST
 	  export DISTCC_CMDLIST_NUMWORDS

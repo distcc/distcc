@@ -22,7 +22,7 @@ Distribution: Redhat 7 and above.
 BuildRoot: %{_tmppath}/%{name}-buildroot
 Prefix: %_prefix
 Provides: distcc
-Obsoletes: crosstool-distcc
+Obsoletes: crosstool-distcc distcc-include-server
 
 %description
 distcc is a program to distribute compilation of C or C++ code across several
@@ -51,6 +51,7 @@ make RPM_OPT_FLAGS="$RPM_OPT_FLAGS" \
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=${RPM_BUILD_ROOT} PYTHON_INSTALL_RECORD=python_install_record install
+# TODO(fergus): move these to "make install"?
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
 install -m 644 packaging/RedHat/logrotate.d/distcc $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/distcc
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/xinetd.d
@@ -106,6 +107,8 @@ faster than a local compile.
 %dir %{_sysconfdir}/distcc
 %config %{_sysconfdir}/distcc/clients.allow
 %config %{_sysconfdir}/distcc/commands.allow.sh
+%dir %{_sysconfdir}/default
+%config %{_sysconfdir}/default/distcc
 %doc %{_mandir}/man1/distccd.1.gz
 
 %pre server

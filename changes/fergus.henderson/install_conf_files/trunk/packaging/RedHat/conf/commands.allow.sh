@@ -37,7 +37,7 @@ allowed_compilers="
 # You shouldn't need to alter anything below here.
 
 [ "$CMDLIST" ] || {
-   echo "Don't run this script directly!" >&2
+   echo "$0: don't run this script directly!" >&2
    echo "Run /etc/init.d/distcc (or equivalent) instead." >&2
    exit 1
 }

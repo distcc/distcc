@@ -72,7 +72,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 PYTHON = @PYTHON@
 
 dist_files =							\
-	src/config.h.in					\
+	src/config.h.in						\
 	$(dist_lzo)						\
 	$(dist_contrib)						\
 	$(dist_patches)						\
@@ -89,6 +89,8 @@ dist_files =							\
 	$(include_server_SRC)                                   \
 	$(check_include_server_DATA)                            \
 	$(check_include_server_PY)                              \
+	$(conf_files)                                           \
+	$(default_files)                                        \
 	$(dist_extra)						\
 	$(gnome_data)
 
@@ -328,10 +330,12 @@ HEADERS = src/stats.h							\
 	src/emaillog.h \
 	src/zeroconf.h
 
-conf_srcdir=$(srcdir)/packaging/RedHat/conf
-conf_files = $(conf_srcdir)/hosts \
-	     $(conf_srcdir)/clients.allow \
-	     $(conf_srcdir)/commands.allow.sh
+conf_dir = packaging/RedHat/conf
+conf_files = $(conf_dir)/hosts \
+	     $(conf_dir)/clients.allow \
+	     $(conf_dir)/commands.allow.sh
+default_dir = packaging/RedHat/default
+default_files = $(default_dir)/distcc
 
 man1_MEN = man/distcc.1 man/distccd.1 man/distccmon-text.1 
 man_HTML = man/distcc_1.html man/distccd_1.html man/distccmon_text_1.html
@@ -550,7 +554,7 @@ dist:
 		$(BZIP2_BIN) -vfc $(tarball) > $(tarball_bz2)
 	rm -f $(tarball)
 	rm -r $(distdir)
-	cp NEWS $(distnews)
+	cp $(srcdir)/NEWS $(distnews)
 
 # We create two new directories: one for the build and one to install,
 # and make sure we can build and install from different directories
@@ -588,7 +592,8 @@ dist-sign:
 dist-files: $(dist_files)
 	for f in $(dist_files) $(dist_dirs); do \
 	  mkdir -p $(distdir)/`dirname $$f` || exit 1; \
-	  cp -a $(srcdir)/$$f $(distdir)/$$f || exit 1; \
+	  cp -a $(srcdir)/$$f $(distdir)/$$f 2>/dev/null || \
+	      cp -a $$f $(distdir)/$$f || exit 1; \
 	done
 	for f in $(dist_dirs); do \
 	  find $(distdir)/$$f -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
@@ -785,13 +790,23 @@ upload-man: $(man_HTML)
 upload-dist:
 	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/
 
-
+.PHONY: rpm
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
-	@cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
+	cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
 
 # This uses the output of 'make rpm' to convert rpm files to deb files
+.PHONY: deb
 deb: rpm packaging/deb.sh
-	@cd packaging && ./deb.sh *.rpm
+	cd packaging && ./deb.sh *.rpm
+
+.PHONY: install-deb
+install-deb: deb
+	# Copy .deb files to /tmp to avoid problems with NFS root_squash
+	tmpdir=`mktemp -d /tmp/distcc-install-deb-XXXXXX` && \
+	cp packaging/*.deb $$tmpdir && \
+	cd $$tmpdir && \
+	sudo dpkg -i *.deb && \
+	rm -rf $$tmpdir
 
 # deb creates rpm files first, which in turn creates .gz files
 alldist: deb
@@ -821,7 +836,7 @@ showpaths:
 # install-sh can't handle multiple arguments, but we don't need any
 # tricky features so mkinstalldirs and cp will do
 
-install: showpaths install-doc install-man install-programs install-include-server install-example @INSTALL_GNOME@ 
+install: showpaths install-doc install-man install-programs install-include-server install-example @INSTALL_GNOME@ install-conf
 
 install-programs: $(bin_PROGRAMS) pump
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -903,8 +918,9 @@ install-gnome-data: $(gnome_data)
 	$(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir) || exit 1;	\
 	done
 
-install-conf: $(conf_files)
+install-conf: $(conf_files) $(default_files)
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/distcc
+	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/default
 	@for p in $(conf_files); do                              \
 	  base=`basename $$p`;                                   \
 	  target=$(DESTDIR)$(sysconfdir)/distcc/$$base;          \
@@ -913,8 +929,21 @@ install-conf: $(conf_files)
 	    echo "*** Configuration file '$$target'";            \
 	    echo "*** already exists; not installing '$$p'.";    \
 	  else                                                   \
-	    echo $(INSTALL_DATA) $$p $$target;                    \
-	    $(INSTALL_DATA) $$p $$target                         \
+	    echo $(INSTALL_DATA) $(srcdir)/$$p $$target;         \
+	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
+	        || exit 1;                                       \
+	  fi;                                                    \
+	done
+	@for p in $(default_files); do                           \
+	  base=`basename $$p`;                                   \
+	  target=$(DESTDIR)$(sysconfdir)/default/$$base;         \
+	  if test -e $$target; then                              \
+	    echo "******************************************";   \
+	    echo "*** Configuration file '$$target'";            \
+	    echo "*** already exists; not installing '$$p'.";    \
+	  else                                                   \
+	    echo $(INSTALL_DATA) $(srcdir)/$$p $$target;         \
+	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
 	        || exit 1;                                       \
 	  fi;                                                    \
 	done
