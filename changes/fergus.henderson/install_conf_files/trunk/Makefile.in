@@ -624,6 +624,7 @@ TESTDISTCC_OPTS =
 # This is for internal use by maintainer-check and maintainer-installcheck.
 # These rules differ only in their choice of path.  This is only called
 # when python is installed, and when the caller has set up PATH appropriately.
+.PHONY: maintainer-check-no-set-path
 maintainer-check-no-set-path:
 	$(PYTHON) -c 'import sys; print sys.version'
 	$(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS)
