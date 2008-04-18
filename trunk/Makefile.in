@@ -72,7 +72,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 PYTHON = @PYTHON@
 
 dist_files =							\
-	src/config.h.in					\
+	src/config.h.in						\
 	$(dist_lzo)						\
 	$(dist_contrib)						\
 	$(dist_patches)						\
@@ -89,6 +89,8 @@ dist_files =							\
 	$(include_server_SRC)                                   \
 	$(check_include_server_DATA)                            \
 	$(check_include_server_PY)                              \
+	$(conf_files)                                           \
+	$(default_files)                                        \
 	$(dist_extra)						\
 	$(gnome_data)
 
@@ -328,6 +330,13 @@ HEADERS = src/stats.h							\
 	src/emaillog.h \
 	src/zeroconf.h
 
+conf_dir = packaging/RedHat/conf
+conf_files = $(conf_dir)/hosts \
+	     $(conf_dir)/clients.allow \
+	     $(conf_dir)/commands.allow.sh
+default_dir = packaging/RedHat/default
+default_files = $(default_dir)/distcc
+
 man1_MEN = man/distcc.1 man/distccd.1 man/distccmon-text.1 
 man_HTML = man/distcc_1.html man/distccd_1.html man/distccmon_text_1.html
 MEN = $(man1_MEN) 
@@ -545,7 +554,7 @@ dist:
 		$(BZIP2_BIN) -vfc $(tarball) > $(tarball_bz2)
 	rm -f $(tarball)
 	rm -r $(distdir)
-	cp NEWS $(distnews)
+	cp $(srcdir)/NEWS $(distnews)
 
 # We create two new directories: one for the build and one to install,
 # and make sure we can build and install from different directories
@@ -583,7 +592,8 @@ dist-sign:
 dist-files: $(dist_files)
 	for f in $(dist_files) $(dist_dirs); do \
 	  mkdir -p $(distdir)/`dirname $$f` || exit 1; \
-	  cp -a $(srcdir)/$$f $(distdir)/$$f || exit 1; \
+	  cp -a $(srcdir)/$$f $(distdir)/$$f 2>/dev/null || \
+	      cp -a $$f $(distdir)/$$f || exit 1; \
 	done
 	for f in $(dist_dirs); do \
 	  find $(distdir)/$$f -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
@@ -614,6 +624,7 @@ TESTDISTCC_OPTS =
 # This is for internal use by maintainer-check and maintainer-installcheck.
 # These rules differ only in their choice of path.  This is only called
 # when python is installed, and when the caller has set up PATH appropriately.
+.PHONY: maintainer-check-no-set-path
 maintainer-check-no-set-path:
 	$(PYTHON) -c 'import sys; print sys.version'
 	$(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS)
@@ -657,7 +668,7 @@ maintainer-installcheck: maintainer-check-deps
 check:
 	@echo Please try 'make maintainer-check' instead.
 installcheck:
-	@echo Please try 'make maintainer-check' instead.
+	@echo Please try 'make maintainer-installcheck' instead.
 
 # Runs the tests in lzo-mode.
 lzo-check:
@@ -675,11 +686,11 @@ valgrind-check:
 # We need to set DISTCC_HOSTS, otherwise "pump" complains,
 # but it doesn't matter what we set it to, because testdistcc.py
 # will set it again anyway.
-pump-check: pump maintainer-check-deps
+pump-check: pump include-server maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
-pump-installcheck: pump maintainer-check-deps
+pump-installcheck: pump include-server maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH="$(bindir):`pwd`:$$PATH" \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
@@ -780,13 +791,23 @@ upload-man: $(man_HTML)
 upload-dist:
 	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/
 
-
+.PHONY: rpm
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
-	@cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
+	cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
 
 # This uses the output of 'make rpm' to convert rpm files to deb files
+.PHONY: deb
 deb: rpm packaging/deb.sh
-	@cd packaging && ./deb.sh *.rpm
+	cd packaging && ./deb.sh *.rpm
+
+.PHONY: install-deb
+install-deb: deb
+	# Copy .deb files to /tmp to avoid problems with NFS root_squash
+	tmpdir=`mktemp -d /tmp/distcc-install-deb-XXXXXX` && \
+	cp packaging/*.deb $$tmpdir && \
+	cd $$tmpdir && \
+	sudo dpkg -i *.deb && \
+	rm -rf $$tmpdir
 
 # deb creates rpm files first, which in turn creates .gz files
 alldist: deb
@@ -799,6 +820,7 @@ alldist: deb
 
 .PHONY: showpaths install install-programs install-include-server
 .PHONY: install-man install-doc install-example install-gnome-data 
+.PHONY: install-conf
 
 # TODO: Allow root directory to be overridden for use in building
 # packages.
@@ -815,7 +837,8 @@ showpaths:
 # install-sh can't handle multiple arguments, but we don't need any
 # tricky features so mkinstalldirs and cp will do
 
-install: showpaths install-doc install-man install-programs install-include-server install-for-include-server-tests install-example @INSTALL_GNOME@ 
+install: showpaths install-doc install-man install-programs \
+	install-include-server install-example @INSTALL_GNOME@ install-conf
 
 install-programs: $(bin_PROGRAMS) pump
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -876,23 +899,53 @@ install-for-include-server-tests:
 install-man: $(man1_MEN)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	for p in $(man1_MEN); do				\
-	$(INSTALL_DATA)	$$p $(DESTDIR)$(man1dir) || exit 1;	\
+	$(INSTALL_DATA)	$(srcdir)/$$p $(DESTDIR)$(man1dir) || exit 1;	\
 	done
 
 install-doc: $(pkgdoc_DOCS)
 	$(mkinstalldirs) $(DESTDIR)$(docdir)
 	for p in $(pkgdoc_DOCS); do				\
-	$(INSTALL_DATA) $$p $(DESTDIR)$(docdir) || exit 1;	\
+	$(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(docdir) || exit 1;	\
 	done
 
 install-example: $(example_DOCS)
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/example
 	for p in $(example_DOCS); do				\
-	$(INSTALL_DATA) $$p $(DESTDIR)$(docdir)/example || exit 1;	\
+	$(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(docdir)/example || exit 1;	\
 	done
 
 install-gnome-data: $(gnome_data)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	for p in $(gnome_data); do				\
 	$(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir) || exit 1;	\
+	done
+
+install-conf: $(conf_files) $(default_files)
+	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/distcc
+	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/default
+	@for p in $(conf_files); do                              \
+	  base=`basename $$p`;                                   \
+	  target=$(DESTDIR)$(sysconfdir)/distcc/$$base;          \
+	  if test -e $$target; then                              \
+	    echo "******************************************";   \
+	    echo "*** Configuration file '$$target'";            \
+	    echo "*** already exists; not installing '$$p'.";    \
+	  else                                                   \
+	    echo $(INSTALL_DATA) $(srcdir)/$$p $$target;         \
+	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
+	        || exit 1;                                       \
+	  fi;                                                    \
+	done
+	@for p in $(default_files); do                           \
+	  base=`basename $$p`;                                   \
+	  target=$(DESTDIR)$(sysconfdir)/default/$$base;         \
+	  if test -e $$target; then                              \
+	    echo "******************************************";   \
+	    echo "*** Configuration file '$$target'";            \
+	    echo "*** already exists; not installing '$$p'.";    \
+	  else                                                   \
+	    echo $(INSTALL_DATA) $(srcdir)/$$p $$target;         \
+	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
+	        || exit 1;                                       \
+	  fi;                                                    \
 	done
