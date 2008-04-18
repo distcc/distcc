@@ -739,7 +739,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
-	rm -rf testtmp
+	rm -rf _testtmp  # produced by test/testdistcc.py
 	rm -rf +distcheck
 	rm -rf $(include_server_testdir)
 	rm -rf $(include_server_builddir)
