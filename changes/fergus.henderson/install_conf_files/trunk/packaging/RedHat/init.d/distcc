@@ -102,10 +102,10 @@ RETVAL=0
 [ -x /usr/bin/distccd ] || exit 0
 
 ALLOWFILE=""
-if test -f $CONFIGDIR/clients.allow; then
-        ALLOWFILE=$CONFIGDIR/clients.allow
-elif test -f $CONFIGDIR/$DOMAIN/clients.allow; then
+if test -f $CONFIGDIR/$DOMAIN/clients.allow; then
         ALLOWFILE=$CONFIGDIR/$DOMAIN/clients.allow
+elif test -f $CONFIGDIR/clients.allow; then
+        ALLOWFILE=$CONFIGDIR/clients.allow
 else
 	echo "$0: no clients allowed"
 	exit 1
@@ -117,10 +117,10 @@ if test "$ALLOWFILE"x != x; then
 fi
 
 COMMANDFILE=""
-if test -f $CONFIGDIR/commands.allow.sh; then
-        COMMANDFILE=$CONFIGDIR/commands.allow.sh
-elif test -f $CONFIGDIR/$DOMAIN/commands.allow.sh; then
+if test -f $CONFIGDIR/$DOMAIN/commands.allow.sh; then
         COMMANDFILE=$CONFIGDIR/$DOMAIN/commands.allow.sh
+elif test -f $CONFIGDIR/commands.allow.sh; then
+        COMMANDFILE=$CONFIGDIR/commands.allow.sh
 fi
 
 
@@ -133,14 +133,18 @@ rh_start() {
 		return 1
 	fi
 
+	env="TMPDIR=$TMPDIR"
 	if [ -n "$COMMANDFILE" ]; then
 	  . $COMMANDFILE
-	  ENV="DISTCC_CMDLIST=$CMDLIST DISTCC_CMDLIST_NUMWORDS=5 TMPDIR=$TMPDIR"
-	else
-	  ENV="TMPDIR=$TMPDIR"
+	  if [ "$DISTCC_CMDLIST" ]; then
+	    env="$env DISTCC_CMDLIST=$DISTCC_CMDLIST"
+	  fi
+	  if [ "$DISTCC_CMDLIST_NUMWORDS" ]; then
+	    env="$env DISTCC_CMDLIST_NUMWORDS=$DISTCC_CMDLIST_NUMWORDS"
+	  fi
 	fi
 
-	daemon --user $USER $ENV $PROG $OPTIONS
+	daemon --user $USER $env $PROG $OPTIONS
 	RETVAL=$?
 	echo
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
@@ -198,8 +202,8 @@ deb_start() {
 
 	if [ -n "$COMMANDFILE" ]; then
 	  . $COMMANDFILE
-	  export DISTCC_CMDLIST=$CMDLIST
-	  export DISTCC_CMDLIST_NUMWORDS=5
+	  export DISTCC_CMDLIST
+	  export DISTCC_CMDLIST_NUMWORDS
 	fi
 	export TMPDIR=$TMPDIR
 
