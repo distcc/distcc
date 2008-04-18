@@ -667,7 +667,7 @@ maintainer-installcheck: maintainer-check-deps
 check:
 	@echo Please try 'make maintainer-check' instead.
 installcheck:
-	@echo Please try 'make maintainer-check' instead.
+	@echo Please try 'make maintainer-installcheck' instead.
 
 # Runs the tests in lzo-mode.
 lzo-check:
@@ -685,11 +685,11 @@ valgrind-check:
 # We need to set DISTCC_HOSTS, otherwise "pump" complains,
 # but it doesn't matter what we set it to, because testdistcc.py
 # will set it again anyway.
-pump-check: pump maintainer-check-deps
+pump-check: pump include-server maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
-pump-installcheck: pump maintainer-check-deps
+pump-installcheck: pump include-server maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH="$(bindir):`pwd`:$$PATH" \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
