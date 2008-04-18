@@ -1102,8 +1102,20 @@ class BadInclude_Case(Compilation_Case):
 """
 
     def runtest(self):
+        if 'cpp' in _server_options:
+            #  With gcc, adding -MMD makes the compiler give a warning, instead
+            # of the normal error message, when encountering a non-existent
+            # include file specified in angle brackets.  In pump mode, the
+            # distcc client adds -MMD to the gcc options.  FIXME(klarlund): this
+            # is arguably a bug in gcc, and it is exacerbated by distcc's pump
+            # mode because we always pass -MMD, even when the user didn't.
+            # TODO(klarlund): change expected_status back to 1 once that FIXME
+            # is fixed.
+            expected_status = 0
+        else:
+            expected_status = 1
         self.runcmd(self.distcc() +
-                    _gcc + " -o testtmp.o -c testtmp.c", 1)
+                    _gcc + " -o testtmp.o -c testtmp.c", expected_status)
 
 
 class PreprocessPlainText_Case(Compilation_Case):
