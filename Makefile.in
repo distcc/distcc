@@ -553,7 +553,7 @@ dist:
 # verify it got rid of everything not in the tarball by deleting every
 # file mentioned in the tarball, and then making sure nothing is left.
 distcheck: dist
-	[ -d +distcheck ] && chmod -R u+w +distcheck
+	[ ! -d +distcheck ] || chmod -R u+w +distcheck
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
 	cd '+distcheck' && $(GZIP_BIN) -d < ../$(tarball_gz) | $(TAR) xv
