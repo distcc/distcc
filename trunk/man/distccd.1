@@ -143,9 +143,9 @@ Instructs distccd to accept connections from the IP address
 IPADDR.  A CIDR mask length can be supplied optionally after a
 trailing slash, e.g. 192.168.0.0/24, in which case addresses that
 match in the most significant MASK bits will be allowed.  If no
---allow options are specified, all clients are allowed.  Unauthorized
+--allow options are specified, distccd will exit immediately!  Unauthorized
 connections are rejected by closing the TCP connection immediately.  A
-warning is logged on the server but nothing is sent ot the client.
+warning is logged on the server but nothing is sent to the client.
 .TP
 .B --job-lifetime SECONDS
 Kills a distccd job if it runs for more than SECONDS seconds. This prevents
