@@ -1,0 +1,295 @@
+.TH distccd 1 "27 March 2008"
+.SH "NAME"
+distccd \- distributed C/C++ compiler server
+.SH "SYNOPSIS"
+.B distccd --daemon 
+.I [OPTIONS]
+.SH "DESCRIPTION"
+.I distccd 
+is the server for the distcc(1) distributed compiler.  It accepts and
+runs compilation jobs for network clients.
+.PP
+distcc can run over either TCP or a connection command such as ssh(1).
+TCP connections are fast but relatively insecure.  SSH connections are
+secure but slower.  
+.PP
+For SSH connections, distccd must be installed on the volunteer but
+should not run as a daemon -- it will be started over SSH as needed.
+SSH connections have several advantages: neither the client nor server
+listens on any new ports; compilations run with the privileges of the
+user that requested them; unauthorized users cannot access the server;
+and source and output is protected in transit.
+.PP
+For TCP connections, distccd can run either from an inetd-style
+program, or as a standalone server.  Standalone mode is recommended
+because it is slightly more efficient and allows distccd to regulate
+the number of incoming jobs.  The 
+.B --listen
+and 
+.B --allow
+options can be used for simple IP-based access control.
+.PP
+distcc may be started either by root or any other user.  If run by
+root, it gives away privileges and changes to the user specified by
+the 
+.B --user
+option, or the user called "distcc", or the user called "nobody".
+.PP
+distccd does not have a configuration file; it's behaviour is
+controlled only by command-line options and requests from
+clients.
+.SH "STANDALONE SERVER"
+The recommended method for running distccd is as a standalone server.
+distccd will listen for network connections and fork several child
+processes to serve them.
+.PP
+If you installed distcc using a packaged version you may be able to
+start the server using the standard mechanism for your operating
+system, such as
+.RS
+.PP
+# service distcc start
+.RE
+.PP
+To start distccd as a standalone service, run a command like
+this either as root or an ordinary user:
+.RS
+.PP
+# distccd --daemon
+.RE
+.SH "RUNNING FROM INIT"
+distccd may be run as a standalone daemon under the
+control of another program like init(8) or
+daemontools.  The super-server starts distccd
+when the system boots, and whenever it exits.
+.PP
+distccd should be started just as for a standalone server,
+except that the 
+.B --no-detach
+option should be used so that the super-server can monitor it.
+.PP
+For example, to add distccd as a process to Linux
+sysvinit, add this line to 
+.I /etc/inittab
+.RS
+.PP
+dscc:2345:respawn:/usr/local/bin/distccd --verbose --no-detach --daemon
+.RE
+.SH "RUNNING FROM INETD"
+distccd may be started from a network super-server such as inetd or
+xinetd.  In this case inetd listens for network connections and
+invokes distccd when one arrives.
+.PP
+This is slightly less efficient than running a standalone distccd
+daemon.  distccd is not able to regulate the number of concurrent jobs
+accepted, but there may be an option in your inetd configuration to do
+so.
+.PP
+For traditional Unix inetd, a line like this can be added
+to /etc/inetd.conf:
+.RS
+.PP
+distcc stream tcp nowait.6000 root /usr/local/bin/distccd distccd --inetd
+.RE
+.PP
+inetd imposes a limit on the rate of connections to a service to
+protect against accidental or intentional overuse.  The default in
+Linux NetKit inetd is 40 per minute, which is far  too low for distccd.
+The \.6000 option raises the limit to 6000 per minute.
+.SH "TERMINATING DISTCCD"
+To shut down a standalone server, send a SIGTERM
+signal to the parent process.  The most reliable way to do
+this from a script is to use the 
+.I --pid-file
+option to record its process ID.  Shutting down the server in this way
+should allow any jobs currently in progress to complete.
+.SH "OPTIONS"
+.TP
+.B --help
+Display summary usage information.
+.TP
+.B --version
+Shows the daemon version and exits.
+.TP
+.B -j, --jobs JOBS
+Sets a limit on the number of jobs that can be accepted at any time.
+By default this is set to two greater than the number of CPUs on the
+machine, to allow for some processes being blocked on network IO.
+(Daemon mode only.)
+.TP 
+.B -N, --nice  NICENESS
+Makes the daemon more nice about giving up the CPU to other tasks on
+the machine.  NICENESS is an increment to the current priority of the
+process.  The range of priorities depends on the operating system but
+is typically 0 to 20.  By default the niceness is increased by 5.
+.TP
+.B -p, --port PORT
+Set the TCP port to listen on, rather than the default of 3632.
+(Daemon mode only.)
+.TP
+.B --listen ADDRESS
+Instructs the distccd daemon to listen on the IP address
+ADDRESS.  This can be useful for access control
+on dual-homed hosts.  (Daemon mode only.)
+.TP
+.B -P, --pid-file FILE
+Save daemon process id to file FILE.  (Daemon mode only.)
+.TP
+.B --user USER
+If distccd gets executed as root, change to user USER.
+.TP
+.B -a, --allow IPADDR[/MASK]
+Instructs distccd to accept connections from the IP address
+IPADDR.  A CIDR mask length can be supplied optionally after a
+trailing slash, e.g. 192.168.0.0/24, in which case addresses that
+match in the most significant MASK bits will be allowed.  If no
+--allow options are specified, all clients are allowed.  Unauthorized
+connections are rejected by closing the TCP connection immediately.  A
+warning is logged on the server but nothing is sent ot the client.
+.TP
+.B --job-lifetime SECONDS
+Kills a distccd job if it runs for more than SECONDS seconds. This prevents
+denial of service from clients that don't properly disconnect and compilers
+that fail to terminate. By default this is turned off.
+.TP
+.B --no-detach
+Do not detach from the shell that started the daemon.  
+.TP
+.B --no-fork
+Don't fork children for each connection, to allow attaching gdb.
+Don't use this if you don't understand it!
+.TP
+.B --log-file FILE
+Send messages to file FILE instead of syslog.
+Logging directly to a file is significantly faster than
+going via syslog and is recommended.
+.TP
+.B --log-level LEVEL
+Set the minimum severity of error that will be included in the log
+file.  Useful if you only want to see error messages rather than an
+entry for each connection.  LEVEL can be any of the standard syslog
+levels, and in particular
+.I critical, error, warning, notice, info, 
+or
+.I debug.
+.TP
+.B --log-stderr
+Send log messages to stderr, rather than to a file or
+syslog.  This is mainly intended for use in debugging.  Do not use in
+inetd mode.
+.TP
+.B --verbose
+Include debug messages in log.  Equivalent to
+.B --log-level=debug
+.TP
+.B --wizard
+Turn on all options appropriate for starting distccd under gdb: run as
+a daemon, log verbosely to stderr, and do not detach or fork.  For
+wizards only.
+.TP
+.B --stats
+Turn on the statistics HTTP server. By default it is off.
+(Daemon mode only.)
+.TP
+.B --stats-port PORT
+Set the TCP port to listen on for HTTP requests, rather than the default of 3633.
+(Daemon mode only.)
+.TP
+.B --inetd
+Serve a client connected to stdin/stdout.  As the name
+suggests, this option should be used when distccd is run
+from within a super-server like inetd.  distccd
+assumes inetd mode when stdin is a socket.
+.TP 
+.B --daemon
+Bind and listen on a socket, rather than running from
+inetd.  This is used for standalone mode.  distccd
+assumes daemon mode at startup if stdin is a tty, so
+--daemon should be explicitly specified when
+starting distccd from a script or in a non-interactive
+ssh connection.
+.SH "SEARCH PATHS"
+.PP
+distcc can pass either a relative or an absolute name for the compiler
+to distccd.  If distcc is given an explicit absolute compiler
+filename, that name is used verbatim on both the client and server.
+If the compiler name is not an absolute path, or if the client is used
+in masquerade mode, then the server's PATH is searched.
+.PP
+distccd inherits its search path from its parent process.  By default
+distccd tries to remove directories that seem to contain distccd
+masquerade links, to guard against inadvertent recursion.  The
+.B DISTCCD_PATH
+environment variable may be used to set the path.
+.PP
+The search path is logged when --verbose is given.  In case of
+confusion, check the logs.
+.PP
+When distccd is run over ssh, the 
+.I $HOME/.ssh/environment 
+file may be useful in setting the path.  See 
+.B ssh(1).
+.SH "DIAGNOSTICS"
+distccd logs messages to syslog's 
+.I daemon
+facility by
+default, which normally writes to 
+.I /var/log/daemon 
+or
+.I /var/log/messages.  
+Log messages can be sent to a
+different file using the 
+.B --log-file option.
+.SH "ENVIRONMENT VARIABLES"
+.TP
+.B "DISTCC_CMDLIST"
+If the environment variable DISTCC_CMDLIST is set,
+load a list of supported commands from the file named by DISTCC_CMDLIST, and
+refuse to serve any command whose last DISTCC_CMDLIST_MATCHWORDS last words
+do not match those of a command in that list.  See the comments in src/serve.c.
+.TP
+.B "DISTCC_CMDLIST_NUMWORDS"
+The number of words, from the end of the command, to match. The default is 1. 
+.TP
+.B "DISTCCD_PATH"
+When starting distccd, if this value is set it will be used unaltered
+for the command-execution PATH.  The code that normally tries to
+remove masquerade directories from the path is skipped.
+.TP
+.B "DISTCC_SAVE_TEMPS"
+If set to 1, temporary files are not deleted after use.
+.PP
+Note that 
+.B "DISTCC_LOG"
+does not affect the log destination for the server.
+.TP
+.B "DISTCC_TCP_DEFER_ACCEPT"
+On Linux, turn on the TCP_DEFER_ACCEPT socket option.  Defaults to on.
+.TP
+.B "TMPDIR"
+Directory for temporary files such as preprocessor output.  By default
+/tmp/ is used.
+.SH "SEE ALSO"
+distcc(1), ccache(1), gcc(1), make(1)
+.I http://distcc.samba.org/
+.SH "BUGS"
+IP-based access control is not secure against attackers able to spoof
+TCP connections, and cannot discriminate different users on a client.
+.PP 
+TCP connections are not secure against attackers able to observe or
+modify network traffic.
+.PP
+Because ccache does not cache compilation from 
+.B .i
+files, it is not useful to call it from distccd.
+.SH "LICENCE"
+You are free to use distcc.  distcc (including this manual) may be
+copied, modified or distributed only under the terms of the GNU
+General Public Licence version 2 or later.  distcc comes with
+absolutely no warrany.  A copy of the GPL is included in the file
+COPYING.
+.SH "AUTHOR"
+distcc was written by Martin Pool <mbp@sourcefrog.net>, with the
+co-operation of many scholars including Wayne Davison, Frerich Raabe,
+Dimitri Papadopoulos and others noted in the NEWS file.  Please report
+bugs to <distcc@lists.samba.org>.

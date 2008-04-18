@@ -1,0 +1,885 @@
+# Top-level Makefile(.in) for distcc
+
+# Copyright (C) 2002, 2003, 2004 by Martin Pool
+
+# Note that distcc no longer uses automake, but this file is still
+# structured in a somewhat similar way.
+
+## VARIABLES
+
+PACKAGE = @PACKAGE_NAME@
+VERSION = @PACKAGE_VERSION@
+PACKAGE_TARNAME = @PACKAGE_TARNAME@
+SHELL = @SHELL@
+
+# These autoconf variables may contain recursive Make expansions, and
+# so they have to be done here rather than written into config.h.
+
+CFLAGS = @CFLAGS@
+WERROR_CFLAGS = @WERROR_CFLAGS@
+POPT_CFLAGS = @POPT_CFLAGS@
+
+LDFLAGS = @LDFLAGS@
+CC = @CC@
+CPP = @CPP@
+# We add a few cppflags.
+# -Isrc is so src .h-files are available to files in the tests directory.
+CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -Isrc -Ilzo -I$(srcdir)/src -I$(srcdir)/lzo
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+builddir = @builddir@
+top_builddir = @top_builddir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+docdir = @docdir@
+pkgdatadir = $(datadir)/@PACKAGE_NAME@
+
+include_server_testdir = $(builddir)/_testdir
+include_server_builddir = $(builddir)/_builddir
+
+# These must be done from here, not from autoconf, because they can 
+# contain variable expansions written in Make syntax.  Ew.
+DIR_DEFS = -DSYSCONFDIR="\"${sysconfdir}\"" -DPKGDATADIR="\"${pkgdatadir}\""
+
+# arguments to pkgconfig
+GNOME_PACKAGES = @GNOME_PACKAGES@
+GNOME_CFLAGS = @GNOME_CFLAGS@
+GNOME_LIBS = @GNOME_LIBS@
+
+LIBS = @LIBS@
+
+DESTDIR =
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ 
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+
+PYTHON = @PYTHON@
+
+dist_files =							\
+	src/config.h.in					\
+	$(dist_lzo)						\
+	$(dist_contrib)						\
+	$(dist_patches)						\
+	$(dist_common)						\
+	$(MEN)							\
+	$(pkgdoc_DOCS)						\
+	$(example_DOCS)						\
+	$(popt_EXTRA) $(popt_SRC) $(popt_HEADERS)		\
+	$(SRC) $(HEADERS)					\
+	$(test_SOURCE)						\
+	$(bench_PY)						\
+	$(include_server_PY)                                    \
+	$(dist_include_server_SH)                               \
+	$(include_server_SRC)                                   \
+	$(check_include_server_DATA)                            \
+	$(check_include_server_PY)                              \
+	$(dist_extra)						\
+	$(gnome_data)
+
+dist_dirs = include_server/test_data
+
+dist_lzo = lzo/minilzo.c lzo/minilzo.h lzo/lzoconf.h lzo/.stamp-conf.in
+
+dist_contrib = contrib/distcc-absolutify	\
+	contrib/distcc.sh		\
+	contrib/distccd-init		\
+	contrib/dmake			\
+	contrib/make-j			\
+	contrib/netpwd			\
+	contrib/stage-cc-wrapper.patch	\
+	contrib/redhat/init		\
+	contrib/redhat/logrotate		\
+	contrib/redhat/sysconfig		\
+	contrib/redhat/xinetd
+
+dist_include_server_SH = \
+	pump.in
+
+bench_PY = bench/Build.py \
+	bench/Project.py \
+	bench/ProjectDefs.py \
+	bench/Summary.py \
+	bench/actions.py \
+	bench/benchmark.py \
+	bench/buildutil.py \
+	bench/compiler.py \
+	bench/statistics.py
+
+pkgdoc_DOCS = AUTHORS COPYING NEWS \
+	README README.pump \
+	INSTALL \
+	TODO \
+	doc/protocol-1.txt doc/status-1.txt \
+	doc/protocol-2.txt \
+	doc/reporting-bugs.txt \
+	survey.txt
+
+example_DOCS = \
+	doc/example/init doc/example/init-suse	\
+	doc/example/logrotate				\
+	doc/example/xinetd				\
+
+include_server_PY = \
+	include_server/__init__.py \
+	include_server/basics.py \
+	include_server/cache_basics.py \
+	include_server/compiler_defaults.py \
+	include_server/compress_files.py \
+	include_server/include_analyzer.py \
+	include_server/include_analyzer_memoizing_node.py \
+	include_server/include_server.py \
+	include_server/macro_eval.py \
+	include_server/mirror_path.py \
+	include_server/parse_command.py \
+	include_server/parse_file.py \
+	include_server/run.py \
+	include_server/setup.py \
+	include_server/statistics.py
+
+include_server_SRC = \
+	include_server/c_extensions/distcc_pump_c_extensions_module.c
+
+# These are included in the distribution but not installed anywhere.
+dist_extra =							\
+	README.packaging ChangeLog \
+	packaging/RedHat/rpm.spec \
+	packaging/RedHat/logrotate.d/distcc \
+	packaging/RedHat/init.d/distcc \
+	packaging/RedHat/xinetd.d/distcc \
+	packaging/deb.sh \
+	packaging/rpm.sh
+
+
+mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
+man1dir = $(mandir)/man1
+man8dir = $(mandir)/man8
+
+test_SOURCE = test/comfychair.py				\
+	test/testdistcc.py			
+
+dist_common = Makefile.in install-sh configure configure.ac \
+	config.guess config.sub mkinstalldirs autogen.sh
+
+# It seems a bit unnecessary to ship patches in the released tarballs.
+# People who are so keen as to apply unsupported patches ought to use
+# CVS, or at least get them from the list.
+dist_patches = 
+
+TAR = tar
+GZIP_BIN = gzip
+# This is set on the environment, and automatically read by gzip.
+# This way we always get best compression, even when gzip is run in a
+# script we call, rather than being called by us directly.
+GZIP = -9v
+BZIP2_BIN = bzip2
+
+distdir = $(PACKAGE_TARNAME)-$(VERSION)
+tarball = $(PACKAGE_TARNAME)-$(VERSION).tar
+tarball_bz2 = $(tarball).bz2
+tarball_gz = $(tarball).gz
+tarball_sig_bz2 = $(tarball_bz2).asc
+tarball_sig_gz = $(tarball_gz).asc
+distnews = $(PACKAGE_TARNAME)-$(VERSION).NEWS
+
+common_obj = src/arg.o src/argutil.o					\
+	src/cleanup.o src/compress.o					\
+	src/trace.o src/util.o src/io.o src/exec.o			\
+	src/rpc.o src/tempfile.o src/bulk.o src/help.o src/filename.o	\
+	src/lock.o							\
+	src/netutil.o							\
+	src/pump.o							\
+	src/sendfile.o							\
+	src/safeguard.o src/snprintf.o src/timeval.o			\
+	src/dotd.o 							\
+	src/hosts.o src/hostfile.o					\
+	src/implicit.o src/loadfile.o					\
+	lzo/minilzo.o
+
+distcc_obj = src/backoff.o						\
+	src/climasq.o src/clinet.o src/clirpc.o				\
+	src/compile.o src/cpp.o						\
+	src/distcc.o							\
+	src/remote.o							\
+	src/ssh.o src/state.o src/strip.o				\
+	src/timefile.o src/traceenv.o					\
+	src/include_server_if.o						\
+	src/where.o							\
+	@ZEROCONF_DISTCC_OBJS@						\
+	src/emaillog.o							\
+	$(common_obj)
+
+distccd_obj = src/access.o						\
+	src/daemon.o  src/dopt.o src/dparent.o src/dsignal.o		\
+	src/ncpus.o							\
+	src/prefork.o							\
+	src/stringmap.o							\
+	src/serve.o src/setuid.o src/srvnet.o src/srvrpc.o src/state.o	\
+	src/stats.o							\
+	src/fix_debug_info.o						\
+	@ZEROCONF_DISTCCD_OBJS@						\
+	$(common_obj) @BUILD_POPT@
+
+lsdistcc_obj = src/lsdistcc.o 						\
+	src/clinet.o src/io.o src/netutil.o src/trace.o src/util.o 	\
+	src/rslave.o 							\
+	lzo/minilzo.o
+
+# Objects that need to be linked in to build monitors
+mon_obj =								\
+	src/cleanup.o							\
+	src/filename.o							\
+	src/io.o							\
+	src/mon.o							\
+	src/netutil.o							\
+	src/argutil.o							\
+	src/rpc.o							\
+	src/snprintf.o src/state.o 					\
+	src/tempfile.o src/trace.o src/traceenv.o			\
+	src/util.o
+
+gnome_obj = src/history.o src/mon-gnome.o				\
+	src/renderer.o
+
+h_exten_obj = src/h_exten.o $(common_obj)
+h_issource_obj = src/h_issource.o $(common_obj)
+h_scanargs_obj = src/h_scanargs.o $(common_obj)
+h_hosts_obj = src/h_hosts.o $(common_obj)
+h_argvtostr_obj = src/h_argvtostr.o $(common_obj)
+h_strip_obj = src/h_strip.o $(common_obj) src/strip.o
+h_parsemask_obj = src/h_parsemask.o $(common_obj) src/access.o
+h_sa2str_obj = src/h_sa2str.o $(common_obj) src/srvnet.o src/access.o
+h_ccvers_obj = src/h_ccvers.o $(common_obj)
+h_dotd_obj = src/h_dotd.o $(common_obj)
+h_fix_debug_info = src/h_fix_debug_info.o $(common_obj)
+h_compile_obj = src/h_compile.o $(common_obj) src/compile.o src/timefile.o \
+                src/backoff.o src/emaillog.o src/remote.o src/clinet.o \
+	        src/clirpc.o src/include_server_if.o src/state.o src/where.o \
+		src/ssh.o src/strip.o src/cpp.o
+
+# All source files, for the purposes of building the distribution
+SRC =	src/stats.c							\
+	src/access.c src/arg.c src/argutil.c				\
+	src/backoff.c src/bulk.c					\
+	src/cleanup.c							\
+	src/climasq.c src/clinet.c src/clirpc.c src/compile.c		\
+	src/compress.c src/cpp.c					\
+	src/daemon.c src/distcc.c src/dsignal.c				\
+	src/dopt.c src/dparent.c src/exec.c src/filename.c		\
+	src/h_argvtostr.c						\
+	src/h_exten.c src/h_hosts.c src/h_issource.c src/h_parsemask.c	\
+	src/h_sa2str.c src/h_scanargs.c src/h_strip.c			\
+	src/h_dotd.c src/h_compile.c                                    \
+	src/help.c src/history.c src/hosts.c src/hostfile.c		\
+	src/implicit.c src/io.c						\
+	src/loadfile.c src/lock.c 					\
+	src/mon.c src/mon-notify.c src/mon-text.c			\
+	src/mon-gnome.c							\
+	src/ncpus.c src/netutil.c					\
+	src/prefork.c src/pump.c					\
+	src/remote.c src/renderer.c src/rpc.c				\
+	src/safeguard.c src/sendfile.c src/setuid.c src/serve.c		\
+	src/snprintf.c src/state.c					\
+	src/srvnet.c src/srvrpc.c src/ssh.c 				\
+	src/stringmap.c src/strip.c					\
+	src/tempfile.c src/timefile.c                     		\
+	src/timeval.c src/traceenv.c					\
+	src/trace.c src/util.c src/where.c				\
+	src/lsdistcc.c	src/rslave.c					\
+	src/dotd.c src/include_server_if.c				\
+	src/emaillog.c \
+	src/fix_debug_info.c
+
+
+HEADERS = src/stats.h							\
+	src/access.h							\
+	src/bulk.h							\
+	src/clinet.h src/compile.h					\
+	src/daemon.h							\
+	src/distcc.h src/dopt.h src/exitcode.h				\
+	src/fix_debug_info.h						\
+	src/hosts.h src/implicit.h					\
+	src/mon.h							\
+	src/netutil.h							\
+	src/renderer.h src/rpc.h					\
+	src/snprintf.h src/state.h		 			\
+	src/stringmap.h							\
+	src/timefile.h src/timeval.h src/trace.h			\
+	src/types.h							\
+	src/util.h							\
+	src/exec.h src/lock.h src/where.h src/srvnet.h			\
+	src/rslave.h							\
+	src/dotd.h src/include_server_if.h				\
+	src/emaillog.h \
+	src/zeroconf.h
+
+man1_MEN = man/distcc.1 man/distccd.1 man/distccmon-text.1 
+man_HTML = man/distcc_1.html man/distccd_1.html man/distccmon_text_1.html
+MEN = $(man1_MEN) 
+
+gnome_data = gnome/distccmon-gnome-icon.png	\
+	gnome/distccmon-gnome.desktop
+
+popt_OBJS=popt/findme.o  popt/popt.o  popt/poptconfig.o \
+	popt/popthelp.o popt/poptparse.o
+
+popt_SRC=popt/findme.c  popt/popt.c  popt/poptconfig.c			 \
+	popt/popthelp.c popt/poptparse.c
+
+popt_HEADERS = popt/findme.h popt/popt.h popt/poptint.h popt/system.h
+
+popt_EXTRA = popt/README.popt popt/.stamp-conf.in
+
+
+# You might think that distccd ought to be in sbin, because it's a
+# daemon.  It is a grey area.  However, the Linux Filesystem Hierarchy
+# Standard (FHS 2.2) says that sbin is for programs "used exclusively
+# by the system administrator".  
+
+# distccd will often be used by non-root users, and when we support
+# ssh it will be somewhat important that it be found in their default
+# path.  Therefore on balance it seems better to put it in bin/.  
+
+# Package maintainers can override this if absolutely necessary, but I
+# would prefer that they do not. -- mbp
+
+bin_PROGRAMS = \
+	distcc@EXEEXT@ \
+	distccd@EXEEXT@ \
+	distccmon-text@EXEEXT@ \
+	lsdistcc@EXEEXT@ \
+	@GNOME_BIN@ 
+
+check_PROGRAMS = \
+	h_argvtostr@EXEEXT@ \
+	h_exten@EXEEXT@ \
+	h_fix_debug_info@EXEEXT@ \
+	h_hosts@EXEEXT@ \
+	h_issource@EXEEXT@ \
+	h_parsemask@EXEEXT@ \
+	h_sa2str@EXEEXT@ \
+	h_scanargs@EXEEXT@ \
+	h_strip@EXEEXT@ \
+	h_dotd@EXEEXT@ \
+	h_compile@EXEEXT@
+
+check_include_server_PY = \
+	include_server/c_extensions_test.py \
+	include_server/include_server_test.py \
+	include_server/macro_eval_test.py \
+	include_server/mirror_path_test.py \
+	include_server/parse_command_test.py \
+	include_server/parse_file_test.py \
+	include_server/include_analyzer_test.py \
+	include_server/include_analyzer_memoizing_node_test.py \
+	include_server/basics_test.py
+
+## OVERALL targets
+
+## IMPLICIT BUILD rules
+
+.SUFFIXES: .html .latte .o .c
+
+.c.o:
+	$(CC) $(CPPFLAGS) $(WERROR_CFLAGS) $(CFLAGS) -o $@ -c $<
+
+## OVERALL targets
+
+.PHONY: all include-server
+
+## NOTE: "all" must be the first (default) rule, aside from patterns.
+
+all: $(bin_PROGRAMS) include-server
+
+#  src/config.h.in is used by config.status
+Makefile: Makefile.in src/config.h.in config.status
+	./config.status
+
+## BUILD targets
+
+# We would like to detect when config.h.in has changed: this should trigger
+# config.status to be rerun. But if the config.h file actually does not change
+# as a result of running config.status (a feature of autoconf), then
+# config.status will be rerun every time. That's confusing. So, the rule
+#
+# src/config.h: src/config.h.in
+#        ./config.status
+#
+# is not sufficient.
+
+src/config.h: src/config.h.stamp
+
+src/config.h.stamp: src/config.h.in
+	echo path: $$PATH
+	./config.status
+	touch src/config.h.stamp
+
+pump: pump.in config.status
+	./config.status
+
+# Grab the dependency files generated by gcc's -MD option.
+-include */*.d
+
+# Disable some warnings for popt/*.c.
+$(popt_OBJS): CFLAGS += $(POPT_CFLAGS)
+
+distcc@EXEEXT@: $(distcc_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(distcc_obj) $(LIBS)
+
+distccd@EXEEXT@: $(distccd_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(distccd_obj) $(LIBS)	
+
+distccmon-text@EXEEXT@: $(mon_obj) src/mon-text.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(mon_obj) src/mon-text.o $(LIBS)
+
+lsdistcc@EXEEXT@: $(lsdistcc_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(lsdistcc_obj) $(LIBS)
+
+h_exten@EXEEXT@: $(h_exten_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_exten_obj) $(LIBS)
+
+h_issource@EXEEXT@: $(h_issource_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_issource_obj) $(LIBS)
+
+h_sa2str@EXEEXT@: $(h_sa2str_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_sa2str_obj) $(LIBS)
+
+h_scanargs@EXEEXT@: $(h_scanargs_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_scanargs_obj) $(LIBS)
+
+h_hosts@EXEEXT@: $(h_hosts_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_hosts_obj) $(LIBS)
+
+h_argvtostr@EXEEXT@: $(h_argvtostr_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_argvtostr_obj) $(LIBS)
+
+h_parsemask@EXEEXT@: $(h_parsemask_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_parsemask_obj) $(LIBS)
+
+h_strip@EXEEXT@: $(h_strip_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_strip_obj) $(LIBS)
+
+h_ccvers@EXEEXT@: $(h_ccvers_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_ccvers_obj) $(LIBS)
+
+h_dotd@EXEEXT@: $(h_dotd_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_dotd_obj) $(LIBS)
+
+h_fix_debug_info@EXEEXT@: $(h_fix_debug_info)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_fix_debug_info) $(LIBS)
+
+h_compile@EXEEXT@: $(h_compile_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_compile_obj) $(LIBS)
+
+
+src/h_fix_debug_info.o: src/fix_debug_info.c
+	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) \
+		-DTEST \
+		$(srcdir)/src/fix_debug_info.c
+
+src/mon-gnome.o: src/mon-gnome.c
+	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) \
+		$(GNOME_CFLAGS) \
+		$(srcdir)/src/mon-gnome.c
+
+src/renderer.o: src/renderer.c
+	$(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS)			\
+		$(GNOME_CFLAGS) \
+		$(srcdir)/src/renderer.c
+
+distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
+	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		$(mon_obj) $(gnome_obj) \
+		$(LIBS) $(GNOME_CFLAGS) $(GNOME_LIBS)
+
+# The include-server is a python app, so we use Python's build system.
+# The jumping through hoops with cd is to normalize builddir if it's relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+include-server:
+	test x$(PYTHON) != x &&				\
+	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
+	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
+	cd $$CURDIR && cd $(srcdir)/include_server &&	\
+	DISTCC_VERSION="$(VERSION)"			\
+	$(PYTHON) ./setup.py				\
+	    build 					\
+	       --build-base="$$BUILDDIR" 		\
+	       --build-temp="$$BUILDDIR"
+
+
+
+## Dist targets
+
+.PHONY: dist distcheck dist-sign dist-files
+
+# The sub-targets copy (and if necessary, build) various files that
+# have to go into the tarball.  They also create necessary directories
+# -- bear in mind that they might be run in parallel.
+
+# This looks a bit gross to me, but it's not as bad as it might be :-/
+
+# TODO(csilvers): add 'make rpm' and 'make deb'.
+
+dist:
+	-rm -fr $(distdir)
+	$(MAKE) dist-files 
+	$(TAR) cf $(tarball) $(distdir)
+	$(GZIP_BIN) --help >/dev/null && \
+		$(GZIP_BIN) -fc $(tarball) > $(tarball_gz)
+	$(BZIP2_BIN) --help 2>/dev/null && \
+		$(BZIP2_BIN) -vfc $(tarball) > $(tarball_bz2)
+	rm -f $(tarball)
+	rm -r $(distdir)
+	cp NEWS $(distnews)
+
+# We create two new directories: one for the build and one to install,
+# and make sure we can build and install from different directories
+# than the source directory.  Then we run a "make distclean" and
+# verify it got rid of everything not in the tarball by deleting every
+# file mentioned in the tarball, and then making sure nothing is left.
+distcheck: dist
+	rm -rf '+distcheck'
+	mkdir '+distcheck'
+	cd '+distcheck' && $(GZIP_BIN) -d < ../$(tarball_gz) | $(TAR) xv
+	mkdir +distcheck/$(distdir)/_build
+	mkdir +distcheck/$(distdir)/_inst
+	dc_install_base=`cd +distcheck/$(distdir)/_inst && pwd` \
+	&& cd +distcheck/$(distdir)/_build \
+	&& ../configure --srcdir=.. --prefix="$$dc_install_base" \
+	&& $(MAKE) && $(MAKE) maintainer-check \
+	&& $(MAKE) install && $(MAKE) maintainer-installcheck \
+	&& $(MAKE) distclean
+	test `find +distcheck/$(distdir)/_build -type f -print | wc -l` -eq 0 \
+		|| { echo "ERROR: files left in build-dir after distclean:"; \
+                     find +distcheck/$(distdir)/_build -type f -print; \
+	             rm -rf '+distcheck'; \
+	             exit 1; }
+	rm -rf '+distcheck'
+
+dist-sign:
+	gpg -a --detach-sign $(tarball_bz2)
+
+# For the dirs we copy, we don't want to copy control files like '.cvs'.
+# We use find for this; if 'find' doesn't work, just don't worry about it.
+dist-files: $(dist_files)
+	for f in $(dist_files) $(dist_dirs); do \
+	  mkdir -p $(distdir)/`dirname $$f` || exit 1; \
+	  cp -a $(srcdir)/$$f $(distdir)/$$f || exit 1; \
+	done
+	for f in $(dist_dirs); do \
+	  find $(distdir)/$$f -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
+	done
+
+## BUILD manual targets
+man/distcc_1.html: man/distcc.1
+	troff2html -man man/distcc.1 > $@
+
+man/distccd_1.html: man/distccd.1
+	troff2html -man man/distccd.1 > $@
+
+man/distccmon_text_1.html: man/distccmon-text.1
+	troff2html -man man/distccmon-text.1 > $@
+
+
+######################################################################
+## CHECK targets
+
+.PHONY: maintainer-check maintainer-installcheck check installcheck
+.PHONY: lzo-check valgrind-check pump-check single-test
+
+check_programs: $(check_PROGRAMS) $(bin_PROGRAMS)
+
+TESTDISTCC_OPTS =
+
+# This is for internal use by maintainer-check and maintainer-installcheck.
+# These rules differ only in their choice of path.  This is only called
+# when python is installed, and when the caller has set up PATH appropriately.
+maintainer-check-no-set-path:
+	$(PYTHON) -c 'import sys; print sys.version'
+	$(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS)
+	cd $(include_server_testdir) && \
+	  for p in $(check_include_server_PY); do \
+	    echo -n "Running $$p... "; \
+	    if PYTHONPATH=python/`dirname $$p` $(PYTHON) python/$$p \
+		> `basename $$p`.out 2>&1; then \
+	      echo "PASS"; else echo "FAIL"; cat `basename $$p`.out; exit 1; \
+	    fi \
+	  done
+	echo Filtering c_extensions_test.py.out
+	cat $(include_server_testdir)/c_extensions_test.py.out
+		| grep -v 'distcc_include_server\[.*\] (dcc_r_token_int) ERROR: protocol derailment: expected token "XXXX"' \
+		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'; \
+
+# WARNING: This resets the path to avoid any confusion caused by
+# having distcc masquerades already on the path.  If you have gcc
+# installed elsewhere this won't work....
+maintainer-check: check_programs install-for-include-server-tests
+	if test x$(PYTHON) != x; then PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
+	                              $(MAKE) maintainer-check-no-set-path; \
+	else echo "WARNING: python not found; tests skipped"; \
+	fi
+
+# NB: This does not depend upon install; you might want to test another version.
+maintainer-installcheck: check_programs install-for-include-server-tests
+	if test x$(PYTHON) != x; then PATH="$(bindir):`pwd`:$$PATH" \
+	                              $(MAKE) maintainer-check-no-set-path; \
+	else echo "WARNING: python not found; tests skipped"; \
+	fi
+
+check:
+	@echo Please try 'make maintainer-check' instead.
+installcheck:
+	@echo Please try 'make maintainer-check' instead.
+
+# Runs the tests in lzo-mode.
+lzo-check:
+	$(MAKE) TESTDISTCC_OPTS=--lzo maintainer-check
+
+# Runs the tests with valgrind.
+valgrind-check:
+	$(MAKE) TESTDISTCC_OPTS=--valgrind maintainer-check
+
+# This is an integration test which runs the distcc tests
+# using distcc-pump.
+# TODO(csilvers): add this to maintainer-check somehow?
+# TODO(csilvers): BadInclude_Case is known to fail for pump mode.  We've
+#                 verified that's ok.  Remove it when running pump-check.
+# We need to set DISTCC_HOSTS, otherwise "pump" complains,
+# but it doesn't matter what we set it to, because testdistcc.py
+# will set it again anyway.
+pump-check:
+	DISTCC_HOSTS='<invalid>' PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
+		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
+
+pump-installcheck:
+	DISTCC_HOSTS='<invalid>' PATH="$(bindir):`pwd`:$$PATH" \
+		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
+
+# These are more include-server checks:
+
+# The following target is useful for running a single test at a time.
+# Sample usage:
+#    make TESTNAME=Lsdistcc_Case singletest
+#    make TESTNAME=Lsdistcc_Case TESTDISTCC_OPTS=--valgrind singletest
+TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
+single-test: check_programs
+	PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
+	    $(PYTHON) $(srcdir)/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
+
+######################################################################
+## BENCHMARK targets
+
+.PHONY: benchmark
+
+benchmark: 
+	@echo "The distcc macro-benchmark uses your existing distcc installation"
+	@if [ "$$DISTCC_HOSTS" ]; \
+	then echo "DISTCC_HOSTS=\"$$DISTCC_HOSTS\""; \
+	else echo "You must set up servers and set DISTCC_HOSTS before running the benchmark"; \
+	exit 1; \
+	fi
+	@echo "This benchmark may download a lot of source files, and it takes a "
+	@echo "long time to run.  Interrupt now if you want."
+	@echo 
+	@echo "Pass BENCH_ARGS to make to specify which benchmarks to run."
+	@echo
+	@sleep 5
+	cd bench && $(PYTHON) benchmark.py $(BENCH_ARGS)
+
+
+## CLEAN targets
+
+.PHONY: clean clean-autoconf clean-lzo clean-include-server
+.PHONY: maintainer-clean maintainer-clean-autoconf distclean distclean-autoconf
+
+# Also clean binaries which are optionally built. Also remove .d files; old ones
+# may confuse 'make'.
+clean: clean-autoconf clean-lzo clean-include-server
+	rm -f src/*.[od] popt/*.[od]
+	rm -f test/*.pyc
+	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
+	rm -f $(man_HTML)
+	rm -f distccmon-gnome
+	rm -rf testtmp
+	rm -rf +distcheck
+	rm -rf $(include_server_testdir)
+	rm -rf $(include_server_builddir)
+
+clean-autoconf:
+	rm -f config.cache config.log
+
+clean-lzo:
+	rm -f lzo/*.[od] lzo/testmini
+
+# The jumping through hoops with cd is to normalize build/destdir if relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+clean-include-server:
+	test x$(PYTHON) != x &&				\
+	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
+	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
+	cd $$CURDIR && cd $(srcdir)/include_server &&	\
+	DISTCC_VERSION="$(VERSION)"			\
+	$(PYTHON) ./setup.py clean			\
+	   --build-base="$$BUILDDIR" 			\
+	   --build-temp="$$BUILDDIR"
+	rm -rf $(include_server_testdir)
+
+maintainer-clean: distclean \
+	maintainer-clean-autoconf clean
+
+# configure and co are distributed, but not in CVS
+maintainer-clean-autoconf:
+	rm -f configure src/config.h.in
+
+distclean-autoconf:
+	rm -f Makefile src/config.h src/config.h.stamp pump
+	rm -f popt/.stamp-conf lzo/.stamp-conf
+	rm -f config.status config.cache config.log aclocal.m4
+	rm -rf autom4te.cache
+
+distclean: distclean-autoconf clean
+
+
+## MAINTAINER targets
+
+.PHONY: upload-man upload-dist
+
+upload-man: $(man_HTML)
+	rsync -avz $(man_HTML) \
+		--exclude CVS --exclude '*~' --exclude '*.latte' \
+		samba.org:/home/httpd/distcc/man/
+
+upload-dist:
+	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/
+
+
+rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
+	@cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
+
+# This uses the output of 'make rpm' to convert rpm files to deb files
+deb: rpm packaging/deb.sh
+	@cd packaging && ./deb.sh *.rpm
+
+# deb creates rpm files first, which in turn creates .gz files
+alldist: deb
+	@echo dist files created:
+	@ls -1 "$(tarball_gz)" "$(tarball_bz2)"
+	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.rpm
+	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.deb
+
+### INSTALL targets
+
+.PHONY: showpaths install install-programs install-include-server
+.PHONY: install-man install-doc install-example install-gnome-data 
+
+# TODO: Allow root directory to be overridden for use in building
+# packages.
+
+showpaths:
+	@echo "'make install' will install distcc as follows:"
+	@echo "  man pages            $(DESTDIR)$(man1dir)"
+	@echo "  documents            $(DESTDIR)$(docdir)"
+	@echo "  programs             $(DESTDIR)$(bindir)"
+	@echo "  system configuration $(DESTDIR)$(sysconfdir)"
+	@echo "  shared data files    $(DESTDIR)$(pkgdatadir)"
+
+
+# install-sh can't handle multiple arguments, but we don't need any
+# tricky features so mkinstalldirs and cp will do
+
+install: showpaths install-doc install-man install-programs install-include-server install-for-include-server-tests install-example @INSTALL_GNOME@ 
+
+install-programs: $(bin_PROGRAMS) pump
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	for p in $(bin_PROGRAMS) pump; do			\
+	$(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir) || exit 1;	\
+	done
+
+# The jumping through hoops with cd is to normalize build/destdir if relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+install-include-server: include-server
+	test x$(PYTHON) != x &&				\
+	CURDIR=`pwd` && 				\
+	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
+	cd $(DESTDIR) && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
+	cd $(srcdir)/include_server && 			\
+	DISTCC_VERSION="$(VERSION)"			\
+	$(PYTHON) ./setup.py 				\
+	    build 					\
+	       --build-base="$$BUILDDIR" 		\
+	       --build-temp="$$BUILDDIR"		\
+	    install 					\
+	       --prefix="$(prefix)" 			\
+	       --record="$(PYTHON_INSTALL_RECORD)"    	\
+	       --root="$$DESTDIR"
+
+# Below we delete the link and then we recreate it.  Otherwise, a second link
+# will be created the second time install-for-tests is run! That's because the
+# link name would now be resolved as a target directory (third form according to
+# 'man ln'). As a result a link to the test_data directory would be inserted
+# into the test_data directory under the name 'test_data'.
+# TODO(csilvers): see if we can remove the -f.  As it is, this forces a
+#                 rebuild of much of distcc every time we call it.
+# The jumping through hoops with cd is to normalize testdir if it's relative.
+# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+install-for-include-server-tests:
+	mkdir -p $(include_server_testdir)
+	mkdir -p $(include_server_builddir)
+	if [ -h $(include_server_testdir)/test_data ]; then             \
+	  rm -f $(include_server_testdir)/test_data;                    \
+	fi
+	CURDIR=`pwd` && cd $(srcdir)/include_server/test_data && \
+		TESTDATADIR=`pwd` && cd $$CURDIR &&               \
+		ln -s $$TESTDATADIR $(include_server_testdir)/test_data
+	test x$(PYTHON) != x &&				\
+	CURDIR=`pwd` && 				\
+	cd $(include_server_testdir) && TESTDIR=`pwd` && export TESTDIR && \
+	cd $$CURDIR && cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
+	cd $$CURDIR && cd $(srcdir)/include_server &&	\
+	DISTCC_VERSION="$(VERSION)"			\
+	$(PYTHON) ./setup.py 				\
+	    build -f					\
+	       --build-base="$$TESTDIR" 		\
+	       --build-temp="$$TESTDIR"			\
+	    install 					\
+	       --install-lib="$$TESTDIR/python"		\
+	       --install-scripts="$$TESTDIR/python"
+
+install-man: $(man1_MEN)
+	$(mkinstalldirs) $(DESTDIR)$(man1dir)
+	for p in $(man1_MEN); do				\
+	$(INSTALL_DATA)	$$p $(DESTDIR)$(man1dir) || exit 1;	\
+	done
+
+install-doc: $(pkgdoc_DOCS)
+	$(mkinstalldirs) $(DESTDIR)$(docdir)
+	for p in $(pkgdoc_DOCS); do				\
+	$(INSTALL_DATA) $$p $(DESTDIR)$(docdir) || exit 1;	\
+	done
+
+install-example: $(example_DOCS)
+	$(mkinstalldirs) $(DESTDIR)$(docdir)/example
+	for p in $(example_DOCS); do				\
+	$(INSTALL_DATA) $$p $(DESTDIR)$(docdir)/example || exit 1;	\
+	done
+
+install-gnome-data: $(gnome_data)
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	for p in $(gnome_data); do				\
+	$(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir) || exit 1;	\
+	done
