@@ -603,7 +603,8 @@ man/distccmon_text_1.html: man/distccmon-text.1
 ######################################################################
 ## CHECK targets
 
-.PHONY: maintainer-check maintainer-installcheck check installcheck
+.PHONY: maintainer-check maintainer-installcheck maintainer-check-deps
+.PHONY: check installcheck 
 .PHONY: lzo-check valgrind-check pump-check single-test
 
 check_programs: $(check_PROGRAMS) $(bin_PROGRAMS)
@@ -629,17 +630,25 @@ maintainer-check-no-set-path:
 		| grep -v 'distcc_include_server\[.*\] (dcc_r_token_int) ERROR: protocol derailment: expected token "XXXX"' \
 		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'
 
+
+maintainer-check-deps: check_programs install-for-include-server-tests
+
 # WARNING: This resets the path to avoid any confusion caused by
 # having distcc masquerades already on the path.  If you have gcc
 # installed elsewhere this won't work....
-maintainer-check: check_programs install-for-include-server-tests
+maintainer-check: maintainer-check-deps
 	if test x$(PYTHON) != x; then PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
 	                              $(MAKE) maintainer-check-no-set-path; \
 	else echo "WARNING: python not found; tests skipped"; \
 	fi
 
-# NB: This does not depend upon install; you might want to test another version.
-maintainer-installcheck: check_programs install-for-include-server-tests
+# "make maintainer-installcheck" verifies the currently installed version.  It
+# does NOT have the "install" target as a dependency, so that you can install
+# via some different method (e.g. rpm or debian package) and then run "make
+# installcheck".
+# TODO(klarlund): The presence of `pwd` in the PATH setting seems to potentially
+# defeat the purpose of checking the installation. Remove this.
+maintainer-installcheck: maintainer-check-deps
 	if test x$(PYTHON) != x; then PATH="$(bindir):`pwd`:$$PATH" \
 	                              $(MAKE) maintainer-check-no-set-path; \
 	else echo "WARNING: python not found; tests skipped"; \
@@ -666,11 +675,11 @@ valgrind-check:
 # We need to set DISTCC_HOSTS, otherwise "pump" complains,
 # but it doesn't matter what we set it to, because testdistcc.py
 # will set it again anyway.
-pump-check:
+pump-check: pump maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
-pump-installcheck:
+pump-installcheck: pump maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH="$(bindir):`pwd`:$$PATH" \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
