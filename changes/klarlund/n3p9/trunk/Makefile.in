@@ -638,12 +638,12 @@ maintainer-check: maintainer-check-deps
 	else echo "WARNING: python not found; tests skipped"; \
 	fi
 
-# TODO(klarlund): The comment below is confusing. Presumably, maintainer-check,
-# above, should verify the version in $(bindir), but doesn't currently.  And,
-# presumably the target below should check the installation if the name of this
-# target is to make any sense.
-
-# NB: This does not depend upon install; you might want to test another version.
+# "make maintainer-installcheck" verifies the currently installed version.  It
+# does NOT have the "install" target as a dependency, so that you can install
+# via some different method (e.g. rpm or debian package) and then run "make
+# installcheck".
+# TODO(klarlund): The presence of `pwd` in the PATH setting seems to potentially
+# defeat the purpose of checking the installation. Remove this.
 maintainer-installcheck: maintainer-check-deps
 	if test x$(PYTHON) != x; then PATH="$(bindir):`pwd`:$$PATH" \
 	                              $(MAKE) maintainer-check-no-set-path; \
@@ -675,7 +675,7 @@ pump-check: pump maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
-pump-installcheck:
+pump-installcheck: pump maintainer-check-deps
 	DISTCC_HOSTS='<invalid>' PATH="$(bindir):`pwd`:$$PATH" \
 		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
 
