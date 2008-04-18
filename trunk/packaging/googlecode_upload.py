@@ -3,6 +3,9 @@
 # Copyright 2006, 2007 Google Inc. All Rights Reserved.
 # Author: danderson@google.com (David Anderson)
 #
+# Modifications for distcc Copyright 2008 Google Inc.
+# Author: Craig Silverstein.
+#
 # Script for uploading files to a Google Code project.
 #
 # This is intended to be both a useful script for people who want to
@@ -54,7 +57,81 @@ import optparse
 import getpass
 import base64
 import sys
+import re
 
+
+def extract_version(project, file_paths):
+  """Given a list of filenames belonging to a given Google Code
+  project, derive from that the version number.  Do this by looking
+  for a .tar.gz, .tgz. .tar.bz2, or .zip file, and assume those are
+  named <project>-<version>.<extension>.  Verify by making sure
+  <project> and <version> are substrings in all given files.
+
+  Returns version, or empty string if couldn't figure it out.
+  """
+  for file_path in file_paths:
+    m = re.match(r'%s-([0-9]+\.[0-9]+.*)\.(tar\.gz|tgz|tar\.bz2|zip)' % project,
+                 os.path.basename(file_path), re.I)
+    if m:
+      version = m.group(1)
+      break
+  else:    # for ended without finding anything
+    return ''
+
+  # Now verify the project and version are everywhere
+  for file_path in file_paths:
+    if file_path.find(version) == -1:
+      return ''
+
+  return version
+
+def derive_summary_and_labels(file_path, version):
+  """Derive a summary associated with a file given some file information.
+
+  Returns (summary, list_of_labels).  Raises ValueError if there was
+  a problem figuring out the summary.
+
+  Given a filename like google_perftools-0.94.rpm, this function would derive
+  * summary = "RPM for google_perftools 0.94"
+  * labels = ["Type-Package", "OpSys-Linux"]
+  """
+  if file_path.find('distcc-server') != -1:
+    project = 'Distcc server (distccd)'
+  elif file_path.find('distcc') != -1:
+    project = 'Distcc client (distcc)'
+  else:
+    raise ValueError("Unknown project name for '%s'" % file_path)
+
+  if (file_path.endswith('.tar.gz') or file_path.endswith('.tgz') or
+      file_path.endswith('.tar.bz2')):
+    return ('Tarball for %s %s' % (project, version),
+            ('Type-Source', 'OpSys-All'))
+
+  if file_path.endswith('.zip'):
+    return ('Zip file for %s %s' % (project, version),
+            ('Type-Source', 'OpSys-Windows'))
+
+  if file_path.endswith('.deb') and file_path.find('-dev_') != -1:
+    return ('Development deb for %s %s' % (project, version),
+            ('Type-Package', 'OpSys-Linux'))
+
+  if file_path.endswith('.deb'):
+    return ('Deb for %s %s' % (project, version),
+            ('Type-Package', 'OpSys-Linux'))
+
+  if file_path.endswith('.src.rpm') and file_path.find('-devel-') != -1:
+    return ('Source-code RPM for %s %s' % (project, version),
+            ('Type-Package', 'OpSys-Linux'))
+
+  if file_path.endswith('.rpm') and file_path.find('-devel-') != -1:
+    return ('Development RPM for %s %s' % (project, version),
+            ('Type-Package', 'OpSys-Linux'))
+
+  if file_path.endswith('.rpm'):
+    return ('RPM for %s %s' % (project, version),
+            ('Type-Package', 'OpSys-Linux'))
+
+  raise ValueError("Unknown file extension for '%s'" % file_path)
 
 def get_svn_config_dir():
   """Return user's Subversion configuration directory."""
@@ -264,48 +341,82 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
 
 def main():
   parser = optparse.OptionParser(usage='googlecode-upload.py -s SUMMARY '
-                                 '-p PROJECT [options] FILE')
+                                 '-p PROJECT [options] FILE [FILE] ...')
   parser.add_option('--config-dir', dest='config_dir', metavar='DIR',
                     help='read svn auth data from DIR'
                          ' ("none" means not to use svn auth data)')
   parser.add_option('-s', '--summary', dest='summary',
-                    help='Short description of the file')
-  parser.add_option('-p', '--project', dest='project',
-                    help='Google Code project name')
+                    help='Short description of the file'
+                         ' (if not set, description will derive from filename)')
   parser.add_option('-u', '--user', dest='user',
-                    help='Your Google Code username')
+                    help='Your Google Code username'
+                         ' (if not set, the program will prompt you)')
   parser.add_option('-l', '--labels', dest='labels',
-                    help='An optional list of labels to attach to the file')
+                    help='An optional list of labels to attach to the file'
+                         ' (if not set, labels will derive from filename)')
 
   options, args = parser.parse_args()
 
-  if not options.summary:
-    parser.error('File summary is missing.')
-  elif not options.project:
-    parser.error('Project name is missing.')
-  elif len(args) < 1:
-    parser.error('File to upload not provided.')
-  elif len(args) > 1:
-    parser.error('Only one file may be specified.')
+  if not args:
+    parser.error('File(s) to upload not provided.')
 
-  file_path = args[0]
+  project = 'distcc'   # We hard-code that. :-)
 
   if options.labels:
-    labels = options.labels.split(',')
+    user_labels = options.labels.split(',')
   else:
-    labels = None
+    user_labels = None
 
-  status, reason, url = upload_find_auth(file_path, options.project,
-                                         options.summary, labels,
-                                         options.config_dir, options.user)
-  if url:
-    print 'The file was uploaded successfully.'
-    print 'URL: %s' % url
-    return 0
+  default_user = os.environ.get('USER', 'unknown')
+  if options.user:
+    user = options.user
   else:
-    print 'An error occurred. Your file was not uploaded.'
-    print 'Google Code upload server said: %s (%s)' % (reason, status)
-    return 1
+    print 'Enter username (<enter> takes the default of "%s"):' % default_user,
+    user = raw_input() or default_user
+
+  password = getpass.getpass()
+
+  version = extract_version(args)
+
+  successes = 0
+  failures = 0
+
+  for file_path in args:
+    # If the user did not specify the summary or labels, derive these
+    # from the filename.
+    try:
+      (derived_summary, derived_labels) = \
+          derive_summary_and_labels(file_path, project, derived_version)
+    except ValueError, why:
+      print "%s" % why
+      failures += 1
+      continue
+
+    summary = options.summary or derived_summary
+    labels = user_labels or derived_labels
+
+    # The find_auth functionality is currently broken; see
+    # http://code.google.com/p/support/issues/detail?id=558
+    # This is why we asked for the password/username above.
+    ## status, reason, url = upload_find_auth(file_path, options.project,
+    ##                                        options.summary, labels,
+    ##                                        options.config_dir, options.user)
+    status, reason, url = upload(file_path, project, user, password,
+                                 summary, labels)
+
+    if url:
+      print '%s was uploaded successfully.' % file_path
+      print 'URL: %s' % url
+      print
+      successes += 1
+    else:
+      print 'An error occurred. %s was not uploaded.' % file_path
+      print 'Google Code upload server said: %s (%s)' % (reason, status)
+      print
+      failures += 1
+
+  print "Upload status: %d successes, %d failures." % (successes, failures)
+  return failures
 
 
 if __name__ == '__main__':
