@@ -1,0 +1,287 @@
+#!/bin/bash
+#
+#	/etc/rc.d/init.d/distcc
+#
+# Starts the distccd daemon
+#
+# WARNING: Don't enable on untrusted networks
+#
+# NOTE: Allows access from all networks listed in clients.allow
+# clients.allow is searched for in directories
+#   /etc/distcc/`dnsdomainname`/clients.allow
+#   /etc/distcc/clients.allow
+# Format of clients.allow is 
+#   addr/size
+#   addr/size
+#   addr/size
+# etc. e.g.
+#   196.168.0.0/16
+#   127.0.0.0/8
+#
+# chkconfig: - 80 20
+# description: Start the distcc daemon
+# processname: distccd
+#
+
+#
+# Determine which kind of configuration we're using
+#
+system=unknown
+if [ -f /etc/debian_version ]; then
+    system=debian
+elif [ -f /etc/redhat-release ]; then
+    system=redhat
+else
+    echo "$0: Unknown system, please port and contact distcc-admin@google.com" 1>&2
+    exit 1
+fi
+
+OPTIONS="--daemon --stats --job-lifetime=1200"
+USER=distcc
+PROG="distccd"
+PIDFILE=/var/run/$PROG.pid
+EXEC="/usr/bin/distccd"
+
+
+if [[ -f /etc/sitename.install ]]; then
+        # goobuntu
+        DOMAIN=`cat /etc/sitename.install`
+        CONFIGDIR=/etc/site/current/distcc
+	NORESTART=$CONFIGDIR/no-restart
+else
+        # grhat
+        DOMAIN=`/bin/dnsdomainname`
+        CONFIGDIR=/etc/distcc
+	NORESTART=$CONFIGDIR/no-restart
+fi
+
+
+if [ $system = redhat ]; then
+
+	. /etc/init.d/functions
+
+	# Source networking configuration.
+	. /etc/sysconfig/network
+
+	# Check that networking is up.
+	[ ${NETWORKING} = "no" ] && exit 0
+fi
+
+
+if [ $system = debian ]; then
+    . /lib/lsb/init-functions
+    . /etc/default/distcc
+    thisscript="$0"
+    if [ ! -f "$thisscript" ]; then
+        echo "$0: Cannot find myself" 1>&2
+        exit 1
+    fi
+    if [ "$STARTDISTCC" != "true" ] ; then
+        echo "STARTDISTCC is set to false in /etc/default/distcc"
+        echo "$something is not starting"
+        exit 0
+    fi
+    touch $PIDFILE
+    chown $USER $PIDFILE
+fi
+
+
+
+# Tell distccd to store temp files in /var/tmp/distcc to avoid filling up /
+# The sysadmin may want to make /var/tmp/distcc be a symlink to a
+# directory on a larger partition (hence the /. on the chown)
+TMPDIR=/var/tmp/distcc
+export TMPDIR
+mkdir -p $TMPDIR
+chown $USER $TMPDIR/.
+rm -rf $TMPDIR/* || :
+chmod 700 $TMPDIR
+
+RETVAL=0
+
+[ -x /usr/bin/distccd ] || exit 0
+
+ALLOWFILE=""
+
+
+if test -f $CONFIGDIR/clients.allow; then
+        ALLOWFILE=$CONFIGDIR/clients.allow
+elif test -f $CONFIGDIR/$DOMAIN/clients.allow; then
+        ALLOWFILE=$CONFIGDIR/$DOMAIN/clients.allow
+else
+	echo "$0: no clients allowed"
+	exit 1
+fi
+
+
+if test "$ALLOWFILE"x != x; then
+	ALLOW_OPTIONS=$(sed -e 's/#.*$//' -e '/^[ 	]*$/d' -e 's/^/--allow=/' < $ALLOWFILE)
+	OPTIONS="$OPTIONS $ALLOW_OPTIONS"
+fi
+
+
+rh_start() {
+	echo -n "Starting $PROG"
+
+	if [[ -f $NORESTART ]]
+	then
+		echo "failed -- $NORESTART present"
+		return 1
+	fi
+
+        #--- begin crosstool-specific configuration ---
+	# List directories which might contain installations of crosstool on this node
+	# This will let users compile on this node regardless of where crosstool
+	# is installed on client or server
+	# Neccessary because crosstool compilers are identified not just by
+	# a command name, but also by the directory they're in (if you have
+	# several toolchains built for a particular target).
+	COMPILERS=
+	# modern crosstool 
+	test -d /usr/crosstool && COMPILERS="$COMPILERS /usr/crosstool/*/*/bin/*-[cg][+c][+c] /usr/crosstool/v*/*/*/bin/*-[cg][+c][+c] /usr/crosstool/v4/*/*/*/bin/*-[cg][+c][+c]"
+	# old crosstool (which stored everything in a directory named for the build system type)
+	test -d /opt/crosstool && COMPILERS="$COMPILERS /opt/crosstool/*/*/*/bin/*-[cg][+c][+c]"
+	test -d /home/build/buildtools/crosstool/v7 && COMPILERS="$COMPILERS /home/build/buildtools/crosstool/v7/*/*/bin/*-[cg][+c][+c]"
+	if test ! -d $CONFIGDIR; then
+		mkdir -p $CONFIGDIR
+	fi
+	CMDLIST=$CONFIGDIR/commands.allow
+	# Expand the wildcards in $COMPILERS, put one file per line, empty file if no match
+	echo $COMPILERS | tr '\040' '\012' > $CMDLIST
+	ENV="DISTCC_CMDLIST=$CMDLIST DISTCC_CMDLIST_NUMWORDS=5 TMPDIR=$TMPDIR"
+        #--- done crosstool-specific configuration ---
+
+	daemon --user $USER $ENV $PROG $OPTIONS
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
+        return $RETVAL
+}
+
+rh_stop() {
+	echo -n "Shutting down $PROG"
+	killproc $PROG
+	RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
+        return $RETVAL
+}
+
+redhat() {
+	case "$1" in
+		start)
+			rh_start
+			;;
+		stop)
+			rh_stop
+			;;
+		status)
+			status $PROG
+			RETVAL=$?
+			;;
+		restart|reload)
+			rh_stop
+			rh_start
+			RETVAL=$?
+			;;
+		condrestart)
+			if [ -f /var/lock/subsys/$PROG ]; then
+				rh_stop
+				rh_start
+				RETVAL=$?
+			fi
+			;;
+		*)
+			echo $"Usage $0 {start|stop|restart|condrestart|status}"
+			exit 1
+	esac
+}
+
+deb_start() {
+        log_begin_msg "Starting $PROG..."
+
+	if [[ -f $NORESTART ]]
+	then
+		log_end_msg 1
+		echo "distcc start failed -- $NORESTART present"
+		return 1
+	fi
+
+        #--- begin crosstool-specific configuration ---
+	# List directories which might contain installations of crosstool on this node
+	# This will let users compile on this node regardless of where crosstool
+	# is installed on client or server
+	# Neccessary because crosstool compilers are identified not just by
+	# a command name, but also by the directory they're in (if you have
+	# several toolchains built for a particular target).
+	COMPILERS=
+	# modern crosstool 
+	test -d /usr/crosstool && COMPILERS="$COMPILERS /usr/crosstool/*/*/bin/*-[cg][+c][+c] /usr/crosstool/v*/*/*/bin/*-[cg][+c][+c] /usr/crosstool/v4/*/*/*/bin/*-[cg][+c][+c]"
+	# old crosstool (which stored everything in a directory named for the build system type)
+	test -d /opt/crosstool && COMPILERS="$COMPILERS /opt/crosstool/*/*/*/bin/*-[cg][+c][+c]"
+	test -d /home/build/buildtools/crosstool/v7 && COMPILERS="$COMPILERS /home/build/buildtools/crosstool/v7/*/*/bin/*-[cg][+c][+c]"
+	if test ! -d $CONFIGDIR; then
+		mkdir -p $CONFIGDIR
+	fi
+	CMDLIST=$CONFIGDIR/commands.allow
+	# Expand the wildcards in $COMPILERS, put one file per line, empty file if no match
+	echo $COMPILERS | tr '\040' '\012' > $CMDLIST
+	export DISTCC_CMDLIST=$CMDLIST
+	export DISTCC_CMDLIST_NUMWORDS=5
+	export TMPDIR=$TMPDIR
+
+        #--- done crosstool-specific configuration ---
+
+	start-stop-daemon --start --name distccd --pidfile $PIDFILE -m --chuid $USER --exec $EXEC -- $OPTIONS || log_end_msg 1
+	RETVAL=$?
+        log_end_msg 0
+        return $RETVAL
+}
+
+deb_stop() {
+	log_begin_msg "Shutting down $PROG..."
+        start-stop-daemon --stop  --name distccd --exec $EXEC --retry 30 || \
+                log_success_msg "$PROG not running"
+	RETVAL=$?
+        log_end_msg 0
+        [ $RETVAL -eq 0 ] && rm -f $PIDFILE
+        return $RETVAL
+}
+
+debian() {
+	case "$1" in
+		start)
+			deb_start
+			;;
+		stop)
+			deb_stop
+			;;
+		restart|reload)
+			deb_stop
+			deb_start
+			RETVAL=$?
+			;;
+		condrestart)
+			if [ -f /var/lock/subsys/$PROG ]; then
+				deb_stop
+				deb_start
+				RETVAL=$?
+			fi
+			;;
+		*)
+			echo $"Usage $0 {start|stop|restart|condrestart}"
+			exit 1
+	esac
+}
+
+# See how we were called.
+
+RETVAL=0
+if [ $system = debian ]; then
+        debian "$@"
+elif [ $system = redhat ]; then
+        redhat "$@"
+fi
+
+exit $RETVAL
+
