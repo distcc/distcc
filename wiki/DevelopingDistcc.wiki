@@ -7,7 +7,7 @@ Click on the "Source" tab above for instructions on how to download the sources.
 = Building =
 
 {{{
-cd distcc-pump
+cd distcc
 sh autogen.sh
 sh configure
 make
