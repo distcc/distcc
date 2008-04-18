@@ -625,9 +625,9 @@ maintainer-check-no-set-path:
 	    fi \
 	  done
 	echo Filtering c_extensions_test.py.out
-	cat $(include_server_testdir)/c_extensions_test.py.out
+	@cat $(include_server_testdir)/c_extensions_test.py.out \
 		| grep -v 'distcc_include_server\[.*\] (dcc_r_token_int) ERROR: protocol derailment: expected token "XXXX"' \
-		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'; \
+		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'
 
 # WARNING: This resets the path to avoid any confusion caused by
 # having distcc masquerades already on the path.  If you have gcc
