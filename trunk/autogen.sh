@@ -1,5 +1,6 @@
 #! /bin/sh
 
+# Usage: autogen.sh [srcdir]
 # Run this script to build distcc from CVS.
 
 ## first try the default names
@@ -15,14 +16,19 @@ else
     exit 1
 fi
 
+srcdir=${1:-.}
+builddir=`pwd`
+
 echo "$0: running $ACLOCAL"
-$ACLOCAL -I m4 || exit 1
+(cd $srcdir && $ACLOCAL -I m4 --output=$builddir/aclocal.m4) || exit 1
 
 echo "$0: running $AUTOHEADER"
-$AUTOHEADER || exit 1
+[ -d src ] || mkdir src  # Needed for autoheader to generate src/config.h.in.
+$AUTOHEADER $srcdir/configure.ac || exit 1
 
 echo "$0: running $AUTOCONF"
-$AUTOCONF || exit 1
+$AUTOCONF $srcdir/configure.ac > configure || exit 1
+chmod +x configure || exit 1
 
-echo "Now run ./configure and then make."
+echo "Now run './configure --srcdir=$srcdir' and then 'make'."
 exit 0
