@@ -553,17 +553,21 @@ dist:
 # verify it got rid of everything not in the tarball by deleting every
 # file mentioned in the tarball, and then making sure nothing is left.
 distcheck: dist
+	[ -d +distcheck ] && chmod -R u+w +distcheck
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
 	cd '+distcheck' && $(GZIP_BIN) -d < ../$(tarball_gz) | $(TAR) xv
 	mkdir +distcheck/$(distdir)/_build
 	mkdir +distcheck/$(distdir)/_inst
+	chmod -R a-w +distcheck
+	chmod u+w +distcheck/$(distdir)/_build +distcheck/$(distdir)/_inst
 	dc_install_base=`cd +distcheck/$(distdir)/_inst && pwd` \
 	&& cd +distcheck/$(distdir)/_build \
 	&& ../configure --srcdir=.. --prefix="$$dc_install_base" \
 	&& $(MAKE) && $(MAKE) maintainer-check \
 	&& $(MAKE) install && $(MAKE) maintainer-installcheck \
 	&& $(MAKE) distclean
+	chmod -R u+w +distcheck
 	test `find +distcheck/$(distdir)/_build -type f -print | wc -l` -eq 0 \
 		|| { echo "ERROR: files left in build-dir after distclean:"; \
                      find +distcheck/$(distdir)/_build -type f -print; \
@@ -816,7 +820,7 @@ install-include-server: include-server
 	test x$(PYTHON) != x &&				\
 	CURDIR=`pwd` && 				\
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
-	cd $(DESTDIR) && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
+	cd $(DESTDIR)/ && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
 	cd $(srcdir)/include_server && 			\
 	DISTCC_VERSION="$(VERSION)"			\
 	$(PYTHON) ./setup.py 				\
