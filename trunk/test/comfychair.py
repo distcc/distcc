@@ -55,7 +55,7 @@ class TestCase:
         self.basedir = os.getcwd()
         self.add_cleanup(self._restore_directory)
         self.rundir = os.path.join(self.basedir,
-                                   'testtmp', 
+                                   '_testtmp', 
                                    self.__class__.__name__)
         self.tmpdir = os.path.join(self.rundir, 'tmp')
         os.system("rm -fr %s" % self.rundir)
