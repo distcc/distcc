@@ -85,7 +85,7 @@ def extract_version(project, file_paths):
 
   return version
 
-def derive_summary_and_labels(file_path, version):
+def derive_summary_and_labels(file_path, package, version):
   """Derive a summary associated with a file given some file information.
 
   Returns (summary, list_of_labels).  Raises ValueError if there was
@@ -320,9 +320,9 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
       # Read password if not loaded from svn config, or on subsequent tries.
       print 'Please enter your googlecode.com password.'
       print '** Note that this is NOT your Gmail account password! **'
-      print 'It is the password you use to access Subversion repositories,'
-      print 'and can be found here: http://code.google.com/hosting/settings'
-      password = getpass.getpass()
+      print 'It is the password you use to access Subversion repositories.'
+      prompt = 'Password (listed at http://code.google.com/hosting/settings): '
+      password = getpass.getpass(prompt)
 
     status, reason, url = upload(file_path, project_name, user_name, password,
                                  summary, labels)
@@ -374,9 +374,10 @@ def main():
     print 'Enter username (<enter> takes the default of "%s"):' % default_user,
     user = raw_input() or default_user
 
-  password = getpass.getpass()
+  prompt = 'Password (listed at http://code.google.com/hosting/settings): '
+  password = getpass.getpass(prompt)
 
-  version = extract_version(args)
+  version = extract_version(project, args)
 
   successes = 0
   failures = 0
@@ -386,7 +387,7 @@ def main():
     # from the filename.
     try:
       (derived_summary, derived_labels) = \
-          derive_summary_and_labels(file_path, project, derived_version)
+          derive_summary_and_labels(file_path, project, version)
     except ValueError, why:
       print "%s" % why
       failures += 1
