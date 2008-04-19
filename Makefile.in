@@ -165,7 +165,8 @@ dist_extra =							\
 	packaging/RedHat/init.d/distcc \
 	packaging/RedHat/xinetd.d/distcc \
 	packaging/deb.sh \
-	packaging/rpm.sh
+	packaging/rpm.sh \
+	packaging/googlecode_upload.py
 
 
 mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
@@ -788,8 +789,10 @@ upload-man: $(man_HTML)
 		--exclude CVS --exclude '*~' --exclude '*.latte' \
 		samba.org:/home/httpd/distcc/man/
 
-upload-dist:
-	rsync -avP $(tarball_bz2) $(distnews) $(tarball_sig) samba.org:/home/ftp/pub/distcc/
+upload-dist: alldist
+	$(srcdir)/packaging/googlecode_upload.py \
+	  `find . -name '*.tar.gz' -o -name '*.tar.bz2' \
+	          -o -name '*.rpm' -o -name '*.deb'`
 
 .PHONY: rpm
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
