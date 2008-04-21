@@ -888,9 +888,8 @@ install: showpaths install-doc install-man install-programs \
 
 # When installing, we include the check programs so that
 # maintainer-install-check can run the regression tests in the test directory.
-
 install-programs: $(bin_PROGRAMS) pump
-	$(mkinstalldirs) $(DESTDIR)bindir)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	for p in $(bin_PROGRAMS) $(check_PROGRAMS) pump; do \
 	  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir) || exit 1; \
 	done
