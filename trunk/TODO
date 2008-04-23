@@ -1,26 +1,26 @@
 TODO list for distcc
 
-See also TODO and FIXME comments in source files and doc/todo/
+--> See also TODO and FIXME comments in source files and doc/todo/
+
+
+should rewrite non-ELF, non-DWARF2 object files
+
+    The existing include-server code will rewrite ELF files to refer
+    to source-file names (in the DWARF2 sections) as they would appear
+    on the client machine, rather than as they appear when rewritten
+    on the server machine.  We should enhance that functionality to
+    work with other object formats, such as Mach-O (used by OS X).
 
 
 should probably actually check the number of CPUs for use on localhost
 
 
-
-convert web site from latte to say php
-
-    Latte is nice, but seems to be gradually becoming unmaintained;
-    not in Ubuntu or Gentoo.
-
-
 failing to resolve a host should be a soft failure
-
 
 
 State files depend on host byte order and break when DISTCC_DIR is
 shared between heterogenous machines.  Of course sharing this
 directory is probably a bad idea anyhow.
-
 
 
 error messages get badly interleaved
@@ -39,7 +39,6 @@ error messages get badly interleaved
     time so as to increase the chance that each line is written atomically.
     
 
-
 hardcode "gcc" not "cc"?
 
     I don't think distcc works with anything else.  So why take the
@@ -56,8 +55,6 @@ monitor/state/lock files be on NFS
     Handle ESTALE or short EOF.
 
     http://groups.google.com/groups?selm=netappCJyvKo.MrI%40netcom.com
-
-
 
 
 if connection fails, reschedule remotely?
