@@ -142,6 +142,7 @@ done
 if test x${with_gnome} = xyes -o x${with_gtk} = xyes 
 then
     INSTALL_GNOME="install-gnome-data"
+    UNINSTALL_GNOME="uninstall-gnome-data"
     AC_MSG_CHECKING([GNOME/GTK+ cflags])
     GNOME_CFLAGS="`pkg-config --cflags $GNOME_PACKAGES`" || AC_MSG_ERROR([failed to get cflags])
     AC_MSG_RESULT([${GNOME_CFLAGS}])
@@ -155,6 +156,7 @@ AC_SUBST(GNOME_PACKAGES)
 AC_SUBST(GNOME_CFLAGS)
 AC_SUBST(GNOME_LIBS)
 AC_SUBST(INSTALL_GNOME)
+AC_SUBST(UNINSTALL_GNOME)
 
 dnl Checks for programs
 AC_PROG_CC
