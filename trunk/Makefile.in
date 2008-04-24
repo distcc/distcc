@@ -819,7 +819,7 @@ alldist: deb
 	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.rpm
 	@ls -1 packaging/*[-_.]"$(VERSION)"[-_.]*.deb
 
-### INSTALL targets
+### INSTALL (and UNINSTALL) targets
 
 .PHONY: showpaths install install-programs install-include-server
 .PHONY: install-man install-doc install-example install-gnome-data 
@@ -951,4 +951,68 @@ install-conf: $(conf_files) $(default_files)
 	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
 	        || exit 1;                                       \
 	  fi;                                                    \
+	done
+
+# For best results, uninstall-example has to run before uninstall-doc,
+# so we clean up the doc subdirectory before cleaning up doc itself.
+
+uninstall: uninstall-man uninstall-programs @UNINSTALL_GNOME@ \
+	uninstall-include-server uninstall-example uninstall-doc uninstall-conf
+
+uninstall-programs:
+	for p in $(bin_PROGRAMS) pump; do			\
+	  file=$(DESTDIR)$(bindir)/`basename $$p`;              \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
+	-[ "`basename $(bindir)`" = "$(PACKAGE)" ] && rmdir $(DESTDIR)$(bindir)
+
+# There's no setup.py --uninstall. :-( So I depend on
+# PYTHON_INSTALL_RECORD being set.  If it was used at --install time,
+# I can use it again to uninstall.
+uninstall-include-server:
+	if [ -e "$(PYTHON_INSTALL_RECORD)" ]; then              \
+	  cat "$(PYTHON_INSTALL_RECORD)" | xargs rm -fv;        \
+	  cat "$(PYTHON_INSTALL_RECORD)" | sed 's/py$/pyc/' | xargs rm -fv; \
+	  cat "$(PYTHON_INSTALL_RECORD)" | sed 's/py$/pyo/' | xargs rm -fv; \
+	else                                                    \
+	  echo "Cannot uninstall include-server: no PYTHON_INSTALL_RECORD"; \
+	fi
+
+uninstall-man:
+	for p in $(man1_MEN); do				\
+	  file=$(DESTDIR)$(man1dir)/`basename $$p`;             \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
+	-[ "`basename $(man1dir)`" = "$(PACKAGE)" ] && rmdir $(DESTDIR)$(man1dir)
+
+uninstall-doc:
+	for p in $(pkgdoc_DOCS); do				\
+	  file=$(DESTDIR)$(docdir)/`basename $$p`;              \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
+	-[ "`basename $(docdir)`" = "$(PACKAGE)" ] && rmdir $(DESTDIR)$(docdir)
+
+uninstall-example:
+	for p in $(example_DOCS); do				\
+	  file=$(DESTDIR)$(docdir)/example/`basename $$p`;      \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
+	-rmdir $(DESTDIR)$(docdir)/example
+
+uninstall-gnome-data:
+	for p in $(gnome_data); do				\
+	  file=$(DESTDIR)$(pkgdir)/`basename $$p`;              \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
+	-[ `basename $(pkgdir)` = $(PACKAGE) ] && rmdir $(DESTDIR)$(pkgdir)
+
+uninstall-conf:
+	for p in $(conf_files); do                              \
+	  file=$(DESTDIR)$(sysconfdir)/distcc/`basename $$p`;   \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
+	-rmdir $(DESTDIR)$(sysconfdir)/distcc
+	for p in $(default_files); do                           \
+	  file=$(DESTDIR)$(sysconfdir)/default/`basename $$p`;  \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
