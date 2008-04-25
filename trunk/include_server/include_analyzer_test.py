@@ -321,7 +321,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
     # In test_data, we find
     #
-    #   symlink_farm/sub_farm/link_to_dotdot_dotdot_dfoo_include_dotdot_foo
+    #   symlink_farm/sub_farm/link_to_dd_dd_dfoo_include_dotdot_foo
     #
     # which is a link to ../../dfoo/include_dotdot_foo, that is, to
     # 
@@ -336,7 +336,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
     #
     # We check that this "foo" is included. Moreover, we have put:
     #
-    #   #include "sub_farm/link_to_dotdot_dotdot_dfoo_include_dotdot_foo"
+    #   #include "sub_farm/link_to_dd_dd_dfoo_include_dotdot_foo"
     #
     #  into symlink_farm/sub_farm/foo, so that a nice infinite inclusion chain
     #  is modeled. That should not faze the include server. In particular, we
@@ -349,7 +349,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
     includes = self.RetrieveCanonicalPaths(
       self.ProcessCompilationCommandLine(
         "gcc -xc test_data/symlink_farm/sub_farm/"
-        + "link_to_dotdot_dotdot_dfoo_include_dotdot_foo",
+        + "link_to_dd_dd_dfoo_include_dotdot_foo",
         os.getcwd()))
     self.assertEqual(
       includes,
