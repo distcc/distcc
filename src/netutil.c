@@ -132,22 +132,22 @@ void dcc_set_nonblocking(int fd)
  * on the socket.  This works for our protocol because the client
  * sends a request immediately after connection without waiting for
  * anything from the server. */
-void dcc_defer_accept(int listen_fd)
+void dcc_defer_accept(int POSSIBLY_UNUSED(listen_fd))
 {
 #ifdef TCP_DEFER_ACCEPT
     int val = 1;
-    
+
     if (!dcc_getenv_bool("DISTCC_TCP_DEFER_ACCEPT", 1)) {
         rs_trace("TCP_DEFER_ACCEPT disabled");
         return;
     }
-    
+
     if (setsockopt(listen_fd, SOL_TCP, TCP_DEFER_ACCEPT, &val, sizeof val) == -1) {
         rs_log_warning("failed to set TCP_DEFER_ACCEPT: %s", strerror(errno));
     } else {
         rs_trace("TCP_DEFER_ACCEPT turned on");
     }
-#endif 
+#endif
 }
 
 

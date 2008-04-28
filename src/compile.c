@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <ctype.h>
 
@@ -680,7 +681,7 @@ int dcc_build_somewhere_timed(char *argv[],
 
         rs_log(RS_LOG_INFO|RS_LOG_NONAME,
                "elapsed compilation time %ld.%06lds",
-               delta.tv_sec, delta.tv_usec);
+               delta.tv_sec, (long) delta.tv_usec);
     }
 
     return ret;

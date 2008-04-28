@@ -46,6 +46,7 @@
 #include "dopt.h"
 #include "hosts.h"
 #include "bulk.h"
+#include "snprintf.h"
 
 int dcc_r_request_header(int ifd,
                          enum dcc_protover *ver_ret)

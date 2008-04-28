@@ -137,6 +137,19 @@ int dcc_mkdir(const char *path)
 }
  
 
+#ifndef HAVE_MKDTEMP
+static char* mkdtemp(char *pattern)
+{
+    /* We could try this a few times if we wanted */
+    char* path = mktemp(pattern);
+    if (path == NULL)
+        return NULL;
+    if (mkdir(path, 0700) == 0)
+        return path;
+    return NULL;
+}
+#endif
+
 /* This function creates a temporary directory, to be used for 
  * all (input) files during one compilation.
  * The name of the directory is stored in @p tempdir, which is

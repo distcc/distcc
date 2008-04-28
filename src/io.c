@@ -239,12 +239,12 @@ int dcc_writex(int fd, const void *buf, size_t len)
  *
  * This is a no-op if we don't think this platform has corks.
  **/
-int tcp_cork_sock(int fd, int corked)
+int tcp_cork_sock(int POSSIBLY_UNUSED(fd), int POSSIBLY_UNUSED(corked))
 {
-#ifdef TCP_CORK 
+#ifdef TCP_CORK
     if (!dcc_getenv_bool("DISTCC_TCP_CORK", 1))
         return 0;
-    
+
     if (setsockopt(fd, SOL_TCP, TCP_CORK, &corked, sizeof corked) == -1) {
         if (errno == ENOSYS || errno == ENOTSUP) {
             if (corked)

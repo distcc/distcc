@@ -168,13 +168,13 @@ then
 -W -Wall -Wimplicit -Wuninitialized \
 -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
 -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes \
--Wnested-externs -Wpointer-arith -Wmissing-declarations"
+-Wnested-externs -Wmissing-declarations"
     # Would like -Wunreachable-code here, but it generates too many false
     # positives.
 
     # We want warnings to be treated as errors.
     # Note that we can't include this in CFLAGS,
-    # because that would effect the configure tests,
+    # because that would affect the configure tests,
     # causing some of the tests to fail when they should succeed.
     WERROR_CFLAGS="-Werror"
 
@@ -207,8 +207,9 @@ AC_PROG_INSTALL
 # We prefer to use the latest Python, but try to find an explicit version 
 # to make sure we don't get a really old one.
 # The include server requires python 2.4 or later.
-AC_CHECK_PROGS(PYTHON, [python2.4 python-2 python])
-AC_ARG_VAR(PYTHON, [Python interpreter])
+# TODO(csilvers): check via python -V (and use AC_PATH_PROGS below)
+AC_CHECK_PROGS(PYTHON, [python2.4 python-2.4 python])
+AC_ARG_VAR(PYTHON, [Python interpreter (must be >= Python 2.4)])
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
 
@@ -317,11 +318,11 @@ CPPFLAGS="$CPPFLAGS -I$srcdir/src"
 
 AC_CHECK_FUNCS([getpagesize])
 AC_CHECK_FUNCS([sendfile setsid flock lockf hstrerror strerror setuid setreuid])
-AC_CHECK_FUNCS([getuid geteuid mcheck wait4 wait3 waitpid setgroups getcwd])
-AC_CHECK_FUNCS([snprintf vsnprintf vasprintf asprintf getcwd getwd])
+AC_CHECK_FUNCS([getuid geteuid mcheck wait4 wait3 waitpid setgroups])
+AC_CHECK_FUNCS([snprintf vsnprintf vasprintf asprintf getcwd getwd mkdtemp])
 AC_CHECK_FUNCS([getrusage strsignal gettimeofday])
 AC_CHECK_FUNCS([getaddrinfo getnameinfo inet_ntop inet_ntoa])
-AC_CHECK_FUNCS([strndup mmap strlcpy])
+AC_CHECK_FUNCS([strndup strsep mmap strlcpy])
 
 AC_CHECK_FUNCS([getloadavg])
 
