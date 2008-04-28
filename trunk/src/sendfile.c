@@ -138,9 +138,41 @@ static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
         return -1;
     }
 }
+#elif defined(__MACH__) && defined(__APPLE__)
+static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
+{
+    off_t sent_bytes = size;
+    int ret;
+
+    ret = sendfile(ofd, ifd, *offset, &sent_bytes, NULL, 0);
+    if (ret == -1) {
+        if (errno == EAGAIN) {
+            if (sent_bytes == 0) {
+                /* Didn't send anything. Return error with errno == EAGAIN. */
+                return -1;
+            } else {
+                /* We sent some bytes, but they we would block.  Treat this as
+                 * success for now. */
+                *offset += sent_bytes;
+                return sent_bytes;
+            }
+        } else {
+            /* some other error */
+            return -1;
+        }
+    } else if (ret == 0) {
+        *offset += size;
+        return size;
+    } else {
+        rs_log_error("don't know how to handle return %d from OS X sendfile",
+                     ret);
+        return -1;
+    }
+}
 #else
 #warning "Please write a sendfile implementation for this system"
-static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
+static ssize_t sys_sendfile(int UNUSED(ofd), int UNUSED(ifd),
+                            off_t *UNUSED(offset), size_t UNUSED(size))
 {
     rs_log_warning("no sendfile implementation on this platform");
     errno = ENOSYS;
@@ -209,4 +241,3 @@ dcc_pump_sendfile(int ofd, int ifd, size_t size)
     return 0;
 }
 #endif /* def HAVE_SENDFILE */
-
