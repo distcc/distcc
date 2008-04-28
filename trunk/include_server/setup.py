@@ -69,8 +69,14 @@ ext = Extension(
     libraries = [],
     runtime_library_dirs = [],
     extra_objects = [],
-    extra_compile_args = ['-Wall', '-Wextra', '-Werror'],
-    extra_link_args = ['-Wall', '-Wextra', '-Werror'],
+    # This is the same list as is in configure.ac, except we leave out
+    # -Wmissing-prototypes and -Wmissing-declarations, which don't apply
+    # to python extensions (it exports global fns via a pointer),
+    # and -Wwrite-strings, which just had too many false positives.
+    extra_compile_args = ("-W -Wall -Wimplicit -Wuninitialized "
+                          "-Wshadow -Wpointer-arith -Wcast-align "
+                          "-Waggregate-return -Wstrict-prototypes "
+                          "-Wnested-externs -Werror").split()
 )
 
 args = {

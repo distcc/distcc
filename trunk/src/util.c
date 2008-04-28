@@ -622,9 +622,10 @@ void dcc_get_proc_stats(int *num_D, int *max_RSS, char **max_RSS_name) {
 
     closedir(proc);
 #else
+    static char RSS_name[] = "none";
     *num_D = -1;
     *max_RSS = -1;
-    *max_RSS_name = "none";
+    *max_RSS_name = RSS_name;
 #endif
 }
 
@@ -709,6 +710,29 @@ void dcc_get_disk_io_stats(int *n_reads, int *n_writes) {
 	memcpy(d, s, len);
 	d[len] = 0;
 	return ret;
+}
+#endif
+
+#ifndef HAVE_STRSEP
+static char* strsep(char** str, const char* delims)
+{
+    char* token;
+
+    if (*str == NULL) {
+        return NULL;
+    }
+
+    token = *str;
+    while (**str != '\0') {
+        if (strchr(delims, **str) != NULL) {
+            **str = '\0';
+            (*str)++;
+            return token;
+        }
+        (*str)++;
+    }
+    *str = NULL;
+    return token;
 }
 #endif
 

@@ -5,6 +5,7 @@
 #include "distcc.h"
 #include "exitcode.h"
 #include "dotd.h"
+#include "snprintf.h"
 
 /* The dotd file is compiler generated,
  * so it should not have lines with more than

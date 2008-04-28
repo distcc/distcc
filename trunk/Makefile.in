@@ -240,7 +240,7 @@ distccd_obj = src/access.o						\
 
 lsdistcc_obj = src/lsdistcc.o 						\
 	src/clinet.o src/io.o src/netutil.o src/trace.o src/util.o 	\
-	src/rslave.o 							\
+	src/rslave.o src/snprintf.o                                     \
 	lzo/minilzo.o
 
 # Objects that need to be linked in to build monitors

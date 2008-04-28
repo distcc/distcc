@@ -471,7 +471,8 @@ void server_handle_event(state_t *sp)
 	if (opt_verbose > 2)
 	    fprintf(stderr, 
 		    "now %ld %ld: server_handle_event: %s: state %d\n", 
-		    now.tv_sec, now.tv_usec/1000, sp->req.hname, sp->status);
+		    now.tv_sec, (long) now.tv_usec/1000,
+                    sp->req.hname, sp->status);
 
 	switch (sp->status) {
 	case STATE_CONNECT:
@@ -497,7 +498,7 @@ void server_handle_event(state_t *sp)
                 if (opt_verbose > 0)
 		    fprintf(stderr, 
 			    "now %ld %ld: Connecting to %s\n", 
-			    now.tv_sec, now.tv_usec/1000, sp->req.hname);
+			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
 		if (connect(sp->fd, (struct sockaddr *)&sa, sizeof(sa))
 		    && errno != EINPROGRESS) {
 		    if (opt_verbose > 0)
@@ -534,7 +535,7 @@ void server_handle_event(state_t *sp)
 		       fprintf(stderr, 
 			       "now %ld %ld: Connecting to %s failed "
 			       "with errno %d = %s\n",
-			 now.tv_sec, now.tv_usec/1000, sp->req.hname, 
+			 now.tv_sec, (long) now.tv_usec/1000, sp->req.hname, 
 			 connecterr, strerror(connecterr));
 		    sp->status = STATE_CLOSE;	/* not listening */
 		    break;
@@ -548,7 +549,7 @@ void server_handle_event(state_t *sp)
 		if (opt_verbose > 0)
 		    fprintf(stderr, 
 			    "now %ld %ld: %s: sending compile request\n", 
-			    now.tv_sec, now.tv_usec/1000, sp->req.hname);
+			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
 		nsend = canned_query_len;
 		nsent = write(sp->fd, canned_query, nsend);
 		if (nsent != nsend) {
@@ -557,13 +558,13 @@ void server_handle_event(state_t *sp)
 			    fprintf(stderr, 
 				    "now %ld %ld: Sending to %s failed, "
 				    "errno %d\n",
-				    now.tv_sec, now.tv_usec/1000, sp->req.hname,
+				    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
 				    connecterr);
 			else
 			    fprintf(stderr, 
 				    "now %ld %ld: Sending to %s failed, "
 				    "nsent %d != nsend %d\n",
-				    now.tv_sec, now.tv_usec/1000, 
+				    now.tv_sec, (long) now.tv_usec/1000, 
 				    sp->req.hname, nsent, nsend);
 		    }
 		    /* ??? remote disconnect?  Buffer too small? */
@@ -816,8 +817,8 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 		    fprintf(stderr, 
 			    "now %ld %ld: Resending %s because "
 			    "deadline was %ld %ld\n",
-			    now.tv_sec, now.tv_usec/1000, sp->req.hname, 
-			    sp->deadline.tv_sec, sp->deadline.tv_usec/1000);
+			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
+			    sp->deadline.tv_sec, (long) sp->deadline.tv_usec/1000);
 		break;
 	    }
 
@@ -830,7 +831,7 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 		if (opt_verbose > 0)
 		    fprintf(stderr, 
 			    "now %ld %ld: %s timed out while connecting\n", 
-			    now.tv_sec, now.tv_usec/1000, sp->req.hname);
+			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
 	    }
 	    if ((sp->status == STATE_READ_DONEPKT || 
 		 sp->status == STATE_READ_STATPKT || 
@@ -843,7 +844,7 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 		if (opt_verbose > 0)
 		    fprintf(stderr, 
 			    "now %ld %ld: %s timed out while compiling\n", 
-			    now.tv_sec, now.tv_usec/1000, sp->req.hname);
+			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
 	    }
 	}
 	if (!found && (nwithtries[1] <= overlap) && 
@@ -865,7 +866,7 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 	if (found) {
 	    if (opt_verbose)
 		fprintf(stderr, "now %ld %ld: Looking up %s\n", 
-			now.tv_sec, now.tv_usec/1000, sp->req.hname);
+			now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
 	    rslave_writeRequest(&rs, &sp->req);
 	    sp->deadline = now;
 	    sp->deadline.tv_usec += dnstimeout_usec;
@@ -903,7 +904,7 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 		    if (result.err) {
 			if (opt_verbose)
 			    fprintf(stderr, "now %ld %ld: %s not found\n", 
-				    now.tv_sec, now.tv_usec/1000, 
+				    now.tv_sec, (long) now.tv_usec/1000, 
 				    sp->req.hname);
 			sp->status = STATE_DONE;
 			ndone++;

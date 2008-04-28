@@ -13,6 +13,7 @@
 #include "util.h"
 #include "trace.h"
 #include "bulk.h"
+#include "snprintf.h"
 
 /* if never_send_email is true, we won't send email 
    even if should_send_email is true */

@@ -43,6 +43,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "trace.h"
 #include "fix_debug_info.h"
 
+/* XINDEX isn't defined everywhere, but where it is, it's always the
+ * same as HIRESERVE, so I think this should be safe.
+*/
+#ifndef SHN_XINDEX
+  #define SHN_XINDEX  SHN_HIRESERVE
+#endif
+
 #ifdef HAVE_ELF_H
 /*
  * Search for an ELF section of the specified name and type.
@@ -175,7 +182,7 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
       return 0;
     }
     if (elf_header->e_shoff <= 0 ||
-        elf_header->e_shoff > elf_size - sizeof(Elf64_Shdr)) {
+        elf_header->e_shoff > (size_t) elf_size - sizeof(Elf64_Shdr)) {
       rs_trace("invalid e_shoff value in ELF header");
       return 0;
     }

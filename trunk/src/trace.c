@@ -318,7 +318,7 @@ rs_logger_file(int flags, const char *fn, char const *fmt, va_list va,
     if (len > (int) sizeof buf - 2)
         len = (int) sizeof buf - 2;
     strcpy(&buf[len], "\n");
-        
+
     (void) write(log_fd, buf, len+1);
 }
 

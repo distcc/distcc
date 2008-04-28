@@ -45,6 +45,20 @@
 #  define UNUSED(x) x
 #endif				/* !__GNUC__ && !__LCLINT__ */
 
+/* According to the gcc info page, __attribute__((unused)) means "this
+ * variable is *possibly* unused" (emphasis added).  So we can use it for
+ * POSSIBLY_UNUSED.  This macro is used when a variable is used in one #ifdef
+ * case but not another, say.
+ */
+#ifdef POSSIBLY_UNUSED
+/* nothing */
+#elif defined(__GNUC__)
+#  define POSSIBLY_UNUSED(x) x __attribute__((unused))
+#elif defined(__LCLINT__)
+#  define POSSIBLY_UNUSED(x) /*@unused@*/ x
+#else				/* !__GNUC__ && !__LCLINT__ */
+#  define POSSIBLY_UNUSED(x) x
+#endif				/* !__GNUC__ && !__LCLINT__ */
 
 #if defined(__GNUC__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 3))
 /* This works on Gentoo's (patched?) gcc 3.3.3 but not 3.2.3, and not Debian's

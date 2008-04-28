@@ -455,8 +455,8 @@ int dcc_collect_child(const char *what, pid_t pid,
             rs_log_info("%s times: user %ld.%06lds, system %ld.%06lds, "
                         "%ld minflt, %ld majflt",
                         what,
-                        ru.ru_utime.tv_sec, ru.ru_utime.tv_usec,
-                        ru.ru_stime.tv_sec, ru.ru_stime.tv_usec,
+                        ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
+                        ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
                         ru.ru_minflt, ru.ru_majflt);
 
             return 0;

@@ -105,6 +105,9 @@
 #  include <math.h>
 #endif /* TEST_SNPRINTF */
 
+// Solaris x86, for instance, declares vsnprintf here.
+#include <stdio.h>
+
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -150,6 +153,9 @@
 #define VA_COPY(dest, src) (dest) = (src)
 #endif /* ! HAVE_VA_COPY */
 #endif /* ndef VA_COPY */
+
+/* yes this really must be a ||. Don't muck with this (tridge) */
+#if !defined(HAVE_VSNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
 
 static size_t dopr(char *buffer, size_t maxlen, const char *format, 
 		   va_list args_in);
@@ -201,6 +207,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 	LLONG value;
 	LDOUBLE fvalue;
 	char *strvalue;
+	const char *const_strvalue;
 	int min;
 	int max;
 	int state;
@@ -395,12 +402,13 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 				break;
 			case 's':
 				strvalue = va_arg (args, char *);
-				if (!strvalue) strvalue = "(NULL)";
+                                const_strvalue = strvalue;
+				if (!const_strvalue) const_strvalue = "(NULL)";
 				if (max == -1) {
-					max = strlen(strvalue);
+					max = strlen(const_strvalue);
 				}
 				if (min > 0 && max >= 0 && min > max) max = min;
-				fmtstr (buffer, &currlen, maxlen, strvalue, flags, min, max);
+				fmtstr (buffer, &currlen, maxlen, const_strvalue, flags, min, max);
 				break;
 			case 'p':
 				strvalue = va_arg (args, void *);
@@ -463,15 +471,16 @@ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 {
 	int padlen, strln;     /* amount to pad */
 	int cnt = 0;
+        const char* const_value = value;
 
 #ifdef DEBUG_SNPRINTF
 	printf("fmtstr min=%d max=%d s=[%s]\n", min, max, value);
 #endif
-	if (value == 0) {
-		value = "<NULL>";
+	if (const_value == 0) {
+		const_value = "<NULL>";
 	}
 
-	for (strln = 0; value[strln]; ++strln); /* strlen */
+	for (strln = 0; const_value[strln]; ++strln); /* strlen */
 	padlen = min - strln;
 	if (padlen < 0) 
 		padlen = 0;
@@ -483,8 +492,8 @@ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 		--padlen;
 		++cnt;
 	}
-	while (*value && (cnt < max)) {
-		dopr_outch (buffer, currlen, maxlen, *value++);
+	while (*const_value && (cnt < max)) {
+		dopr_outch (buffer, currlen, maxlen, *const_value++);
 		++cnt;
 	}
 	while ((padlen < 0) && (cnt < max)) {
@@ -661,7 +670,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 	int padlen = 0; /* amount to pad */
 	int zpadlen = 0; 
 	int caps = 0;
-	int index;
+	int idx;
 	double intpart;
 	double fracpart;
 	double temp;
@@ -720,11 +729,11 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 	do {
 		temp = intpart*0.1;
 		my_modf(temp, &intpart);
-		index = (int) ((temp -intpart +0.05)* 10.0);
-		/* index = (int) (((double)(temp*0.1) -intpart +0.05) *10.0); */
-		/* printf ("%llf, %f, %x\n", temp, intpart, index); */
+		idx = (int) ((temp -intpart +0.05)* 10.0);
+		/* idx = (int) (((double)(temp*0.1) -intpart +0.05) *10.0); */
+		/* printf ("%llf, %f, %x\n", temp, intpart, idx); */
 		iconvert[iplace++] =
-			(caps? "0123456789ABCDEF":"0123456789abcdef")[index];
+			(caps? "0123456789ABCDEF":"0123456789abcdef")[idx];
 	} while (intpart && (iplace < 311));
 	if (iplace == 311) iplace--;
 	iconvert[iplace] = 0;
@@ -735,11 +744,11 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 		do {
 			temp = fracpart*0.1;
 			my_modf(temp, &fracpart);
-			index = (int) ((temp -fracpart +0.05)* 10.0);
-			/* index = (int) ((((temp/10) -fracpart) +0.05) *10); */
-			/* printf ("%lf, %lf, %ld\n", temp, fracpart, index); */
+			idx = (int) ((temp -fracpart +0.05)* 10.0);
+			/* idx = (int) ((((temp/10) -fracpart) +0.05) *10); */
+			/* printf ("%lf, %lf, %ld\n", temp, fracpart, idx); */
 			fconvert[fplace++] =
-			(caps? "0123456789ABCDEF":"0123456789abcdef")[index];
+			(caps? "0123456789ABCDEF":"0123456789abcdef")[idx];
 		} while(fracpart && (fplace < 311));
 		if (fplace == 311) fplace--;
 	}
@@ -809,8 +818,6 @@ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
 	(*currlen)++;
 }
 
-/* yes this really must be a ||. Don't muck with this (tridge) */
-#if !defined(HAVE_VSNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
  int vsnprintf (char *str, size_t count, const char *fmt, va_list args)
 {
 	return dopr(str, count, fmt, args);
