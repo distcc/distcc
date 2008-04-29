@@ -37,12 +37,19 @@ import distcc_pump_c_extensions
 def main():
 
   # Module tempfile doesn't work with distcc. Work-around follows.
-  random_filename = "/tmp/distcc-pump" + str(random.random() * time.time())
+  random_testdir = ("/tmp/distcc-pump-c-extensions-test-"
+             + str(random.random() * time.time()))
+  try:
+    if os.path.exists(random_testdir):
+      os.removedirs(random_testdir)
+    os.mkdir(random_testdir, 0700)
+  except (IOError, OSError), why:
+    sys.exit("Unable to create test dir %s: %s." % (random_testdir, why))
+  random_filename = os.path.join(random_testdir, 'test')
   if os.path.exists(random_filename):
-    print sys.stderr >> (
-      """"For unfathomably unlikely reasons, this test failed: '%s' exists."""
-      % random_filename)
-    sys.exit(1)
+    sys.exit("For unfathomably unlikely reasons, this test"
+             " failed: '%s' exists." % random_filename)
+
   def _MakeTempFile(mode):
     return open(random_filename, mode)
 
@@ -122,6 +129,9 @@ def main():
   for i in range(10000):
     os.path.realpath(f);
   print 'os.path.realpath', time.time() - t
+
+  os.unlink(random_filename)
+  os.removedirs(random_testdir)
 
   print "Test passed"
 

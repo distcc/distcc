@@ -585,7 +585,9 @@ distcheck: dist
 	&& cd +distcheck/$(distdir)/_build \
 	&& ../configure --srcdir=.. --prefix="$$dc_install_base" \
 	&& $(MAKE) && $(MAKE) maintainer-check \
-	&& $(MAKE) install && $(MAKE) maintainer-installcheck \
+	&& $(MAKE) install \
+	&& $(MAKE) DISTCC_INSTALLATION="$$dc_install_base/bin" \
+	        maintainer-installcheck \
 	&& $(MAKE) distclean
 	chmod -R u+w +distcheck
 	test `find +distcheck/$(distdir)/_build -type f -print | wc -l` -eq 0 \
@@ -653,24 +655,14 @@ maintainer-check-no-set-path:
 	@if ! $(PYTHON) -c 'import sys; print sys.version'; then \
 	  echo "WARNING: python not found; tests skipped"; \
 	else \
-	  found=0; \
-	  for d in `echo $(PATH) | tr ':' ' '`; do \
-	     [ -x "$$d/gcc" ] && found=1; \
-	  done; \
-	  if [ $$found = "0" ]; then \
-	    echo -n "Could not find gcc on the restricted path used"; \
-	    echo " to avoid confusion caused by distcc"; \
-	    echo -n "masquerades on the normal path."; \
-	    echo "PATH is currently '$$PATH'.  Please check RESTRICTED_PATH."; \
+	  if ! gcc --version 2>/dev/null; then \
+	    echo "Could not find gcc on the restricted path used to avoid"; \
+	    echo "confusion caused by distcc masquerades on the normal path."; \
+	    echo "PATH is currently '$$PATH'."; \
+	    echo "Please change RESTRICTED_PATH to change this PATH value."; \
 	    exit 1; \
 	  fi; \
-	  path=""; \
-	  for d in `echo $(PATH) | tr ':' ' '`; do \
-	     [ "$$d" = "." ] && d=`pwd`; \
-	     path=$$path:$$d; \
-	  done; \
-	  PATH=$$path \
-	    $(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
+	  $(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
 	fi
 
 distcc-maintainer-check: check_programs
@@ -706,7 +698,7 @@ include-server-maintainer-check: include-server
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
 	  DISTCC_HOSTS='<invalid>' \
-	  DISTCC_SRCDIR=`cd $(srcdir); pwd` \
+	  DISTCC_SRCDIR=`cd $(srcdir) && pwd` \
 	    $(builddir)/pump \
               $(MAKE) \
 	        RESTRICTED_PATH=$(RESTRICTED_PATH) \
@@ -772,8 +764,10 @@ $(RESTRICTED_PATH)" \
 
 # Check the installation to see whether pump-mode works.
 pump-installcheck:
+	which_loc=`which which`; \
+	pump_loc=`PATH="$(DISTCC_INSTALLATION)" $$which_loc pump`; \
 	DISTCC_HOSTS='<invalid>' \
-	  PATH="$(DISTCC_INSTALLATION)" pump \
+	  $$pump_loc \
             $(MAKE) DISTCC_INSTALLATION=$(DISTCC_INSTALLATION) \
 	      RESTRICTED_PATH=$(RESTRICTED_PATH) \
               TESTDISTCC_OPTS=--pump distcc-installcheck; \
@@ -782,10 +776,7 @@ pump-installcheck:
 # RESTRICTED_PATH.  It does not have the "install" target as a dependency so
 # that you can can check an installation that is installed via some different
 # method (e.g. rpm or debian package).  You must specify the location of such an
-# installation by overriding the value of DISTCC_INSTALLATION in the call of
-# make as in:
-#
-#   make DISTCC_INSTALLATION=/usr/mybin maintainer-installcheck
+# installation by overriding the value of DISTCC_INSTALLATION.
 #
 # The maintainer-installcheck does not run the include server unit tests;
 # but the integration tests in 'test' are run in pump mode.
