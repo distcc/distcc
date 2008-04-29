@@ -68,12 +68,13 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
-DISTCC_INSTALLATION = @bindir@
 PYTHON = @PYTHON@
 # RESTRICTED_PATH contains the locations of 'make', 'sh', 'gcc', and 'python'
 # for use in installation tests.  It does usually not contain the path of the
 # installation software.
 RESTRICTED_PATH = /usr/local/bin:/bin:/usr/bin
+# Change this variable to @bindir@ if installation is not on RESTRICTED_PATH:
+DISTCC_INSTALLATION = $(RESTRICTED_PATH)
 
 dist_files =							\
 	src/config.h.in						\
@@ -747,38 +748,44 @@ single-test: check_programs
 
 # Verify that DISTCC_INSTALLATION contains the expected set of binaries.
 verify-binaries-installcheck:
+	@echo -n "Locating binaries in DISTCC_INSTALLATION="
+	@echo "'$(DISTCC_INSTALLATION)'"
+	@echo -n "To use installation in @bindir@, remake with"
+	@echo " argument 'DISTCC_INSTALLATION=@bindir@'."
+	@echo "Make sure all paths below are where you expect them to be:"
+	@echo "**********************************************************"
 	@for p in $(bin_PROGRAMS); do \
-	  if ! test -x "$(DISTCC_INSTALLATION)/$$p"; then \
-	    echo -n "Binary '$$p' could not be found in"; \
-	    echo " DISTCC_INSTALLATION='$(DISTCC_INSTALLATION)'"; \
+	  if ! PATH="$(DISTCC_INSTALLATION)" `which which` "$$p"; then \
+	    echo "Binary '$$p' could not be found in DISTCC_INSTALLATION."; \
 	    exit 1; \
 	  fi; \
-	done; \
-	echo "Checking binaries in DISTCC_INSTALLATION='$(DISTCC_INSTALLATION)'"
+	done 
+	@echo "**********************************************************"
 
 # Lookup distcc programs to be checked in $(DISTCC_INSTALLATION).  The
 # check_PROGRAMS binaries, however, are to be found in $(builddir).
 distcc-installcheck: $(check_PROGRAMS)
-	PATH="$(DISTCC_INSTALLATION):$(builddir):$(RESTRICTED_PATH)" \
+	PATH="$(DISTCC_INSTALLATION):`cd $(builddir) && pwd`:\
+$(RESTRICTED_PATH)" \
 	  TESTDISTCC_OPTS=$(TESTDISTCC_OPTS) \
 	  $(MAKE) maintainer-check-no-set-path
 
 # Check the installation to see whether pump-mode works.
 pump-installcheck:
 	DISTCC_HOSTS='<invalid>' \
-	  $(DISTCC_INSTALLATION)/pump \
+	  PATH="$(DISTCC_INSTALLATION)" pump \
             $(MAKE) DISTCC_INSTALLATION=$(DISTCC_INSTALLATION) \
 	      RESTRICTED_PATH=$(RESTRICTED_PATH) \
               TESTDISTCC_OPTS=--pump distcc-installcheck; \
 
-# "make maintainer-installcheck" verifies the currently installed version.
-# However, it does not have the "install" target as a dependency so that you can
-# can check an installation that is installed via some different method
-# (e.g. rpm or debian package).  You must specify the location of such an
+# "make maintainer-installcheck" verifies the currently installed version in in
+# RESTRICTED_PATH.  It does not have the "install" target as a dependency so
+# that you can can check an installation that is installed via some different
+# method (e.g. rpm or debian package).  You must specify the location of such an
 # installation by overriding the value of DISTCC_INSTALLATION in the call of
 # make as in:
 #
-#   make DISTCC_INSTALLATION=/usr maintainer-installcheck
+#   make DISTCC_INSTALLATION=/usr/mybin maintainer-installcheck
 #
 # The maintainer-installcheck does not run the include server unit tests;
 # but the integration tests in 'test' are run in pump mode.
