@@ -179,36 +179,23 @@ StartIncludeServer() {
     local include_server_location="$DISTCC_LOCATION/$include_server_relative"
     local pythonpath=$include_server_location
   else
-    # When run from the source code directory (assuming that we configured in
-    # the distcc_pump top-level directory) we pick up .py files from the
-    # include_server directory and pick up the .so file from the
-    # include_server/build/libXXX/include_server directory. When configured in a
-    # separate directory, we pick up .py files also from include_server/build.
-    local include_server_location=${DISTCC_LOCATION}/include_server
+    # We assume this script is run from the build directory.  We pick up .py
+    # files from the include_server directory in the source tree, and we pick up
+    # the .so file from the include_server/build/libXXX/include_server
+    # directory. 
+    #
+    # The source tree location must be passed.
+    if test -z "$DISTCC_SRCDIR"; then
+      echo "__________Expected DISTCC_SRCDIR to point to distcc source directory." 1>&2
+      PrintIncludeServerStatusMessage 1
+      exit 1
+    fi
+    local include_server_location=$DISTCC_SRCDIR/include_server
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_files=$(ls ${DISTCC_LOCATION}/_builddir/lib.*/include_server/\
-distcc_pump_c_extensions.so)
-    if [ -z "$so_files" ]; then
-      echo \
-        '__________Could not find shared libraries for distcc-pump' 1>&2
-      PrintIncludeServerStatusMessage 1
-      return 1
-    elif echo $so_files | grep -q ' '; then
-      echo \
-        '__________Shared libraries for multiple architectures discovered.' \
-        1>&2
-      echo \
-        "__________Cannot determine which one to use among: $so_files" \
-        1>&2
-      PrintIncludeServerStatusMessage 1 
-      return 1
-    else
-      # There was only one such file.	
-      local so_dir=$(dirname $so_files)
-    fi
-    local pythonpath="${DISTCC_LOCATION}/include_server:$so_dir"
+    local so_dir=`$DISTCC_SRCDIR/find_c_extension.sh $DISTCC_LOCATION`
+    local pythonpath="$so_dir"
   fi
 
   # Create a temporary directory $socket_dir.
