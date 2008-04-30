@@ -69,12 +69,15 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
 PYTHON = @PYTHON@
-# RESTRICTED_PATH contains the locations of 'make', 'sh', 'gcc', and 'python'
-# for use in installation tests.  This path is used to avoid confusion caused by
-# distcc masquerades on the normal path.  See the 'maintainer-check-no-set-path'
-# target.
+# RESTRICTED_PATH is a colon separated list of directory names.  It contains the
+# locations of 'make', 'sh', 'gcc', and 'python' for use in installation tests.
+# This path is used to avoid confusion caused by distcc masquerades on the
+# normal path.  See the 'maintainer-check-no-set-path' target.
 RESTRICTED_PATH = /usr/local/bin:/bin:/usr/bin
-# Change this variable to @bindir@ if installation is not on RESTRICTED_PATH:
+# The DISTCC_INSTALLATION variable is a colon separated list of directory names
+# of possible locations for the installation to be checked.  Change the value of
+# this variable to @bindir@ to check the installation at the location determined
+# by 'configure'.
 DISTCC_INSTALLATION = $(RESTRICTED_PATH)
 
 dist_files =							\
