@@ -48,7 +48,6 @@ oldincludedir = /usr/include
 docdir = @docdir@
 pkgdatadir = $(datadir)/@PACKAGE_NAME@
 
-include_server_testdir = $(builddir)/_testdir
 include_server_builddir = $(builddir)/_builddir
 
 # These must be done from here, not from autoconf, because they can 
@@ -70,6 +69,16 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
 PYTHON = @PYTHON@
+# RESTRICTED_PATH is a colon separated list of directory names.  It contains the
+# locations of 'make', 'sh', 'gcc', and 'python' for use in installation tests.
+# This path is used to avoid confusion caused by distcc masquerades on the
+# normal path.  See the 'maintainer-check-no-set-path' target.
+RESTRICTED_PATH = /usr/local/bin:/bin:/usr/bin
+# The DISTCC_INSTALLATION variable is a colon separated list of directory names
+# of possible locations for the installation to be checked.  Change the value of
+# this variable to @bindir@ to check the installation at the location determined
+# by 'configure'.
+DISTCC_INSTALLATION = $(RESTRICTED_PATH)
 
 dist_files =							\
 	src/config.h.in						\
@@ -173,8 +182,9 @@ mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
 man1dir = $(mandir)/man1
 man8dir = $(mandir)/man8
 
-test_SOURCE = test/comfychair.py				\
-	test/testdistcc.py			
+test_SOURCE = test/comfychair.py \
+	test/testdistcc.py \
+	find_c_extension.sh
 
 dist_common = Makefile.in install-sh configure configure.ac \
 	config.guess config.sub mkinstalldirs autogen.sh
@@ -399,8 +409,8 @@ check_include_server_PY = \
 	include_server/include_analyzer_memoizing_node_test.py \
 	include_server/basics_test.py
 
-## OVERALL targets
 
+######################################################################
 ## IMPLICIT BUILD rules
 
 .SUFFIXES: .html .latte .o .c
@@ -408,6 +418,8 @@ check_include_server_PY = \
 .c.o:
 	$(CC) $(CPPFLAGS) $(WERROR_CFLAGS) $(CFLAGS) -o $@ -c $<
 
+
+######################################################################
 ## OVERALL targets
 
 .PHONY: all include-server
@@ -420,6 +432,8 @@ all: $(bin_PROGRAMS) include-server
 Makefile: Makefile.in src/config.h.in config.status
 	./config.status
 
+
+######################################################################
 ## BUILD targets
 
 # We would like to detect when config.h.in has changed: this should trigger
@@ -532,8 +546,8 @@ include-server:
 	       --build-temp="$$BUILDDIR"
 
 
-
-## Dist targets
+######################################################################
+## DIST TARGETS
 
 .PHONY: dist distcheck dist-sign dist-files
 
@@ -575,7 +589,9 @@ distcheck: dist
 	&& cd +distcheck/$(distdir)/_build \
 	&& ../configure --srcdir=.. --prefix="$$dc_install_base" \
 	&& $(MAKE) && $(MAKE) maintainer-check \
-	&& $(MAKE) install && $(MAKE) maintainer-installcheck \
+	&& $(MAKE) install \
+	&& $(MAKE) DISTCC_INSTALLATION="$$dc_install_base/bin" \
+	        maintainer-installcheck \
 	&& $(MAKE) distclean
 	chmod -R u+w +distcheck
 	test `find +distcheck/$(distdir)/_build -type f -print | wc -l` -eq 0 \
@@ -600,7 +616,10 @@ dist-files: $(dist_files)
 	  find $(distdir)/$$f -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
 	done
 
+
+######################################################################
 ## BUILD manual targets
+
 man/distcc_1.html: man/distcc.1
 	troff2html -man man/distcc.1 > $@
 
@@ -612,64 +631,94 @@ man/distccmon_text_1.html: man/distccmon-text.1
 
 
 ######################################################################
-## CHECK targets
+## CHECK targets for code that has been build.
 
-.PHONY: maintainer-check maintainer-installcheck maintainer-check-deps
-.PHONY: check installcheck 
-.PHONY: lzo-check valgrind-check pump-check single-test
+.PHONY: check_programs
+.PHONY: maintainer-check-no-set-path distcc-maintainer-check
+.PHONY: include-server-maintainer-check pump-maintainer-check
+.PHONY: maintainer-check 
+.PHONY: check
+.PHONY: lzo-check valgrind-check single-test
 
 check_programs: $(check_PROGRAMS) $(bin_PROGRAMS)
 
 TESTDISTCC_OPTS =
 
-# This is for internal use by maintainer-check and maintainer-installcheck.
-# These rules differ only in their choice of path.  This is only called
-# when python is installed, and when the caller has set up PATH appropriately.
-.PHONY: maintainer-check-no-set-path
+# This target is for internal use by distcc-maintainer-check and
+# distcc-installcheck.  These rules differ only in their choice of the value of
+# PATH to use.  PATH must be set appropriately so that python, distcc binaries,
+# gcc, and those of the check_PROGRAMS, can be found on PATH.  This is done in
+# the call of this target through use of the variable RESTRICTED_PATH.
+#
+# The more prominent of these conditions are checked explicitly checked below.
+#
+# TODO(klarlund): the outermost if assumes that the include-server target may be
+# satisfied w/o actually building an include server (or rather the C extension);
+# this logic needs to be verified or amended.
 maintainer-check-no-set-path:
-	$(PYTHON) -c 'import sys; print sys.version'
-	$(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS)
-	cd $(include_server_testdir) && \
+	@if ! $(PYTHON) -c 'import sys; print sys.version'; then \
+	  echo "WARNING: python not found; tests skipped"; \
+	else \
+	  if ! gcc --version 2>/dev/null; then \
+	    echo "Could not find gcc on the restricted path used to avoid"; \
+	    echo "confusion caused by distcc masquerades on the normal path."; \
+	    echo "PATH is currently '$$PATH'."; \
+	    echo "Please change RESTRICTED_PATH to change this PATH value."; \
+	    exit 1; \
+	  fi; \
+	  $(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
+	fi
+
+distcc-maintainer-check: check_programs
+	 $(MAKE) PATH=`pwd`:$(RESTRICTED_PATH) \
+	   TESTDISTCC_OPTS=$(TESTDISTCC_OPTS) maintainer-check-no-set-path
+
+# If the include server extension module was built, then run the tests include
+# server.  TODO(klarlund): the outermost if assumes that the include-server
+# target may be satisfied w/o actually building an include server (or rather the
+# C extension); this logic needs to be verified or amended.
+include-server-maintainer-check: include-server
+	@if ! test -d "$(include_server_builddir)"; then \
+	  echo "Skipped include-server check"; \
+	else \
+	  CURDIR=`pwd`; \
+	  include_server_loc=`$(srcdir)/find_c_extension.sh $(builddir)`; \
+	  test $$? = 0 || (echo 'Could not locate extension.' 1>&2 && exit 1); \
+	  cd $(srcdir)/include_server; \
 	  for p in $(check_include_server_PY); do \
-	    echo -n "Running $$p... "; \
-	    if PYTHONPATH=python/`dirname $$p` $(PYTHON) python/$$p \
-		> `basename $$p`.out 2>&1; then \
-	      echo "PASS"; else echo "FAIL"; cat `basename $$p`.out; exit 1; \
-	    fi \
-	  done
-	echo Filtering c_extensions_test.py.out
-	@cat $(include_server_testdir)/c_extensions_test.py.out \
-		| grep -v 'distcc_include_server\[.*\] (dcc_r_token_int) ERROR: protocol derailment: expected token "XXXX"' \
-		| grep -v 'distcc_include_server\[.*\] (dcc_explain_mismatch) ERROR: error context: "ARGC       2ARGV       6tomatoARGV       7potatos"'
-
-
-maintainer-check-deps: check_programs install-for-include-server-tests
-
-# WARNING: This resets the path to avoid any confusion caused by
-# having distcc masquerades already on the path.  If you have gcc
-# installed elsewhere this won't work....
-maintainer-check: maintainer-check-deps
-	if test x$(PYTHON) != x; then PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
-	                              $(MAKE) maintainer-check-no-set-path; \
-	else echo "WARNING: python not found; tests skipped"; \
+	    p_base=`basename $$p`; \
+	    echo -n "Running: "; \
+	    echo \
+              "PYTHONPATH=$$CURDIR/$$include_server_loc $(PYTHON) $$p_base"; \
+	    if PYTHONPATH=$$CURDIR/$$include_server_loc $(PYTHON) $$p_base \
+		 > $$CURDIR/$(tempdir)/$$p_base.out 2>&1; then \
+	      echo "PASS"; \
+	      rm "$$CURDIR/$(tempdir)/$$p_base.out"; \
+            else \
+              echo "FAIL"; cat $$CURDIR/$(tempdir)/$$p_base.out; exit 1; \
+	    fi; \
+	  done; \
 	fi
 
-# "make maintainer-installcheck" verifies the currently installed version.  It
-# does NOT have the "install" target as a dependency, so that you can install
-# via some different method (e.g. rpm or debian package) and then run "make
-# installcheck".
-# TODO(klarlund): The presence of `pwd` in the PATH setting seems to potentially
-# defeat the purpose of checking the installation. Remove this.
-maintainer-installcheck: maintainer-check-deps
-	if test x$(PYTHON) != x; then PATH="$(bindir):`pwd`:$$PATH" \
-	                              $(MAKE) maintainer-check-no-set-path; \
-	else echo "WARNING: python not found; tests skipped"; \
+# Do distcc-maintainer-check in pump-mode, if possible.
+pump-maintainer-check: pump include-server check_programs
+	@if [ -d "$(include_server_builddir)" ]; then \
+	  DISTCC_HOSTS='<invalid>' \
+	  DISTCC_SRCDIR=`cd $(srcdir) && pwd` \
+	    $(builddir)/pump \
+              $(MAKE) \
+	        RESTRICTED_PATH=$(RESTRICTED_PATH) \
+                TESTDISTCC_OPTS=--pump distcc-maintainer-check; \
 	fi
+
+# Do distcc-maintainer-check, for non-pumped distcc, and try the include_server
+# check to check the include server's behavior, if applicable.  If the include
+# server exists, then carry out distcc-maintainer-check in pump-mode.
+maintainer-check: distcc-maintainer-check include-server-maintainer-check \
+	pump-maintainer-check
 
 check:
 	@echo Please try 'make maintainer-check' instead.
-installcheck:
-	@echo Please try 'make maintainer-installcheck' instead.
 
 # Runs the tests in lzo-mode.
 lzo-check:
@@ -679,32 +728,69 @@ lzo-check:
 valgrind-check:
 	$(MAKE) TESTDISTCC_OPTS=--valgrind maintainer-check
 
-# This is an integration test which runs the distcc tests
-# using distcc-pump.
-# TODO(csilvers): add this to maintainer-check somehow?
-# TODO(csilvers): BadInclude_Case is known to fail for pump mode.  We've
-#                 verified that's ok.  Remove it when running pump-check.
-# We need to set DISTCC_HOSTS, otherwise "pump" complains,
-# but it doesn't matter what we set it to, because testdistcc.py
-# will set it again anyway.
-pump-check: pump include-server maintainer-check-deps
-	DISTCC_HOSTS='<invalid>' PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
-		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
-
-pump-installcheck: pump include-server maintainer-check-deps
-	DISTCC_HOSTS='<invalid>' PATH="$(bindir):`pwd`:$$PATH" \
-		$(srcdir)/pump $(MAKE) TESTDISTCC_OPTS=--pump maintainer-check
-
-# These are more include-server checks:
-
 # The following target is useful for running a single test at a time.
 # Sample usage:
 #    make TESTNAME=Lsdistcc_Case singletest
 #    make TESTNAME=Lsdistcc_Case TESTDISTCC_OPTS=--valgrind singletest
 TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
 single-test: check_programs
-	PATH=`pwd`:/usr/local/bin:/bin:/usr/bin \
+	PATH=`pwd`:$(RESTRICTED_PATH) \
 	    $(PYTHON) $(srcdir)/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
+
+
+######################################################################
+## CHECK targets for code that has been installed.
+
+.PHONY: pump-installcheck distcc-installcheck maintainer-installcheck
+.PHONY: installcheck 
+
+# Verify that DISTCC_INSTALLATION contains the expected set of binaries.
+verify-binaries-installcheck:
+	@echo -n "Locating binaries in DISTCC_INSTALLATION="
+	@echo "'$(DISTCC_INSTALLATION)'"
+	@echo -n "To use installation in @bindir@, remake with"
+	@echo " argument 'DISTCC_INSTALLATION=@bindir@'."
+	@echo "Make sure all paths below are where you expect them to be:"
+	@echo "**********************************************************"
+	@for p in $(bin_PROGRAMS); do \
+	  if ! PATH="$(DISTCC_INSTALLATION)" `which which` "$$p"; then \
+	    echo "Binary '$$p' could not be found in DISTCC_INSTALLATION."; \
+	    exit 1; \
+	  fi; \
+	done 
+	@echo "**********************************************************"
+
+# Lookup distcc programs to be checked in $(DISTCC_INSTALLATION).  The
+# check_PROGRAMS binaries, however, are to be found in $(builddir).
+distcc-installcheck: $(check_PROGRAMS)
+	PATH="$(DISTCC_INSTALLATION):`cd $(builddir) && pwd`:\
+$(RESTRICTED_PATH)" \
+	  TESTDISTCC_OPTS=$(TESTDISTCC_OPTS) \
+	  $(MAKE) maintainer-check-no-set-path
+
+# Check the installation to see whether pump-mode works.
+pump-installcheck:
+	which_loc=`which which`; \
+	pump_loc=`PATH="$(DISTCC_INSTALLATION)" $$which_loc pump`; \
+	DISTCC_HOSTS='<invalid>' \
+	  $$pump_loc \
+            $(MAKE) DISTCC_INSTALLATION=$(DISTCC_INSTALLATION) \
+	      RESTRICTED_PATH=$(RESTRICTED_PATH) \
+              TESTDISTCC_OPTS=--pump distcc-installcheck; \
+
+# "make maintainer-installcheck" verifies the currently installed version in
+# RESTRICTED_PATH.  It does not have the "install" target as a dependency so
+# that you can can check an installation that is installed via some different
+# method (e.g. rpm or debian package).  You must specify the location of such an
+# installation by overriding the value of DISTCC_INSTALLATION.
+#
+# The maintainer-installcheck does not run the include server unit tests;
+# but the integration tests in 'test' are run in pump mode.
+maintainer-installcheck: verify-binaries-installcheck distcc-installcheck \
+	pump-installcheck
+
+installcheck:
+	@echo Please try 'make maintainer-installcheck' instead.
 
 ######################################################################
 ## BENCHMARK targets
@@ -727,6 +813,7 @@ benchmark:
 	cd bench && $(PYTHON) benchmark.py $(BENCH_ARGS)
 
 
+######################################################################
 ## CLEAN targets
 
 .PHONY: clean clean-autoconf clean-lzo clean-include-server
@@ -742,7 +829,6 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f distccmon-gnome
 	rm -rf _testtmp  # produced by test/testdistcc.py
 	rm -rf +distcheck
-	rm -rf $(include_server_testdir)
 	rm -rf $(include_server_builddir)
 
 clean-autoconf:
@@ -762,7 +848,6 @@ clean-include-server:
 	$(PYTHON) ./setup.py clean			\
 	   --build-base="$$BUILDDIR" 			\
 	   --build-temp="$$BUILDDIR"
-	rm -rf $(include_server_testdir)
 
 maintainer-clean: distclean \
 	maintainer-clean-autoconf clean
@@ -780,6 +865,7 @@ distclean-autoconf:
 distclean: distclean-autoconf clean
 
 
+######################################################################
 ## MAINTAINER targets
 
 .PHONY: upload-man upload-dist
@@ -845,8 +931,8 @@ install: showpaths install-doc install-man install-programs \
 
 install-programs: $(bin_PROGRAMS) pump
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	for p in $(bin_PROGRAMS) pump; do			\
-	$(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir) || exit 1;	\
+	for p in $(bin_PROGRAMS) pump; do \
+	  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir) || exit 1; \
 	done
 
 # The jumping through hoops with cd is to normalize build/destdir if relative.
@@ -866,38 +952,6 @@ install-include-server: include-server
 	       --prefix="$(prefix)" 			\
 	       --record="$(PYTHON_INSTALL_RECORD)"    	\
 	       --root="$$DESTDIR"
-
-# Below we delete the link and then we recreate it.  Otherwise, a second link
-# will be created the second time install-for-tests is run! That's because the
-# link name would now be resolved as a target directory (third form according to
-# 'man ln'). As a result a link to the test_data directory would be inserted
-# into the test_data directory under the name 'test_data'.
-# TODO(csilvers): see if we can remove the -f.  As it is, this forces a
-#                 rebuild of much of distcc every time we call it.
-# The jumping through hoops with cd is to normalize testdir if it's relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
-install-for-include-server-tests:
-	mkdir -p $(include_server_testdir)
-	mkdir -p $(include_server_builddir)
-	if [ -h $(include_server_testdir)/test_data ]; then             \
-	  rm -f $(include_server_testdir)/test_data;                    \
-	fi
-	CURDIR=`pwd` && cd $(srcdir)/include_server/test_data && \
-		TESTDATADIR=`pwd` && cd $$CURDIR &&               \
-		ln -s $$TESTDATADIR $(include_server_testdir)/test_data
-	test x$(PYTHON) != x &&				\
-	CURDIR=`pwd` && 				\
-	cd $(include_server_testdir) && TESTDIR=`pwd` && export TESTDIR && \
-	cd $$CURDIR && cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
-	cd $$CURDIR && cd $(srcdir)/include_server &&	\
-	DISTCC_VERSION="$(VERSION)"			\
-	$(PYTHON) ./setup.py 				\
-	    build -f					\
-	       --build-base="$$TESTDIR" 		\
-	       --build-temp="$$TESTDIR"			\
-	    install 					\
-	       --install-lib="$$TESTDIR/python"		\
-	       --install-scripts="$$TESTDIR/python"
 
 install-man: $(man1_MEN)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
