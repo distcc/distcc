@@ -39,6 +39,8 @@ def main():
   # Module tempfile doesn't work with distcc. Work-around follows.
   random_testdir = ("/tmp/distcc-pump-c-extensions-test-"
              + str(random.random() * time.time()))
+  # TODO(klarlund): this might be better stated as:
+  # "/tmp/distcc-pump-c-extensions-test-%s.%s" % (os.getuid(), random.random()))
   try:
     if os.path.exists(random_testdir):
       os.removedirs(random_testdir)
@@ -46,9 +48,7 @@ def main():
   except (IOError, OSError), why:
     sys.exit("Unable to create test dir %s: %s." % (random_testdir, why))
   random_filename = os.path.join(random_testdir, 'test')
-  if os.path.exists(random_filename):
-    sys.exit("For unfathomably unlikely reasons, this test"
-             " failed: '%s' exists." % random_filename)
+  assert not os.path.exists(random_filename), random_filename
 
   def _MakeTempFile(mode):
     return open(random_filename, mode)
@@ -130,11 +130,14 @@ def main():
     os.path.realpath(f);
   print 'os.path.realpath', time.time() - t
 
+  # TODO(klarlund): this belongs in a try-finally construct.
   os.unlink(random_filename)
   os.removedirs(random_testdir)
 
   print "Test passed"
 
+# TODO(klarlund): Blind exception handlers are not in style. Just remove this
+# try-except clause.
 try:    
   main()
 except:

@@ -70,8 +70,9 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
 PYTHON = @PYTHON@
 # RESTRICTED_PATH contains the locations of 'make', 'sh', 'gcc', and 'python'
-# for use in installation tests.  It does usually not contain the path of the
-# installation software.
+# for use in installation tests.  This path is used to avoid confusion caused by
+# distcc masquerades on the normal path.  See the 'maintainer-check-no-set-path'
+# target.
 RESTRICTED_PATH = /usr/local/bin:/bin:/usr/bin
 # Change this variable to @bindir@ if installation is not on RESTRICTED_PATH:
 DISTCC_INSTALLATION = $(RESTRICTED_PATH)
@@ -648,9 +649,9 @@ TESTDISTCC_OPTS =
 #
 # The more prominent of these conditions are checked explicitly checked below.
 #
-# Also, note that we rewrite '.' in PATH to `pwd` before the call of
-# 'testdistcc.py'.  That is necessary because this program changes the working
-# directory.
+# TODO(klarlund): the outermost if assumes that the include-server target may be
+# satisfied w/o actually building an include server (or rather the C extension);
+# this logic needs to be verified or amended.
 maintainer-check-no-set-path:
 	@if ! $(PYTHON) -c 'import sys; print sys.version'; then \
 	  echo "WARNING: python not found; tests skipped"; \
@@ -670,7 +671,9 @@ distcc-maintainer-check: check_programs
 	   TESTDISTCC_OPTS=$(TESTDISTCC_OPTS) maintainer-check-no-set-path
 
 # If the include server extension module was built, then run the tests include
-# server.  
+# server.  TODO(klarlund): the outermost if assumes that the include-server
+# target may be satisfied w/o actually building an include server (or rather the
+# C extension); this logic needs to be verified or amended.
 include-server-maintainer-check: include-server
 	@if ! test -d "$(include_server_builddir)"; then \
 	  echo "Skipped include-server check"; \
@@ -772,7 +775,7 @@ pump-installcheck:
 	      RESTRICTED_PATH=$(RESTRICTED_PATH) \
               TESTDISTCC_OPTS=--pump distcc-installcheck; \
 
-# "make maintainer-installcheck" verifies the currently installed version in in
+# "make maintainer-installcheck" verifies the currently installed version in
 # RESTRICTED_PATH.  It does not have the "install" target as a dependency so
 # that you can can check an installation that is installed via some different
 # method (e.g. rpm or debian package).  You must specify the location of such an
