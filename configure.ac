@@ -204,14 +204,35 @@ CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-# We prefer to use the latest Python, but try to find an explicit version 
-# to make sure we don't get a really old one.
-# The include server requires python 2.4 or later.
-# TODO(csilvers): check via python -V (and use AC_PATH_PROGS below)
-AC_CHECK_PROGS(PYTHON, [python2.4 python-2.4 python])
-AC_ARG_VAR(PYTHON, [Python interpreter (must be >= Python 2.4)])
+# We prefer to use the latest Python, but try to find an explicit
+# version to make sure we don't get a really old one.
+#
+# The include server requires python 2.4 or later, but the 'make test'
+# routines only require python 2.2.  Thus we have two separate
+# variables.  Each variable is the empty string if the python that we
+# haven't isn't recent enough for that use, or the path to a python
+# executable if it is recent enough.
+#
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
+AC_PATH_PROGS(PYTHON, [python2.4 python-2.4 python])
+AC_ARG_VAR(PYTHON, [Python interpreter])
+# Python 1 doesn't even support -V
+if ! "$PYTHON" -V 2>&1 | grep -q "^Python"; then
+  TEST_PYTHON=""
+  INCLUDESERVER_PYTHON=""
+elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.1"; then
+  TEST_PYTHON=""
+  INCLUDESERVER_PYTHON=""
+elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.[23]"; then
+  TEST_PYTHON="$PYTHON"
+  INCLUDESERVER_PYTHON=""
+else
+  TEST_PYTHON="$PYTHON"
+  INCLUDESERVER_PYTHON="$PYTHON"
+fi
+AC_SUBST(TEST_PYTHON)
+AC_SUBST(INCLUDESERVER_PYTHON)
 
 AC_C_INLINE
 AC_C_BIGENDIAN
