@@ -544,7 +544,7 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 # The jumping through hoops with cd is to normalize builddir if it's relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 include-server:
-	test x$(INCLUDESERVER_PYTHON) != x &&		       \
+	test -n "$(INCLUDESERVER_PYTHON)" &&		       \
 	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
@@ -727,7 +727,15 @@ maintainer-check: distcc-maintainer-check include-server-maintainer-check \
 	pump-maintainer-check
 
 check:
-	@echo Please try 'make maintainer-check' instead.
+	@if test -n "$(INCLUDESERVER_PYTHON)"; then \
+	   $(MAKE) maintainer-check; \
+	elif test -n "$(TEST_PYTHON)"; then \
+	   echo "WARNING: include-server not being tested"; \
+	   $(MAKE) distcc-maintainer-check; \
+	else \
+	   echo "Cannot run tests: python binary not found"; \
+	   false; \
+	fi
 
 # Runs the tests in lzo-mode.
 lzo-check:
@@ -799,7 +807,15 @@ maintainer-installcheck: verify-binaries-installcheck distcc-installcheck \
 	pump-installcheck
 
 installcheck:
-	@echo Please try 'make maintainer-installcheck' instead.
+	@if test -n "$(INCLUDESERVER_PYTHON)"; then \
+	   $(MAKE) maintainer-installcheck; \
+	elif test -n "$(TEST_PYTHON)"; then \
+	   echo "WARNING: include-server not being tested"; \
+	   $(MAKE) distcc-maintainer-installcheck; \
+	else \
+	   echo "Cannot run install-tests: python binary not found"; \
+	   false; \
+	fi
 
 ######################################################################
 ## BENCHMARK targets
@@ -849,8 +865,7 @@ clean-lzo:
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 clean-include-server:
-	test x$(INCLUDESERVER_PYTHON) != x &&		       \
-
+	test -n "$(INCLUDESERVER_PYTHON)" &&		       \
 	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
@@ -948,7 +963,7 @@ install-programs: $(bin_PROGRAMS) pump
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 install-include-server: include-server
-	test x$(INCLUDESERVER_PYTHON) != x &&		\
+	test -n "$(INCLUDESERVER_PYTHON)" &&		\
 	CURDIR=`pwd` && 				\
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $(DESTDIR)/ && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
