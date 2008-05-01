@@ -224,7 +224,7 @@ if ! "$PYTHON" -V 2>&1 | grep -q "^Python"; then
 elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.1"; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
-elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.[23]"; then
+elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.[[23]]"; then
   TEST_PYTHON="$PYTHON"
   INCLUDESERVER_PYTHON=""
 else
