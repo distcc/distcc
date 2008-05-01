@@ -68,16 +68,25 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
-PYTHON = @PYTHON@
-# RESTRICTED_PATH is a colon separated list of directory names.  It contains the
-# locations of 'make', 'sh', 'gcc', and 'python' for use in installation tests.
-# This path is used to avoid confusion caused by distcc masquerades on the
-# normal path.  See the 'maintainer-check-no-set-path' target.
+# We use python for two tasks in distcc: running the unittests, and
+# running the include-server.  The latter requires python 2.4 or
+# higher, while the former only requires python 2.2.  So it's possible
+# a particular machine will be able to run one but not the other.
+# Thus we have two variables.
+TEST_PYTHON = @TEST_PYTHON@
+INCLUDESERVER_PYTHON = @INCLUDESERVER_PYTHON@
+
+# RESTRICTED_PATH is a colon separated list of directory names.  It
+# contains the locations of 'make', 'sh', 'gcc', and 'python' for use
+# in installation tests.  This path is used to avoid confusion caused
+# by distcc masquerades on the normal path.  See the
+# 'maintainer-check-no-set-path' target.
 RESTRICTED_PATH = /usr/local/bin:/bin:/usr/bin
-# The DISTCC_INSTALLATION variable is a colon separated list of directory names
-# of possible locations for the installation to be checked.  Change the value of
-# this variable to @bindir@ to check the installation at the location determined
-# by 'configure'.
+
+# The DISTCC_INSTALLATION variable is a colon separated list of
+# directory names of possible locations for the installation to be
+# checked.  Change the value of this variable to @bindir@ to check the
+# installation at the location determined by 'configure'.
 DISTCC_INSTALLATION = $(RESTRICTED_PATH)
 
 dist_files =							\
@@ -535,12 +544,12 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 # The jumping through hoops with cd is to normalize builddir if it's relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 include-server:
-	test x$(PYTHON) != x &&				\
+	test x$(INCLUDESERVER_PYTHON) != x &&		       \
 	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
 	DISTCC_VERSION="$(VERSION)"			\
-	$(PYTHON) ./setup.py				\
+	$(INCLUDESERVER_PYTHON) ./setup.py		\
 	    build 					\
 	       --build-base="$$BUILDDIR" 		\
 	       --build-temp="$$BUILDDIR"
@@ -656,7 +665,7 @@ TESTDISTCC_OPTS =
 # satisfied w/o actually building an include server (or rather the C extension);
 # this logic needs to be verified or amended.
 maintainer-check-no-set-path:
-	@if ! $(PYTHON) -c 'import sys; print sys.version'; then \
+	@if ! $(TEST_PYTHON) -c 'import sys; print sys.version'; then \
 	  echo "WARNING: python not found; tests skipped"; \
 	else \
 	  if ! gcc --version 2>/dev/null; then \
@@ -666,7 +675,7 @@ maintainer-check-no-set-path:
 	    echo "Please change RESTRICTED_PATH to change this PATH value."; \
 	    exit 1; \
 	  fi; \
-	  $(PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
+	  $(TEST_PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
 	fi
 
 distcc-maintainer-check: check_programs
@@ -689,8 +698,8 @@ include-server-maintainer-check: include-server
 	    p_base=`basename $$p`; \
 	    echo -n "Running: "; \
 	    echo \
-              "PYTHONPATH=$$CURDIR/$$include_server_loc $(PYTHON) $$p_base"; \
-	    if PYTHONPATH=$$CURDIR/$$include_server_loc $(PYTHON) $$p_base \
+              "PYTHONPATH=$$CURDIR/$$include_server_loc $(INCLUDESERVER_PYTHON) $$p_base"; \
+	    if PYTHONPATH=$$CURDIR/$$include_server_loc $(INCLUDESERVER_PYTHON) $$p_base \
 		 > $$CURDIR/$(tempdir)/$$p_base.out 2>&1; then \
 	      echo "PASS"; \
 	      rm "$$CURDIR/$(tempdir)/$$p_base.out"; \
@@ -735,7 +744,7 @@ valgrind-check:
 TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
 single-test: check_programs
 	PATH=`pwd`:$(RESTRICTED_PATH) \
-	    $(PYTHON) $(srcdir)/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
+	    $(TEST_PYTHON) $(srcdir)/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
 
 
 ######################################################################
@@ -810,7 +819,7 @@ benchmark:
 	@echo "Pass BENCH_ARGS to make to specify which benchmarks to run."
 	@echo
 	@sleep 5
-	cd bench && $(PYTHON) benchmark.py $(BENCH_ARGS)
+	cd bench && $(TEST_PYTHON) benchmark.py $(BENCH_ARGS)
 
 
 ######################################################################
@@ -840,12 +849,13 @@ clean-lzo:
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 clean-include-server:
-	test x$(PYTHON) != x &&				\
+	test x$(INCLUDESERVER_PYTHON) != x &&		       \
+
 	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $$CURDIR && cd $(srcdir)/include_server &&	\
 	DISTCC_VERSION="$(VERSION)"			\
-	$(PYTHON) ./setup.py clean			\
+	$(INCLUDESERVER_PYTHON) ./setup.py clean	\
 	   --build-base="$$BUILDDIR" 			\
 	   --build-temp="$$BUILDDIR"
 
@@ -938,13 +948,13 @@ install-programs: $(bin_PROGRAMS) pump
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 install-include-server: include-server
-	test x$(PYTHON) != x &&				\
+	test x$(INCLUDESERVER_PYTHON) != x &&		\
 	CURDIR=`pwd` && 				\
 	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
 	cd $(DESTDIR)/ && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
 	cd $(srcdir)/include_server && 			\
 	DISTCC_VERSION="$(VERSION)"			\
-	$(PYTHON) ./setup.py 				\
+	$(INCLUDESERVER_PYTHON) ./setup.py 		\
 	    build 					\
 	       --build-base="$$BUILDDIR" 		\
 	       --build-temp="$$BUILDDIR"		\
