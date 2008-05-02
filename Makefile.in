@@ -24,7 +24,7 @@ CC = @CC@
 CPP = @CPP@
 # We add a few cppflags.
 # -Isrc is so src .h-files are available to files in the tests directory.
-CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -Isrc -Ilzo -I$(srcdir)/src -I$(srcdir)/lzo
+CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -Isrc -Ilzo -I"$(srcdir)/src" -I"$(srcdir)/lzo"
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -192,6 +192,7 @@ man1dir = $(mandir)/man1
 man8dir = $(mandir)/man8
 
 test_SOURCE = test/comfychair.py \
+	test/onetest.py \
 	test/testdistcc.py \
 	find_c_extension.sh
 
@@ -458,7 +459,7 @@ Makefile: Makefile.in src/config.h.in config.status
 src/config.h: src/config.h.stamp
 
 src/config.h.stamp: src/config.h.in
-	echo path: $$PATH
+	echo "path: $$PATH"
 	./config.status
 	touch src/config.h.stamp
 
@@ -544,15 +545,18 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 # The jumping through hoops with cd is to normalize builddir if it's relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 include-server:
-	test -n "$(INCLUDESERVER_PYTHON)" &&		       \
-	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
-	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
-	cd $$CURDIR && cd $(srcdir)/include_server &&	\
-	DISTCC_VERSION="$(VERSION)"			\
-	$(INCLUDESERVER_PYTHON) ./setup.py		\
-	    build 					\
-	       --build-base="$$BUILDDIR" 		\
-	       --build-temp="$$BUILDDIR"
+	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
+	  echo "Not building $@: No suitable python found"; \
+	else						\
+	  CURDIR=`pwd` && mkdir -p "$(include_server_builddir)" && \
+	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
+	  cd "$$CURDIR" && cd "$(srcdir)/include_server" &&	\
+	  DISTCC_VERSION="$(VERSION)"			\
+	  $(INCLUDESERVER_PYTHON) ./setup.py		\
+	      build 					\
+	         --build-base="$$BUILDDIR" 		\
+	         --build-temp="$$BUILDDIR";             \
+	fi
 
 
 ######################################################################
@@ -569,16 +573,16 @@ include-server:
 # TODO(csilvers): add 'make rpm' and 'make deb'.
 
 dist:
-	-rm -fr $(distdir)
+	-rm -fr "$(distdir)"
 	$(MAKE) dist-files 
-	$(TAR) cf $(tarball) $(distdir)
+	$(TAR) cf "$(tarball)" "$(distdir)"
 	$(GZIP_BIN) --help >/dev/null && \
-		$(GZIP_BIN) -fc $(tarball) > $(tarball_gz)
+		$(GZIP_BIN) -fc "$(tarball)" > "$(tarball_gz)"
 	$(BZIP2_BIN) --help 2>/dev/null && \
-		$(BZIP2_BIN) -vfc $(tarball) > $(tarball_bz2)
-	rm -f $(tarball)
-	rm -r $(distdir)
-	cp $(srcdir)/NEWS $(distnews)
+		$(BZIP2_BIN) -vfc "$(tarball)" > "$(tarball_bz2)"
+	rm -f "$(tarball)"
+	rm -r "$(distdir)"
+	cp "$(srcdir)/NEWS" "$(distnews)"
 
 # We create two new directories: one for the build and one to install,
 # and make sure we can build and install from different directories
@@ -589,13 +593,13 @@ distcheck: dist
 	[ ! -d +distcheck ] || chmod -R u+w +distcheck
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
-	cd '+distcheck' && $(GZIP_BIN) -d < ../$(tarball_gz) | $(TAR) xv
-	mkdir +distcheck/$(distdir)/_build
-	mkdir +distcheck/$(distdir)/_inst
+	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xv
+	mkdir "+distcheck/$(distdir)/_build"
+	mkdir "+distcheck/$(distdir)/_inst"
 	chmod -R a-w +distcheck
-	chmod u+w +distcheck/$(distdir)/_build +distcheck/$(distdir)/_inst
-	dc_install_base=`cd +distcheck/$(distdir)/_inst && pwd` \
-	&& cd +distcheck/$(distdir)/_build \
+	chmod u+w "+distcheck/$(distdir)/_build" "+distcheck/$(distdir)/_inst"
+	dc_install_base=`cd "+distcheck/$(distdir)/_inst" && pwd` \
+	&& cd "+distcheck/$(distdir)/_build" \
 	&& ../configure --srcdir=.. --prefix="$$dc_install_base" \
 	&& $(MAKE) && $(MAKE) maintainer-check \
 	&& $(MAKE) install \
@@ -603,26 +607,26 @@ distcheck: dist
 	        maintainer-installcheck \
 	&& $(MAKE) distclean
 	chmod -R u+w +distcheck
-	test `find +distcheck/$(distdir)/_build -type f -print | wc -l` -eq 0 \
+	test `find "+distcheck/$(distdir)/_build" -type f -print | wc -l` -eq 0 \
 		|| { echo "ERROR: files left in build-dir after distclean:"; \
-                     find +distcheck/$(distdir)/_build -type f -print; \
+                     find "+distcheck/$(distdir)/_build" -type f -print; \
 	             rm -rf '+distcheck'; \
 	             exit 1; }
 	rm -rf '+distcheck'
 
 dist-sign:
-	gpg -a --detach-sign $(tarball_bz2)
+	gpg -a --detach-sign "$(tarball_bz2)"
 
 # For the dirs we copy, we don't want to copy control files like '.cvs'.
 # We use find for this; if 'find' doesn't work, just don't worry about it.
 dist-files: $(dist_files)
 	for f in $(dist_files) $(dist_dirs); do \
-	  mkdir -p $(distdir)/`dirname $$f` || exit 1; \
-	  cp -a $(srcdir)/$$f $(distdir)/$$f 2>/dev/null || \
-	      cp -a $$f $(distdir)/$$f || exit 1; \
+	  mkdir -p "$(distdir)"/`dirname "$$f"` || exit 1; \
+	  cp -a "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
+	      cp -a "$$f" "$(distdir)/$$f" || exit 1; \
 	done
 	for f in $(dist_dirs); do \
-	  find $(distdir)/$$f -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
+	  find "$(distdir)/$$f" -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
 	done
 
 
@@ -675,12 +679,12 @@ maintainer-check-no-set-path:
 	    echo "Please change RESTRICTED_PATH to change this PATH value."; \
 	    exit 1; \
 	  fi; \
-	  $(TEST_PYTHON) $(srcdir)/test/testdistcc.py $(TESTDISTCC_OPTS); \
+	  $(TEST_PYTHON) "$(srcdir)/test/testdistcc.py" $(TESTDISTCC_OPTS); \
 	fi
 
 distcc-maintainer-check: check_programs
-	 $(MAKE) PATH=`pwd`:$(RESTRICTED_PATH) \
-	   TESTDISTCC_OPTS=$(TESTDISTCC_OPTS) maintainer-check-no-set-path
+	 $(MAKE) PATH="`pwd`:$(RESTRICTED_PATH)" \
+	   TESTDISTCC_OPTS="$(TESTDISTCC_OPTS)" maintainer-check-no-set-path
 
 # If the include server extension module was built, then run the tests include
 # server.  TODO(klarlund): the outermost if assumes that the include-server
@@ -691,20 +695,20 @@ include-server-maintainer-check: include-server
 	  echo "Skipped include-server check"; \
 	else \
 	  CURDIR=`pwd`; \
-	  include_server_loc=`$(srcdir)/find_c_extension.sh $(builddir)`; \
+	  include_server_loc=`"$(srcdir)/find_c_extension.sh" "$(builddir)"`; \
 	  test $$? = 0 || (echo 'Could not locate extension.' 1>&2 && exit 1); \
-	  cd $(srcdir)/include_server; \
+	  cd "$(srcdir)/include_server"; \
 	  for p in $(check_include_server_PY); do \
-	    p_base=`basename $$p`; \
+	    p_base=`basename "$$p"`; \
 	    echo -n "Running: "; \
 	    echo \
               "PYTHONPATH=$$CURDIR/$$include_server_loc $(INCLUDESERVER_PYTHON) $$p_base"; \
-	    if PYTHONPATH=$$CURDIR/$$include_server_loc $(INCLUDESERVER_PYTHON) $$p_base \
-		 > $$CURDIR/$(tempdir)/$$p_base.out 2>&1; then \
+	    if PYTHONPATH="$$CURDIR/$$include_server_loc" $(INCLUDESERVER_PYTHON) "$$p_base" \
+		 > "$$CURDIR/$(tempdir)/$$p_base.out" 2>&1; then \
 	      echo "PASS"; \
 	      rm "$$CURDIR/$(tempdir)/$$p_base.out"; \
             else \
-              echo "FAIL"; cat $$CURDIR/$(tempdir)/$$p_base.out; exit 1; \
+              echo "FAIL"; cat "$$CURDIR/$(tempdir)/$$p_base.out"; exit 1; \
 	    fi; \
 	  done; \
 	fi
@@ -713,10 +717,10 @@ include-server-maintainer-check: include-server
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
 	  DISTCC_HOSTS='<invalid>' \
-	  DISTCC_SRCDIR=`cd $(srcdir) && pwd` \
-	    $(builddir)/pump \
+	  DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
+	    "$(builddir)/pump" \
               $(MAKE) \
-	        RESTRICTED_PATH=$(RESTRICTED_PATH) \
+	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
                 TESTDISTCC_OPTS=--pump distcc-maintainer-check; \
 	fi
 
@@ -751,8 +755,8 @@ valgrind-check:
 #    make TESTNAME=Lsdistcc_Case TESTDISTCC_OPTS=--valgrind singletest
 TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
 single-test: check_programs
-	PATH=`pwd`:$(RESTRICTED_PATH) \
-	    $(TEST_PYTHON) $(srcdir)/test/onetest.py $(TESTDISTCC_OPTS) $(TESTNAME)
+	PATH="`pwd`:$(RESTRICTED_PATH)" \
+	    $(TEST_PYTHON) "$(srcdir)/test/onetest.py" $(TESTDISTCC_OPTS) $(TESTNAME)
 
 
 ######################################################################
@@ -782,17 +786,18 @@ verify-binaries-installcheck:
 distcc-installcheck: $(check_PROGRAMS)
 	PATH="$(DISTCC_INSTALLATION):`cd $(builddir) && pwd`:\
 $(RESTRICTED_PATH)" \
-	  TESTDISTCC_OPTS=$(TESTDISTCC_OPTS) \
+	  TESTDISTCC_OPTS="$(TESTDISTCC_OPTS)" \
 	  $(MAKE) maintainer-check-no-set-path
 
 # Check the installation to see whether pump-mode works.
 pump-installcheck:
 	which_loc=`which which`; \
-	pump_loc=`PATH="$(DISTCC_INSTALLATION)" $$which_loc pump`; \
+	pump_loc=`PATH="$(DISTCC_INSTALLATION)" "$$which_loc" pump`; \
 	DISTCC_HOSTS='<invalid>' \
-	  $$pump_loc \
-            $(MAKE) DISTCC_INSTALLATION=$(DISTCC_INSTALLATION) \
-	      RESTRICTED_PATH=$(RESTRICTED_PATH) \
+	DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
+	  "$$pump_loc" \
+            $(MAKE) DISTCC_INSTALLATION="$(DISTCC_INSTALLATION)" \
+	      RESTRICTED_PATH="$(RESTRICTED_PATH)" \
               TESTDISTCC_OPTS=--pump distcc-installcheck; \
 
 # "make maintainer-installcheck" verifies the currently installed version in
@@ -854,7 +859,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f distccmon-gnome
 	rm -rf _testtmp  # produced by test/testdistcc.py
 	rm -rf +distcheck
-	rm -rf $(include_server_builddir)
+	rm -rf "$(include_server_builddir)"
 
 clean-autoconf:
 	rm -f config.cache config.log
@@ -865,14 +870,15 @@ clean-lzo:
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 clean-include-server:
-	test -n "$(INCLUDESERVER_PYTHON)" &&		       \
-	CURDIR=`pwd` && mkdir -p $(include_server_builddir) && \
-	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
-	cd $$CURDIR && cd $(srcdir)/include_server &&	\
-	DISTCC_VERSION="$(VERSION)"			\
-	$(INCLUDESERVER_PYTHON) ./setup.py clean	\
-	   --build-base="$$BUILDDIR" 			\
-	   --build-temp="$$BUILDDIR"
+	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
+	  CURDIR=`pwd` && mkdir -p "$(include_server_builddir)" && \
+	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
+	  cd "$$CURDIR" && cd "$(srcdir)/include_server" &&	\
+	  DISTCC_VERSION="$(VERSION)"			\
+	  $(INCLUDESERVER_PYTHON) ./setup.py clean	\
+	     --build-base="$$BUILDDIR" 			\
+	     --build-temp="$$BUILDDIR";			\
+	fi
 
 maintainer-clean: distclean \
 	maintainer-clean-autoconf clean
@@ -901,7 +907,7 @@ upload-man: $(man_HTML)
 		samba.org:/home/httpd/distcc/man/
 
 upload-dist: alldist
-	$(srcdir)/packaging/googlecode_upload.py \
+	"$(srcdir)/packaging/googlecode_upload.py" \
 	  `find . -name '*.tar.gz' -o -name '*.tar.bz2' \
 	          -o -name '*.rpm' -o -name '*.deb'`
 
@@ -919,7 +925,7 @@ install-deb: deb
 	# Copy .deb files to /tmp to avoid problems with NFS root_squash
 	tmpdir=`mktemp -d /tmp/distcc-install-deb-XXXXXX` && \
 	cp packaging/*.deb $$tmpdir && \
-	cd $$tmpdir && \
+	cd "$$tmpdir" && \
 	sudo dpkg -i *.deb && \
 	rm -rf $$tmpdir
 
@@ -955,79 +961,82 @@ install: showpaths install-doc install-man install-programs \
 	install-include-server install-example @INSTALL_GNOME@ install-conf
 
 install-programs: $(bin_PROGRAMS) pump
-	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
 	for p in $(bin_PROGRAMS) pump; do \
-	  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir) || exit 1; \
+	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
 	done
 
 # The jumping through hoops with cd is to normalize build/destdir if relative.
 # And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
 install-include-server: include-server
-	test -n "$(INCLUDESERVER_PYTHON)" &&		\
-	CURDIR=`pwd` && 				\
-	cd $(include_server_builddir) && BUILDDIR=`pwd` && export BUILDDIR && \
-	cd $(DESTDIR)/ && DESTDIR=`pwd` && export DESTDIR && cd $$CURDIR && \
-	cd $(srcdir)/include_server && 			\
-	DISTCC_VERSION="$(VERSION)"			\
-	$(INCLUDESERVER_PYTHON) ./setup.py 		\
-	    build 					\
-	       --build-base="$$BUILDDIR" 		\
-	       --build-temp="$$BUILDDIR"		\
-	    install 					\
-	       --prefix="$(prefix)" 			\
-	       --record="$(PYTHON_INSTALL_RECORD)"    	\
-	       --root="$$DESTDIR"
+	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
+	  echo "Not building $@: No suitable python found"; \
+	else						\
+	  CURDIR=`pwd` && 				\
+	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
+	  cd "$(DESTDIR)" && DESTDIR=`pwd` && export DESTDIR && cd "$$CURDIR" && \
+	  cd "$(srcdir)/include_server" && 		\
+	  DISTCC_VERSION="$(VERSION)"			\
+	  $(INCLUDESERVER_PYTHON) ./setup.py 		\
+	      build 					\
+	         --build-base="$$BUILDDIR" 		\
+	         --build-temp="$$BUILDDIR"		\
+	      install 					\
+	         --prefix="$(prefix)" 			\
+	         --record="$(PYTHON_INSTALL_RECORD)"   	\
+	         --root="$$DESTDIR";			\
+	fi
 
 install-man: $(man1_MEN)
-	$(mkinstalldirs) $(DESTDIR)$(man1dir)
+	$(mkinstalldirs) "$(DESTDIR)$(man1dir)"
 	for p in $(man1_MEN); do				\
-	$(INSTALL_DATA)	$(srcdir)/$$p $(DESTDIR)$(man1dir) || exit 1;	\
+	$(INSTALL_DATA)	"$(srcdir)/$$p" "$(DESTDIR)$(man1dir)" || exit 1; \
 	done
 
 install-doc: $(pkgdoc_DOCS)
-	$(mkinstalldirs) $(DESTDIR)$(docdir)
+	$(mkinstalldirs) "$(DESTDIR)$(docdir)"
 	for p in $(pkgdoc_DOCS); do				\
-	$(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(docdir) || exit 1;	\
+	$(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(docdir)" || exit 1; \
 	done
 
 install-example: $(example_DOCS)
-	$(mkinstalldirs) $(DESTDIR)$(docdir)/example
+	$(mkinstalldirs) "$(DESTDIR)$(docdir)/example"
 	for p in $(example_DOCS); do				\
-	$(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(docdir)/example || exit 1;	\
+	$(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(docdir)/example" || exit 1; \
 	done
 
 install-gnome-data: $(gnome_data)
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(mkinstalldirs) "$(DESTDIR)$(pkgdatadir)"
 	for p in $(gnome_data); do				\
-	$(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir) || exit 1;	\
+	$(INSTALL_DATA) "$$p" "$(DESTDIR)$(pkgdatadir)" || exit 1; \
 	done
 
 install-conf: $(conf_files) $(default_files)
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/distcc
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/default
+	$(mkinstalldirs) "$(DESTDIR)$(sysconfdir)/distcc"
+	$(mkinstalldirs) "$(DESTDIR)$(sysconfdir)/default"
 	@for p in $(conf_files); do                              \
 	  base=`basename $$p`;                                   \
-	  target=$(DESTDIR)$(sysconfdir)/distcc/$$base;          \
-	  if test -e $$target; then                              \
+	  target="$(DESTDIR)$(sysconfdir)/distcc/$$base";        \
+	  if test -e "$$target"; then                            \
 	    echo "******************************************";   \
 	    echo "*** Configuration file '$$target'";            \
 	    echo "*** already exists; not installing '$$p'.";    \
 	  else                                                   \
-	    echo $(INSTALL_DATA) $(srcdir)/$$p $$target;         \
-	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
+	    echo "$(INSTALL_DATA) $(srcdir)/$$p $$target";       \
+	    $(INSTALL_DATA) "$(srcdir)/$$p" "$$target"           \
 	        || exit 1;                                       \
 	  fi;                                                    \
 	done
 	@for p in $(default_files); do                           \
 	  base=`basename $$p`;                                   \
-	  target=$(DESTDIR)$(sysconfdir)/default/$$base;         \
-	  if test -e $$target; then                              \
+	  target="$(DESTDIR)$(sysconfdir)/default/$$base";       \
+	  if test -e "$$target"; then                            \
 	    echo "******************************************";   \
 	    echo "*** Configuration file '$$target'";            \
 	    echo "*** already exists; not installing '$$p'.";    \
 	  else                                                   \
-	    echo $(INSTALL_DATA) $(srcdir)/$$p $$target;         \
-	    $(INSTALL_DATA) $(srcdir)/$$p $$target               \
+	    echo "$(INSTALL_DATA) $(srcdir)/$$p $$target";       \
+	    $(INSTALL_DATA) "$(srcdir)/$$p" "$$target"           \
 	        || exit 1;                                       \
 	  fi;                                                    \
 	done
@@ -1040,10 +1049,10 @@ uninstall: uninstall-man uninstall-programs @UNINSTALL_GNOME@ \
 
 uninstall-programs:
 	for p in $(bin_PROGRAMS) pump; do			\
-	  file=$(DESTDIR)$(bindir)/`basename $$p`;              \
+	  file="$(DESTDIR)$(bindir)/`basename $$p`";            \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
-	-[ "`basename $(bindir)`" = "$(PACKAGE)" ] && rmdir $(DESTDIR)$(bindir)
+	-[ "`basename $(bindir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(bindir)"
 
 # There's no setup.py --uninstall. :-( So I depend on
 # PYTHON_INSTALL_RECORD being set.  If it was used at --install time,
@@ -1059,39 +1068,39 @@ uninstall-include-server:
 
 uninstall-man:
 	for p in $(man1_MEN); do				\
-	  file=$(DESTDIR)$(man1dir)/`basename $$p`;             \
+	  file="$(DESTDIR)$(man1dir)/`basename $$p`";           \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
-	-[ "`basename $(man1dir)`" = "$(PACKAGE)" ] && rmdir $(DESTDIR)$(man1dir)
+	-[ "`basename $(man1dir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(man1dir)"
 
 uninstall-doc:
 	for p in $(pkgdoc_DOCS); do				\
-	  file=$(DESTDIR)$(docdir)/`basename $$p`;              \
+	  file="$(DESTDIR)$(docdir)/`basename $$p`";            \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
-	-[ "`basename $(docdir)`" = "$(PACKAGE)" ] && rmdir $(DESTDIR)$(docdir)
+	-[ "`basename $(docdir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(docdir)"
 
 uninstall-example:
 	for p in $(example_DOCS); do				\
-	  file=$(DESTDIR)$(docdir)/example/`basename $$p`;      \
+	  file="$(DESTDIR)$(docdir)/example/`basename $$p`";    \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
-	-rmdir $(DESTDIR)$(docdir)/example
+	-rmdir "$(DESTDIR)$(docdir)/example"
 
 uninstall-gnome-data:
 	for p in $(gnome_data); do				\
-	  file=$(DESTDIR)$(pkgdir)/`basename $$p`;              \
+	  file="$(DESTDIR)$(pkgdir)/`basename $$p`";            \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
-	-[ `basename $(pkgdir)` = $(PACKAGE) ] && rmdir $(DESTDIR)$(pkgdir)
+	-[ `basename $(pkgdir)` = $(PACKAGE) ] && rmdir "$(DESTDIR)$(pkgdir)"
 
 uninstall-conf:
 	for p in $(conf_files); do                              \
-	  file=$(DESTDIR)$(sysconfdir)/distcc/`basename $$p`;   \
+	  file="$(DESTDIR)$(sysconfdir)/distcc/`basename $$p`"; \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
-	-rmdir $(DESTDIR)$(sysconfdir)/distcc
+	-rmdir "$(DESTDIR)$(sysconfdir)/distcc"
 	for p in $(default_files); do                           \
-	  file=$(DESTDIR)$(sysconfdir)/default/`basename $$p`;  \
+	  file="$(DESTDIR)$(sysconfdir)/default/`basename $$p`";\
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done

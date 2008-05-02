@@ -218,13 +218,13 @@ AC_PROG_INSTALL
 AC_PATH_PROGS(PYTHON, [python2.4 python-2.4 python])
 AC_ARG_VAR(PYTHON, [Python interpreter])
 # Python 1 doesn't even support -V
-if ! "$PYTHON" -V 2>&1 | grep -q "^Python"; then
+if ! "$PYTHON" -V 2>&1 | grep "^Python" >/dev/null; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
-elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.1"; then
+elif "$PYTHON" -V 2>&1 | grep "^Python 2.1" >/dev/null; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
-elif "$PYTHON" -V 2>&1 | grep -q "^Python 2.[[23]]"; then
+elif "$PYTHON" -V 2>&1 | grep "^Python 2.[[23]]" >/dev/null; then
   TEST_PYTHON="$PYTHON"
   INCLUDESERVER_PYTHON=""
 else
