@@ -23,6 +23,7 @@
 /* distcc.h -- common internal-use header file */
 
 #include <sys/types.h>
+#include <sys/time.h>     /* for struct timeval */
 
 
 #ifdef NORETURN
