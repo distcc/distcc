@@ -454,7 +454,7 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(BUILD_POPT)
 AC_SUBST(GNOME_BIN)
 AC_DEFINE_UNQUOTED(GNU_HOST, ["$host"], [Your gnu-style host triple])
-# The '.stamp-conf' files force creation in the containing directories in the
+# The '.stamp-conf' files force creation of the containing directories in the
 # build tree.
 AC_CONFIG_FILES([Makefile] popt/.stamp-conf lzo/.stamp-conf)
 AC_CONFIG_FILES([pump], [chmod +x pump])
