@@ -1,1 +1,2 @@
-@src_dir@
+## Force popt directory to be created in build directory.
+
