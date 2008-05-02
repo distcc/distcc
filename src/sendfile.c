@@ -203,7 +203,8 @@ dcc_pump_sendfile(int ofd, int ifd, size_t size)
 
         sent = sys_sendfile(ofd, ifd, &offset, size);
         if (sent == -1) {
-            if ((errno == ENOSYS || errno == EINVAL) && offset == 0) {
+            if ((errno == ENOSYS || errno == EINVAL || errno == ENOTSOCK)
+                && offset == 0) {
                 /* The offset==0 tests is because we may be part way through
                  * the file.  We can't just naively go back to read/write
                  * because sendfile() does not update the file pointer: we
