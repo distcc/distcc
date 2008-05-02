@@ -168,8 +168,8 @@ Example:
 # TODO: Test with DISTCC_DIR set, and not set.
 
 
-import time, sys, string, os, types, re, popen2, pprint, socket
-import signal, os.path, string, glob
+import time, sys, string, os, glob, re, socket
+import signal, os.path
 import comfychair
 
 from stat import *                      # this is safe
@@ -190,6 +190,10 @@ _valgrind_command            = "" # Command to invoke valgrind (or other
                                   # e.g. "valgrind --quiet --num-callsers=20 "
 _server_options              = "" # Distcc host options to use for the server.
                                   # Should be "", ",lzo", or ",lzo,cpp".
+
+def _ShellSafe(s):
+    '''Returns a version of s that will be interpreted literally by the shell.'''
+    return "'" + s.replace("'", "'\"'\"'") + "'"
 
 class SimpleDistCC_Case(comfychair.TestCase):
     '''Abstract base class for distcc tests'''
@@ -233,7 +237,6 @@ The daemon doesn't detach until it has bound the network interface, so
 as soon as that happens we can go ahead and start the client."""
 
     def setup(self):
-        import random
         SimpleDistCC_Case.setup(self)
         self.daemon_pidfile = os.path.join(os.getcwd(), "daemonpid.tmp")
         self.daemon_logfile = os.path.join(os.getcwd(), "distccd.log")
@@ -253,8 +256,6 @@ as soon as that happens we can go ahead and start the client."""
 
 
     def killDaemon(self):
-        import signal, time
-
         try:
             pid = int(open(self.daemon_pidfile, 'rt').read())
         except IOError:
@@ -278,7 +279,9 @@ as soon as that happens we can go ahead and start the client."""
                 "--verbose --lifetime=%d --daemon --log-file %s "
                 "--pid-file %s --port %d --allow 127.0.0.1"
                 % (self.daemon_lifetime(),
-                   self.daemon_logfile, self.daemon_pidfile, self.server_port))
+                   _ShellSafe(self.daemon_logfile),
+                   _ShellSafe(self.daemon_pidfile),
+                   self.server_port))
 
     def daemon_lifetime(self):
         # Enough for most tests, even on a fairly loaded machine.
@@ -326,7 +329,6 @@ class VersionOption_Case(SimpleDistCC_Case):
     This is also a good test that the programs were built properly and are
     executable."""
     def runtest(self):
-        import string
         for prog in 'distcc', 'distccd':
             out, err = self.runcmd("%s --version" % prog)
             assert out[-1] == '\n'
@@ -364,7 +366,7 @@ class GccOptionsPassed_Case(SimpleDistCC_Case):
                                + _gcc + " --help")
         if re.search('distcc', out):
             raise ("gcc help contains \"distcc\": \"%s\"" % out)
-        self.assert_re_match(r"^Usage: gcc", out)
+        self.assert_re_match(r"^Usage: [^ ]*gcc", out)
 
 
 class StripArgs_Case(SimpleDistCC_Case):
@@ -681,12 +683,16 @@ foo_bar""",
               "h_compile dcc_fresh_dependency_exists dotd '%s' %i" %
               ("*notthis*", time_ref))
           self.assert_equal(out.split()[1], "(NULL)");
-          checked_deps = set([])
+          checked_deps = {}
           for line in err.split("\n"):
               if re.search("[^ ]", line):
                   # Line is non-blank
-                  checked_deps.add(self.getDep(line))
-          self.assert_equal(checked_deps, set(deps))
+                  checked_deps[self.getDep(line)] = 1
+          deps_list = deps[:]
+          checked_deps_list = checked_deps.keys()
+          deps_list.sort()
+          checked_deps_list.sort()
+          self.assert_equal(checked_deps_list, deps_list)
 
           # Let's try to touch, say the last dep file. Then, we should expect
           # the name of that very file as the output because there's a fresh
@@ -969,12 +975,22 @@ class Gdb_Case(CompileHello_Case):
 
     def checkBuiltProgram(self):
         # Run gdb and verify that it is able to correctly locate the
-        # testtmp.c source file.
-        out, errs = self.runcmd("gdb --batch " +
-            "-ex 'break main' -ex 'run' -ex 'step' link/testtmp </dev/null")
-        self.assert_equal(errs, '')
+        # testtmp.c source file.  We write the gdb commands to a file
+        # and run them via gdb --command.  (The alternative, to specify
+        # the gdb commands directly on the commandline using gdb --ex,
+        # is not as portable since only newer gdb's support it.)
+        f = open('gdb_commands', 'w')
+        f.write('break main\nrun\nstep\n')
+        f.close()
+        out, errs = self.runcmd("gdb --batch --command=gdb_commands "
+                                "link/testtmp </dev/null")
+        # Apparently, due to a gdb bug, gdb can produce the (harmless) error
+        # message "Failed to read a valid object file" on some systems.
+        error_message = 'Failed to read a valid object file image from memory.\n'
+        if errs:
+            self.assert_equal(errs, error_message)
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
-        self.assert_re_search('testtmp.c:5', out)
+        self.assert_re_search('testtmp.c:[45]', out)
 
         # Now do the same, but in a subdirectory.
         # This tests that the "compilation directory" field
@@ -982,11 +998,12 @@ class Gdb_Case(CompileHello_Case):
         os.mkdir('run')
         os.chdir('run')
         self.runcmd("cp ../link/testtmp ./testtmp")
-        msgs, errs = self.runcmd("gdb --batch " +
-            "-ex 'break main' -ex 'run' -ex 'step' ./testtmp </dev/null")
-        self.assert_equal(errs, '')
+        out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
+                                "./testtmp </dev/null")
+        if errs:
+            self.assert_equal(errs, error_message)
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
-        self.assert_re_search('testtmp.c:5', out)
+        self.assert_re_search('testtmp.c:[45]', out)
         os.chdir('..')
 
         # Now recompile and relink the executable using ordinary
@@ -1102,7 +1119,7 @@ class BadInclude_Case(Compilation_Case):
 """
 
     def runtest(self):
-        if 'cpp' in _server_options:
+        if _server_options.find('cpp') != -1:
             #  With gcc, adding -MMD makes the compiler give a warning, instead
             # of the normal error message, when encountering a non-existent
             # include file specified in angle brackets.  In pump mode, the
@@ -1156,7 +1173,9 @@ class NoDetachDaemon_Case(CompileHello_Case):
         cmd = (self.distccd() +
                "--no-detach --daemon --verbose --log-file %s --pid-file %s "
                "--port %d --allow 127.0.0.1" %
-               (self.daemon_logfile, self.daemon_pidfile, self.server_port))
+               (_ShellSafe(self.daemon_logfile),
+                _ShellSafe(self.daemon_pidfile),
+                self.server_port))
         self.pid = self.runcmd_background(cmd)
         self.add_cleanup(self.killDaemon)
         # Wait until the server is ready for connections.
@@ -1165,7 +1184,6 @@ class NoDetachDaemon_Case(CompileHello_Case):
           time.sleep(0.2)
 
     def killDaemon(self):
-        import signal
         os.kill(self.pid, signal.SIGTERM)
         pid, ret = os.wait()
         self.assert_equal(self.pid, pid)
@@ -1216,7 +1234,7 @@ class AbsSourceFilename_Case(CompileHello_Case):
         return (self.distcc()
                 + _gcc
                 + " -c -o testtmp.o %s/testtmp.c"
-                % os.getcwd())
+                % _ShellSafe(os.getcwd()))
     
 
 class ThousandFold_Case(CompileHello_Case):
@@ -1226,7 +1244,7 @@ class ThousandFold_Case(CompileHello_Case):
     
     def runtest(self):
         # may take about a minute or so
-        for i in xrange(1000):
+        for unused_i in xrange(1000):
             self.runcmd(self.distcc()
                         + _gcc + " -o testtmp.o -c testtmp.c")
 
@@ -1239,7 +1257,7 @@ class Concurrent_Case(CompileHello_Case):
     def runtest(self):
         # may take about a minute or so
         pids = {}
-        for i in xrange(50):
+        for unused_i in xrange(50):
             kid = self.runcmd_background(self.distcc() +
                                          _gcc + " -o testtmp.o -c testtmp.c")
             pids[kid] = kid
@@ -1389,8 +1407,6 @@ class NoHosts_Case(CompileHello_Case):
     We expect compilation to succeed, but with a warning that it was
     run locally."""
     def runtest(self):
-        import os
-        
         # WithDaemon_Case sets this to point to the local host, but we
         # don't want that.  Note that you cannot delete environment
         # keys in Python1.5, so we need to just set them to the empty
@@ -1549,7 +1565,9 @@ class AccessDenied_Case(CompileHello_Case):
                 + "--verbose --lifetime=%d --daemon --log-file %s "
                   "--pid-file %s --port %d --allow 127.0.0.2"
                 % (self.daemon_lifetime(),
-                   self.daemon_logfile, self.daemon_pidfile, self.server_port))
+                   _ShellSafe(self.daemon_logfile),
+                   _ShellSafe(self.daemon_pidfile),
+                   self.server_port))
 
     def compileCmd(self):
         """Return command to compile source and run tests"""
