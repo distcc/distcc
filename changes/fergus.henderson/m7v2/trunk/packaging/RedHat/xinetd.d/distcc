@@ -1,0 +1,15 @@
+# default: on
+# description:	distccd serves C/C++ compilation requests from distcc clients.
+#		WARNING: This service should ONLY be used on trusted networks.
+service distcc
+{
+	socket_type	= stream        
+	protocol	= tcp
+	port		= 3632
+	wait		= no
+	user		= nobody
+	server		= /usr/bin/distccd
+	server_args	= --inetd
+	disable		= yes
+}
+
