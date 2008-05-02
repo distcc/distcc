@@ -730,7 +730,7 @@ check:
 	@if test -n "$(INCLUDESERVER_PYTHON)"; then \
 	   $(MAKE) maintainer-check; \
 	elif test -n "$(TEST_PYTHON)"; then \
-	   echo "WARNING: include-server not being tested"; \
+	   echo "WARNING: pump-mode not being tested"; \
 	   $(MAKE) distcc-maintainer-check; \
 	else \
 	   echo "Cannot run tests: python binary not found"; \
@@ -810,7 +810,7 @@ installcheck:
 	@if test -n "$(INCLUDESERVER_PYTHON)"; then \
 	   $(MAKE) maintainer-installcheck; \
 	elif test -n "$(TEST_PYTHON)"; then \
-	   echo "WARNING: include-server not being tested"; \
+	   echo "WARNING: pump-mode not being tested"; \
 	   $(MAKE) distcc-maintainer-installcheck; \
 	else \
 	   echo "Cannot run install-tests: python binary not found"; \
