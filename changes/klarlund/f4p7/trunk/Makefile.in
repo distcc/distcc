@@ -114,7 +114,7 @@ dist_files =							\
 
 dist_dirs = include_server/test_data
 
-dist_lzo = lzo/minilzo.c lzo/minilzo.h lzo/lzoconf.h
+dist_lzo = lzo/minilzo.c lzo/minilzo.h lzo/lzoconf.h lzo/.stamp-conf.in
 
 dist_contrib = contrib/distcc-absolutify	\
 	contrib/distcc.sh		\
@@ -372,7 +372,7 @@ popt_SRC=popt/findme.c  popt/popt.c  popt/poptconfig.c			 \
 
 popt_HEADERS = popt/findme.h popt/popt.h popt/poptint.h popt/system.h
 
-popt_EXTRA = popt/README.popt
+popt_EXTRA = popt/README.popt popt/.stamp-conf.in
 
 
 # You might think that distccd ought to be in sbin, because it's a
@@ -883,6 +883,7 @@ maintainer-clean-autoconf:
 
 distclean-autoconf:
 	rm -f Makefile src/config.h src/config.h.stamp pump
+	rm -f popt/.stamp-conf lzo/.stamp-conf
 	rm -f config.status config.cache config.log aclocal.m4
 	rm -rf autom4te.cache
 
