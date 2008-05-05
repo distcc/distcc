@@ -109,10 +109,10 @@ args = {
    # The 'include_server' package is in the srcdir_include_server.
   'package_dir': {'include_server': srcdir_include_server},
   'version': os.getenv("DISTCC_VERSION") or 'unknown',
-  'description': "Include server for pump- mode",
+  'description': "Include server for distcc's pump-mode",
   'author': "Nils Klarlund",
   'author_email': "opensource@google.com",
-  'url': 'http://code.google.com/p/distcc-pump',
+  'url': 'http://code.google.com/p/distcc',
   'long_description': """The include server is part of distcc.""",
   'packages': ["include_server"],
   'ext_modules': [ext],

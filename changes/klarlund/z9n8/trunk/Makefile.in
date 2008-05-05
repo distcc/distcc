@@ -968,12 +968,17 @@ install-programs: $(bin_PROGRAMS) pump
 	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
 	done
 
-# See comments for include-server target.
+# See comments for the include-server target.  Also, we work around an issue in
+# the change_root function of distutils/utils.py that turns the absolute prefix
+# into a relative reference if the root is the empty string: we substitute '/'
+# for the empty prefix when defining the '--root' parameter.
 install-include-server: include-server
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
-	  mkdir -p "$(include_server_builddir)" &&  \
+	  mkdir -p "$(include_server_builddir)" &&      \
+	  DESTDIR=$(DESTDIR) &&                         \
+	  DESTDIR=$${DESTDIR:-/} &&                     \
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR=`cd $(srcdir); pwd`                    \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
@@ -984,7 +989,7 @@ install-include-server: include-server
 	      install 					\
 	         --prefix="$(prefix)" 			\
 	         --record="$(PYTHON_INSTALL_RECORD)"   	\
-	         --root="/";			\
+	         --root=$$DESTDIR;        \
 	fi
 
 install-man: $(man1_MEN)
