@@ -157,8 +157,8 @@ def Stamp(path):
 # REALPATH WARNINGS
 
 BAD_REALPATH_WARNING_MSG = (
-    'For translation unit "%s" while processing "%s": lookup of file "%s" '
-    'resolved to "%s" whose realpath is "%s".')
+    """For translation unit '%s' while processing '%s': lookup of file '%s' """
+    """resolved to '%s' whose realpath is '%s'.""")
 
 
 # LANGUAGES AND FILE EXTENSIONS
@@ -271,10 +271,10 @@ class NotCoveredError(Error):
       # Line numbers are not currently used.
       if line_number:
         self.line_number = line_number
-        message = ('File: "%s", line: %s: %s'
+        message = ("""File: '%s', line: %s: %s"""
                    % (source_file, line_number, message))
       else:
-        message = "File: '%s': %s" % (source_file, message)
+        message = """File: '%s': %s""" % (source_file, message)
     # Message, a string, becomes self.args[0]    
     Error.__init__(self, message)
 

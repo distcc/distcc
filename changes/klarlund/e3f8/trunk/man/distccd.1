@@ -208,6 +208,15 @@ assumes daemon mode at startup if stdin is a tty, so
 --daemon should be explicitly specified when
 starting distccd from a script or in a non-interactive
 ssh connection.
+.TP 
+.B --zeroconf
+Register the availability of this distccd server using Avahi Zeroconf
+DNS Service Discovery (DNS-SD).  This allows distcc clients on the local
+network to access this distccd server without explicitly listing its host
+name or IP address in their distcc host list: the distcc clients can
+just use "+zeroconf" in their distcc host lists.
+.B This option is only available if distccd was compiled with
+.B Avahi support enabled.
 .SH "SEARCH PATHS"
 .PP
 distcc can pass either a relative or an absolute name for the compiler
