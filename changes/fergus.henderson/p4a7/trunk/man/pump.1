@@ -1,6 +1,6 @@
 .TH pump 1 "3 May 2008"
 .SH "NAME"
-pump \- accelerates remote compilation with distcc
+pump \- accelerate remote compilation with distcc
 .SH "SYNOPSIS"
 .B pump
 .I BUILD-COMMAND [ARGS]
@@ -118,20 +118,24 @@ from the parent directory of the location.
 The distcc servers that will be queried by lsdistcc
 in order to produce a value for DISTCC_HOSTS.
 This value may be unset or null. In such
-cases, use DISTCC_HOSTS.
+cases, lsdistcc will not be invoked, and
+distcc will use DISTCC_HOSTS or the distcc hosts
+configuration file, as described in the "Host Specifications"
+section of
+.BR distcc(1).
 .TP
 .B DISTCC_HOSTS
 This variable is passed through to distcc but only if
 DISTCC_POTENTIAL_HOSTS is not set.
 .TP
 .B LSDISTCC_ARGS
-Extra arguments to lsdistcc.  See
+Extra arguments to pass to lsdistcc.  See
 .B lsdistcc --help
 for more details.
 .TP
 .B
 INCLUDE_SERVER_ARGS
-Extra arguments to the include server.
+Extra arguments to pass to the include server.
 
 .TP
 .B
