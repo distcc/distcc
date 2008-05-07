@@ -1,0 +1,1191 @@
+<html>
+<head><title>distcc frequently asked questions</title>
+    <meta name="author" content="Martin Pool">
+    <meta name="keywords" content="distributed, make, build, gcc,
+               parallel, network, networked, faster, free, fast, paralel, cc, c,
+               C++, Objective C, ObjC, compile, compiler, compilation,
+               simple, GPL, GNU, Linux, BSD, Unix, software, development,
+               developer, TeamBuilder, quick, dmake, pvmake,
+               transparent, easy, workstations, Solaris, IncrediBuild,
+               productivity, speed, time, tool, performance, hardware,
+               agents, nfs, libraries, source, headers, workload,
+               buildfarm, farm, server, cluster, clustered, clustering, MOSIX, OpenMOSIX">
+    <meta name="description" content="distcc is a fast, free distributed C and C++ compiler.">
+    <link rel="SHORTCUT ICON" href="http://distcc.samba.org/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="distcc-green.css">
+    <link type="text/html" rel="top" href="index.html">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
+   <body vlink="#003300" text="#000000" link="#003300" bgcolor="#ffffff" alink="#336633"><p><table width="100%"><tr><td valign="top"><div class="navbar"><ul><li><a href="index.html"><b>distcc</b></a></li>
+          <li><a href="http://code.google.com/p/distcc/source/browse/trunk">source</a>
+          <li><a href="http://code.google.com/p/distcc/downloads/list">binaries</a></li>
+          <li><a href="http://code.google.com/p/distcc/source/browse/trunk/NEWS">news</a></li>
+          <li><a href="scenarios.html">scenarios</a></li>
+	  <li><a href="results.html">testimonials</a></li>
+	  <li><a href="http://code.google.com/p/distcc/issues/list">report a bug</a></li>
+	  <li><a href="faq.html">FAQ</a></li>
+	  <li><a href="security.html">security</a></li>
+	  <li><a href="distcc-lca-2004.html">whitepaper</a></li>
+          <li><a href="https://lists.samba.org/mailman/listinfo/distcc">mailing list</a>
+           <ul><li><a href="mailto:distcc@lists.samba.org">post</a></li>
+            <li><a href="http://lists.samba.org/archive/distcc/">archive</a></li>
+            <li><a href="news://news.gmane.org/gmane.comp.compilers.distcc">newsgroup</a></li></ul>
+	  </li>
+          <li><a href="http://freshmeat.net/projects/distcc">Freshmeat</a>
+            <ul><li><a href="http://freshmeat.net/subscribe/28140">be notified</a></li></ul>
+	  </li>
+
+	  <p>
+	  <li>related:</li>
+	  <ul>
+	      <li><a title="How to use distcc and Gentoo" href="http://www.gentoo.org/doc/en/distcc.xml">Gentoo</a></li>
+	      <li><a title="Script to ease building cross-compilers and toolchains" href="http://kegel.com/crosstool/">crosstool</a></li>
+	      <li><a title="Cache compiler results" href="http://ccache.samba.org/">ccache</a></li>
+	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
+	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
+	  </ul>
+       <p><p></td>                                      
+       <td valign="top">
+       <div class="body">
+       <h1 class="title">distcc frequently asked questions</h1>
+
+
+<p><b>Question not answered here?  Check the <a
+	  href="http://lists.samba.org/archive/distcc/">mailing list
+	  archives</A> or send email to <a
+	  href="mailto:distcc@lists.samba.org">distcc (at)
+	  lists.samba.org</A></b>
+
+
+  <h3>What compilers are supported?</h3>
+
+  <p>gcc is fully supported, building C, C++, Objective C and Objective
+  C++.  Other gcc languages such as Java are not supported.  All recent
+  versions of gcc are thought to work, though later versions tend to work
+  better.
+
+  <p>Intel's <em>icc</em> compiler is somewhat compatible with gcc and 
+  works with distcc, but some problems have been reported.
+
+  <p>Sun's proprietary C compiler is reported to work with distcc in C
+     mode.  It appears that Sun CC cannot compile C++ templates
+     correctly when using a separate preprocessor, so it is generally
+     not practical to compile C++  using Sun CC and distcc.
+
+  <p>
+The main feature required by distcc is that the compiler must be able
+to run the preprocessor separately, and then compile the preprocessor
+output from a file.  This was a basic part of the original design of
+C, but  some compilers seem to have lost the ability to do this.
+
+Secondarily, distcc is currently hardcoded to suit gcc's behaviour and
+command-line syntax, so only compilers that act like gcc will work.
+This could in principle be changed.
+
+
+<h3>How to build gcc with distcc?</h3>
+   
+<p>
+   gcc uses an unusual three-stage process to verify that the compiler
+   can recompile itself with the same results.  Because of bugs in the
+   gcc integrated preprocessor, compiling locally can produce a
+   program that is functionally identical, but not byte-for-byte
+   identical, with a program compiled remotely.
+
+<p>
+   This can apparently be fixed by specifying <tt>127.0.0.1</tt> in the
+   host list, rather than <tt>localhost</tt>.  This causes distcc to run
+   compilation "remotely" onto the same machine, which should be the
+   same as compiling remotely.
+
+<p>
+   You will also need to make sure that the build directory is mounted
+   at the same location on all machines so that the new compiler can
+   be located.
+
+<p>
+   (More information or instructions here would be welcome.)
+   
+
+ 
+<h3>distcc gets slower when I add slow machines to the cluster</h3>
+
+   
+
+   
+<p>
+    Make sure you put the preferred (fastest/closest/least loaded)
+    machines at the start of the <tt>DISTCC_HOSTS</tt> list.  This is
+    particularly important when running <tt>./configure</tt> scripts
+    because all compilation will be done on the first machine listed.
+    Normally this should be <tt>localhost</tt>, but if another machine is
+    much faster then perhaps not.
+
+<p>
+    To some extent this is still an open bug that I hope to address in
+    a future version.  It would be nice if distcc could automatically
+    detect the best distribution, but it doesn't do that yet.
+
+
+  <h3>Restarting distccd on reboot</h3>
+   
+
+<p>
+   You may have <tt>distccd</tt> installed on a machine where you don't
+   have root, and want it to restart when the machine reboots. 
+
+<p>
+   One way to do this, <a href="http://lists.samba.org/pipermail/distcc/2002q4/000417.html">suggested by Shane McDaniel</a>,
+   is to put it in
+   your per-user <tt>crontab</tt>.  <tt>distccd</tt> will be started at
+   regular intervals, but will exit if something is already listening
+   on the port.  Remember to set your <tt>PATH</tt> in the crontab so
+   that <tt>distccd</tt> and all necessary compilers can be found.
+
+
+
+<h3>Choosing a userid</h3>
+
+<blockquote>
+  It would be awesome if you could run the daemon as a specific
+   user in daemon mode.
+</blockquote>
+
+<p>
+  It is awesome!  :-)  From distcc 1.1, root can use the <tt>--user</tt>
+  option to cause distcc to start as a particular user.  
+<p>
+    <tt># distccd --user nobody </tt>
+
+<p>
+  If distccd is started by root and no user is specified, it will
+  change to the user <tt>distcc</tt> if possible, or otherwise to
+  <tt>nobody</tt>.  I recommend you create this user when installing the
+  package.
+
+<p>
+  If distccd is started by a non-root user then it will continue
+  running as that user.
+  
+
+
+
+      <h3>Why not use a distributed-make-style system?</h3>
+
+      
+
+      
+
+<p>
+  A few people have extended <tt>make</tt> to allow it to distribute jobs
+  across several machines.  Projects I know of include Graydon Hoare's
+  <a href=http://www.venge.net/graydon/cgi-bin/viewcvs.cgi/src/doozer/">Doozer</a>,
+  Sun's <tt>dmake</tt>, <tt>pvmmake</tt>, and <tt>ppmake</tt>.  GNU Make apparently has
+  internal hooks to add distribution mechanisms, which I think is how
+  <tt>ppmake</tt> and <tt>pvmmake</tt> work.
+
+<p>
+  Unlike distcc, most of programs have no special knowledge of C: they
+  just schedule jobs remotely or locally.  The advantage of this is
+  that you can distribute all different jobs, such as linking, or
+  building documentation, or compiling programs in other languages.
+
+<p>
+  The disadvantage of this approach is because it relies on running
+  tasks on any node, all relevant aspects of the nodes must be the
+  same.  This typically means that all machines must have a shared
+  filesystem mounted at the same location, that they must all have
+  exactly the same compiler, headers and libraries installed, their
+  clocks must be in sync, and typically that they must all have the
+  same OS and CPU architecture.
+
+<p>
+  In some situations, such as a lab of centrally managed machines,
+  this is quite practical.  However, many people have a less
+  homogenous environment: perhaps some machines run a different OS
+  release, or developers are allowed to upgrade libraries on their own
+  machines, or perhaps you just don't want to run NFS.
+
+<p>
+  In this situation distcc is much easier to set up.  You don't even
+  need root on the volunteer machines, let alone a mandate to move
+  <tt>/home</tt> onto NFS.
+
+<p>
+  (You might get away with having slightly different headers or
+  libraries, but the potential for confusion is so great that I think
+  you'd be crazy to try.)
+
+<p>
+  By Amdahl's law, a distributed make system could in principle be
+  faster than distcc, because it can distribute many different jobs.
+  In practice, however, for many projects compiling C or C++ takes
+  over 80% of the time.  Many of the other jobs, such as linking,
+  cannot be parallelized anyhow. 
+
+<p>
+  I don't know how their performace compares but I would be interested
+  to hear.
+
+
+  <h3>Has anybody yet thought of integrating distcc with ccache?</h3>
+
+<p>
+  They work pretty well as separate programs that call each other.
+   You can either set <tt>CC='ccache distcc gcc'</tt>, or arrange for
+   both ccache and distcc to be "masqueraded" on the path.  (See the
+   manual for information on how to install this.)
+
+<p>
+   Normally it is better for ccache to be run before distcc.
+   
+<p>
+   This is very nearly as efficient as making them both part of a
+   single program.  The preprocessor will only run once and the
+   preprocessed source will be passed from ccache straight to distcc.
+   Having them separate allows them to be tested, debugged and
+   released separately.
+
+<p>
+  Unless there's a really strong argument to do otherwise, having two
+  smaller programs is better practice, or at least more to my taste,
+  than making one monolithic one.
+
+<p>
+  It would be nice to allow a cache of
+  compiled files to be shared across several users or machines.
+  Possibly this would justify merging the programs at some point in
+  the future, but I'm still philosophically inclined towards
+  cooperation rather than merger.
+<p>
+  Joerg Beyer has started a new project called <a href="http://gecc.sourceforge.net/">gecc</a> to explore this architecture.
+
+  
+
+
+<h3>Temporary files in strange location?</h3>
+<p>
+<blockquote>
+   distcc always tries to create subdirs in /root/tmp for its temp files. How do I get around
+  this?
+</blockquote>
+
+<p>
+  distcc respects the <tt>$TMPDIR</tt> environment variable when creating its
+scratch directory.  I suspect you have that set in root's .profile.
+If you unset it in the shell script that launches xinetd, or set it to
+something not in root's path, then it should be fine.
+
+
+
+<h3>Server dies after a few connections when run from inetd</h3>
+
+
+<p>
+<blockquote>
+i noticed that when you start a make proccess, the remote distccd recieves 
+10-15 connections from my host (which is good) and those proccesses die after 
+a while. this is a long compilation (kdelibs) and after the initial 
+proccesses die, i cannot see any new one's coming in. is this normal ?
+it seems as if after a while (2-3 minuets) distcc stops working and only my 
+local gcc is still compiling.
+</blockquote>
+
+
+<p>
+
+   If you're running distccd from inetd, then it may be that inetd
+   thinks that the service is "looping" because of all the rapid
+   connections.  You need to increase the maximum connection rate.
+   See the inetd manual.  
+
+<p>
+   On traditional BSD inetd, you can do this by changing the word <tt>t</tt> to something like <tt>nowait.1000</tt>
+
+<p>
+   Alternatively, run distccd with <tt>--daemon</tt>, rather than from
+   inetd.
+
+
+
+
+<h3>Running distccd on a firewall?</h3>
+
+    
+<p>
+<blockquote>
+another machine i want to add to this "cluster" is my firewall. its not a 
+very powerfull one, but it can help speed things up a little more ;)
+are there any knows security issues with distcc ? how stupid will it be to run 
+it on a server that acts as a firewall ?
+</blockquote>
+
+
+
+<p>
+It depends on your security profile, but it's not completely
+unreasonable.  Hopefully your firewall already has iptables and
+tcpwrappers protection against connections from the outside world.
+Just make sure that nobody else can connect to the distccd port.
+
+
+
+<h3>What -j level to use?</h3>
+
+<p>
+<blockquote>
+when starting a compilation, the howto says to use -j8 .
+is this optimal ? anything else i should be using for better
+performance ?
+</blockquote>
+
+<p>
+
+You should use about twice the total number of CPUs available, but it
+depends on your network, program being compiled, available memory,
+etc.  Experiment with different values.
+
+<p>
+Client machines tend to be saturated at about 10-20 jobs, so using
+values above -j10 is rarely useful.  (Perhaps higher levels would work
+well on clients with two or more CPUs and very fast network
+connections, memory and disk.)
+
+
+
+<h3>Should I include localhost in the host list?</h3>
+
+<p>
+     Naturally, compiling on the machine that drives
+compilation has low overhead.
+
+<p>
+But, if a large number of machines are part of the
+distcc "farm", I suspect most of the driving machine's
+time would be better spent doing preprocessing &amp;
+feeding only, and as such increase the chances of
+always having something ready to handle to machines
+that finish their distcc compilation jobs.
+
+<p>
+I'm just hoping to collect some opinions on this
+matter. For a large project a for a cluster of about 8
+machines, is it actually better to dedicated the
+driving machine to do preprocessing only? (and so not
+include it in the hosts file).
+
+<p>
+ It will depend on your source tree, your network, your
+compiler, and your makefile (or alternative) just what fraction of the
+work must be done locally, which is the most important thing here.  At
+about the 3-4 machine level it may be worth putting localhost last; at
+8-10 machines it may be better to leave it out altogether.
+
+
+<h3>Different gcc versions?</h3>
+
+<p>
+<blockquote>
+if the host machine is using gcc 3.2, can the other machines use an older
+version of gcc ? 2.9.x for example ?
+</blockquote>
+
+
+<p>
+  distcc doesn't care.  However, in some circumstances, particularly
+  for C++, gcc object files compiled with one version of gcc are not
+  compatible with those compiled by another.  This is true even if
+  they are built on the same machine.
+<p>
+  It is usually best to make sure that every compiler name maps to a
+  reasonably similar version on every machine.  You can either make
+  sure that <tt>gcc</tt> is the same everywhere, or use a
+  version-qualified compiler name, such as <tt>gcc-3.2</tt> or 
+  <tt>i386-redhat-linux-gcc-3.2.2</tt>.
+<p>
+  In particular, object files can be incompatible because:
+  <ol>
+   <li> Calling conventions or ABIs have changed, particularly for
+	C++.
+
+   <li> Different versions optimize differently.
+   
+   <li> The header files specifically detect the version of gcc being
+	used, to change optimization or to work around bugs.  The
+	Linux kernel does this.
+	</ol>
+<p>
+   In all these cases you would need to "make clean" if you upgraded
+   your gcc.
+<p>
+   It is hard to generalize, but using gcc versions which have the
+   first two components the same (e.g. 3.2.1 and 3.2.2) is usually OK.
+   To be safe, use the exact same release on all machines.
+<p>
+   It is also a good idea to have the assembler versions be the same
+   too, although the problems there are slightly less complex.
+
+  
+
+
+ <h3>Shouldn't distcc check gcc versions?</h3>
+
+ 
+<p>
+ It might be a good idea for distcc to check the version of gcc on
+ all the volunteer machines.  However this turns out to be hard to do
+ completely reliably, because some programs which both call themselves
+ "gcc 3.2.1" behave differently, presumably because of vendor
+ patches or because vendors have shipped pre-release code.  
+<p>
+ So since automatic detection would not be a reliable solution, for
+ the moment we depend on the user to make sure they have compatible
+ versions installed.
+
+
+
+
+   <h3>Using different platforms?</h3>
+<p>
+<blockquote>
+ I have a mixed network environment.  MacOS X, Linux, and Windows (with
+ cygwin).  Seeing distcc really piqued my interest.  Using gcc on all of my
+ environments, can I set up distcc to span across this variety of operating
+ systems?
+</blockquote>
+<p>
+It should be reasonably straightforward.  Of course you will need to
+either install or build appropriate cross compilers for each machine.
+<p>
+For example, on each volunteer machine, build an x86-linux cross
+compiler and (this is important) install it as "<tt>i386-redhat-linux-gcc-3.2.2</tt>" or
+something similar, using the appropriate gcc configuration options to
+set the name.  You also need to make a link to that name on the Linux
+machine.
+<p>
+Then from Linux, run "<tt>distcc i386-redhat-linux-gcc-3.2.2</tt>".
+<p>
+Repeat as appropriate for every combination you want to use.
+<p>
+On Windows, you need to use the  Cygwin  (or perhaps Mingw?)
+   software, which provides a Unix-like environment for running gcc.
+<p>
+The easiest way to build a cross compiler is to use 
+Dan Kegel's 
+<a href="http://kegel.com/crosstool/">crosstool</a>.
+<p>
+Brian Mosher reports that 
+<a href="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/cygwin-to-linux-cross-howto.txt">Mumit Khan's description of building a Cygwin-hosted Linux toolchain</a> works well.  
+<a href="http://lists.samba.org/pipermail/distcc/2002q4/000469.html">Mike Santy suggests a slightly different approach</a>.
+
+
+
+<h3>Compiling between different i386 Unixes?</h3>
+<p>
+<blockquote>
+  Do I need to install cross-compilers to distribute builds between
+   different operating systems on the same CPU architecture?  For
+   example, <a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;oe=UTF-8&amp;threadm=opro4i72qrekdofe%40news.lysator.liu.se&amp;rnum=3&amp;prev=/groups%3Fq%3Ddistcc%2Bopenbsd%26ie%3DUTF-8%26oe%3DUTF-8%26hl%3Den%26btnG%3DGoogle%2BSearch">OpenBSD i386 and NetBSD i386</a>. 
+</blockquote>
+
+<p>
+  In general, yes you do.  Even on the same system, there can be
+  incompatibilites between the output of compilers such as
+
+  <ul>
+   <li> Different object file formats, or variations of the format. 
+    (OpenBSD uses a.out, but most Unixes use ELF.)
+   <li> Different patches applied to the compiler, even if it claims
+    to be the same version.
+    </ul>
+
+<h3>What's hard about synchronizing clocks?</h3>
+  
+<p>
+<blockquote>
+  Why do you say it's a feature of distcc that the machine clocks
+  don't need to be synchronized?  It's easy to do: you just install an
+  NTP client.
+</blockquote>
+<p>
+  It's not terribly hard, I agree.  But it's not quite as trivial as
+  you might think:
+<p>
+  <ol>
+   <li> Installing an NTP client requires root access on <em>all</em> the
+    machines, not just your own workstation.  (There's no way around
+   it, because it needs to change the machine's clock.)
+   <li> You need to be able to reach a reliable timeserver, which is
+    sometimes a problem with firewalls.
+   <li> If one of the machines does get out of sync, then builds may
+    be incorrect or you may get errors.  You may not notice until
+    after problems have occurred.  You can't fix it without
+   intervention from the administrator, who may be on holidays.
+   </ol>
+<p>
+  What's not there can't break.
+
+
+<h3>What does "listening on 0.0.0.0:3632" mean?</h3>
+<p>
+  This message means it's listening for connections on a wildcard IP
+  address, so clients coming through any network interface should be
+  able to connect, subject to <tt>--allow</tt> rules.  
+<p>
+  If you have more than one interface and want to only allow
+  connections from one of them then use the <tt>--listen</tt> or <tt>w</tt> options, or both.
+
+
+
+
+
+<h3>Use fsh for holding SSH connections?</h3>
+
+<p>
+<blockquote>
+Could you use <a href="http://www.lysator.liu.se/fsh/">fsh</a>
+to reduce the overhead of opening SSH connections?
+</blockquote>
+<p>
+   Yes, in principle you can do that by settings <tt>DISTCC_SSH=fsh</tt>.
+<p>
+   In practice this seems not to work very well.  The main reason
+   seems to be that the fsh client is written in Python, and the CPU
+   usage for Python to start up very high compared to other things
+   done by distcc.
+<p>
+   The typical use of fsh is for connecting to a distant server for
+   something like CVS.  In this case it does very well, because
+   network roundtrips, not CPU usage, are the critical factor.  
+<p>
+   You wouldn't want to use distcc over an intercontinental network.
+   On local networks the round trips are not trivial but they are
+   relatively small compared to CPU usage.
+<p>
+   So to make this work well, somebody either needs to rewrite the
+   short-lived part of fsh in C, or write a replacement in C.  I think
+   the SSH2 protocol in fact allows for this to be done natively, so
+   you could also hack OpenSSH to allow adding new channels within an
+   existing connection.
+<p>
+   <a href="http://www.harding.motd.ca/autossh/">autossh</a> might be
+   useful instead.  It can't be used as an ssh replacement by distcc,
+   but it can forward ports.
+
+
+ <h3>Will compiling with distcc magically make my program distributed?</h3>
+<p>
+<blockquote>
+  All objects
+files were created , but when I issue command for execution as 
+<tt>./executable</tt>
+ then program takes so much time as without distcc. Kindly tell me that
+how this execution time can be  reduced.
+All things work Properly , But all processors of systems are not utilized
+during EXECUTION of programs.
+</blockquote>
+<p>
+ (This has to be the wierdest question in the list, but it really was sent.)
+<p>
+ distcc makes building the program take less time.  The program that
+ is produced is the same as for a local build.
+<p>
+ If you want your program to be distributed at run time across several
+ machines, you need to design in parallelism and distribution,
+ possibly using a framework such as MPI or OpenMOSIX.
+<p>
+ What you seem to be asking for is to mechanically transform an
+ arbitrary C program into a distributed parallel program.  distcc
+ doesn't do anything like that.  It is perhaps not quite impossible
+ (people have written parallelizing compilers) but it's very very
+ hard.
+
+<h3>make-kpkg with distcc?</h3>
+<p>
+<blockquote>
+ How to compile the debian kernel
+ with make-kpkg using distcc?
+</blockquote>
+
+<p>
+Use the <tt>CONCURRENCY_LEVEL</tt> environment variable eg
+<tt>make-kpkg kernel_image CONCURRENCY_LEVEL=4</tt>
+after installing distcc into a masquerade directory.
+
+
+<h3>How to use an SSH TCP port other than 22?</h3>
+<p>
+<blockquote>
+I want to use two machines over ssh. One machine has a differnt port than
+22. But I can't set a port in the host specifications for ssh.
+</blockquote>
+<p>
+Use something like this in your <tt>~/.ssh/config</tt>:
+<p>
+<tt>
+Host bertie
+<br>Port 2202
+</tt>
+
+<h3>How do I build a cross compiler to Mac OS X?</h3>
+
+
+<p>
+Dara Hazeghi says:
+<p>
+<blockquote>Basically, you have to download the same source
+version compiler as the one on your OS X box, build it
+on you Linux PC, etc. The assembler now works on Linux
+as well, so that other issue you had should be moot.
+<p>
+That is, you should compile the Apple source on your non-Apple
+machine.  Apple have some patches that are not in the upstream gcc
+release so a compiler built from the gnu.org source will not be
+compatible.
+</blockquote>
+
+
+<h3>Randomly patched kernel crashes/hangs</h3>
+<p>
+<blockquote>
+ I installed applied some 
+<a href="http://bugs.gentoo.org/show_bug.cgi?id=36230">random</a> <a href="http://lists.samba.org/archive/distcc/2004q1/002035.html">unstable</a> kernel patches, and now my machine hangs/crashes/corrupts data when I run distcc!
+</blockquote>
+
+<p>
+If your kernel crashes, it is 
+<a href="http://lists.samba.org/archive/distcc/2004q1/002040.html">by definition</a>
+a kernel bug.
+<p>
+  If you have applied any patches that are not in the <tt>kernel.org</tt>
+  stable release, your first step should be to back them out and see
+  if the problem is still reproducible.
+
+
+
+<h3>distccd sometimes unable to find gcc</h3>
+<p>
+ 
+ distccd inherits its <tt>PATH</tt> from whichever process starts it,
+ and uses this to find compilers.  You may need to make sure the <tt>H</tt> is set appropriately by the script that starts distccd.  You
+ can also set <tt>DISTCCD_PATH</tt>, which overrides <tt>PATH</tt> and
+ bypasses checks for distcc masquerade directories.  The daemon's path
+ is logged when <tt>--verbose</tt> is given.
+
+
+<h3>Error about "jobserver unavailable"</h3>
+
+  
+<p>
+  This indicates a problem with your Makefile or shell.  See the <a href="http://mail.gnu.org/archive/html/help-make/2001-09/msg00005.html">explanation of this error</a> from GNU make.
+<p>
+  This can also happen when make is unable to create the fifo it uses
+  to communicate among parallel processes, because TMPDIR is not
+  accessible.  Check that the variable is set properly (or unset), and
+  that the directory has the right permissions.
+
+
+<h3>Files written to NFS filesystems are corrupt</h3>
+<p>
+<blockquote>
+<a href="http://lists.samba.org/pipermail/distcc/2003q3/001556.html">List post</a>: Writing object files from distcc to an NFS directory
+   can cause corrupt output: object files will be full of zeros.
+</blockquote>
+<p>
+   This is a bug in the Linux kernel NFS client interaction between
+    <tt>mmap</tt> and <tt>rename</tt>.  It can be avoided by using the
+    <a href="http://article.gmane.org/gmane.linux.nfs/3578"><tt>no_subtree_check</tt></a> export option on the NFS server.  
+    distcc 2.18 no longer uses mmap to receive files and may not
+    suffer this bug so strongly, but setting <tt>no_subtree_check</tt> is
+    still recommended.
+
+ 
+<h3>distccmon doesn't work on NFS</h3>
+<p>
+<blockquote>
+ When I set DISTCC_DIR to a directory on an NFS server, or have HOME on 
+  an NFS server, the monitors give errors or just don't work.
+</blockquote>
+<p>
+  The monitor checks that the processes recorded in the state files
+  are actually running (using kill -0).  If the processes aren't
+  running on the same machine, this doesn't work.
+<p>
+  In any case, having DISTCC_DIR on NFS is likely to cause problems
+  with locking.  Please set DISTCC_DIR to a local directory instead.
+
+
+<h3>gcc's DEPENDENCIES_OUTPUT option is broken</h3>
+<p>
+  Programs that use gcc's <a href="http://lists.samba.org/pipermail/distcc/2003q3/001547.html">DEPENDENCIES_OUTPUT</a> option don't work with ccache.
+<p>
+  This should be fixed in <a href="http://ccache.samba.org/">ccache 2.3</a>.  There is no problem with distcc.
+
+
+<h3>distcc fails to build on OS X</h3>
+<p>
+<blockquote>
+I'm trying to compile Distcc on OS X (gcc 3.1) and it fails with the
+following:
+</blockquote>
+<p>
+<tt>
+gcc -DHAVE_CONFIG_H -D_GNU_SOURCE -I./popt -I./src
+"-DSYSCONFDIR=\"/usr/local/etc\"" -g -O2 -W -Wall -W -Wimplicit
+-Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings
+-Waggregate-return -Wstrict-prototypes -Wmissing-prototypes
+-Wnested-externs -o src/climasq.o -c src/climasq.c
+<br>src/climasq.c:69: only 1 arg to macro 'rs_log_error' (2 expected)
+<br>src/climasq.c:114: only 1 arg to macro 'rs_trace' (2 expected)
+<br>cpp-precomp: warning: errors during smart preprocessing, retrying in
+basic mode
+<br>make: *** [src/climasq.o] Error 1
+</tt>
+
+<p>
+There is a bug in some versions of Apple's gcc.  Building with
+<tt>CFLAGS="-no-cpp-precomp"</tt> should fix it.  It should be automatically
+corrected in distcc 2.8 and later.
+
+
+
+<h3>Problems with <tt>gcc -MD</h3></tt>
+<p>
+<blockquote>
+   I'm using 0.12, and having trouble with dependency file creation. The
+    makefiles that are set up to use gcc's -MD option aren't working. I'm
+    getting some of the .d files in their proper directory, and not others.
+</blockquote>
+<p>
+   This problem can only occur if you're using gcc 3.0 or later, have
+  the source and object files in different directories or under
+  different names, and you are using <tt>-MD</tt> or <tt>-MMD</tt> but
+  not <tt>-MF</tt>.
+<p>
+  The workaround is to change the Makefile to explicitly specify with
+  <tt>-MF</tt> the file which should receive the dependency information.
+  Many Makefiles already do this.  Note that the <tt>-MF</tt> option is
+  only available in gcc 3.0 and later.
+<p>
+  Because the behaviour of <tt>-MD</tt> has changed from gcc2 to gcc3
+  there is no perfect solution available at the moment.
+
+
+
+<h3>gdb can't find source files</h3>
+<blockquote>
+  When I try to debug with gdb an executable compiled with distcc, gdb doesn't
+   find the source of the object to be debugged, unless that source is in the
+   directory from which I start gdb.
+</blockquote>
+<p>
+  
+Unfortunately this is caused by a bug in gcc, which I hope will be
+fixed in a future release.  gcc embeds the directory where the
+compiler (cc1) was run, when it really ought to record the directory
+the source came from.
+<p>
+You can work around it for now by using the "<tt>directory</tt>" command
+in gdb to tell it where to find the source, or by passing an absolute
+file name when compiling.
+<p>
+Tim Janik has an <a href="http://www.gtk.org/~timj/patches/">unofficial patch</a> for distcc which works around this but I think I
+won't merge it because it's better to fix it in gcc.
+<p>
+This is Debian <a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=148957&amp;repeatmerged=yes">#148957</a>.
+<p>
+   There was a <a href="http://gcc.gnu.org/ml/gcc-patches/2002-08/msg01411.html">discussion about this bug</a> on the gcc-patches mailing list.  
+This can affect other programs which rely on debug stabs, such as 
+<tt>addr2line</tt>, and it results in object files not being
+byte-for-byte identical when they include the source directory.  The
+same bug affects <a href="http://ccache.samba.org/">ccache</a>.
+
+<h3>TCP_CORK in linux-2.2</h3> 
+<p>
+  Linux 2.2 has a bug to do with <tt>TCP_CORK</tt> sockets getting stuck in
+   the <tt>FIN_WAIT1</tt> state.  distcc 0.10 tries to work around it but it
+   is not completely possible; if it causes trouble set
+   <tt>DISTCC_CORK=0</tt>.
+
+
+<h3>Hung sockets in Linux 2.5</h3> 
+<p>
+  distcc seems to produce a problem in Linux 2.5 where one machine
+  thinks the socket is CLOSED, and the other thinks it is
+  ESTABLISHED.  As a result the transfer hangs.
+<p>
+  The CONNECTED/ESTABLISHED state should *never* be reachable by a correct TCP
+  implementation.  distcc is triggering a bug in the 2.5 TCP stack,
+  which was <a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;oe=UTF-8&amp;threadm=20030604050011%242b4f%40gated-at.bofh.it&amp;rnum=1&amp;prev=/groups%3Fhl%3Den%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26q%3Ddistcc%2B%2Bdavem%26btnG%3DGoogle%2BSearch">found and fixed</a> in 2.5 in June 2003.
+
+
+<h3>libtool and trouble building KDE</h3>
+<p>
+  Trying to build KDE with <tt>make CC=distcc CXX=distcc -j5</tt> fails
+  with a libtool error.
+<p>
+  The version of libtool included with some KDE releases is buggy.
+<p>
+   The best workaround is to install distcc in "masquerade mode".
+   Wayne Davison writes:
+<blockquote>
+<p>
+To get distcc going, just follow the instructions in the docs to setup a
+"masquerade" dir, add it to the start of your PATH, and then never
+fiddle with CC and/or CXX again (i.e. undefine them).  Note that you
+need to be running a 2.x version of distcc for masquerade support to be
+integrated by default (e.g. 2.0.1).  (Side note: if you're using a
+binary RPM of distcc, make sure that the maintainer has made a
+masquerade dir a part of the installed config.  If not, ask them to do
+so, as it is the easiest way to make distcc compatible with the widest
+range of packages.)
+<p>
+To be explicit, do something very similar (or identical) to this:
+<p>
+<pre>
+# mkdir -p /usr/lib/distcc/bin
+# cd /usr/lib/distcc/bin
+# ln -s ../../../bin/distcc cc
+# ln -s ../../../bin/distcc c++
+# ln -s ../../../bin/distcc gcc
+# ln -s ../../../bin/distcc g++
+</pre>
+<p>
+You can add links to any other compiler names you use on your system as
+well.
+<p>
+The other setup requirements remain unchanged: add DISTCC_HOSTS in your
+environment and run make with the -j5 (or whatever) option, perhaps by
+setting MAKEFLAGS in your environment.
+</blockquote>
+
+
+<h3>Linux 2.2 makefile strangeness</h3> 
+<p>
+ Linux 2.2.21 cannot be built with distcc because of bugs in the kernel's 
+ Makefile.  (<tt>$CC</tt> is set to the compiler name plus the computed
+ options.)  It may be possible to use distcc in masquerade mode.
+
+
+  <h3>Compiler command line parsing problems?</h3>
+
+   
+<p>
+   distcc parses the compiler command line to work out what
+   operation is being invoked, and what are the input and output
+   files.  The semantics of <tt>gcc</tt> command lines is fairly complex,
+   and has changed slightly over time.  There may be some valid
+   command lines that distcc understands differently to gcc, though
+   none are known at the moment.  These ought to cause the command to
+   be run locally, but it is possible that it would cause a failure.
+   Either case should be reported as a bug.
+
+  <h3>Can't handle local file access</h3>
+  
+<p>
+  distcc can't handle compilers that need to read other files from
+  the local filesystem.  This might be a problem with such things as
+  profile-directed optimizers.  distcc tries to detect such commands
+  and run them locally, but there may be cases which are not handled
+  properly.
+
+   <h3>Huge files</h3>
+<p>
+   distcc's protocol and file IO would probably have trouble with
+    source or object files over 2GB in size.  I've never heard of a .c
+    or .o file that large, and I rather suspect gcc would not handle
+    them well either.
+
+
+<h3>KDE builds slowly with <tt>--enable-final</tt></h3>
+<p>
+    Bernardo Innocenti says
+<p>
+     <blockquote> Using the --enable-final configure option of KDE makes distcc almost
+    useless.  
+</blockquote>
+<p>
+    
+Frerich Raabe explains:
+<blockquote>
+--enable-final makes the build system concatenate all sourcefiles in a
+directory (say, Konqueror's sourcefiles) into one big file.
+<p>
+Technically, this is achieved by creating a dummy file which simply
+includes every C++ sourcefile. The advantage of this is that the
+compile a- takes less time since there is only little scattered file
+opening involved and b- produces usually more optimized code, since
+the compiler can see more code at once and thus there are more
+chances to optimize. Of course this eats a lot more memory, but that
+is not an issue nowadays.
+<p>
+Now, it's clear why this makes distcc useless: there is just one huge file
+per project, and outsourcing that file via distcc to other nodes will just
+delay the build since the sourcecode (and it's a lot) has to be transferred
+over the network, and there is no way to pararellize this.
+<p>
+     To avoid this, configure with <tt>--disable-final</tt>.
+</blockquote>
+  <h3>C++ code that uses <tt>#pragma implementation</tt> doesn't seem to
+  work properly.</h3>
+<p>
+  That pragma can't work with distcc because it introduces
+  dependencies between the source and local filenames.  It is
+  strongly deprecated in gcc and there are no plans to support it in
+  distcc.
+  <h3>Data corruption in compiles</h3>
+<p>
+  Typical symptoms include linker errors, wierd syntax errors or
+  compiler crashes, caused by corrupt object or source files.
+<p>
+  This has occurred several times in the past, typically because of
+   kernel bugs such as  
+   Gentoo <a href="http://bugs.gentoo.org/show_bug.cgi?id=36230">#36320</a>.
+   See if you can reproduce the problem using a standard kernel.org
+   kernel.
+
+
+ <h3>Linux kernel panic using gigabit ethernet</h3>
+<p>
+ There is a
+  <a href="http://lkml.org/lkml/2004/5/3/192">bug in the Linux 2.4.26 kernel</a> 
+  [<a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;threadm=1Gu6a-7hD-11%40gated-at.bofh.it&amp;rnum=1&amp;prev=/groups%3Fq%3Ddistcc%2520panic%26meta%3Dsite%253Dgroups">Google groups thread</a>] that is triggered by using distcc.  It is timing-related and seems
+  more likely to occur  with a gigabit network adapter.
+<p>
+  <a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;selm=1Qr7f-5aV-31%40gated-at.bofh.it&amp;rnum=23">This patch may fix the problem.</a>  If it doesn't, please report your
+   problem to the kernel mailing list.
+<p>
+  You may be able to avoid it by setting these environment variables
+  on both the client and the server:
+<p>
+ <tt>DISTCC_MMAP=0 DISTCC_SENDFILE=0 </tt> 
+<p>
+  This bug is present in the Fedora Core 1 kernel and is 
+  <a href="https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=114192">Red Hat bug #114192</a>.
+<h3>Sun Workshop CC does not work with distcc</h3>
+<p>
+<blockquote>
+ I am trying to use distcc on a network of Solaris 2.7 workstations and I
+ also ran into this problem. I modified the src just like you did but I
+ still have problems compiling certain C++ files - specifically those that
+ include STL headers.
+<p>
+ Has anyone figured out how to prevent the re-inclusion of the headers?
+</blockquote>
+
+<p>
+P. Christeas says:
+<p>
+<blockquote> After some time, the use of distcc with SunWS seems an unresolved issue. Of
+course, I exclude any attempt to modify the STL headers (which in fact are
+Sun's version of STL headers).
+The correct statement is that _Sun's CC does not behave correctly when the
+preprocessor is involved as a separate process_.
+<p>
+This compiler should still be marked as 'unsupported'. The only way (I know
+of) to make some use of a compile farm is to exclusively mark the few files
+that *do* compile, and send those through distcc.
+Hint: it seems that templates and CORBA implementation source do generally
+break the precompiler.
+</blockquote>
+<p>
+So <a href="compilers.html">Sun CC will not work for C++</a> with distcc, only for
+   C.
+
+
+<h3>configure has trouble when hosts are down</h3>
+<p>
+<blockquote>
+I'm having a strange problem. When no distcc-server is available and
+distcc decides to run a task locally, it fails.
+<p>
+<tt>
+configure:5648: checking for i386-redhat-linux-gcc-3.3.2 option to produce PIC
+<br>configure:5825: result: -fPIC
+<br>configure:5833: checking if i386-redhat-linux-gcc-3.3.2 PIC flag -fPIC works
+<br>configure:5854: i386-redhat-linux-gcc-3.3.2 -c -O2 -march=i386
+<br>-mcpu=i686  -fPIC -DPIC conftest.c &gt;&amp;5
+<br>distcc[32203] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+<br>configure:5858: $? = 0
+<br>configure:5866: result: no
+</tt>
+<p>
+For some reason configure thinks -fPIC is not supported although it works
+if a distcc-server is started. This causes some software to not work when
+build with distcc (but without distcc-servers). If build without distcc,
+it works (as -fPIC is supported).
+<p>
+What could be the cause ? I'm running the latest distcc.
+</blockquote>
+
+<p>
+autoconf interprets any message from the compiler as a failure for
+ some tests, even if compilation succeeds.  This is fixed in distcc
+ 2.18 by always building autoconf tests locally.
+
+
+
+<h3>distcc only listens for IPv6 connections on BSD</h3>
+<p>
+<blockquote>
+I use distcc from NetBSD's
+pkgsrc, which sets --enable-rfc2553 by default.  When
+distccd is run as "distccd --daemon --user nobody",
+distccd seems to *only* be listening on an IPv6
+socket.
+</blockquote>
+<p>
+By default some BSD systems do not allow applications to accept both
+IPv4 and IPv6 connections through a single server socket.  See <a href="http://cert.uni-stuttgart.de/archive/bugtraq/2002/08/msg00319.html">this message</a>.
+<p>
+There are several options
+
+<ol>
+<li> Don't build distcc with the <tt>--enable-rfc2553</tt> option unless you need to support IPv6.
+<li> Tell distcc to explicitly listen on either the IPv4 or IPv6 address, unless you need to accept connections over both protocols.
+<li> Set the <tt>net.inet6.ip6.v6only</tt> sysctl to 0.  (This affects
+ all programs on the system, see the BSD manual for details.)
+<li> Run two copies of distcc listening on both ports.
+</ol>
+
+
+<h3>distcc fails with "No locks available"</h3>
+<p>
+This can happen if your home directory is on an NFS filesystem and
+NFS locking is not working.  Locking in NFS is supported by a separate
+protocol and daemon which can be down even if other file operations
+are working OK.
+<p>
+To fix this, either fix NFS locking on your system, or set 
+<tt>DISTCC_DIR</tt> to point to a local disk.  If your system doesn't have
+a local hard disk you can just use <tt>tmpfs</tt> or something similar,
+because none of the files in that directory need to persist across 
+reboots.
+
+
+<h3>How to stop distcc using a particular machine?</h3>
+<p>
+<blockquote>
+I want to stop my machine accepting distcc jobs because I need it for
+ something else.
+</blockquote>
+<p>
+The easiest way is to just shut down the <tt>distccd</tt> server.  When
+ it comes back up, clients will start using it again.
+
+
+<h3>distcc only builds on one machine at a time</h3>
+<p>
+<blockquote>
+ If I set
+    <tt>DISTCC_HOSTS="remote_host localhost"</tt>
+ then the project seems to be compiled only on the remote host (I see traces
+ in ethereal and compilation is slow).
+</blockquote>
+<p>
+You are probably not using the <tt>-j</tt> option to make or scons, so
+ it's only compiling one file at a time.  Only the first host in the
+ list will be used in this case.
+
+
+
+<h3>Errors with temporary files on Cygwin</h3>
+
+ 
+<p>
+ Some Windows compilers can't handle the default <tt>TMPDIR</tt> setting 
+  when distcc is run under Cygwin.  To fix this, put something like
+  <tt>export TMPDIR=c:/temp</tt> in <tt>/etc/profile</tt>.
+
+
+<h3>Server won't start on Windows 98 or ME</h3>
+
+  
+<p>
+  For some reason the server does not work properly on Windows 98 unless it is 
+   invoked with <tt>--no-detach</tt>.
+
+
+<h3>Make fails with "file not found"</h3>
+
+ 
+<p>
+ If Make works for non-parallel builds, but fails when you use <tt>j</tt> and distcc, then there is probably a concurrency bug in your
+ Makefile.  It is similar to a threading bug in C, 
+ C++ or Java when a program is run on a multiprocessor system.
+<p>
+  Sometimes it will work with <tt>-j</tt> without distcc, but fail when
+  you use distcc.  This is probably because distcc lets the
+  compilation run faster and therefore more jobs run in parallel.
+<p>
+  You need to just fix your makefile, or not build that particular
+  directory in parallel.  It is very unlikely this is a bug in GNU make
+  or distcc.
+
+
+
+<h3>Internet-wide distributed compilation</h3>
+<p>
+    
+<blockquote>
+I'm a newbie with distcc and linux. I have been able to bootstrap (with
+lots of effort) Gentoo. I'm having only one computer on my lan that I
+control, so can't install distcc on the other host. I'm looking for a
+WAN of public distcc (I would grant access to mine also). I would like
+have a vast distributed network of distcc that would be public. It may
+use some ssh. I don't even know if this possible.
+<p>
+Won't it be faster then a laptop and a desktop if we have N hosts? I
+have heard of sub-ether that create a virtual NIC -- as far as I could
+understand. Any body know if it work with distcc?
+
+</blockquote>
+<p>
+ This could be done, but some preparatory work is needed:
+<p>
+ This really has to be done across SSH or a VPN; sending commands
+ across the public net unencrypted would be insanely insecure.
+<p>
+ Connections across the public internet are slower than on a LAN in
+ both throughput and bandwidth.  It's probably only feasible if the
+ machines involved are on the same continent (preferably the same
+ state) and have at least 512kbit connections.
+<p>
+ The more serious problem is compiling on possibly untrusted
+ machines.  You need to assume that anyone who sends jobs can take
+ over control of the user running distcc: if it's run within a UML
+ instance or some similar sandbox, and each user has their own
+ instance, that might be OK.  Clients also need to implicitly trust
+ all the servers not to give them corrupted or malicious data back.
+<p>
+ There is also the organizational issue of just locating machines to
+ use and the right public key to get into them.
+<p>
+ Probably the best way to prototype this is to find a few friends who
+ live in the same country.  Set up ssh access into each others
+ machines, and run distcc over that to try compilation.  Please report
+ your results to the distcc mailing list.  If this works well, then we
+ can look at scaling it up to run on larger groups or between
+ potentially untrusted machines.
+
+
+ 
+
+
+
+<h3>What is the relationship between Apple Xcode and distcc?</h3>
+<p>
+ Apple's <a href="http://developer.apple.com/tools/xcode/">Xcode</a>
+ development kit includes a fork of an old verison of distcc, plus
+ Apple patches to locate machines using Rendezvous and a small GUI to
+ configure it.
+<p>
+ The source is available from 
+ <a href="http://www.opensource.apple.com/">opensource.apple.com</a>.
+
+<h3>How can I avoid compiling on workstations when they're in use</h3>
+ 
+ 
+<p>
+This <a href="http://lists.samba.org/archive/distcc/2006q1/003271.html"><tt>watch-ssaver</tt> script</a>
+ from <a href="http://sourceforge.net/projects/dmucs">DMUCS</a>
+ enables distcc only when the screenaver is running.
