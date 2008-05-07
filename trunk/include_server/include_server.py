@@ -58,7 +58,9 @@ NotCoveredTimeOutError = basics.NotCoveredTimeOutError
 # USAGE
 
 def Usage():
-    print """include_server --port INCLUDE_SERVER_PORT [options]
+  print """Usage:
+
+include_server --port INCLUDE_SERVER_PORT [options]
 
 where INCLUDE_SERVER_PORT is a socket name. Fork the include server
 for incremental include analysis. The include server answers queries
