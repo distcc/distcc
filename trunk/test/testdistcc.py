@@ -740,7 +740,8 @@ class DaemonBadPort_Case(SimpleDistCC_Case):
     def runtest(self):
         """Test daemon invoked with invalid port number"""
         self.runcmd(self.distccd() +
-                    "--log-file=distccd.log --lifetime=10 --port 80000",
+                    "--log-file=distccd.log --lifetime=10 --port 80000 "
+                    "--allow 127.0.0.1",
                     EXIT_BAD_ARGUMENTS)
         self.assert_no_file("daemonpid.tmp")
 
