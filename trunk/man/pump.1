@@ -136,19 +136,19 @@ for more details.
 .B
 INCLUDE_SERVER_ARGS
 Extra arguments to pass to the include server.
-
 .TP
 .B
 PYTHONOPTIMIZE
 If set to "", then Python optimization is disabled.
-
 .SH "EXAMPLE"
 .B pump make -j20
 .SH "BUGS"
+.\" TODO:
+.\" Fix inconsistency between BUGS section and bug reporting instructions
+.\" in the AUTHORS section, both here and in distcc.1 and elsewhere.
 If you think you have found a distcc bug, please see the file
 .I reporting-bugs.txt
 in the documentation directory for information on how to report it.
-.PP
 .SH "AUTHORS"
 The pump script and distcc's pump mode were written by Nils Klarlund,
 Manos Renieris, Fergus Henderson, and Craig Silverstein.
@@ -165,4 +165,5 @@ General Public Licence version 2 or later.  distcc comes with
 absolutely no warranty.  A copy of the GPL is included in the file
 COPYING.
 .SH "SEE ALSO"
+.\" TODO: add lsdistcc(1) once we have a man page for lsdistcc.
 distcc(1), distccd(1), gcc(1), make(1)
