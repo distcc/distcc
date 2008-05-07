@@ -55,7 +55,7 @@ def InitializeClientTmp():
   else:
     client_tmp = '/tmp'
   if not client_tmp or client_tmp[0] != '/':
-    sys.exit('DISTCC_CLIENT_TMP must start with "/".')
+    sys.exit("""DISTCC_CLIENT_TMP must start with '/'.""")
   client_tmp = client_tmp.rstrip('/')
   # The protocol between the include server and distcc client stipulates
   # that the top three directories constitute the prefix prepended to absolute
