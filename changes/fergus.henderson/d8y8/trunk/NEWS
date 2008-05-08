@@ -38,7 +38,8 @@ distcc-3.0 "My prices are insane."   2008-??-??
    
    * Make distccmon-gnome link properly with gnu ld's new --as-needed 
      flag.  (Ben Skeggs, Lisa Seelye)
-^L
+
+
 distcc-2.18.3  "Porsche safari"  2004-11-30
 
   BUG FIXES:
