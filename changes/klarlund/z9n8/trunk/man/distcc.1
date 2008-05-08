@@ -10,6 +10,9 @@ distcc \- distributed C/C++/ObjC compiler with distcc-pump extensions
 .PP
 .B <compiler>
 .I [COMPILER OPTIONS]
+.PP
+.B distcc
+.I [DISTCC OPTIONS]
 .SH "DESCRIPTION"
 .P 
 distcc distributes compilation of C code across several machines on a
@@ -17,11 +20,12 @@ network.  distcc should always generate the same results as a local
 compile, it is simple to install and use, and it is often much faster than a
 local compile.
 .PP
-This version incorporates plain distcc as well as an enhancment called distcc-pump.
+This version incorporates plain distcc as well as an enhancement called
+pump mode, or distcc-pump.
 .PP
 For each job, distcc in plain mode sends the complete preprocessed source code
 and compiler arguments across the network from the client to a compilation
-server.  In pump-mode, distcc sends the source code and recursively included
+server.  In pump mode, distcc sends the source code and recursively included
 header files, so that both preprocessing and compilation can take place on the
 compilation servers. This speeds up the delivery of compilations by up to an
 order of magnitude over plain distcc.
@@ -111,7 +115,7 @@ Build!
 $ make -j8 CC=distcc
 .RE
 .SH "QUICKSTART FOR DISTCC-PUMP MODE"
-Proceed as above, but in Step 3, specify that the remove hosts are to carry the
+Proceed as above, but in Step 3, specify that the remote hosts are to carry the
 burden of preprocessing and that the files sent over the network should be
 compressed:
 
@@ -184,15 +188,29 @@ scheme of compressing the preprocessed files.
 As a result, distcc-pump mode is able to push out files up to about ten times
 faster than distcc.  The total build time may drop 30-70% for large builds
 compared to plain distcc mode.
+
+Using pump mode requires both client and servers to use release 3.0
+or later of distcc/distccd (respectively).
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
-Two options are understood by distcc itself:
+The following options are understood by distcc itself:
 .TP 
 .B --help
 Displays summary instructions.
 .TP
 .B --version
 Displays the distcc client version.
+.TP
+.B --show-hosts
+Displays the host list that distcc would use.
+See the Host Specifications section.
+.TP
+.B -j
+Displays distcc's concurrency level, as calculated from the host list;
+it is the maximum number of outstanding jobs on all servers
+By default this will be four times the number of hosts in the host list,
+unless the /LIMIT option was used in the host list.
+See the Host Specifications section.
 .SH "INSTALLING DISTCC"
 There are three different ways to call distcc, to suit different
 circumstances:
@@ -362,6 +380,7 @@ The syntax is
   DISTCC_HOSTS = HOSTSPEC ...
   HOSTSPEC = LOCAL_HOST | SSH_HOST | TCP_HOST | OLDSTYLE_TCP_HOST
                         | GLOBAL_OPTION
+                        | ZEROCONF
   LOCAL_HOST = localhost[/LIMIT]
              | --localslots=<int>
              | --localslots_cpp=<int>
@@ -372,6 +391,7 @@ The syntax is
   OPTIONS = ,OPTION[OPTIONS]
   OPTION = lzo | cpp
   GLOBAL_OPTION = --randomize
+  ZEROCONF = +zeroconf
 .fi
 .PP
 Here are some individual examples of the syntax:
@@ -420,11 +440,23 @@ servers with more than two processors.
 Enables LZO compression for this TCP or SSH host.
 .TP
 .B ,cpp
-Enables distcc-pump for this host.  Note: the build command must be 
+Enables distcc-pump mode for this host.  Note: the build command must be 
 wrapped in the pump script in order to start the include server.
 .TP
 .B --randomize
-Randomize the host list before execution.
+Randomize the order of the host list before execution.
+.TP
+.B +zeroconf
+.B This option is only available if distcc was compiled with Avahi support enabled at configure time.
+When this special entry is present in the hosts list, distcc will use
+Avahi Zeroconf DNS Service Discovery (DNS-SD) to locate any available
+distccd servers on the local network.  This avoids the need to explicitly
+list the host names or IP addresses of the distcc server machines.
+The distccd servers must have been
+started with the "--zeroconf" option to distccd.
+An important caveat is that in the current implementation,
+pump mode (",cpp") and compression (",lzo") will never be
+used for hosts located via zeroconf.
 .PP
 Here is an example demonstrating some possibilities:
 .PP

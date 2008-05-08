@@ -1,4 +1,4 @@
-#! /usr/bin/python2.4
+#!/usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 # 
@@ -25,46 +25,109 @@ directories. SRCDIR must be passed as well; it explains where to find the C
 sources and the include_server directory of Python source files and C
 extensions.  Because SRCDIR is appended to build location and we don't want to
 end up outside this location through a relative SRCDIR path with '..'s, SRCDIR
-should be absolute.
+is absolutized.
 """
 
-__author__ = "Manos Renieris and Nils Klarlund"
+__author__ = 'Manos Renieris and Nils Klarlund'
 
-import distutils
+import distutils.core
+import distutils.extension
+import doctest
 import os
-import re
+import shlex
 import sys
-from distutils.core import setup
-from distutils.extension import Extension
 
-# For removing the quotes at the beginning and end of a string.
-PURGE_QUOTES_RE = re.compile(r'^"(.*)"$')
+OPTIONS_NOT_ALLOWED = ['-Iquote', '-Isystem', '-I-']
 
-# CPPFLAGS checking.
-cpp_flags_env = os.getenv("CPPFLAGS", "")
+# We include a partial command line parser instead of using the more the more
+# complicated one in parse_command.py.  This cuts down on dependencies in the
+# build system itself.
+
+
+def GetIncludes(flags):
+  """Parse a flags string for includes of the form -I<DIR>.
+
+  Args:
+    flags: a string in shell syntax denoting compiler options
+  Returns:
+    a list of <DIR>s of the includes
+  Raises:
+    ValueError:
+
+  In the doctests below, note that a single quoted backslash takes four
+  backslashes to represent if it is inside a single quoted string inside this
+  present triple-quoted string.
+    
+  >>> GetIncludes('-I x -X -I"y" -Y')
+  ['x', 'y']
+  >>> GetIncludes('-Ix -Dfoo -Iy')
+  ['x', 'y']
+  >>> GetIncludes(r'-Ix -I"y\\z" -I"y\\\\z" -Y')
+  ['x', 'y\\\\z', 'y\\\\z']
+  >>> GetIncludes('-DX -Iquote Y')
+  Traceback (most recent call last):
+        ...
+  ValueError: These options are not allowed: -Iquote, -Isystem, -I-.
+  >>> GetIncludes('-DX -I x -I')
+  Traceback (most recent call last):
+        ...
+  ValueError: Argument expected after '-I'.
+  """
+  flags = shlex.split(flags)
+  if set(OPTIONS_NOT_ALLOWED) & set(flags):
+    raise ValueError('These options are not allowed: %s.'
+                     % ', '.join(OPTIONS_NOT_ALLOWED))
+  # Fish out the directories of '-I' options.
+  i = 0
+  inc_dirs = []
+  while i < len(flags):
+    if flags[i].startswith('-I'):
+      inc_dir = flags[i][len('-I'):]
+      if inc_dir:
+        # "-Idir
+        inc_dirs.append(inc_dir)
+        i += 1
+        continue
+      else:
+        # "-I dir"
+        if i == len(flags) - 1:
+          raise ValueError("Argument expected after '-I'.")
+        inc_dirs.append(flags[i+1])
+        i += 2
+    else:
+      i += 1
+  return inc_dirs
+
+cpp_flags_env = os.getenv('CPPFLAGS', '')
 if not cpp_flags_env:
   # Don't quit; perhaps the user is asking for help using '--help'.
-  print >> sys.stderr, "setup.py: CPPFLAGS must be defined."
-cpp_flags = cpp_flags_env.split()
-# Fish out the directories of '-I' options.
-cpp_flags_includes = [PURGE_QUOTES_RE.sub(r'\1', flag[2:])
-                      for flag in cpp_flags
-                      if flag[:2]=='-I']
+  # CPPFLAGS checking.
+  print >> sys.stderr, 'setup.py: CPPFLAGS must be defined.'
+cpp_flags_includes = GetIncludes(cpp_flags_env)
 
 # SRCDIR checking.
 if not os.getenv('SRCDIR'):
   # Don't quit; perhaps the user is asking for help using '--help'.
-  print >> sys.stderr, ("setup.py: SRCDIR must be defined.")
+  print >> sys.stderr, 'setup.py: SRCDIR must be defined.'
   srcdir = 'UNDEFINED'
   srcdir_include_server = 'UNDEFINED'
 else:
-  srcdir = os.getenv('SRCDIR') 
-  srcdir_include_server = srcdir + '/include_server'
+  srcdir = os.getenv('SRCDIR')
+  # Absolutize (but don't rely on Python's built-in function for this purpose --
+  # it is not sound).
+  cwd = os.getcwd()
+  try:
+    os.chdir(srcdir)
+    srcdir = os.getcwd()
+  except OSError:
+    sys.exit("""Could not cd to SRCDIR '%s'.""" % srcdir)
+  os.chdir(cwd)
+  srcdir_include_server = os.path.join(srcdir, 'include_server')
 
 # Specify extension.
-ext = Extension(
-    name="include_server.distcc_pump_c_extensions",
-    sources=[srcdir + '/' + source
+ext = distutils.extension.Extension(
+    name='include_server.distcc_pump_c_extensions',
+    sources=[os.path.join(srcdir, source)
              for source in
              ['src/clirpc.c',
               'src/clinet.c',
@@ -88,7 +151,7 @@ ext = Extension(
               'src/netutil.c',
               'lzo/minilzo.c',
               'include_server/c_extensions/distcc_pump_c_extensions_module.c',
-              ]],
+             ]],
     include_dirs=cpp_flags_includes,
     define_macros=[('_GNU_SOURCE', 1)],
     library_dirs=[],
@@ -99,23 +162,26 @@ ext = Extension(
     # -Wmissing-prototypes and -Wmissing-declarations, which don't apply
     # to python extensions (it exports global fns via a pointer),
     # and -Wwrite-strings, which just had too many false positives.
-    extra_compile_args=("-W -Wall -Wimplicit -Wuninitialized "
-                        "-Wshadow -Wpointer-arith -Wcast-align "
-                        "-Waggregate-return -Wstrict-prototypes "
-                        "-Wnested-externs -Werror").split())
+    extra_compile_args=('-W -Wall -Wimplicit -Wuninitialized '
+                        '-Wshadow -Wpointer-arith -Wcast-align '
+                        '-Waggregate-return -Wstrict-prototypes '
+                        '-Wnested-externs -Werror').split())
 
 args = {
-  'name': "include_server",
-   # The 'include_server' package is in the srcdir_include_server.
-  'package_dir': {'include_server': srcdir_include_server},
-  'version': os.getenv("DISTCC_VERSION") or 'unknown',
-  'description': "Include server for distcc's pump-mode",
-  'author': "Nils Klarlund",
-  'author_email': "opensource@google.com",
-  'url': 'http://code.google.com/p/distcc',
-  'long_description': """The include server is part of distcc.""",
-  'packages': ["include_server"],
-  'ext_modules': [ext],
+    'name': 'include_server',
+    # The 'include_server' package is in the srcdir_include_server.
+    'package_dir': {'include_server': srcdir_include_server},
+    'version': os.getenv('DISTCC_VERSION') or 'unknown',
+    'description': """Include server for distcc's pump-mode""",
+    'author': 'Nils Klarlund',
+    'author_email': 'opensource@google.com',
+    'url': 'http://code.google.com/p/distcc',
+    'long_description': 'The include server is part of distcc.',
+    'packages': ['include_server'],
+    'ext_modules': [ext],
 }
 
-setup(**args)
+# First, do a little self-testing.
+doctest.testmod()
+# Second, do the setup.
+distutils.core.setup(**args)

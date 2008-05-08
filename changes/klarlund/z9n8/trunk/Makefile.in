@@ -553,7 +553,7 @@ include-server:
 	else						\
 	  mkdir -p "$(include_server_builddir)" &&      \
 	  DISTCC_VERSION="$(VERSION)"			\
-	  SRCDIR=`cd $(srcdir); pwd`                    \
+	  SRCDIR="$(srcdir)"                            \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) $(srcdir)/include_server/setup.py \
 	      build 					\
@@ -874,7 +874,7 @@ clean-lzo:
 clean-include-server:
 	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
 	  DISTCC_VERSION="$(VERSION)"			\
-	  SRCDIR=`cd $(srcdir); pwd`                    \
+	  SRCDIR="$(srcdir)"                            \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) $(srcdir)/include_server/setup.py \
 	      clean	\
@@ -970,17 +970,17 @@ install-programs: $(bin_PROGRAMS) pump
 
 # See comments for the include-server target.  Also, we work around an issue in
 # the change_root function of distutils/utils.py that turns the absolute prefix
-# into a relative reference if the root is the empty string: we substitute '/'
-# for the empty prefix when defining the '--root' parameter.
+# into a relative reference if the root is the empty string: we absolutize the
+# destination directory in order to substitute '/' for the empty prefix (the
+# default) when defining the '--root' parameter.
 install-include-server: include-server
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
 	  mkdir -p "$(include_server_builddir)" &&      \
-	  DESTDIR=$(DESTDIR) &&                         \
-	  DESTDIR=$${DESTDIR:-/} &&                     \
+	  DESTDIR=`cd $(DESTDIR)/ && pwd` &&            \
 	  DISTCC_VERSION="$(VERSION)"			\
-	  SRCDIR=`cd $(srcdir); pwd`                    \
+	  SRCDIR="$(srcdir)"                            \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) $(srcdir)/include_server/setup.py \
 	      build 					\
@@ -989,7 +989,7 @@ install-include-server: include-server
 	      install 					\
 	         --prefix="$(prefix)" 			\
 	         --record="$(PYTHON_INSTALL_RECORD)"   	\
-	         --root=$$DESTDIR;        \
+	         --root="$$DESTDIR";                    \
 	fi
 
 install-man: $(man1_MEN)
