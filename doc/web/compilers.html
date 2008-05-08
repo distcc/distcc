@@ -88,7 +88,8 @@ on all machines participating in the build.
 <p>The main feature required by distcc is that the compiler must be able
 to run the preprocessor separately, and then compile the preprocessor
 output from a file.  This was a basic part of the original design of
-C, but  some compilers seem to have lost the ability to do this.
+C, but some compilers seem to have lost the ability to do this.
+However, this feature is not required if you use distcc's "pump" mode.
 
 <p>Secondarily, distcc is currently hardcoded to suit gcc's behaviour and
 command-line syntax, so only compilers that act like gcc will work.

@@ -75,7 +75,8 @@
 The main feature required by distcc is that the compiler must be able
 to run the preprocessor separately, and then compile the preprocessor
 output from a file.  This was a basic part of the original design of
-C, but  some compilers seem to have lost the ability to do this.
+C, but some compilers seem to have lost the ability to do this.
+However, this feature is not required if you use distcc's "pump" mode.
 
 Secondarily, distcc is currently hardcoded to suit gcc's behaviour and
 command-line syntax, so only compilers that act like gcc will work.
@@ -220,24 +221,25 @@ This could in principle be changed.
   faster than distcc, because it can distribute many different jobs.
   In practice, however, for many projects compiling C or C++ takes
   over 80% of the time.  Many of the other jobs, such as linking,
-  cannot be parallelized anyhow. 
+  cannot be parallelized anyhow.
 
 <p>
-  I don't know how their performace compares but I would be interested
+  I don't know how their performance compares but I would be interested
   to hear.
 
 
   <h3>Has anybody yet thought of integrating distcc with ccache?</h3>
 
 <p>
-  They work pretty well as separate programs that call each other.
+   If you don't use distcc's "pump" mode, then
+   they work pretty well as separate programs that call each other.
    You can either set <tt>CC='ccache distcc gcc'</tt>, or arrange for
    both ccache and distcc to be "masqueraded" on the path.  (See the
    manual for information on how to install this.)
 
 <p>
    Normally it is better for ccache to be run before distcc.
-   
+
 <p>
    This is very nearly as efficient as making them both part of a
    single program.  The preprocessor will only run once and the
@@ -251,16 +253,20 @@ This could in principle be changed.
   than making one monolithic one.
 
 <p>
-  It would be nice to allow a cache of
-  compiled files to be shared across several users or machines.
-  Possibly this would justify merging the programs at some point in
-  the future, but I'm still philosophically inclined towards
-  cooperation rather than merger.
+  However, all of that said, now that we have "pump" mode, the
+  trade-offs have changed.  Using ccache prevents the use of "pump"
+  mode.  It would make sense to integrate caching into distcc
+  so that you can get distributed preprocessing, distributed
+  compilation, and caching all at the same time.  This would make
+  a great project for someone...
+
 <p>
-  Joerg Beyer has started a new project called <a href="http://gecc.sourceforge.net/">gecc</a> to explore this architecture.
+  Also, it would be nice to allow a cache of
+  compiled files to be shared across several users or machines.
 
-  
-
+<p>
+  Joerg Beyer started a project called <a href="http://gecc.sourceforge.net/">gecc</a>
+  to explore this architecture, but development appears to have stalled in 2002.
 
 <h3>Temporary files in strange location?</h3>
 <p>
@@ -339,10 +345,9 @@ performance ?
 </blockquote>
 
 <p>
-
-You should use about twice the total number of CPUs available, but it
-depends on your network, program being compiled, available memory,
-etc.  Experiment with different values.
+For plain (that is, non-pump) mode, you should use about twice the total
+number of CPUs available, but it depends on your network, program being
+compiled, available memory, etc.  Experiment with different values.
 
 <p>
 Client machines tend to be saturated at about 10-20 jobs, so using
@@ -350,6 +355,10 @@ values above -j10 is rarely useful.  (Perhaps higher levels would work
 well on clients with two or more CPUs and very fast network
 connections, memory and disk.)
 
+<p>
+The advice above is all for plain mode; for "pump" mode, you
+may see benefit from higher -j values.  Please experiment and
+<a href="mailto:distcc@lists.samba.org">let us know</a> what works best.
 
 
 <h3>Should I include localhost in the host list?</h3>
@@ -368,7 +377,7 @@ that finish their distcc compilation jobs.
 
 <p>
 I'm just hoping to collect some opinions on this
-matter. For a large project a for a cluster of about 8
+matter. For a large project and for a cluster of about 8
 machines, is it actually better to dedicated the
 driving machine to do preprocessing only? (and so not
 include it in the hosts file).
@@ -1188,4 +1197,4 @@ understand. Any body know if it work with distcc?
 <p>
 This <a href="http://lists.samba.org/archive/distcc/2006q1/003271.html"><tt>watch-ssaver</tt> script</a>
  from <a href="http://sourceforge.net/projects/dmucs">DMUCS</a>
- enables distcc only when the screenaver is running.
+ enables distcc only when the screensaver is running.

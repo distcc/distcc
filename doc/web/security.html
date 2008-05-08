@@ -56,7 +56,8 @@ documentation, but it must be properly configured.
 <b>Anyone who can connect to the distcc server port can run arbitrary
 commands on that machine as the distccd user.  If you are not using
 SSH, you must use the <tt>--allow</tt> rule and/or firewall
-rules to limit access to port 3632.</b>
+rules to limit access to port 3632.</b>  Since version 3.0, distccd now
+enforces that, refusing to run if the --allow option is not specified.
 <p>
 Someone has written a 
 <a href="http://www.metasploit.com/projects/Framework/modules/exploits/distcc_exec.pm">
@@ -114,9 +115,14 @@ been no security audit of the code that runs after a connection is
 established.  It is possible that a hostile server could gain control
 of a client directly, as well as modifying the object code.
 <p>
-Some people have proposed that the server should perform
-reasonableness checks on the command or source code submitted from
-clients.  This is probably futile because gcc is not secure against
+If the DISTCC_CMDLIST environment variable is set when invoking
+distccd, distccd will only execute commands from that list.
+(The RPM and Debian distributions of distcc set this variable
+via the /etc/distcc/commands.allow.sh file which is sourced by
+/etc/init.d/distcc).  This mechanism can be used to only allow
+the execution of compilation commands rather than arbitrary
+commands.  However, <b>this should not be relied on as a security
+measure</b>, because gcc is not secure against
 hostile input, and it might be possible for an attacker to gain
 control of the gcc process through a carefully crafted input file or
 command line.  You should assume that anyone able to submit jobs is
