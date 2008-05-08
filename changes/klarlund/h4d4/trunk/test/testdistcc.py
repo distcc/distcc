@@ -1532,9 +1532,11 @@ class EmptySource_Case(Compilation_Case):
     It must be treated as preprocessed source, otherwise cpp will
     insert a # line, which will give a false pass.
 
-    This test fails with GCC 3.4.x (see
-    http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20239
-    [3.4 Regression] ICE on empty preprocessed input)"""
+    This test fails with an internal compiler error in GCC 3.4.x for x < 5
+    (see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20239
+    [3.4 Regression] ICE on empty preprocessed input).
+    But that's gcc's problem, not ours, so we make this test pass
+    if gcc gets an ICE."""
 
     def source(self):
         return ''
@@ -1543,8 +1545,10 @@ class EmptySource_Case(Compilation_Case):
         self.compile()
 
     def compile(self):
-        self.runcmd(self.distcc()
+        rc, out, errs = self.runcmd_unchecked(self.distcc()
                     + _gcc + " -c %s" % self.sourceFilename())
+        if not re.search("internal compiler error", errs):
+          self.assert_equal(rc, 0)
 
     def sourceFilename(self):
         return "testtmp.i"
@@ -1642,12 +1646,26 @@ class Lsdistcc_Case(WithDaemon_Case):
         self.assert_equal(err, "")
         self.assert_equal(rc, 1)
 
+        # On some systems, 127.0.0.* are all loopback addresses.
+        # On other systems, only 127.0.0.1 is a loopback address.
+        # The lsdistcc test is more effective if we can use 127.0.0.2 etc.
+        # but that only works on some systems, so we need to check whether
+        # if will work.  The ping command is not very portable, but that
+        # doesn't matter; if it fails, we just won't test quite as much as
+        # we would if it succeeds.  So long as it succeeds on Linux, we'll
+        # get good enough test coverage.
+        rc, out, err = self.runcmd_unchecked("ping -c 3 -i 0.2 -w 1 127.0.0.2")
+        multiple_loopback_addrs = (rc == 0)
+
         # Test "lsdistcc host1 host2 host3".
         out, err = self.runcmd(lsdistcc + " localhost 127.0.0.1 127.0.0.2 "
             + " anInvalidHostname")
         out_list = out.split()
         out_list.sort()
-        expected = ["127.0.0.1", "127.0.0.2", "localhost"]
+        if multiple_loopback_addrs:
+          expected = ["127.0.0.1", "127.0.0.2", "localhost"]
+        else:
+          expected = ["127.0.0.1", "localhost"]
         self.assert_equal(out_list, expected)
         self.assert_equal(err, "")
 
@@ -1655,10 +1673,11 @@ class Lsdistcc_Case(WithDaemon_Case):
         out, err = self.runcmd(lsdistcc + " 127.0.0.%d")
         self.assert_equal(err, "")
         self.assert_re_search("127.0.0.1\n", out)
-        self.assert_re_search("127.0.0.2\n", out)
-        self.assert_re_search("127.0.0.3\n", out)
-        self.assert_re_search("127.0.0.4\n", out)
-        self.assert_re_search("127.0.0.5\n", out)
+        if multiple_loopback_addrs:
+          self.assert_re_search("127.0.0.2\n", out)
+          self.assert_re_search("127.0.0.3\n", out)
+          self.assert_re_search("127.0.0.4\n", out)
+          self.assert_re_search("127.0.0.5\n", out)
 
 # When invoking compiler, use absolute path so distccd can find it
 for path in os.environ['PATH'].split (':'):
