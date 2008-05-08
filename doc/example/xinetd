@@ -1,4 +1,6 @@
 # default: off
+# description: distccd serves C/C++ compilation requests from distcc clients.
+#              WARNING: This service should ONLY be used on trusted networks.
 
 # xinetd service description for distcc, contributed by akpm, updated
 # by mbp.
@@ -8,7 +10,7 @@
 # and then restart xinetd.  You should also create a 'distcc' user.
 
 # ===> Note that running from inetd is generally NOT recommended for
-# distcc distccd should give better performance when it can run as a
+# distcc. distccd should give better performance when it can run as a
 # standalone daemon and regulate its own load.
 
 service distcc
