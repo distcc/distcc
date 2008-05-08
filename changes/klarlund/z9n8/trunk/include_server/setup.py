@@ -112,16 +112,9 @@ if not os.getenv('SRCDIR'):
   srcdir = 'UNDEFINED'
   srcdir_include_server = 'UNDEFINED'
 else:
-  srcdir = os.getenv('SRCDIR')
-  # Absolutize (but don't rely on Python's built-in function for this purpose --
-  # it is not sound).
-  cwd = os.getcwd()
-  try:
-    os.chdir(srcdir)
-    srcdir = os.getcwd()
-  except OSError:
+  srcdir = os.path.abspath(os.getenv('SRCDIR'))
+  if not os.path.isdir(srcdir):
     sys.exit("""Could not cd to SRCDIR '%s'.""" % srcdir)
-  os.chdir(cwd)
   srcdir_include_server = os.path.join(srcdir, 'include_server')
 
 # Specify extension.
