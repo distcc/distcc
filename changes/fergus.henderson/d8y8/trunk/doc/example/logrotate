@@ -1,0 +1,12 @@
+# logrotate.d example configuration for distcc, contributed by Dag
+# Wieers.
+
+# The "copytruncate" option means distcc can keep appending to the
+# same filehandle.  You would otherwise need to shut down and restart
+# distccd.
+
+/var/log/distccd.log {
+       missingok
+       copytruncate
+       notifempty
+}
