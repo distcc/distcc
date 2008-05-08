@@ -51,13 +51,15 @@ make RPM_OPT_FLAGS="$RPM_OPT_FLAGS" \
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=${RPM_BUILD_ROOT} PYTHON_INSTALL_RECORD=python_install_record install
-# TODO(fergus): move these to "make install"?
+# The remaining configuration files are installed here rather than by 'make install'
+# because their nature and their locations are too system-specific.
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
 install -m 644 packaging/RedHat/logrotate.d/distcc $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/distcc
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/xinetd.d
 install -m 644 packaging/RedHat/xinetd.d/distcc $RPM_BUILD_ROOT%{_sysconfdir}/xinetd.d/distcc
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 755 packaging/RedHat/init.d/distcc $RPM_BUILD_ROOT%{_sysconfdir}/init.d/distcc
+# TODO(fergus): move the next five lines to 'make install'?
 mkdir -p $RPM_BUILD_ROOT/%{_libdir}/distcc
 ln -s %{_bindir}/distcc $RPM_BUILD_ROOT/%{_libdir}/distcc/cc
 ln -s %{_bindir}/distcc $RPM_BUILD_ROOT/%{_libdir}/distcc/c++
