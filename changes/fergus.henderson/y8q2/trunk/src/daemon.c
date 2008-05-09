@@ -41,7 +41,7 @@
  * put this information in one place rather than on every client.
  **/
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

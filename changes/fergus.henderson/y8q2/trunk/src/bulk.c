@@ -40,7 +40,7 @@
  * meaningful numbers except for files that are very large.
  **/ 
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

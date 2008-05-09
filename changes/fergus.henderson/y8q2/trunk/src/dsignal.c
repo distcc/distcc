@@ -38,7 +38,7 @@
  * For both cases any temporary files created by the process are removed.
  **/
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

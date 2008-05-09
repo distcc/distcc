@@ -45,7 +45,7 @@
 
 /* last one using chart drawingarea is 1.43.2.37 */
 
-#include "config.h"
+#include <config.h>
 
 #include <sys/types.h>
 
