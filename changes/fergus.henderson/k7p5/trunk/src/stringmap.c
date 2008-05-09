@@ -100,7 +100,7 @@ void dumpMap(stringmap_t *sm)
 		assert(c); \
 		assert(!strcmp(b, c)); } }
 	
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	FILE *fp;
 	stringmap_t *sm;
@@ -108,8 +108,6 @@ main(int argc, char **argv)
 	fp = fopen("stringmap_test.dat", "w");
 	fprintf(fp, "/foo/bar/bletch\n");
 	fclose(fp);
-
-
 	sm = stringmap_load("stringmap_test.dat", 1);
 	dumpMap(sm);
 	verifyMap(sm, "/bar/bletch", "/foo/bar/bletch");
@@ -117,6 +115,35 @@ main(int argc, char **argv)
 	verifyMap(sm, "/whatever/bletch", "/foo/bar/bletch");
 	verifyMap(sm, "baz", NULL);
 	verifyMap(sm, "/foo/bar/bletch", "/foo/bar/bletch");
+
+	fp = fopen("stringmap_test.dat", "w");
+	fprintf(fp, "/usr/bin/gcc\n");
+	fprintf(fp, "/usr/bin/cc\n");
+	fclose(fp);
+	sm = stringmap_load("stringmap_test.dat", 1);
+	dumpMap(sm);
+	verifyMap(sm, "/usr/bin/gcc", "/usr/bin/gcc");
+	verifyMap(sm, "/usr/bin/cc", "/usr/bin/cc");
+	verifyMap(sm, "gcc", "/usr/bin/gcc");
+	verifyMap(sm, "cc", "/usr/bin/cc");
+	verifyMap(sm, "g77", NULL);
+
+	fp = fopen("stringmap_test.dat", "w");
+	fprintf(fp, "/usr/bin/i686-blah-blah/gcc\n");
+	fprintf(fp, "/usr/bin/i386-blah-blah/gcc\n");
+	fclose(fp);
+	sm = stringmap_load("stringmap_test.dat", 2);
+	dumpMap(sm);
+	verifyMap(sm, "/usr/bin/i686-blah-blah/gcc",
+                      "/usr/bin/i686-blah-blah/gcc");
+	verifyMap(sm, "/usr/bin/i386-blah-blah/gcc",
+                      "/usr/bin/i386-blah-blah/gcc");
+	verifyMap(sm, "i686-blah-blah/gcc", "/usr/bin/i686-blah-blah/gcc");
+	verifyMap(sm, "i386-blah-blah/gcc", "/usr/bin/i386-blah-blah/gcc");
+	verifyMap(sm, "gcc", NULL);
+	verifyMap(sm, "g77", NULL);
+
+        return 0;
 }
 
 #endif
