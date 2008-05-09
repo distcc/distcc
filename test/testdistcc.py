@@ -1241,14 +1241,19 @@ class AbsSourceFilename_Case(CompileHello_Case):
                 % _ShellSafe(os.getcwd()))
     
 
-class ThousandFold_Case(CompileHello_Case):
-    """Try repeated simple compilations"""
+class HundredFold_Case(CompileHello_Case):
+    """Try repeated simple compilations.
+
+    This used to be a ThousandFold_Case -- but that slowed down testing
+    significantly.  It's unclear that testing a 1000 times is much better than
+    doing it a 100 times.
+    """
+
     def daemon_lifetime(self):
         return 120
     
     def runtest(self):
-        # may take about a minute or so
-        for unused_i in xrange(1000):
+        for unused_i in xrange(100):
             self.runcmd(self.distcc()
                         + _gcc + " -o testtmp.o -c testtmp.c")
 
@@ -1746,7 +1751,7 @@ tests = [
          AbsSourceFilename_Case,
          # slow tests below here
          Concurrent_Case,
-         ThousandFold_Case,
+         HundredFold_Case,
          BigAssFile_Case]
 
 
