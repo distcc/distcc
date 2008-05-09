@@ -69,7 +69,7 @@ ln -s %{_bindir}/distcc $RPM_BUILD_ROOT/%{_libdir}/distcc/g++
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files -f include_server/python_install_record
+%files -f python_install_record
 %defattr(-, root, root, 0755)
 %{_bindir}/distcc
 %{_bindir}/distccmon-text
