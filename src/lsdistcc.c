@@ -86,6 +86,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
+#include <sys/resource.h>
 #include <sys/time.h>
 #include <netinet/in.h>
 
@@ -96,6 +97,11 @@
 #include "trace.h"
 #include "rslave.h"
 #include "../lzo/minilzo.h"
+
+/* Linux calls this setrlimit() argument NOFILE; bsd calls it OFILE */
+#ifndef RLIMIT_NOFILE
+#define RLIMIT_NOFILE  RLIMIT_OFILE
+#endif
 
 enum status_e { STATE_LOOKUP = 0, 
 		STATE_CONNECT, 
@@ -643,6 +649,216 @@ void server_handle_event(state_t *sp)
     } while (sp->status == STATE_CLOSE);
 }
 
+/* A helper function for detecting all listening distcc servers: this
+ * routine makes one pass through the poll() loop and analyzes what it
+ * sees.
+ */
+static int one_poll_loop(struct rslave_s* rs, struct state_s states[],
+                         int start_state, int end_state,
+                         int nwithtries[], int* ngotaddr, int* nbaddns,
+                         unsigned char firstipaddr[4], int dnstimeout_usec,
+                         int matchbits, int overlap, int dnsgap)
+{
+    int i;
+    int nfds;
+    struct state_s *sp;
+    int nready;
+    int found;
+    struct timeval now;
+    struct pollfd pollfds[MAXFDS];
+
+    /* See which sockets have any events */
+    nfds = 0;
+    memset(pollfds, 0, sizeof(pollfds));
+    pollfds[nfds].fd = rslave_getfd_fromSlaves(rs);
+    pollfds[nfds++].events = POLLIN;
+    pollfds[nfds].fd = rslave_getfd_toSlaves(rs);
+    /* Decide if we want to be notified if slaves are ready to handle
+     * a DNS request.
+     * To avoid sending too many DNS requests, we avoid sending more if
+     * the number of first tries is greater than 'overlap'
+     * or the number of outstanding DNS requests plus the number of
+     * already satisfied ones would be greater than or equal to the max
+     * number of hosts we're looking for.
+     */
+    pollfds[nfds++].events = ((nwithtries[1] <= overlap) &&
+                              (nwithtries[1]+
+                               nwithtries[2]+
+                               nwithtries[3]+
+                               nwithtries[4]+
+                               *ngotaddr < end_state)) ? POLLOUT : 0;
+    /* Set interest bits.
+     * When connecting, we want to know if we can write (aka if the
+     * connect has finished); when waiting for a compile to finish,
+     * we want to know if we can read.
+     */
+    for (i=start_state; i<=end_state; i++) {
+        switch (states[i].status) {
+        case STATE_CONNECTING:
+            pollfds[nfds].fd = states[i].fd;
+            pollfds[nfds++].events = POLLOUT;
+            break;
+        case STATE_READ_DONEPKT:
+        case STATE_READ_STATPKT:
+        case STATE_READ_REST:
+            pollfds[nfds].fd = states[i].fd;
+            pollfds[nfds++].events = POLLIN;
+            break;
+        default: ;
+        }
+    }
+    /* When polling, wait for no more than 50 milliseconds.
+     * Anything lower doesn't help performance much.
+     * Anything higher would inflate all our timeouts,
+     * cause retries not to be sent as soon as they should,
+     * and make the program take longer than it should.
+     */
+    nready = poll(pollfds, (unsigned)nfds, 50);
+    gettimeofday(&now, 0);
+
+
+    /***** Check for timeout events *****/
+    sp = NULL;
+    found = FALSE;
+    for (i=start_state; i<=end_state; i++) {
+        sp = &states[i];
+        if (sp->status == STATE_LOOKUP
+            && sp->ntries > 0 && sp->ntries < MAXTRIES
+            && (sp->deadline.tv_sec < now.tv_sec ||
+                (sp->deadline.tv_sec == now.tv_sec &&
+                 sp->deadline.tv_usec < now.tv_usec))) {
+            found = TRUE;
+            nwithtries[sp->ntries]--;
+            sp->ntries++;
+            nwithtries[sp->ntries]++;
+            if (opt_verbose > 0)
+                fprintf(stderr,
+                        "now %ld %ld: Resending %s because "
+                        "deadline was %ld %ld\n",
+                        now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
+                        sp->deadline.tv_sec, (long) sp->deadline.tv_usec/1000);
+            break;
+        }
+
+        if (sp->status == STATE_CONNECTING
+            && (sp->deadline.tv_sec < now.tv_sec ||
+                (sp->deadline.tv_sec == now.tv_sec &&
+                 sp->deadline.tv_usec < now.tv_usec))) {
+            sp->status = STATE_CLOSE;
+            server_handle_event(sp);
+            if (opt_verbose > 0)
+                fprintf(stderr,
+                        "now %ld %ld: %s timed out while connecting\n",
+                        now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
+        }
+        if ((sp->status == STATE_READ_DONEPKT ||
+             sp->status == STATE_READ_STATPKT ||
+             sp->status == STATE_READ_REST)
+            && (sp->deadline.tv_sec < now.tv_sec ||
+                (sp->deadline.tv_sec == now.tv_sec &&
+                 sp->deadline.tv_usec < now.tv_usec))) {
+            sp->status = STATE_CLOSE;
+            server_handle_event(sp);
+            if (opt_verbose > 0)
+                fprintf(stderr,
+                        "now %ld %ld: %s timed out while compiling\n",
+                        now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
+        }
+    }
+    if (!found && (nwithtries[1] <= overlap) &&
+        (pollfds[1].revents & POLLOUT)) {
+        /* Look for a fresh record to send */
+        for (i=start_state; i<=end_state; i++) {
+            sp = &states[i];
+            if (sp->status == STATE_LOOKUP && sp->ntries == 0) {
+                found = TRUE;
+                nwithtries[sp->ntries]--;
+                sp->ntries++;
+                nwithtries[sp->ntries]++;
+                break;
+            }
+        }
+    }
+    /* If we found a record to send or resend, send it,
+       and mark its timeout. */
+    if (found) {
+        if (opt_verbose)
+            fprintf(stderr, "now %ld %ld: Looking up %s\n",
+                    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
+        rslave_writeRequest(rs, &sp->req);
+        sp->deadline = now;
+        sp->deadline.tv_usec += dnstimeout_usec;
+        sp->deadline.tv_sec += sp->deadline.tv_usec / 1000000;
+        sp->deadline.tv_usec = sp->deadline.tv_usec % 1000000;
+    }
+
+    /***** Check poll results for DNS results *****/
+    if (pollfds[0].revents & POLLIN) {
+        /* A reply is ready, huzzah! */
+        rslave_result_t result;
+        if (rslave_readResult(rs, &result)) {
+            printf("bug: can't read from pipe\n");
+        } else {
+            /* Find the matching state_t, save the result,
+               and mark it as done */
+            /* printf("result.id %d\n", result.id); fflush(stdout); */
+            assert(result.id >= start_state && result.id <= end_state);
+            sp = &states[result.id];
+            if (sp->status == STATE_LOOKUP) {
+                nwithtries[sp->ntries]--;
+                sp->res = result;
+                (*ngotaddr)++;
+                if (matchbits > 0) {
+                    if (*ngotaddr == 1) {
+                        memcpy(firstipaddr, result.addr, 4);
+                    } else {
+                        /* break if new server on a 'different network'
+    		         than first server */
+                        if (bitcompare(firstipaddr, result.addr, matchbits))
+                            result.err = -1;
+                    }
+                }
+
+                if (result.err) {
+                    if (opt_verbose)
+                        fprintf(stderr, "now %ld %ld: %s not found\n",
+                                now.tv_sec, (long) now.tv_usec/1000,
+                                sp->req.hname);
+                    sp->status = STATE_DONE;
+                    ndone++;
+                    (*nbaddns)++;
+                    if (*nbaddns > dnsgap) {
+                        int highest = 0;
+                        /* start no more lookups */
+                        for (i=start_state; i <= end_state; i++)
+                            if (states[i].ntries > 0)
+                                highest = i;
+                        assert(highest <= end_state);
+                        if (opt_verbose && end_state != highest)
+                            fprintf(stderr,
+                                    "Already searching up to host %d, "
+                                    "won't search any higher\n",
+                                    highest);
+                        end_state = highest;
+                        assert(end_state <= MAXHOSTS);
+                    }
+                } else {
+                    sp->status = STATE_CONNECT;
+                    server_handle_event(sp);
+                }
+            }
+        }
+    }
+
+    /***** Grind state machine for each remote server *****/
+    for (i=2; i<nfds && i < MAXFDS; i++) {
+        sp = states + fd2state[pollfds[i].fd];	/* FIXME */
+        if (pollfds[i].revents)
+            server_handle_event(sp);
+    }
+    return end_state;
+}
+
 /* Get the name based on the sformat. If the first element in sformat is a
  * format, ignore the rest, and use the format to generate the series of names;
  * otherwise, copy the name from sformat. Attach domain_name if needed.
@@ -659,6 +875,7 @@ void get_thename(const char**sformat, const char *domain_name, int i,
         strcat(thename, domain_name);
     }
 }
+
 
 /* Detect all listening distcc servers and print their names to stdout.
  * Looks for servers numbered 1 through infinity, stops at
@@ -683,20 +900,21 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
     unsigned char firstipaddr[4];
     int dnstimeout_usec = dnstimeout * 1000;   /* how long before 
 						  resending gethostbyname */
-    int n = MAXHOSTS;
     int i;
+    int n = MAXHOSTS;
+    int maxfds = MAXHOSTS + 10;
     char thename[256];
-    struct pollfd pollfds[MAXFDS];
 
     struct state_s states[MAXHOSTS+1];
+    int start_state, end_state;
     int ngotaddr;
     int nbaddns;
     int nwithtries[MAXTRIES+1];
-    int nfds;
 
     struct rslave_s rs;
 
-    const char **sformat;
+    const char *default_format = DEFAULT_FORMAT;
+    const char **sformat = &default_format;
     const char *domain_name;
     if (opt_domain) {
 	if (dcc_get_dns_domain(&domain_name)) {
@@ -704,7 +922,6 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 		exit(1);
 	}
     }
-
     if (opti < argc) {
         if (strstr(argv[opti], "%d") != NULL) {
             sformat = &argv[opti++];
@@ -713,9 +930,24 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
             n = argc-opti;
             sformat = &argv[opti++];
         }
-    } else {
-        const char *format = DEFAULT_FORMAT;
-        sformat = &format;
+    }
+
+    /* Figure out the limit on the number of fd's we can open, as per
+     * the OS.  We allow 8 fds for uses other than this in the program
+     * (eg stdin, stdout).  If possible, ask the OS for more fds.
+     * We'll ideally use n + 2 fds in our poll loop, so ask for n + 10
+     * fds total.
+     */
+    struct rlimit rlim = {0, 0};
+    getrlimit(RLIMIT_NOFILE, &rlim);
+    if (rlim.rlim_cur < (rlim_t)n + 10) {
+        rlim.rlim_cur = (rlim_t)n + 10;
+        if (rlim.rlim_cur > rlim.rlim_max)
+            rlim.rlim_cur = rlim.rlim_max;
+        setrlimit(RLIMIT_NOFILE, &rlim);
+        getrlimit(RLIMIT_NOFILE, &rlim);
+        if (rlim.rlim_cur > 14)
+           maxfds = (int)(rlim.rlim_cur - 10);
     }
 
     /* Don't run longer than bigtimeout seconds */
@@ -727,7 +959,6 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 
     ngotaddr = 0;
     memset(nwithtries, 0, sizeof(nwithtries));
-    memset(pollfds, 0, sizeof(pollfds));
     memset(states, 0, sizeof(states));
 
     /* all hosts start off in state 'sent 0' */
@@ -743,201 +974,28 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
     ndone = 0;
     nok = 0;
     nbaddns = 0;
-    /* Loop until we're done finding distcc servers */
-    while (ndone < n) {
-	struct state_s *sp;
-	int nready;
-	int found;
-        struct timeval now;
-
-	/* See which sockets have any events */
-	nfds = 0;
-	pollfds[nfds].fd = rslave_getfd_fromSlaves(&rs);
-	pollfds[nfds++].events = POLLIN;
-	pollfds[nfds].fd = rslave_getfd_toSlaves(&rs);
-	/* Decide if we want to be notified if slaves are ready to handle 
-	 * a DNS request.
-	 * To avoid sending too many DNS requests, we avoid sending more if
-	 * the number of first tries is greater than 'overlap'
-	 * or the number of outstanding DNS requests plus the number of 
-	 * already satisfied ones would be greater than or equal to the max 
-	 * number of hosts we're looking for.
-	 */
-	pollfds[nfds++].events = ((nwithtries[1] <= overlap) && 
-				  (nwithtries[1]+
-				   nwithtries[2]+
-				   nwithtries[3]+
-				   nwithtries[4]+
-				   ngotaddr < n)) ? POLLOUT : 0;
-        /* Set interest bits.  
-         * When connecting, we want to know if we can write (aka if the
-         * connect has finished); when waiting for a compile to finish,
-         * we want to know if we can read.
-         */
-	for (i=1; i<=n; i++) {
-	    switch (states[i].status) {
-	    case STATE_CONNECTING:
-		pollfds[nfds].fd = states[i].fd;
-		pollfds[nfds++].events = POLLOUT;
-		break;
-	    case STATE_READ_DONEPKT:
-	    case STATE_READ_STATPKT:
-	    case STATE_READ_REST:
-		pollfds[nfds].fd = states[i].fd;
-		pollfds[nfds++].events = POLLIN;
-		break;
-	    default: ;
-	    }
-	}
-        /* When polling, wait for no more than 50 milliseconds.  
-         * Anything lower doesn't help performance much.
-         * Anything higher would inflate all our timeouts,
-         * cause retries not to be sent as soon as they should,
-         * and make the program take longer than it should.
-         */
-	nready = poll(pollfds, (unsigned)nfds, 50);
-	gettimeofday(&now, 0);
-
-
-	/***** Check for timeout events *****/
-	sp = NULL;
-	found = FALSE;
-	for (i=1; i<=n; i++) {
-	    sp = &states[i];
-	    if (sp->status == STATE_LOOKUP 
-	    && sp->ntries > 0 && sp->ntries < MAXTRIES 
-	    && (sp->deadline.tv_sec < now.tv_sec || 
-		(sp->deadline.tv_sec == now.tv_sec && 
-		 sp->deadline.tv_usec < now.tv_usec))) {
-		found = TRUE;
-		nwithtries[sp->ntries]--;
-		sp->ntries++;
-		nwithtries[sp->ntries]++;
-		if (opt_verbose > 0)
-		    fprintf(stderr, 
-			    "now %ld %ld: Resending %s because "
-			    "deadline was %ld %ld\n",
-			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
-			    sp->deadline.tv_sec, (long) sp->deadline.tv_usec/1000);
-		break;
-	    }
-
-	    if (sp->status == STATE_CONNECTING
-	    && (sp->deadline.tv_sec < now.tv_sec || 
-		(sp->deadline.tv_sec == now.tv_sec && 
-		 sp->deadline.tv_usec < now.tv_usec))) {
-		sp->status = STATE_CLOSE;
-		server_handle_event(sp);
-		if (opt_verbose > 0)
-		    fprintf(stderr, 
-			    "now %ld %ld: %s timed out while connecting\n", 
-			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
-	    }
-	    if ((sp->status == STATE_READ_DONEPKT || 
-		 sp->status == STATE_READ_STATPKT || 
-		 sp->status == STATE_READ_REST)
-	    && (sp->deadline.tv_sec < now.tv_sec || 
-		(sp->deadline.tv_sec == now.tv_sec && 
-		 sp->deadline.tv_usec < now.tv_usec))) {
-		sp->status = STATE_CLOSE;
-		server_handle_event(sp);
-		if (opt_verbose > 0)
-		    fprintf(stderr, 
-			    "now %ld %ld: %s timed out while compiling\n", 
-			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
-	    }
-	}
-	if (!found && (nwithtries[1] <= overlap) && 
-	    (pollfds[1].revents & POLLOUT)) {
-	    /* Look for a fresh record to send */
-	    for (i=1; i<=n; i++) {
-		sp = &states[i];
-		if (sp->status == STATE_LOOKUP && sp->ntries == 0) {
-		    found = TRUE;
-		    nwithtries[sp->ntries]--;
-		    sp->ntries++;
-		    nwithtries[sp->ntries]++;
-		    break;
-		}
-	    }
-	}
-	/* If we found a record to send or resend, send it, 
-	   and mark its timeout. */
-	if (found) {
-	    if (opt_verbose)
-		fprintf(stderr, "now %ld %ld: Looking up %s\n", 
-			now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
-	    rslave_writeRequest(&rs, &sp->req);
-	    sp->deadline = now;
-	    sp->deadline.tv_usec += dnstimeout_usec;
-	    sp->deadline.tv_sec += sp->deadline.tv_usec / 1000000;
-	    sp->deadline.tv_usec = sp->deadline.tv_usec % 1000000;
-	}
-
-	/***** Check poll results for DNS results *****/
-	if (pollfds[0].revents & POLLIN) {
-	    /* A reply is ready, huzzah! */
-	    rslave_result_t result;
-	    if (rslave_readResult(&rs, &result)) {
-		printf("bug: can't read from pipe\n");
-	    } else {
-		/* Find the matching state_t, save the result, 
-		   and mark it as done */
-		/* printf("result.id %d\n", result.id); fflush(stdout); */
-		assert(result.id > 0 && result.id <= n);
-		sp = &states[result.id];
-		if (sp->status == STATE_LOOKUP) {
-		    nwithtries[sp->ntries]--;
-		    sp->res = result;
-		    ngotaddr++;
-		    if (matchbits > 0) {
-			if (ngotaddr == 1) {
-			    memcpy(firstipaddr, result.addr, 4);
-			} else {
-			    /* break if new server on a 'different network' 
-			       than first server */
-			    if (bitcompare(firstipaddr, result.addr, matchbits))
-				result.err = -1;
-			}
-		    }
-
-		    if (result.err) {
-			if (opt_verbose)
-			    fprintf(stderr, "now %ld %ld: %s not found\n", 
-				    now.tv_sec, (long) now.tv_usec/1000, 
-				    sp->req.hname);
-			sp->status = STATE_DONE;
-			ndone++;
-			nbaddns++;
-			if (nbaddns > dnsgap) {
-			    int highest = 0;
-			    /* start no more lookups */
-			    for (i=1; i <= n; i++)
-				if (states[i].ntries > 0)
-				    highest = i;
-			    assert(highest <= n);
-			    if (opt_verbose && n != highest)
-				fprintf(stderr, 
-					"Already searching up to host %d, "
-					"won't search any higher\n", 
-					highest);
-			    n = highest;
-			    assert(n <= MAXHOSTS);
-			}
-		    } else {
-			sp->status = STATE_CONNECT;
-			server_handle_event(sp);
-		    }
-		}
-	    }
-	}
-
-	/***** Grind state machine for each remote server *****/
-	for (i=2; i<nfds && i < MAXFDS; i++) {
-	    sp = states + fd2state[pollfds[i].fd];	/* FIXME */
-	    if (pollfds[i].revents)
-		server_handle_event(sp);
-	}
+    /* Loop until we're done finding distcc servers.  We have to do
+     * this loop in groups, with each group using no more than maxfds
+     * fd's.  One call to one_poll_loop uses n + 2 fds.
+     */
+    for (start_state = 1; start_state <= n; start_state = end_state + 1) {
+        int orig_end_state;
+        end_state = start_state + maxfds-2;
+        if (end_state > n)
+            end_state = n;
+        orig_end_state = end_state;
+        while (ndone < end_state) {
+            end_state = one_poll_loop(&rs, states, start_state, end_state,
+                                      nwithtries, &ngotaddr, &nbaddns,
+                                      firstipaddr, dnstimeout_usec,
+                                      matchbits, overlap, dnsgap);
+        }
+        if (end_state < orig_end_state) {
+            /* If we lowered end_state, it means we decided to stop
+             * searching early.
+             */
+            break;
+        }
     }
     return nok;
 }
