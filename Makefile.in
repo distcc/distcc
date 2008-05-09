@@ -765,7 +765,7 @@ single-test: check_programs
 ## CHECK targets for code that has been installed.
 
 .PHONY: pump-installcheck distcc-installcheck maintainer-installcheck
-.PHONY: installcheck 
+.PHONY: installcheck verify-binaries-installcheck daemon-installcheck
 
 # Verify that DISTCC_INSTALLATION contains the expected set of binaries.
 verify-binaries-installcheck:
@@ -824,6 +824,30 @@ installcheck:
 	   false; \
 	fi
 
+# This tests that the distcc daemon is running, and that it and distcc
+# and the pump script have been installed correctly, by compiling a simple
+# hello world program with distcc and distcc-pump.
+# This can be used after "make install-deb".
+#
+# This uses distcc from your PATH and (for the first test)
+# may use DISTCC_HOSTS from your environment or /etc/distcc/hosts.
+#
+# This test might fail if the --allow options passed to distccd
+# (which may be set in the /etc/distcc/clients.allow file)
+# do not include 127.0.0.1.
+daemon-installcheck:
+	mkdir -p _testtmp/daemon-installcheck && \
+	    cd _testtmp/daemon-installcheck && \
+	    echo '#include <stdio.h>' > hello.c && \
+	    echo 'int main(void) { puts("hello world"); return 0; }' >> hello.c && \
+	    rm -f hello.o && \
+	    DISTCC_FALLBACK=0 distcc $(CC) $(CFLAGS) -c hello.c -o hello.o && \
+	    test -f hello.o && \
+	    rm -f hello.o && \
+	    DISTCC_POTENTIAL_HOSTS=127.0.0.1 DISTCC_FALLBACK=0 \
+	        pump distcc $(CC) $(CFLAGS) -c hello.c -o hello.o && \
+	    test -f hello.o
+
 ######################################################################
 ## BENCHMARK targets
 
@@ -859,7 +883,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
-	rm -rf _testtmp  # produced by test/testdistcc.py
+	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
 	rm -rf +distcheck
 	rm -rf "$(include_server_builddir)"
 
