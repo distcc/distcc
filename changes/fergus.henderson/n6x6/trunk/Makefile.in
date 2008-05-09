@@ -828,6 +828,9 @@ installcheck:
 # and the pump script have been installed correctly, by compiling a simple
 # hello world program with distcc and distcc-pump.
 # This can be used after "make install-deb".
+#
+# This uses distcc from your PATH and (for the first test)
+# may use DISTCC_HOSTS from your environment or /etc/distcc/hosts.
 daemon-installcheck:
 	mkdir -p _testtmp/daemon-installcheck && \
 	    cd _testtmp/daemon-installcheck && \
