@@ -48,7 +48,7 @@ oldincludedir = /usr/include
 docdir = @docdir@
 pkgdatadir = $(datadir)/@PACKAGE_NAME@
 
-include_server_builddir = $(builddir)/_builddir
+include_server_builddir = $(builddir)/_include_server
 
 # These must be done from here, not from autoconf, because they can 
 # contain variable expansions written in Make syntax.  Ew.
@@ -541,21 +541,21 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 		$(mon_obj) $(gnome_obj) \
 		$(LIBS) $(GNOME_CFLAGS) $(GNOME_LIBS)
 
-# The include-server is a python app, so we use Python's build system.
-# The jumping through hoops with cd is to normalize builddir if it's relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+# The include-server is a python app, so we use Python's build system.  We pass
+# the distcc version, the source location, the CPP flags (for location of the
+# includes), and the build location.
 include-server:
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
-	  CURDIR=`pwd` && mkdir -p "$(include_server_builddir)" && \
-	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
-	  cd "$$CURDIR" && cd "$(srcdir)/include_server" &&	\
+	  mkdir -p "$(include_server_builddir)" &&      \
 	  DISTCC_VERSION="$(VERSION)"			\
-	  $(INCLUDESERVER_PYTHON) ./setup.py		\
+	  SRCDIR="$(srcdir)"                            \
+	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
-	         --build-base="$$BUILDDIR" 		\
-	         --build-temp="$$BUILDDIR";             \
+	        --build-base="$(include_server_builddir)"  \
+	        --build-temp="$(include_server_builddir)"; \
 	fi
 
 
@@ -867,17 +867,16 @@ clean-autoconf:
 clean-lzo:
 	rm -f lzo/*.[od] lzo/testmini
 
-# The jumping through hoops with cd is to normalize build/destdir if relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+
 clean-include-server:
 	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
-	  CURDIR=`pwd` && mkdir -p "$(include_server_builddir)" && \
-	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
-	  cd "$$CURDIR" && cd "$(srcdir)/include_server" &&	\
 	  DISTCC_VERSION="$(VERSION)"			\
-	  $(INCLUDESERVER_PYTHON) ./setup.py clean	\
-	     --build-base="$$BUILDDIR" 			\
-	     --build-temp="$$BUILDDIR";			\
+	  SRCDIR="$(srcdir)"                            \
+	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
+	      clean	\
+	         --build-base="$(include_server_builddir)"  \
+	         --build-temp="$(include_server_builddir)"; \
 	fi
 
 maintainer-clean: distclean \
@@ -966,25 +965,28 @@ install-programs: $(bin_PROGRAMS) pump
 	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
 	done
 
-# The jumping through hoops with cd is to normalize build/destdir if relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+# See comments for the include-server target.  Also, we work around an issue in
+# the change_root function of distutils/utils.py that turns the absolute prefix
+# into a relative reference if the root is the empty string: we absolutize the
+# destination directory in order to substitute '/' for the empty prefix (the
+# default) when defining the '--root' parameter.
 install-include-server: include-server
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
-	  CURDIR=`pwd` && 				\
-	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
-	  cd "$(DESTDIR)" && DESTDIR=`pwd` && export DESTDIR && cd "$$CURDIR" && \
-	  cd "$(srcdir)/include_server" && 		\
+	  mkdir -p "$(include_server_builddir)" &&      \
+	  DESTDIR=`cd "$(DESTDIR)/" && pwd` &&            \
 	  DISTCC_VERSION="$(VERSION)"			\
-	  $(INCLUDESERVER_PYTHON) ./setup.py 		\
+	  SRCDIR="$(srcdir)"                            \
+	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
-	         --build-base="$$BUILDDIR" 		\
-	         --build-temp="$$BUILDDIR"		\
+	        --build-base="$(include_server_builddir)" \
+	        --build-temp="$(include_server_builddir)" \
 	      install 					\
 	         --prefix="$(prefix)" 			\
 	         --record="$(PYTHON_INSTALL_RECORD)"   	\
-	         --root="$$DESTDIR";			\
+	         --root="$$DESTDIR";                    \
 	fi
 
 install-man: $(man1_MEN)
