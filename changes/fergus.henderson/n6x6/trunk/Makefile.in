@@ -827,16 +827,18 @@ installcheck:
 # hello world program with distcc and distcc-pump.
 # This can be used after "make install-deb".
 daemon-installcheck:
-	echo '#include <stdio.h>' > hello.c
-	echo 'int main(void) { puts("hello world"); return 0; }' >> hello.c
-	rm -f hello.o
-	DISTCC_FALLBACK=0 distcc $(CC) $(CFLAGS) -c hello.c -o hello.o
-	test -f hello.o
-	rm -f hello.o
-	DISTCC_POTENTIAL_HOSTS=127.0.0.1 DISTCC_FALLBACK=0 \
-		pump distcc $(CC) $(CFLAGS) -c hello.c -o hello.o
-	test -f hello.o
-	rm -f hello.c
+	mkdir -p _testtmp/daemon-installcheck && \
+	    cd _testtmp/daemon-installcheck && \
+	    echo '#include <stdio.h>' > hello.c && \
+	    echo 'int main(void) { puts("hello world"); return 0; }' >> hello.c && \
+	    rm -f hello.o && \
+	    DISTCC_FALLBACK=0 distcc $(CC) $(CFLAGS) -c hello.c -o hello.o && \
+	    test -f hello.o && \
+	    rm -f hello.o && \
+	    DISTCC_POTENTIAL_HOSTS=127.0.0.1 DISTCC_FALLBACK=0 \
+	        pump distcc $(CC) $(CFLAGS) -c hello.c -o hello.o && \
+	    test -f hello.o && \
+	    rm -f hello.o hello.c
 
 ######################################################################
 ## BENCHMARK targets
@@ -873,7 +875,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
-	rm -rf _testtmp  # produced by test/testdistcc.py
+	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
 	rm -rf +distcheck
 	rm -rf "$(include_server_builddir)"
 
