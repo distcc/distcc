@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -27,19 +27,19 @@
  * Stops looking for servers after the first one it doesn't find in DNS.
  * Prints results to stdout.
  * Terminates with error status if no servers found.
- * 
+ *
  * Examples:
- * 
+ *
  * In your build script, add the lines
  *   DISTCC_HOSTS=`lsdistcc`
  *   export DISTCC_HOSTS
  * before the line that invokes make.
- *  
+ *
  * Or, in your Makefile, add the lines
- *   export DISTCC_HOSTS = $(shell lsdistcc) 
+ *   export DISTCC_HOSTS = $(shell lsdistcc)
  *
  * Changelog:
- * 
+ *
  * Wed Jun 20 2007 - Manos Renieris, Google
  * Added -P option.
  *
@@ -58,18 +58,18 @@
  * Added -l option, improved -v output
  *
  * Tue Nov 22 2005 - Dan Kegel & Dongmin Zhang, Google
- *  added -pcc option to check that server actually responds when you send 
+ *  added -pcc option to check that server actually responds when you send
  *      it a job
  *  added -c0 option to disable connect check
  *
  * Thu Oct 13 2005 - Dan Kegel, Google
- *  use rslave to do asynchronous-ish hostname lookup, do all connects 
+ *  use rslave to do asynchronous-ish hostname lookup, do all connects
  *      in parallel
  *
  * Wed Oct  5 2005 - Dan Kegel, Google
  *  Added -d, -m options
  *
- * Fri Sep 16 2005 - Dan Kegel, Google 
+ * Fri Sep 16 2005 - Dan Kegel, Google
  *  Created
  *  Added -v option
 --------------------------------------------------------------------------*/
@@ -103,14 +103,14 @@
 #define RLIMIT_NOFILE  RLIMIT_OFILE
 #endif
 
-enum status_e { STATE_LOOKUP = 0, 
-		STATE_CONNECT, 
-		STATE_CONNECTING, 
-		STATE_READ_DONEPKT, 
-		STATE_READ_STATPKT, 
-		STATE_READ_REST, 
-		STATE_CLOSE,
-		STATE_DONE};
+enum status_e { STATE_LOOKUP = 0,
+                STATE_CONNECT,
+                STATE_CONNECTING,
+                STATE_READ_DONEPKT,
+                STATE_READ_STATPKT,
+                STATE_READ_REST,
+                STATE_CLOSE,
+                STATE_DONE};
 
 struct state_s {
     rslave_request_t req;
@@ -122,7 +122,7 @@ struct state_s {
     enum status_e status;
     int ntries;
     int fd;
-    int up;	/* default is 0, set to 1 on success */
+    int up;     /* default is 0, set to 1 on success */
 };
 typedef struct state_s state_t;
 
@@ -133,11 +133,11 @@ typedef struct state_s state_t;
 #define DEFAULT_BIGTIMEOUT 7        /* max total runtime, seconds */
 #define DEFAULT_DNSTIMEOUT_MS 500   /* individual DNS timeout, msec */
 #define DEFAULT_CONNTIMEOUT_MS 900  /* individual connect timeout, msec */
-#define DEFAULT_COMPTIMEOUT_MS 1500 /* individual compile timeout, msec 
-				       (FIXME: should be lower) */
+#define DEFAULT_COMPTIMEOUT_MS 1500 /* individual compile timeout, msec
+                                       (FIXME: should be lower) */
 #define DEFAULT_OVERLAP 1           /* number of simultaneous DNS queries -1 */
 #define DEFAULT_DNSGAP 0            /* number of missing hosts in DNS before
-				       we stop looking */
+                                       we stop looking */
 #define DEFAULT_COMPILER "none"
 
 char canned_query[1000];
@@ -161,17 +161,17 @@ const char *opt_compiler = NULL;
 
 
 const char *protocol_suffix[] = { NULL, /* to make the rest 1-based */
-                                  "", 
-                                  ",lzo", 
+                                  "",
+                                  ",lzo",
                                   ",lzo,cpp" };
 
 #define MAXHOSTS 500
-#define MAXTRIES 5	 /* this constant can't be changed without 
-			      changing some code */
+#define MAXTRIES 5       /* this constant can't be changed without
+                              changing some code */
 #define MAXFDS (MAXHOSTS+2)
 
 /* just plain globals */
-int fd2state[MAXHOSTS+1000];	/* kludge - fragile */
+int fd2state[MAXHOSTS+1000];    /* kludge - fragile */
 int nok;
 int ndone;
 
@@ -182,16 +182,16 @@ const char *rs_program_name = "lsdistcc";
 void usage(void);
 int bitcompare(const unsigned char *a, const unsigned char *b, int nbits);
 void timeout_handler(int x);
-void get_thename(const char**sformat, const char *domain_name, 
-		 int i, char *thename);
+void get_thename(const char**sformat, const char *domain_name,
+                 int i, char *thename);
 int detect_distcc_servers(const char **argv, int argc, int opti,
-			  int bigtimeout, int dnstimeout, int matchbits,
-			  int overlap, int dnsgap);
+                          int bigtimeout, int dnstimeout, int matchbits,
+                          int overlap, int dnsgap);
 void server_read_packet_header(state_t *sp);
 void server_handle_event(state_t *sp);
 
 void usage(void) {
-	printf("Usage: lsdistcc [-tTIMEOUT] [-mBITS] [-nvd] [format]\n\
+        printf("Usage: lsdistcc [-tTIMEOUT] [-mBITS] [-nvd] [format]\n\
 Uses 'for i=1... sprintf(format, i)' to construct names of servers,\n\
 stops after %d seconds or at second server that doesn't resolve,\n\
 prints the names of all such servers listening on distcc's port.\n\
@@ -199,91 +199,91 @@ Default format is %s. \n\
 If a list of host names are given in the command line,\n\
 lsdistcc will only check those hosts. \n\
 Options:\n\
--l	 Output latency in milliseconds after each hostname\n\
-	   (not including DNS latency)\n\
--n	 Print IP address rather than name\n\
--x	 Append ,down to down hosts in host list\n\
+-l       Output latency in milliseconds after each hostname\n\
+           (not including DNS latency)\n\
+-n       Print IP address rather than name\n\
+-x       Append ,down to down hosts in host list\n\
 -tTIMEOUT  Set number of seconds to stop searching after [%d]\n\
 -hHTIMEOUT Set number of milliseconds before retrying gethostbyname [%d]\n\
 -cCTIMEOUT Set number of milliseconds before giving up on connect [%d]\n\
-	   (0 to inhibit connect)\n\
+           (0 to inhibit connect)\n\
 -kKTIMEOUT Set number of milliseconds before giving up on compile [%d]\n\
-	   (0 to inhibit compile)\n\
+           (0 to inhibit compile)\n\
 -mBITS     Set number of bits of address that must match first host found [0]\n\
 -oOVERLAP  Set number of extra DNS requests to send [%d]\n\
 -gDNSGAP   Set number of missing DNS entries to tolerate [%d]\n\
 -rPORT     Port to connect to [%d]\n\
 -PPROTOCOL Protocol version to use (1-3) [%d]\n\
 -pCOMPILER Name of compiler to use [%s]\n\
--d	 Append DNS domain name to format\n\
--v	 Verbose\n\
+-d       Append DNS domain name to format\n\
+-v       Verbose\n\
 \n\
 Example:\n\
 lsdistcc -l -p$COMPILER\n\
 lsdistcc -p$COMPILER hosta somehost hostx hosty\n\
-", DEFAULT_BIGTIMEOUT, 
-   DEFAULT_FORMAT, 
-   DEFAULT_BIGTIMEOUT, 
-   DEFAULT_DNSTIMEOUT_MS, 
-   DEFAULT_CONNTIMEOUT_MS, 
-   DEFAULT_COMPTIMEOUT_MS, 
-   DEFAULT_OVERLAP, 
-   DEFAULT_DNSGAP, 
-   DEFAULT_PORT, 
-   DEFAULT_PROTOCOL, 
+", DEFAULT_BIGTIMEOUT,
+   DEFAULT_FORMAT,
+   DEFAULT_BIGTIMEOUT,
+   DEFAULT_DNSTIMEOUT_MS,
+   DEFAULT_CONNTIMEOUT_MS,
+   DEFAULT_COMPTIMEOUT_MS,
+   DEFAULT_OVERLAP,
+   DEFAULT_DNSGAP,
+   DEFAULT_PORT,
+   DEFAULT_PROTOCOL,
    DEFAULT_COMPILER);
-	exit(1);
+        exit(1);
 }
 
 
-/* Compare first nbits of a[] and b[] 
+/* Compare first nbits of a[] and b[]
  * If nbits is 1, only compares the MSB of a[0] and b[0]
  * Return 0 on equal, nonzero on nonequal
  */
 int bitcompare(const unsigned char *a, const unsigned char *b, int nbits)
 {
-	int fullbytes = nbits/8;
-	int leftoverbits = nbits & 7;
+    int fullbytes = nbits/8;
+    int leftoverbits = nbits & 7;
 
-	if (fullbytes) {
-	    int d = memcmp((char *)a, (char *)b, (size_t) fullbytes);
-	    if (d)
-		    return d;
-	}
+    if (fullbytes) {
+        int d = memcmp((char *)a, (char *)b, (size_t) fullbytes);
+        if (d)
+                return d;
+    }
 
-	if (leftoverbits) {
-	    int mask = 0;
-	    int i;
-	    for (i=0; i<leftoverbits; i++)
-		mask |= (1 << (7-i));
-	    /* printf("mask %x, a[%d] %x, b[%d] %x\n", mask, 
-		      fullbytes, a[fullbytes], fullbytes, b[fullbytes]); */
-	    return ((a[fullbytes] ^ b[fullbytes]) & mask);
-	}
-	return 0;
+    if (leftoverbits) {
+        int mask = 0;
+        int i;
+        for (i=0; i<leftoverbits; i++)
+            mask |= (1 << (7-i));
+        /* printf("mask %x, a[%d] %x, b[%d] %x\n", mask,
+                  fullbytes, a[fullbytes], fullbytes, b[fullbytes]); */
+        return ((a[fullbytes] ^ b[fullbytes]) & mask);
+    }
+    return 0;
 }
 
 #if 0
 #include <assert.h>
 main()
 {
-	assert(bitcompare("0", "0", 8) == 0);
-	assert(bitcompare("0", "1", 8) != 0);
-	assert(bitcompare("0", "1", 7) == 0);
+    assert(bitcompare("0", "0", 8) == 0);
+    assert(bitcompare("0", "1", 8) != 0);
+    assert(bitcompare("0", "1", 7) == 0);
 }
 #endif
-	
+
 
 /* On timeout, silently terminate program  */
 void timeout_handler(int x)
 {
-	(void) x;
+    (void) x;
 
-	if (opt_verbose > 0)
-		fprintf(stderr, "Timeout!\n");
+    if (opt_verbose > 0)
+        fprintf(stderr, "Timeout!\n");
 
-	/* FIXME: is it legal to call exit here? */
-	exit(0);
+    /* FIXME: is it legal to call exit here? */
+    exit(0);
 }
 
 static void generate_query(void)
@@ -298,37 +298,37 @@ static void generate_query(void)
                      lzo_work_mem);
 
     switch (opt_protocol) {
-     case 1: {
+    case 1: {
         static const char canned_query_fmt_protocol_1[]=
                                       "DIST00000001"
-                                      "ARGC00000005" 
+                                      "ARGC00000005"
                                       "ARGV%08x%s"
-                                      "ARGV00000002-c" 
-                                      "ARGV00000007hello.c" 
-                                      "ARGV00000002-o" 
+                                      "ARGV00000002-c"
+                                      "ARGV00000007hello.c"
+                                      "ARGV00000002-o"
                                       "ARGV00000007hello.o"
-                                      "DOTI%08x%s"; 
+                                      "DOTI%08x%s";
         sprintf(canned_query,
                 canned_query_fmt_protocol_1,
                  (unsigned)strlen(opt_compiler), opt_compiler,
                  (unsigned)strlen(program), program);
         canned_query_len = strlen(canned_query);
         break;
-      }
+    }
 
      case 2: {
         static const char canned_query_fmt_protocol_2[]=
                                       "DIST00000002"
-                                      "ARGC00000005" 
+                                      "ARGC00000005"
                                       "ARGV%08x%s"
-                                      "ARGV00000002-c" 
-                                      "ARGV00000007hello.c" 
-                                      "ARGV00000002-o" 
+                                      "ARGV00000002-c"
+                                      "ARGV00000007hello.c"
+                                      "ARGV00000002-o"
                                       "ARGV00000007hello.o"
-                                      "DOTI%08x"; 
+                                      "DOTI%08x";
         sprintf(canned_query,
                 canned_query_fmt_protocol_2,
-                 (unsigned)strlen(opt_compiler), 
+                 (unsigned)strlen(opt_compiler),
                  opt_compiler,
                  (unsigned)lzod_program_len);
 
@@ -342,23 +342,23 @@ static void generate_query(void)
      case 3: {
         static const char canned_query_fmt_protocol_3[]=
                                       "DIST00000003"
-                                      "CDIR00000001/" 
-                                      "ARGC00000005" 
+                                      "CDIR00000001/"
+                                      "ARGC00000005"
                                       "ARGV%08x%s"
-                                      "ARGV00000002-c" 
-                                      "ARGV00000007hello.c" 
-                                      "ARGV00000002-o" 
+                                      "ARGV00000002-c"
+                                      "ARGV00000007hello.c"
+                                      "ARGV00000002-o"
                                       "ARGV00000007hello.o"
-                                      "NFIL00000001" 
+                                      "NFIL00000001"
                                       "NAME00000008/hello.c"
-                                      "FILE%08x"; 
+                                      "FILE%08x";
 
         sprintf(canned_query,
                 canned_query_fmt_protocol_3,
-                 (unsigned)strlen(opt_compiler), 
+                 (unsigned)strlen(opt_compiler),
                  opt_compiler,
                  (unsigned)lzod_program_len);
-           
+
         canned_query_len = strlen(canned_query) + lzod_program_len;
         memcpy(canned_query + strlen(canned_query),
                lzod_program, lzod_program_len);
@@ -373,91 +373,91 @@ void server_read_packet_header(state_t *sp)
     int arg;
     int nread;
 
-    nread = read(sp->fd, sp->curhdrbuf + sp->curhdrlen, 
-		 (size_t)(12 - sp->curhdrlen));
+    nread = read(sp->fd, sp->curhdrbuf + sp->curhdrlen,
+                 (size_t)(12 - sp->curhdrlen));
     if (nread == 0) {
-	/* A nonblocking read returning zero bytes means EOF.
-	 * FIXME: it may mean this only on the first read after poll said
-	 * bytes were ready, so beware of false EOFs here?
-	 */
-	if (opt_verbose > 0)
-	    fprintf(stderr, "lsdistcc: premature EOF while waiting for "
-			    "result from server %s\n", 
-		    sp->req.hname);
-	sp->status = STATE_CLOSE;
-	return;
+        /* A nonblocking read returning zero bytes means EOF.
+         * FIXME: it may mean this only on the first read after poll said
+         * bytes were ready, so beware of false EOFs here?
+         */
+        if (opt_verbose > 0)
+            fprintf(stderr, "lsdistcc: premature EOF while waiting for "
+                            "result from server %s\n",
+                    sp->req.hname);
+        sp->status = STATE_CLOSE;
+        return;
     }
 
     if (nread > 0)
-	    sp->curhdrlen += nread;
+        sp->curhdrlen += nread;
 
     if (sp->curhdrlen < 12)
-	return;
+        return;
 
     arg = (int)strtol(sp->curhdrbuf+4, NULL, 16);
 
     if (opt_verbose > 2) {
-	int i;
-	printf("Got hdr '%12.12s' = ", sp->curhdrbuf);
-	for (i=0; i < sp->curhdrlen; i++)
-		printf("%2x", sp->curhdrbuf[i]);
-	printf("\n");
+        int i;
+        printf("Got hdr '%12.12s' = ", sp->curhdrbuf);
+        for (i=0; i < sp->curhdrlen; i++)
+                printf("%2x", sp->curhdrbuf[i]);
+        printf("\n");
     }
 
     /* Parse and validate the packet header, move on to next state */
     switch (sp->status) {
     case STATE_READ_DONEPKT:
-	if (memcmp(sp->curhdrbuf, "DONE", 4) != 0) {
-	    if (opt_verbose > 1)
-		fprintf(stderr, 
-			"%s wrong protocol; expected DONE, got %4.4s!\n",
-			sp->req.hname, sp->curhdrbuf);
-	    sp->status = STATE_CLOSE;
-	    break;
-	}
-	if (arg != opt_protocol) {
-	    if (opt_verbose > 1)
-		fprintf(stderr, 
-			"%s wrong protocol, expected %d got %d!\n", 
-			sp->req.hname, 
+        if (memcmp(sp->curhdrbuf, "DONE", 4) != 0) {
+            if (opt_verbose > 1)
+                fprintf(stderr,
+                        "%s wrong protocol; expected DONE, got %4.4s!\n",
+                        sp->req.hname, sp->curhdrbuf);
+            sp->status = STATE_CLOSE;
+            break;
+        }
+        if (arg != opt_protocol) {
+            if (opt_verbose > 1)
+                fprintf(stderr,
+                        "%s wrong protocol, expected %d got %d!\n",
+                        sp->req.hname,
                         opt_protocol,
                         arg);
-	    sp->status = STATE_CLOSE;
-	    break;
-	}
-	/* No body to this type.  Read next packet. */
-	sp->curhdrlen = 0;
-	sp->status = STATE_READ_STATPKT;
-	break;
+            sp->status = STATE_CLOSE;
+            break;
+        }
+        /* No body to this type.  Read next packet. */
+        sp->curhdrlen = 0;
+        sp->status = STATE_READ_STATPKT;
+        break;
 
     case STATE_READ_STATPKT:
-	if (memcmp(sp->curhdrbuf, "STAT", 4) != 0) {
-	    if (opt_verbose > 1)
-		fprintf(stderr, 
-			"%s wrong protocol!  Expected STAT, got %4.4s\n",
-			sp->req.hname, sp->curhdrbuf);
-	    sp->status = STATE_CLOSE;
-	    break;
-	}
-	if (arg != 0) {
-	    if (opt_verbose > 1) {
-	    /* FIXME: only conditional because my server uses load shedding */
-		fprintf(stderr, 
-			"lsdistcc: warning: test compile on %s failed! "
-			"status 0x%x\n", 
-			sp->req.hname, arg); 
-	    }
-	    sp->status = STATE_CLOSE;
-	    break;
-	}
-	/* No body to this type.  Read next packet. */
-	sp->curhdrlen = 0;
-	sp->status = STATE_READ_REST;
-	break;
+        if (memcmp(sp->curhdrbuf, "STAT", 4) != 0) {
+            if (opt_verbose > 1)
+                fprintf(stderr,
+                        "%s wrong protocol!  Expected STAT, got %4.4s\n",
+                        sp->req.hname, sp->curhdrbuf);
+            sp->status = STATE_CLOSE;
+            break;
+        }
+        if (arg != 0) {
+            if (opt_verbose > 1) {
+            /* FIXME: only conditional because my server uses load shedding */
+                fprintf(stderr,
+                        "lsdistcc: warning: test compile on %s failed! "
+                        "status 0x%x\n",
+                        sp->req.hname, arg);
+            }
+            sp->status = STATE_CLOSE;
+            break;
+        }
+        /* No body to this type.  Read next packet. */
+        sp->curhdrlen = 0;
+        sp->status = STATE_READ_REST;
+        break;
 
     default:
-	fprintf(stderr, "bug\n");
-	exit(1);
+        fprintf(stderr, "bug\n");
+        exit(1);
     }
 }
 
@@ -472,180 +472,180 @@ void server_handle_event(state_t *sp)
     gettimeofday(&now, 0);
 
     do {
-	struct sockaddr_in sa;
+        struct sockaddr_in sa;
 
-	if (opt_verbose > 2)
-	    fprintf(stderr, 
-		    "now %ld %ld: server_handle_event: %s: state %d\n", 
-		    now.tv_sec, (long) now.tv_usec/1000,
+        if (opt_verbose > 2)
+            fprintf(stderr,
+                    "now %ld %ld: server_handle_event: %s: state %d\n",
+                    now.tv_sec, (long) now.tv_usec/1000,
                     sp->req.hname, sp->status);
 
-	switch (sp->status) {
-	case STATE_CONNECT:
-	    if (opt_conntimeout_ms == 0) {
-		sp->fd = -1;
-		sp->up = 1;
-		sp->status = STATE_CLOSE;
-		break;
-	    } 
+        switch (sp->status) {
+        case STATE_CONNECT:
+            if (opt_conntimeout_ms == 0) {
+                sp->fd = -1;
+                sp->up = 1;
+                sp->status = STATE_CLOSE;
+                break;
+            }
 
-	    /* Now do a nonblocking connect to that address */
-	    memset(&sa, 0, sizeof sa);
-	    sa.sin_family = AF_INET;
-	    sa.sin_port = htons(opt_port);
-	    memcpy(&sa.sin_addr, sp->res.addr, 4);
+            /* Now do a nonblocking connect to that address */
+            memset(&sa, 0, sizeof sa);
+            sa.sin_family = AF_INET;
+            sa.sin_port = htons(opt_port);
+            memcpy(&sa.sin_addr, sp->res.addr, 4);
 
-	    if ((sp->fd = socket(sa.sin_family, SOCK_STREAM, 0)) == -1) {
-		fprintf(stderr, "failed to create socket: %s", strerror(errno));
-		sp->status = STATE_DONE;
-	    } else {
-		dcc_set_nonblocking(sp->fd);
-		/* start the nonblocking connect... */
+            if ((sp->fd = socket(sa.sin_family, SOCK_STREAM, 0)) == -1) {
+                fprintf(stderr, "failed to create socket: %s", strerror(errno));
+                sp->status = STATE_DONE;
+            } else {
+                dcc_set_nonblocking(sp->fd);
+                /* start the nonblocking connect... */
                 if (opt_verbose > 0)
-		    fprintf(stderr, 
-			    "now %ld %ld: Connecting to %s\n", 
-			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
-		if (connect(sp->fd, (struct sockaddr *)&sa, sizeof(sa))
-		    && errno != EINPROGRESS) {
-		    if (opt_verbose > 0)
-			fprintf(stderr, "failed to connect socket: %s",
-			strerror(errno));
-		    sp->status = STATE_CLOSE;
-		} else {
-		    sp->status = STATE_CONNECTING;
-		    fd2state[sp->fd] = sp->res.id;
-		    gettimeofday(&now, 0);
-		    sp->start = now;
-		    sp->deadline = now;
-		    sp->deadline.tv_usec += 1000 * opt_conntimeout_ms;
-		    sp->deadline.tv_sec += sp->deadline.tv_usec / 1000000;
-		    sp->deadline.tv_usec = sp->deadline.tv_usec % 1000000;
-		}
-	    }
-	    break;
-	case STATE_CONNECTING:
-	    {
-		int connecterr;
-		socklen_t len = sizeof(connecterr);
-		int nsend;
-		int nsent;
+                    fprintf(stderr,
+                            "now %ld %ld: Connecting to %s\n",
+                            now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
+                if (connect(sp->fd, (struct sockaddr *)&sa, sizeof(sa))
+                    && errno != EINPROGRESS) {
+                    if (opt_verbose > 0)
+                        fprintf(stderr, "failed to connect socket: %s",
+                        strerror(errno));
+                    sp->status = STATE_CLOSE;
+                } else {
+                    sp->status = STATE_CONNECTING;
+                    fd2state[sp->fd] = sp->res.id;
+                    gettimeofday(&now, 0);
+                    sp->start = now;
+                    sp->deadline = now;
+                    sp->deadline.tv_usec += 1000 * opt_conntimeout_ms;
+                    sp->deadline.tv_sec += sp->deadline.tv_usec / 1000000;
+                    sp->deadline.tv_usec = sp->deadline.tv_usec % 1000000;
+                }
+            }
+            break;
+        case STATE_CONNECTING:
+            {
+                int connecterr;
+                socklen_t len = sizeof(connecterr);
+                int nsend;
+                int nsent;
 
-		if (getsockopt(sp->fd, SOL_SOCKET, SO_ERROR, 
-			       (char *)&connecterr, &len) < 0) {
-		    fprintf(stderr, "getsockopt SO_ERROR failed?!");
-		    sp->status = STATE_CLOSE;
-		    break;
-		} 
-		if (connecterr) {
-		    if (opt_verbose > 0)
-		       fprintf(stderr, 
-			       "now %ld %ld: Connecting to %s failed "
-			       "with errno %d = %s\n",
-			 now.tv_sec, (long) now.tv_usec/1000, sp->req.hname, 
-			 connecterr, strerror(connecterr));
-		    sp->status = STATE_CLOSE;	/* not listening */
-		    break;
-		}
-		if (opt_comptimeout_ms == 0 || !opt_compiler) {
-		    /* connect succeeded, don't need to compile */
-		    sp->up = 1;
-		    sp->status = STATE_CLOSE; 
-		    break;
-		}
-		if (opt_verbose > 0)
-		    fprintf(stderr, 
-			    "now %ld %ld: %s: sending compile request\n", 
-			    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
-		nsend = canned_query_len;
-		nsent = write(sp->fd, canned_query, nsend);
-		if (nsent != nsend) {
+                if (getsockopt(sp->fd, SOL_SOCKET, SO_ERROR,
+                               (char *)&connecterr, &len) < 0) {
+                    fprintf(stderr, "getsockopt SO_ERROR failed?!");
+                    sp->status = STATE_CLOSE;
+                    break;
+                }
+                if (connecterr) {
+                    if (opt_verbose > 0)
+                       fprintf(stderr,
+                               "now %ld %ld: Connecting to %s failed "
+                               "with errno %d = %s\n",
+                         now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
+                         connecterr, strerror(connecterr));
+                    sp->status = STATE_CLOSE;   /* not listening */
+                    break;
+                }
+                if (opt_comptimeout_ms == 0 || !opt_compiler) {
+                    /* connect succeeded, don't need to compile */
+                    sp->up = 1;
+                    sp->status = STATE_CLOSE;
+                    break;
+                }
+                if (opt_verbose > 0)
+                    fprintf(stderr,
+                            "now %ld %ld: %s: sending compile request\n",
+                            now.tv_sec, (long) now.tv_usec/1000, sp->req.hname);
+                nsend = canned_query_len;
+                nsent = write(sp->fd, canned_query, nsend);
+                if (nsent != nsend) {
                     if (opt_verbose > 1) {
-			if (nsent == -1)
-			    fprintf(stderr, 
-				    "now %ld %ld: Sending to %s failed, "
-				    "errno %d\n",
-				    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
-				    connecterr);
-			else
-			    fprintf(stderr, 
-				    "now %ld %ld: Sending to %s failed, "
-				    "nsent %d != nsend %d\n",
-				    now.tv_sec, (long) now.tv_usec/1000, 
-				    sp->req.hname, nsent, nsend);
-		    }
-		    /* ??? remote disconnect?  Buffer too small? */
-		    sp->status = STATE_CLOSE; 
-		    break;
-		}
-		sp->status=STATE_READ_DONEPKT;
-		sp->curhdrlen = 0;
-		sp->deadline = now;
-		sp->deadline.tv_usec += 1000 * opt_comptimeout_ms;
-		sp->deadline.tv_sec += sp->deadline.tv_usec / 1000000;
-		sp->deadline.tv_usec = sp->deadline.tv_usec % 1000000;
-	    }
-	    break;
+                        if (nsent == -1)
+                            fprintf(stderr,
+                                    "now %ld %ld: Sending to %s failed, "
+                                    "errno %d\n",
+                                    now.tv_sec, (long) now.tv_usec/1000, sp->req.hname,
+                                    connecterr);
+                        else
+                            fprintf(stderr,
+                                    "now %ld %ld: Sending to %s failed, "
+                                    "nsent %d != nsend %d\n",
+                                    now.tv_sec, (long) now.tv_usec/1000,
+                                    sp->req.hname, nsent, nsend);
+                    }
+                    /* ??? remote disconnect?  Buffer too small? */
+                    sp->status = STATE_CLOSE;
+                    break;
+                }
+                sp->status=STATE_READ_DONEPKT;
+                sp->curhdrlen = 0;
+                sp->deadline = now;
+                sp->deadline.tv_usec += 1000 * opt_comptimeout_ms;
+                sp->deadline.tv_sec += sp->deadline.tv_usec / 1000000;
+                sp->deadline.tv_usec = sp->deadline.tv_usec % 1000000;
+            }
+            break;
 
-	case STATE_READ_DONEPKT:
-	case STATE_READ_STATPKT:
-	    server_read_packet_header(sp);
-	    break;
+        case STATE_READ_DONEPKT:
+        case STATE_READ_STATPKT:
+            server_read_packet_header(sp);
+            break;
 
-	case STATE_READ_REST:
-             { 
-	    char buf[1000];
-	    int nread;
-	    nread = read(sp->fd, buf, sizeof(buf));
-	    if (nread == 0) {
-		/* A nonblocking read returning zero bytes means EOF.
-		 * FIXME: it may mean this only on the first read after 
-		 * poll said bytes were ready, so beware of false EOFs here?
-		 */
-		sp->up = 1;
-		sp->status = STATE_CLOSE;
-	    }
-	    }
-	    break;
+        case STATE_READ_REST:
+             {
+            char buf[1000];
+            int nread;
+            nread = read(sp->fd, buf, sizeof(buf));
+            if (nread == 0) {
+                /* A nonblocking read returning zero bytes means EOF.
+                 * FIXME: it may mean this only on the first read after
+                 * poll said bytes were ready, so beware of false EOFs here?
+                 */
+                sp->up = 1;
+                sp->status = STATE_CLOSE;
+            }
+            }
+            break;
 
-	case STATE_CLOSE:
-	    if (sp->fd != -1) {
-		close(sp->fd);
-		sp->fd = -1;
-	    }
+        case STATE_CLOSE:
+            if (sp->fd != -1) {
+                close(sp->fd);
+                sp->fd = -1;
+            }
 
-	    if (opt_bang_down || sp->up) {
-		if (opt_numeric)
-		    printf("%d.%d.%d.%d", sp->res.addr[0], sp->res.addr[1],
-			   sp->res.addr[2], sp->res.addr[3]);
-		else
-		    printf("%s", sp->req.hname);
+            if (opt_bang_down || sp->up) {
+                if (opt_numeric)
+                    printf("%d.%d.%d.%d", sp->res.addr[0], sp->res.addr[1],
+                           sp->res.addr[2], sp->res.addr[3]);
+                else
+                    printf("%s", sp->req.hname);
 
                 printf("%s", protocol_suffix[opt_protocol]);
 
-		if (opt_bang_down && !sp->up)
-		    printf(",down");
+                if (opt_bang_down && !sp->up)
+                    printf(",down");
 
-		if (opt_latency) {
-		    int latency_ms;
-		    gettimeofday(&now, 0);
-		    latency_ms = (now.tv_usec - sp->start.tv_usec) / 
-				 1000 + 1000 * (now.tv_sec - sp->start.tv_sec);
-		    printf(" %d", latency_ms);
-		}
-		putchar('\n');
-		if (opt_verbose)
-		    fflush(stdout);
-	    }
-	    nok++;
-	    sp->status = STATE_DONE;
-	    ndone++;
-	    break;
+                if (opt_latency) {
+                    int latency_ms;
+                    gettimeofday(&now, 0);
+                    latency_ms = (now.tv_usec - sp->start.tv_usec) /
+                                 1000 + 1000 * (now.tv_sec - sp->start.tv_sec);
+                    printf(" %d", latency_ms);
+                }
+                putchar('\n');
+                if (opt_verbose)
+                    fflush(stdout);
+            }
+            nok++;
+            sp->status = STATE_DONE;
+            ndone++;
+            break;
 
-	case STATE_DONE:
-	    ;
-	default:
-	    ;
-	}
+        case STATE_DONE:
+            ;
+        default:
+            ;
+        }
     } while (sp->status == STATE_CLOSE);
 }
 
@@ -813,7 +813,7 @@ static int one_poll_loop(struct rslave_s* rs, struct state_s states[],
                         memcpy(firstipaddr, result.addr, 4);
                     } else {
                         /* break if new server on a 'different network'
-    		         than first server */
+                         than first server */
                         if (bitcompare(firstipaddr, result.addr, matchbits))
                             result.err = -1;
                     }
@@ -852,7 +852,7 @@ static int one_poll_loop(struct rslave_s* rs, struct state_s states[],
 
     /***** Grind state machine for each remote server *****/
     for (i=2; i<nfds && i < MAXFDS; i++) {
-        sp = states + fd2state[pollfds[i].fd];	/* FIXME */
+        sp = states + fd2state[pollfds[i].fd];  /* FIXME */
         if (pollfds[i].revents)
             server_handle_event(sp);
     }
@@ -883,11 +883,11 @@ void get_thename(const char**sformat, const char *domain_name, int i,
  * whichever comes first.
  * On entry:
  *  sformat: format of names of distcc servers to check
- *  bigtimeout: how many seconds to terminate slow run after 
- *  dnstimeout: how many milliseconds before retrying a particular 
- *	      gethostbyname call
- *  matchbits: top matchbits of address must match first host found, 
-	       else stop searching
+ *  bigtimeout: how many seconds to terminate slow run after
+ *  dnstimeout: how many milliseconds before retrying a particular
+ *            gethostbyname call
+ *  matchbits: top matchbits of address must match first host found,
+               else stop searching
  *  overlap: how many extra DNS queries to keep in flight normally
  *  dnsgap: how many missing DNS entries to tolerate
  * On exit:
@@ -898,8 +898,8 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
                           int matchbits, int overlap, int dnsgap)
 {
     unsigned char firstipaddr[4];
-    int dnstimeout_usec = dnstimeout * 1000;   /* how long before 
-						  resending gethostbyname */
+    int dnstimeout_usec = dnstimeout * 1000;   /* how long before
+                                                  resending gethostbyname */
     int i;
     int n = MAXHOSTS;
     int maxfds = MAXHOSTS + 10;
@@ -917,10 +917,10 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
     const char **sformat = &default_format;
     const char *domain_name;
     if (opt_domain) {
-	if (dcc_get_dns_domain(&domain_name)) {
-		fprintf(stderr, "Can't get domain name\n");
-		exit(1);
-	}
+        if (dcc_get_dns_domain(&domain_name)) {
+                fprintf(stderr, "Can't get domain name\n");
+                exit(1);
+        }
     }
     if (opti < argc) {
         if (strstr(argv[opti], "%d") != NULL) {
@@ -955,7 +955,7 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
     alarm((unsigned) bigtimeout);
 
     if (rslave_init(&rs))
-	return 0;
+        return 0;
 
     ngotaddr = 0;
     memset(nwithtries, 0, sizeof(nwithtries));
@@ -963,12 +963,12 @@ int detect_distcc_servers(const char **argv, int argc, int opti,
 
     /* all hosts start off in state 'sent 0' */
     for (i=1; i<=n; i++) {
-	rslave_request_t *req = &states[i].req;
+        rslave_request_t *req = &states[i].req;
         get_thename(sformat, domain_name, i, thename);
-	rslave_request_init(req, thename, i);
-	states[i].status = STATE_LOOKUP;
-	states[i].ntries = 0;
-	nwithtries[0]++;
+        rslave_request_init(req, thename, i);
+        states[i].status = STATE_LOOKUP;
+        states[i].ntries = 0;
+        nwithtries[0]++;
     }
 
     ndone = 0;
@@ -1006,87 +1006,87 @@ int main(int argc, char **argv)
     int nfound;
 
     for (opti = 1; opti < argc && argv[opti][0] == '-'; opti++) {
-	switch (argv[opti][1]) {
-	case 'm':
-	    opt_match = atoi(argv[opti]+2);
-	    if (opt_match > 31 || opt_match < 0)
-		usage();
-	    break;
-	case 't':
-	    opt_bigtimeout_sec = atoi(argv[opti]+2);
-	    if (opt_bigtimeout_sec < 0)
-		usage();
-	    break;
-	case 'h':
-	    opt_dnstimeout_ms = atoi(argv[opti]+2);
-	    if (opt_dnstimeout_ms < 0)
-		usage();
-	    break;
-	case 'c':
-	    opt_conntimeout_ms = atoi(argv[opti]+2);
-	    if (opt_conntimeout_ms < 0)
-		usage();
-	    break;
-	case 'k':
-	    opt_comptimeout_ms = atoi(argv[opti]+2);
-	    if (opt_comptimeout_ms < 0)
-		usage();
-	    break;
-	case 'o':
-	    opt_overlap = atoi(argv[opti]+2);
-	    if (opt_overlap < 0)
-		usage();
-	    break;
-	case 'g':
-	    opt_dnsgap = atoi(argv[opti]+2);
-	    if (opt_dnsgap < 0)
-		usage();
-	    break;
+        switch (argv[opti][1]) {
+        case 'm':
+            opt_match = atoi(argv[opti]+2);
+            if (opt_match > 31 || opt_match < 0)
+                usage();
+            break;
+        case 't':
+            opt_bigtimeout_sec = atoi(argv[opti]+2);
+            if (opt_bigtimeout_sec < 0)
+                usage();
+            break;
+        case 'h':
+            opt_dnstimeout_ms = atoi(argv[opti]+2);
+            if (opt_dnstimeout_ms < 0)
+                usage();
+            break;
+        case 'c':
+            opt_conntimeout_ms = atoi(argv[opti]+2);
+            if (opt_conntimeout_ms < 0)
+                usage();
+            break;
+        case 'k':
+            opt_comptimeout_ms = atoi(argv[opti]+2);
+            if (opt_comptimeout_ms < 0)
+                usage();
+            break;
+        case 'o':
+            opt_overlap = atoi(argv[opti]+2);
+            if (opt_overlap < 0)
+                usage();
+            break;
+        case 'g':
+            opt_dnsgap = atoi(argv[opti]+2);
+            if (opt_dnsgap < 0)
+                usage();
+            break;
         case 'P':
             opt_protocol = atoi(argv[opti]+2);
             if (opt_protocol <= 0 || opt_protocol > 3) {
                 usage();
             }
             break;
-	case 'p':
-	    opt_compiler = argv[opti]+2;
-	    if (! *opt_compiler)
-		usage();
-	    break;
-	case 'r':
-	    opt_port = atoi(argv[opti]+2);
-	    if (opt_port <= 0)
-		usage();
-	    break;
-	case 'l':
-	    opt_latency = 1;
-	    break;
-	case 'n':
-	    opt_numeric = 1;
-	    break;
-	case 'x':
-	    opt_bang_down = 1;
-	    break;
-	case 'v':
-	    opt_verbose++;
-	    break;
-	case 'd':
-	    opt_domain++;
-	    break;
-	default:
-	    usage();
-	}
+        case 'p':
+            opt_compiler = argv[opti]+2;
+            if (! *opt_compiler)
+                usage();
+            break;
+        case 'r':
+            opt_port = atoi(argv[opti]+2);
+            if (opt_port <= 0)
+                usage();
+            break;
+        case 'l':
+            opt_latency = 1;
+            break;
+        case 'n':
+            opt_numeric = 1;
+            break;
+        case 'x':
+            opt_bang_down = 1;
+            break;
+        case 'v':
+            opt_verbose++;
+            break;
+        case 'd':
+            opt_domain++;
+            break;
+        default:
+            usage();
+        }
     }
 
     if (opt_compiler)
         generate_query();
 
-    nfound = detect_distcc_servers((const char **)argv, argc, opti, 
-				   opt_bigtimeout_sec, 
-				   opt_dnstimeout_ms, 
-				   opt_match, 
-				   opt_overlap, 
-				   opt_dnsgap);
+    nfound = detect_distcc_servers((const char **)argv, argc, opti,
+                                   opt_bigtimeout_sec,
+                                   opt_dnstimeout_ms,
+                                   opt_match,
+                                   opt_overlap,
+                                   opt_dnsgap);
 
     /* return failure if no servers found */
     return (nfound > 0) ? 0 : 1;
