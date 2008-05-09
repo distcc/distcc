@@ -221,19 +221,25 @@ AC_ARG_VAR(PYTHON, [Python interpreter])
 if ! "$PYTHON" -V 2>&1 | grep "^Python" >/dev/null; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
+  PYTHON_RELATIVE_LIB=""
 elif "$PYTHON" -V 2>&1 | grep "^Python 2.1" >/dev/null; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
+  PYTHON_RELATIVE_LIB=""
 elif "$PYTHON" -V 2>&1 | grep "^Python 2.[[23]]" >/dev/null; then
   TEST_PYTHON="$PYTHON"
   INCLUDESERVER_PYTHON=""
+  PYTHON_RELATIVE_LIB=""
 else
   TEST_PYTHON="$PYTHON"
   INCLUDESERVER_PYTHON="$PYTHON"
+  PYTHON_RELATIVE_LIB=`"$PYTHON" -c \
+    "import distutils.sysconfig;\
+     print distutils.sysconfig.get_python_lib(prefix=\"\")"`
 fi
 AC_SUBST(TEST_PYTHON)
 AC_SUBST(INCLUDESERVER_PYTHON)
-
+AC_SUBST(PYTHON_RELATIVE_LIB)
 AC_C_INLINE
 AC_C_BIGENDIAN
 
