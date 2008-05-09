@@ -1,5 +1,5 @@
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #endif
 
 #if defined (__GLIBC__) && defined(__LCLINT__)
