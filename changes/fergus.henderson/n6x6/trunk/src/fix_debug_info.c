@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * Performs search-and-replace in the debug info section of an ELF file.
  */
 
-#include "config.h"
+#include <config.h>
 
 #include <assert.h>
 #include <stdio.h>

@@ -88,7 +88,7 @@
  **************************************************************/
 
 #ifndef NO_CONFIG_H
-#include "config.h"
+#include <config.h>
 #else
 #define NULL 0
 #endif 

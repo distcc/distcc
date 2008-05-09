@@ -23,7 +23,7 @@
 
 /* dopt.c -- Parse and apply server options. */
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

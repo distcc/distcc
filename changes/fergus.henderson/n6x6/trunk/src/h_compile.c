@@ -25,7 +25,7 @@
  * Test harness for functions in compile.c. (Only one so far.)
  **/
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>
