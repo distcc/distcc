@@ -209,7 +209,6 @@ deb_start() {
 
 	if [ -n "$COMMANDFILE" ]; then
 	  : > $CMDLIST
-	  CMDLIST=$COMMANDFILE
 	  . $COMMANDFILE
 	  export DISTCC_CMDLIST
 	  export DISTCC_CMDLIST_NUMWORDS
