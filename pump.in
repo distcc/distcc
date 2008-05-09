@@ -12,6 +12,7 @@
 # TODO(klarlund): Rid this script of bash-isms.
 
 PYTHON=@PYTHON@
+PYTHON_RELATIVE_LIB=@PYTHON_RELATIVE_LIB@
 
 usage_string=\
 'Usage:
@@ -127,7 +128,7 @@ Initialize() {
   # set when the 'pump' script is made from 'pump.in'. Use this value in the
   # formation of the relative path that takes us from the 'bin' directory of an
   # installation to the 'include_server' directory.
-  include_server_relative="../lib/$(basename $PYTHON)/site-packages/include_server"
+  include_server_relative="../$PYTHON_RELATIVE_LIB/include_server"
 
   # We use a little heuristic to determine whether this pump script is part of
   # an installation. Specifically, we check whether we're a bin directory, and
