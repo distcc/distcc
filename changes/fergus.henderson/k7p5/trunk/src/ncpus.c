@@ -23,7 +23,7 @@
 /* Thanks to Dimitri PAPADOPOULOS-ORFANOS for researching many of the methods
  * in this file. */
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <string.h>
