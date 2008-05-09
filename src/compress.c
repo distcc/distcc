@@ -26,7 +26,7 @@
                          * watching train wrecks".  -- AC  */
 
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

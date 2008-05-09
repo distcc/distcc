@@ -320,7 +320,7 @@ then
     AC_MSG_RESULT($srcdir/popt)
     # popt_OBJS gets appended to distccd object list
     BUILD_POPT='$(popt_OBJS)'
-    CPPFLAGS="$CPPFLAGS -I$srcdir/popt"
+    POPT_INCLUDES="$srcdir/popt"
 else
     LIBS="$LIBS -lpopt"
     AC_MSG_RESULT(no)
@@ -335,7 +335,13 @@ AC_TYPE_SIGNAL
 
 ########################################################################
 # Checks for library functions, using libraries discovered above
-CPPFLAGS="$CPPFLAGS -I$srcdir/src"
+
+# The line below was commented out: it should not be necessary for the
+# AC_CHECK_FUNCS, which link against libraries on the host. For the subsequent
+# explicit compilation tests below, no distcc libraries are used.
+# TODO(klarlund): remove the line.
+
+# CPPFLAGS="$CPPFLAGS -I$srcdir/src"
 
 AC_CHECK_FUNCS([getpagesize])
 AC_CHECK_FUNCS([sendfile setsid flock lockf hstrerror strerror setuid setreuid])
@@ -451,6 +457,7 @@ AC_SUBST(docdir)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
+AC_SUBST(POPT_INCLUDES)
 AC_SUBST(BUILD_POPT)
 AC_SUBST(GNOME_BIN)
 AC_DEFINE_UNQUOTED(GNU_HOST, ["$host"], [Your gnu-style host triple])

@@ -24,7 +24,7 @@
 /* pump.c - Transfer of bulk data (source, object code) */
 
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

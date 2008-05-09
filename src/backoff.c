@@ -27,7 +27,7 @@
  * Keep track of hosts which are, or are not, usable.
  **/
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>

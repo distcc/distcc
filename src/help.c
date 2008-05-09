@@ -25,7 +25,7 @@
                      * get along without it.                -- Dilbert
                      */
 
-#include "config.h"
+#include <config.h>
 
 
 #include <stdio.h>

@@ -25,7 +25,7 @@
                          * never had a reason until now"
                          *              -- mbp                        */
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>
