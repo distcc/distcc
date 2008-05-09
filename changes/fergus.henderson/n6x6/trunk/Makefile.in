@@ -831,6 +831,10 @@ installcheck:
 #
 # This uses distcc from your PATH and (for the first test)
 # may use DISTCC_HOSTS from your environment or /etc/distcc/hosts.
+#
+# This test might fail if the --allow options passed to distccd
+# (which may be set in the /etc/distcc/clients.allow file)
+# do not include 127.0.0.1.
 daemon-installcheck:
 	mkdir -p _testtmp/daemon-installcheck && \
 	    cd _testtmp/daemon-installcheck && \
