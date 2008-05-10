@@ -170,7 +170,7 @@ static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
     }
 }
 #else
-#warning "Please write a sendfile implementation for this system"
+// Please write a sendfile implementation for your system!
 static ssize_t sys_sendfile(int UNUSED(ofd), int UNUSED(ifd),
                             off_t *UNUSED(offset), size_t UNUSED(size))
 {
@@ -178,7 +178,7 @@ static ssize_t sys_sendfile(int UNUSED(ofd), int UNUSED(ifd),
     errno = ENOSYS;
     return -1;
 }
-#endif /* !(__FreeBSD__) && !def(linux) */
+#endif /* !(__FreeBSD__) && !def(linux) && ... */
 
 
 /*
@@ -203,25 +203,24 @@ dcc_pump_sendfile(int ofd, int ifd, size_t size)
 
         sent = sys_sendfile(ofd, ifd, &offset, size);
         if (sent == -1) {
-            if ((errno == ENOSYS || errno == EINVAL || errno == ENOTSOCK)
-                && offset == 0) {
-                /* The offset==0 tests is because we may be part way through
-                 * the file.  We can't just naively go back to read/write
-                 * because sendfile() does not update the file pointer: we
-                 * would need to lseek() first.  That case is not handled at
-                 * the moment because it's unlikely that sendfile() would
-                 * suddenly be unsupported while we're using it.  A failure
-                 * halfway through probably indicates a genuine error.*/
-
-                rs_log_info("decided to use read/write rather than sendfile");
-                return dcc_pump_readwrite(ofd, ifd, size);
-            } else if (errno == EAGAIN) {
+            if (errno == EAGAIN) {
                 /* Sleep until we're able to write out more data. */
                 if ((ret = dcc_select_for_write(ofd, dcc_io_timeout)) != 0)
                     return ret;
                 rs_trace("select() returned, continuing to write");
             } else if (errno == EINTR) {
                 rs_trace("sendfile() interrupted, continuing");
+            } else if (offset == 0) {
+                /* The offset==0 tests is because we may be part way through
+                 * the file.  We can't just naively go back to read/write
+                 * because sendfile() does not update the file pointer: we
+                 * would need to lseek() first.  That case is not handled at
+                 * the moment because it's unlikely that sendfile() would
+                 * suddenly be unsupported while we're using it.  A failure
+                 * halfway through probably indicates a genuine error.
+                 */
+                rs_log_info("decided to use read/write rather than sendfile");
+                return dcc_pump_readwrite(ofd, ifd, size);
             } else {
                 rs_log_error("sendfile failed: %s", strerror(errno));
                 return EXIT_IO_ERROR;
