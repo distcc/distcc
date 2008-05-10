@@ -320,8 +320,10 @@ Realpath(PyObject *dummy, PyObject *args) {
   UNUSED(dummy);
   if (!PyArg_ParseTuple(args, "s", &in))
     return NULL;
-  /* Follow instructions in GNU libc manual; also, we try to explictly allocate
-     if possible -- otherwise the code FreeBSD will make trouble. */
+  /* We explictly allocate memory for 'resolved' if possible -- otherwise,
+     FreeBSD will make trouble because it does not accept passing NULL as the
+     second parameter (which is preferred if PATH_MAX is not defined, see
+     instructions in GNU libc manual for 'realpath'). */
   #ifdef PATH_MAX
   resolved = (char *) calloc((size_t) PATH_MAX + 1, sizeof (char));
   #else
