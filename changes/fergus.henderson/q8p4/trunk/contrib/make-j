@@ -1,0 +1,21 @@
+#! /bin/sh
+
+# make-j script from Alexandre Oliva <aoliva@redhat.com> for use with distcc
+
+# Tests which machines are up, and runs Make with concurrency set
+# appropriately.
+
+hostlist=$DISTCC_HOSTS
+distcc_port=4200
+DISTCC_HOSTS=
+count=0
+for h in $hostlist; do
+  echo trying $h... >&2
+  if test "x$h" = xlocalhost || nc -z $h $distcc_port; then
+    echo added $h... >&2
+    DISTCC_HOSTS=`echo $DISTCC_HOSTS $h` # remove leading blank
+    count=`expr $count + 1`
+  fi
+done
+export DISTCC_HOSTS
+exec make -j $count ${1+"$@"}
