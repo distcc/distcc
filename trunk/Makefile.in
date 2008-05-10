@@ -924,7 +924,7 @@ distclean: distclean-autoconf clean
 ######################################################################
 ## MAINTAINER targets
 
-.PHONY: upload-man upload-dist
+.PHONY: upload-man upload-dist rpm deb install-deb
 
 upload-man: $(man_HTML)
 	rsync -avz $(man_HTML) \
@@ -936,18 +936,15 @@ upload-dist: alldist
 	  `find . -name '*.tar.gz' -o -name '*.tar.bz2' \
 	          -o -name '*.rpm' -o -name '*.deb'`
 
-.PHONY: rpm
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
 	cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
 
 # This uses the output of 'make rpm' to convert rpm files to deb files
-.PHONY: deb
 deb: rpm packaging/deb.sh
 	cd packaging && ./deb.sh *.rpm
 
-.PHONY: install-deb
+# We copy .deb files to /tmp to avoid problems with NFS root_squash.
 install-deb: deb
-	# Copy .deb files to /tmp to avoid problems with NFS root_squash
 	tmpdir=`mktemp -d /tmp/distcc-install-deb-XXXXXX` && \
 	cp packaging/*.deb $$tmpdir && \
 	cd "$$tmpdir" && \
