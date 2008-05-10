@@ -786,8 +786,8 @@ verify-binaries-installcheck:
 # Lookup distcc programs to be checked in $(DISTCC_INSTALLATION).  The
 # check_PROGRAMS binaries, however, are to be found in $(builddir).
 distcc-installcheck: $(check_PROGRAMS)
-	PATH="$(DISTCC_INSTALLATION):`cd $(builddir) && pwd`:\
-$(RESTRICTED_PATH)" \
+	PATH="$(DISTCC_INSTALLATION)":\
+`cd "$(builddir)" && pwd`:"$(RESTRICTED_PATH)" \
 	  TESTDISTCC_OPTS="$(TESTDISTCC_OPTS)" \
 	  $(MAKE) maintainer-check-no-set-path
 
