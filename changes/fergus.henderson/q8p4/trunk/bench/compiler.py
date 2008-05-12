@@ -27,7 +27,7 @@ class CompilerSpec:
     Used to define different situations such as local compilation, and
     various degrees of parallelism."""
 
-    def __init__(self, cc='gcc', cxx='c++', make_opts='',
+    def __init__(self, cc='cc', cxx='c++', make_opts='',
                  pump_cmd='', num_hosts=1, host_opts='',
                  name=None):
         self.cc = cc
