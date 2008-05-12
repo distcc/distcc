@@ -60,6 +60,8 @@ def parse_opt(optarg):
     where, hosts, jobs = optarg.split(',')
     if hosts.startswith("h"):
       hosts = int(hosts[1:])
+      if not os.getenv("DISTCC_HOSTS"):
+        raise ValueError, "You must set DISTCC_HOSTS before running benchmarks"
       max_hosts = buildutil.count_hosts(os.getenv("DISTCC_HOSTS"))
       if hosts > max_hosts:
         print ("Warning: can't use %d hosts: DISTCC_HOSTS only has %d" %

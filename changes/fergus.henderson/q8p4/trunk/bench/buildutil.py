@@ -49,7 +49,7 @@ def rm_files(file_list):
 
 def count_hosts(hosts):
     """Parse a distcc Hosts Specification and count the number of hosts."""
-    num_hosts=0
+    num_hosts = 0
     for host in hosts.split():
       if host == '+zeroconf':
         raise ValueError, "Can't count hosts when +zeroconf is in DISTCC_HOSTS"
@@ -72,8 +72,8 @@ def tweak_hosts(hosts, max_hosts, opts):
     Returns:
       the new hosts specification; a string.
     """
-    num_hosts=0
-    hosts_list=[]
+    num_hosts = 0
+    hosts_list = []
     for host in hosts.split():
       if host == '+zeroconf':
         raise ValueError, "Can't limit hosts when +zeroconf in DISTCC_HOSTS"

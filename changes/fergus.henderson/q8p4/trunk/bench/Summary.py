@@ -56,7 +56,7 @@ class Summary:
 
 """
         print "Date: ", time.ctime()
-        hosts=os.getenv('DISTCC_HOSTS')
+        hosts = os.getenv('DISTCC_HOSTS')
         print "DISTCC_HOSTS: %s" % `hosts`
         print "Total hosts: %d" % buildutil.count_hosts(hosts)
         sys.stdout.flush()
