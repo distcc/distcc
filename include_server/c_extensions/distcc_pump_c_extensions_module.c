@@ -314,22 +314,45 @@ static /* const */ char Realpath_doc__[] =
 static PyObject *
 Realpath(PyObject *dummy, PyObject *args) {
   const char *in;
+
+  /* We explictly allocate memory for the output 'resolved' of 'realpath' --
+     otherwise, some systems will make trouble because they do not accept
+     passing the second argument NULL (as GNU does) for automatic buffer
+     allocation. The glib function 'realpath' comes with the warning to not use
+     it because it's difficult to predict the size of the output.  We need the
+     function, however, in its C version --- it's much, much faster than the
+     Python implementation. (We measured about a factor 20 under Linux.) */
+# if defined (PATH_MAX)
+#   define DISTCC_PUMP_PATH_MAX PATH_MAX
+# elif defined (MAXPATHLEN)
+#   define DISTCC_PUMP_PATH_MAX MAXPATHLEN
+# else
+#   define DISTCC_PUMP_PATH_MAX 4096  // seems conservative for max filename len!
+# endif
+  char resolved[DISTCC_PUMP_PATH_MAX];
+# undef DISTCC_PUMP_PATH_MAX
+
   char *res;
   PyObject *result_str;
-  
+
   UNUSED(dummy);
   if (!PyArg_ParseTuple(args, "s", &in))
     return NULL;
-  res = realpath(in, NULL);
+
+  res = realpath(in, resolved);
   if (res) {
+    /* On Solaris this result may be a relative path, if the argument was
+       relative. Fail hard if this happens. */
+    assert(res[0] == '/');
     result_str = PyString_FromStringAndSize(res, strlen(res));
     if (result_str == NULL)
       return PyErr_NoMemory();
     return result_str;
   } 
-  else 
+  else {
     return PyString_FromStringAndSize(in, strlen(in));
-} 
+  }
+}
 
 
 
