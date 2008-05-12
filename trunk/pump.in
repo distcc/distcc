@@ -277,7 +277,7 @@ StartIncludeServer() {
 ShutDown() {
   # Always -- at exit -- shut down include_server and remove $socket_dir
   if [ "$include_server_pid" ] && \
-     ps --pid "$include_server_pid" > /dev/null; then
+     ps -p "$include_server_pid" > /dev/null; then
     echo '__________Shutting down distcc-pump include server'
     kill $include_server_pid
   fi
