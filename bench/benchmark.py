@@ -169,7 +169,7 @@ def main():
         elif opt == '--cxx':
             opt_cxx = optarg
         elif opt == '--compiler' or opt == '-c':
-            set_compilers.append(compiler.parse_opt_compiler(optarg,
+            set_compilers.append(compiler.parse_compiler_opt(optarg,
                                                              cc=opt_cc,
                                                              cxx=opt_cxx))
         elif opt == '-n':
