@@ -27,7 +27,7 @@ class CompilerSpec:
     Used to define different situations such as local compilation, and
     various degrees of parallelism."""
 
-    def __init__(self, cc='cc', cxx='c++', make_opts='',
+    def __init__(self, cc, cxx, make_opts='',
                  pump_cmd='', num_hosts=1, host_opts='',
                  name=None):
         self.cc = cc
@@ -41,19 +41,19 @@ class CompilerSpec:
                              self.make_opts).replace(' ', '_')
 
 
-def default_compilers():
-    return [parse_opt('local,h1,j1'),
-            parse_opt('dist,h10,j20'),
-            parse_opt('dist,h10,j40'),
-            parse_opt('pump,h10,j20'),
-            parse_opt('pump,h10,j40'),
+def default_compilers(cc, cxx):
+    return [parse_compiler_opt('local,h1,j1', cc, cxx),
+            parse_compiler_opt('dist,h10,j20', cc, cxx),
+            parse_compiler_opt('dist,h10,j40', cc, cxx),
+            parse_compiler_opt('pump,h10,j20', cc, cxx),
+            parse_compiler_opt('pump,h10,j40', cc, cxx),
             ]
 
-def parse_opt(optarg):
-    """Parse command-line specification of a compiler
+def parse_compiler_opt(optarg, cc, cxx):
+    """Parse command-line specification of a compiler (-c/--compiler).
 
     XXX: I don't really know what the best syntax for this is.  For
-    the moment, it is "local", "dist", or "pump", followed by ",h"
+    the moment, it is "local", "dist", "lzo", or "pump", followed by ",h"
     and the number of hosts to use, followed by ",j" and the number
     of jobs to use (for the -j option to make).
     """
@@ -79,27 +79,27 @@ def parse_opt(optarg):
                          % `hosts`)
     if where == 'local':
         return CompilerSpec(name='local_%02d' % jobs,
-                            cc='cc',
-                            cxx='c++',
+                            cc=cc,
+                            cxx=cxx,
                             num_hosts=1,
                             make_opts='-j%d' % jobs)
     elif where == 'dist':
         return CompilerSpec(name='dist_h%02d_j%02d' % (hosts, jobs),
-                            cxx='distcc c++',
-                            cc='distcc cc',
+                            cc='distcc ' + cc,
+                            cxx='distcc ' + cxx,
                             num_hosts=hosts,
                             make_opts='-j%d' % jobs)
     elif where == 'lzo':
         return CompilerSpec(name='lzo_h%02d_j%02d' % (hosts, jobs),
-                            cxx='distcc c++',
-                            cc='distcc cc',
+                            cc='distcc ' + cc,
+                            cxx='distcc ' + cxx,
                             num_hosts=hosts,
                             host_opts=",lzo",
                             make_opts='-j%d' % jobs)
     elif where == 'pump':
         return CompilerSpec(name='pump_h%02d_j%02d' % (hosts, jobs),
-                            cxx='distcc c++',
-                            cc='distcc cc',
+                            cc='distcc ' + cc,
+                            cxx='distcc ' + cxx,
                             pump_cmd='pump ',
                             num_hosts=hosts,
                             host_opts=",cpp,lzo",

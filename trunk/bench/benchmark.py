@@ -111,15 +111,27 @@ By default, all known projects are built.
 Options:
   --help                     show brief help message
   --list-projects            show defined projects
-  -c, --compiler=COMPILER    specify one compiler to use
+  --cc=PATH                  specify base value of CC to pass to configure
+  --cxx=PATH                 specify base value of CXX to pass to configure
+  -c, --compiler=COMPILER    specify one compiler to use; format is
+                             {local|distcc|lzo|pump},h<NUMHOSTS>,j<NUMJOBS>
   -n N                       repeat compilation N times
   -a, --actions=ACTIONS      comma-separated list of action phases
                              to perform
 
-Compilers can be specified as either "local,N" to run N copies of gcc,
-or dist,N to run N copies of distcc.  Multiple -c options specify
-different scenarios to measure.  The default is to run a nonparallel
-local compile and a parallel distributed compile.
+The C and C++ compiler versions used can be set with the --cc and --cxx
+options.  These must precede any -c/--compiler options.
+
+Use of distcc features is set with the -c/--compiler option.  The argument
+to -c/--compiler has three components, separated by commas.  The first
+component specifies which distcc features to enabled: "local" means
+run cc locally, "distcc" means use plain distcc, "lzo" means enabled
+compression, and "pump" means to enable pump mode and compression.
+The second component specifies how many distcc hosts to use.  The third
+component specifies how many jobs to run (the -j/--jobs option to "make").
+Multiple -c/--compiler options specify different scenarios to measure.
+The default is to measure a few reasonable scenarios.
+
 """
 actions.action_help()
 
@@ -135,8 +147,11 @@ def main():
     """Run the benchmark per arguments"""
     sum = Summary()
     options, args = getopt(sys.argv[1:], 'a:c:n:',
-                           ['list-projects', 'actions=', 'help', 'compiler='])
+                           ['list-projects', 'actions=', 'help', 'compiler=',
+                            'cc=', 'cxx='])
     opt_actions = actions.default_actions
+    opt_cc = 'cc'
+    opt_cxx = 'cxx'
     set_compilers = []
     opt_repeats = 1
 
@@ -149,13 +164,19 @@ def main():
             return
         elif opt == '--actions' or opt == '-a':
             opt_actions = actions.parse_opt_actions(optarg)
+        elif opt == '--cc':
+            opt_cc = optarg
+        elif opt == '--cxx':
+            opt_cxx = optarg
         elif opt == '--compiler' or opt == '-c':
-            set_compilers.append(compiler.parse_opt(optarg))
+            set_compilers.append(compiler.parse_opt_compiler(optarg,
+                                                             cc=opt_cc,
+                                                             cxx=opt_cxx))
         elif opt == '-n':
             opt_repeats = int(optarg)
 
     if not set_compilers:
-        set_compilers = compiler.default_compilers()
+        set_compilers = compiler.default_compilers(cc=opt_cc, cxx=opt_cxx)
 
     # Find named projects, or run all by default
     if args:
@@ -173,4 +194,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
