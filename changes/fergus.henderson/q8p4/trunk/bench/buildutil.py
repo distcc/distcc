@@ -53,7 +53,9 @@ def count_hosts(hosts):
     for host in hosts.split():
       if host == '+zeroconf':
         raise ValueError, "Can't count hosts when +zeroconf is in DISTCC_HOSTS"
-      if host == '--randomize' or host.startswith('--localslots'):
+      if host.startswith('-'):
+        # Don't count options such as '--randomize', '--localslots=N',
+        # or '--localslots_cpp=N' as hosts.
         continue
       num_hosts += 1
     return num_hosts
@@ -77,7 +79,7 @@ def tweak_hosts(hosts, max_hosts, opts):
         raise ValueError, "Can't limit hosts when +zeroconf in DISTCC_HOSTS"
       if host.startswith('-'):
         # Don't count options such as '--randomize', '--localslots=N',
-        # or '--localslots_cpu=N' as hosts; but keep them in the host list.
+        # or '--localslots_cpp=N' as hosts; but keep them in the host list.
         hosts_list.append(host)
         continue
       else:

@@ -43,22 +43,10 @@ class CompilerSpec:
 
 def default_compilers():
     return [parse_opt('local,h1,j1'),
-            parse_opt('dist,h16,j8'),
-            parse_opt('dist,h16,j16'),
-            parse_opt('dist,h16,j32'),
-            parse_opt('dist,h16,j64'),
-            parse_opt('pump,h16,j8'),
-            parse_opt('pump,h16,j16'),
-            parse_opt('pump,h16,j32'),
-            parse_opt('pump,h16,j64'),
-            parse_opt('dist,h32,j8'),
-            parse_opt('dist,h32,j16'),
-            parse_opt('dist,h32,j32'),
-            parse_opt('dist,h32,j64'),
-            parse_opt('pump,h32,j8'),
-            parse_opt('pump,h32,j16'),
-            parse_opt('pump,h32,j32'),
-            parse_opt('pump,h32,j64'),
+            parse_opt('dist,h10,j20'),
+            parse_opt('dist,h10,j40'),
+            parse_opt('pump,h10,j20'),
+            parse_opt('pump,h10,j40'),
             ]
 
 def parse_opt(optarg):
