@@ -535,6 +535,7 @@ class DotD_Case(SimpleDistCC_Case):
 #         ("foo.c -o hello.D -MD -MT tootoo", "hello.*d", 1, "tootoo"),
           ("foo.c -o hello. -MD -MT tootoo",  "hello.*d", 1, "tootoo"),
           ("foo.c -o hello.o -MD -MT tootoo", "hello.*d", 1, "tootoo"),
+          ("foo.c -o hello.o -MD -MF foobar", "foobar", 1, None),
            ]
 
         def _eval(out):
