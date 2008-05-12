@@ -166,7 +166,7 @@ PrintIncludeServerStatusMessage() {
 }
 
 Announce() {
-  echo "__________Using distcc-pump from $(readlink -f $DISTCC_LOCATION)"
+  echo "__________Using distcc-pump from $DISTCC_LOCATION"
 }
 
 # Starts up the include server.  Sets $socket, $socket_dir, and
