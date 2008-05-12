@@ -92,7 +92,7 @@ def _RaiseNotImplemented(name, comment=''):
 # Below, ps is a ParseState object.
 # TODO(csilvers): check for arg[0] == '=' for iquote, isystem
 CPP_OPTIONS_MAYBE_TWO_WORDS = {
-  '-MF':            lambda ps, arg: _RaiseNotImplemented('-MF'),
+  '-MF':            lambda ps, arg: None,
   '-MT':            lambda ps, arg: None,
   '-MQ':            lambda ps, arg: None,
   '-include':       lambda ps, arg: ps.include_files.append(arg),
@@ -361,7 +361,7 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, compiler_defaults,
         except IndexError:
           raise NotCoveredError("No argument found for option '%s'" % args[i])
       continue
-    
+
     # Deal with the have-arg options with the arg as the 2nd word ("-MF foo").
     action = CPP_OPTIONS_TWO_WORDS.get(args[i])
     if action:
