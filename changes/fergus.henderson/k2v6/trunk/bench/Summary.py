@@ -18,6 +18,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 
+import buildutil
+
 class Summary:
     """Stores and prints results of building different things"""
 
@@ -54,7 +56,9 @@ class Summary:
 
 """
         print "Date: ", time.ctime()
-        print "DISTCC_HOSTS: %s" % `os.getenv('DISTCC_HOSTS')`
+        hosts = os.getenv('DISTCC_HOSTS')
+        print "DISTCC_HOSTS: %s" % `hosts`
+        print "Total hosts: %d" % buildutil.count_hosts(hosts)
         sys.stdout.flush()
         os.system("uname -a")
 
@@ -68,7 +72,10 @@ class Summary:
             else:
                 mean = statistics.mean(times)
                 sd = statistics.std(times)
-                print "%8.4fs" % mean,
+                if mean is None:
+                    print "%9s " % "n/a",
+                else:
+                    print "%8.4fs " % mean,
                 if sd is None:
                     print "%9s" % "n/a"
                 else:

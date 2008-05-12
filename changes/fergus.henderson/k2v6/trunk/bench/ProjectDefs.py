@@ -84,7 +84,7 @@ Project(url='http://ibiblio.org/pub/linux/system/emulators/wine/wine-0.9.4.tar.b
         md5='73205d83a5612a43441a8532683c0434  wine-0.9.4.tar.bz2',
         ).register()
 
-Project(url='http://public.planetmirror.com.au/pub/gnu/hello/hello-2.1.1.tar.gz',
+Project(url='http://ftp.gnu.org/gnu/hello/hello-2.1.1.tar.gz',
         md5='70c9ccf9fac07f762c24f2df2290784d *hello-2.1.1.tar.gz',
         ).register()
 

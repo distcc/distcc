@@ -170,10 +170,11 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
     def CheckGeneration(lst, expected):
       for f_name in lst:
-        self.failUnless(re.match(r"/dev/shm/.+[.]include_server[-][0-9]+[-]%s"
-                                 % expected,
-                                 f_name),
-                        f_name)
+        self.failUnless(
+            re.match(r"%s/.+[.]include_server[-][0-9]+[-]%s"
+                     % (basics.client_tmp, expected),
+                     f_name),
+            f_name)
 
     def GetFileNamesFromAbsLzoName(lst):
       """Transform lists with elements like:

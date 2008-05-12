@@ -1125,19 +1125,22 @@ class BadInclude_Case(Compilation_Case):
 
     def runtest(self):
         if _server_options.find('cpp') != -1:
-            #  With gcc, adding -MMD makes the compiler give a warning, instead
-            # of the normal error message, when encountering a non-existent
-            # include file specified in angle brackets.  In pump mode, the
-            # distcc client adds -MMD to the gcc options.  FIXME(klarlund): this
-            # is arguably a bug in gcc, and it is exacerbated by distcc's pump
-            # mode because we always pass -MMD, even when the user didn't.
-            # TODO(klarlund): change expected_status back to 1 once that FIXME
-            # is fixed.
-            expected_status = 0
+            # Annoyingly, different versions of gcc are inconsistent
+            # in how they treat a non-existent #include file when
+            # invoked with "-MMD": some versions treat it as an error
+            # (rc 1), some as a warning (rc 0).  When distcc is
+            # responsible for preprocessing (_server_options includes
+            # 'cpp'), we need to figure out which our gcc does, in
+            # order to verify distcc is doing the same thing.
+            # FIXME(klarlund): this is arguably a bug in gcc, and it
+            # is exacerbated by distcc's pump mode because we always
+            # pass -MMD, even when the user didn't.  TODO(klarlund):
+            # change error_rc back to 1 once that FIXME is fixed.
+            error_rc, _, _ = self.runcmd_unchecked(_gcc + " -MMD -E testtmp.c")
         else:
-            expected_status = 1
-        self.runcmd(self.distcc() +
-                    _gcc + " -o testtmp.o -c testtmp.c", expected_status)
+            error_rc = 1
+        self.runcmd(self.distcc() + _gcc + " -o testtmp.o -c testtmp.c",
+                    error_rc)
 
 
 class PreprocessPlainText_Case(Compilation_Case):
@@ -1242,14 +1245,19 @@ class AbsSourceFilename_Case(CompileHello_Case):
                 % _ShellSafe(os.getcwd()))
     
 
-class ThousandFold_Case(CompileHello_Case):
-    """Try repeated simple compilations"""
+class HundredFold_Case(CompileHello_Case):
+    """Try repeated simple compilations.
+
+    This used to be a ThousandFold_Case -- but that slowed down testing
+    significantly.  It's unclear that testing a 1000 times is much better than
+    doing it a 100 times.
+    """
+
     def daemon_lifetime(self):
         return 120
     
     def runtest(self):
-        # may take about a minute or so
-        for unused_i in xrange(1000):
+        for unused_i in xrange(100):
             self.runcmd(self.distcc()
                         + _gcc + " -o testtmp.o -c testtmp.c")
 
@@ -1747,7 +1755,7 @@ tests = [
          AbsSourceFilename_Case,
          # slow tests below here
          Concurrent_Case,
-         ThousandFold_Case,
+         HundredFold_Case,
          BigAssFile_Case]
 
 

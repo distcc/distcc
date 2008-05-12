@@ -46,3 +46,45 @@ def rm_files(file_list):
     for f in file_list:
         if os.path.exists(f):
             os.unlink(f)
+
+def count_hosts(hosts):
+    """Parse a distcc Hosts Specification and count the number of hosts."""
+    num_hosts = 0
+    for host in hosts.split():
+      if host == '+zeroconf':
+        raise ValueError, "Can't count hosts when +zeroconf is in DISTCC_HOSTS"
+      if host.startswith('-'):
+        # Don't count options such as '--randomize', '--localslots=N',
+        # or '--localslots_cpp=N' as hosts.
+        continue
+      num_hosts += 1
+    return num_hosts
+
+def tweak_hosts(hosts, max_hosts, opts):
+    """
+    Parse a distcc Hosts Specification and construct a new one
+    that has at most 'max_hosts' hosts in it, appending 'opts'
+    to each host in the Hosts Specification.
+
+    Arguments:
+      hosts: the original hosts specification; a string.
+      max_hosts: the number of hosts to allow; an integer.
+    Returns:
+      the new hosts specification; a string.
+    """
+    num_hosts = 0
+    hosts_list = []
+    for host in hosts.split():
+      if host == '+zeroconf':
+        raise ValueError, "Can't limit hosts when +zeroconf in DISTCC_HOSTS"
+      if host.startswith('-'):
+        # Don't count options such as '--randomize', '--localslots=N',
+        # or '--localslots_cpp=N' as hosts; but keep them in the host list.
+        hosts_list.append(host)
+        continue
+      else:
+        hosts_list.append(host + opts)
+      num_hosts += 1
+      if num_hosts >= max_hosts:
+        break
+    return ' '.join(hosts_list)
