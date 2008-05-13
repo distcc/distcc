@@ -21,6 +21,7 @@ __author__ = "Nils Klarlund"
 
 import os
 import os.path
+import tempfile
 import unittest
 
 import basics
@@ -34,32 +35,52 @@ class BasicsTest(unittest.TestCase):
   def tearDown(self):
     pass
 
-  def test_InitializeClientTmp(self):
+  def test_ClientRootKeeper(self):
     os.environ['DISTCC_CLIENT_TMP'] = 'to/be'
-    self.assertRaises(SystemExit, basics.InitializeClientTmp)
+    self.assertRaises(SystemExit, basics.ClientRootKeeper)
     os.environ['DISTCC_CLIENT_TMP'] = '/to/be/or'
-    self.assertRaises(SystemExit, basics.InitializeClientTmp)
+    self.assertRaises(SystemExit, basics.ClientRootKeeper)
     try:
-      os_mkdir = os.mkdir
+      tempfile_mkdtemp = tempfile.mkdtemp
+      os_makedirs = os.makedirs
 
-      def Mock_os_mkdir(f, *args):
+      def Mock_tempfile_mkdtemp(pat, dir):
+        self.assert_((pat, dir)
+                     in
+                     [('.%s-%s-%d' %
+                       (basics.ClientRootKeeper.INCLUDE_SERVER_NAME,
+                        os.getpid(), generation),
+                       prefix)
+                      for generation, prefix in
+                      [(1,'/to/be'), (2, '/to')]])
+        return (dir == '/to/be' and '/to/be/xxxxxx'
+                or dir == '/to' and '/to/xxxxxxx')
+      
+      def Mock_os_makedirs(f, *unused_args):
         if not f.startswith('/to/'):
           raise Exception, f
-      os.mkdir = Mock_os_mkdir
+        
+      tempfile.mkdtemp = Mock_tempfile_mkdtemp
+      os.makedirs = Mock_os_makedirs
+
       
       os.environ['DISTCC_CLIENT_TMP'] = '/to/be'
-      basics.InitializeClientTmp()
-      basics.InitializeClientRoot(1)
-      self.assertEqual(os.path.dirname(basics.client_root), "/to/be")
+      client_root_keeper = basics.ClientRootKeeper()
+      client_root_keeper.ClientRootMakedir(1)
+      self.assertEqual(os.path.dirname(client_root_keeper.client_root),
+                       "/to/be")
       os.environ['DISTCC_CLIENT_TMP'] = '/to'
-      basics.InitializeClientTmp()
-      basics.InitializeClientRoot(2)
+      client_root_keeper = basics.ClientRootKeeper()
+      client_root_keeper.ClientRootMakedir(2)
+      print 'xxxxxxxxxxxx', client_root_keeper.client_root
       self.assertEqual(os.path.dirname(
-          os.path.dirname(basics.client_root)), "/to")
-      self.assertEqual(os.path.basename(basics.client_root), "padding")
+          os.path.dirname(client_root_keeper.client_root)), "/to")
+      self.assertEqual(os.path.basename(client_root_keeper.client_root),
+                       "padding")
       self.assertEqual(len(
-        [ None for ch in basics.client_root if ch == '/' ]), 3)
+        [ None for ch in client_root_keeper.client_root if ch == '/' ]), 3)
     finally:
-      os.mkdir = os_mkdir
+      tempfile.mkdtemp = tempfile_mkdtemp
+      os.makedirs = os_makedirs
     
 unittest.main()    

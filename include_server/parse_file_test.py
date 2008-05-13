@@ -33,9 +33,9 @@ class parse_file_Test(unittest.TestCase):
 
   def setUp(self):
     include_server.print_statistics = False
-    basics.InitializeClientTmp()
+    client_root_keeper = basics.ClientRootKeeper()
     include_server.write_include_closure_file = True
-    self.include_analyzer = include_analyzer.IncludeAnalyzer()
+    self.include_analyzer = include_analyzer.IncludeAnalyzer(client_root_keeper)
 
   def tearDown(self):
     pass
