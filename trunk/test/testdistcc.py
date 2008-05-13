@@ -978,6 +978,14 @@ class Gdb_Case(CompileHello_Case):
         if err != '':
             self.fail("command %s produced error:\n%s" % (`cmd`, `err`))
 
+    def runtest(self):
+        # Don't try to run the test if gdb is not installed
+        error_rc, _, _ = self.runcmd_unchecked("gdb --help")
+        if error_rc != 0:
+            raise comfychair.NotRunError ('gdb could not be found on path')
+        else:
+            CompileHello_Case.runtest (self)
+
     def checkBuiltProgram(self):
         # Run gdb and verify that it is able to correctly locate the
         # testtmp.c source file.  We write the gdb commands to a file
@@ -1208,10 +1216,15 @@ class ImplicitCompiler_Case(CompileHello_Case):
         return self.distcc() + "-o testtmp testtmp.o "
 
     def runtest(self):
-        if sys.platform != 'hp-ux10':
-            CompileHello_Case.runtest (self)
-        else:
+        if sys.platform == 'hp-ux10':
             raise comfychair.NotRunError ('HP-UX bundled C compiler non-ANSI')
+        # We can't run if cc is not installed on the system (maybe only gcc is)
+        error_rc, _, _ = self.runcmd_unchecked("cc -c testtmp.c")
+	self.runcmd_unchecked("rm -f testtmp.o")   # clean up the 'cc' output
+        if error_rc != 0:
+            raise comfychair.NotRunError ('Cannot find working "cc"')
+        else:
+            CompileHello_Case.runtest (self)
 
 
 class DashD_Case(Compilation_Case):
@@ -1773,5 +1786,14 @@ if __name__ == '__main__':
     elif sys.argv[1] == "--pump":
       _server_options = ",lzo,cpp"
       del sys.argv[1]
+
+  # Some of these tests need lots of file descriptors (especially to fork),
+  # but sometimes the os only supplies a few.  Try to raise that if we can.
+  try:
+      import resource
+      (_, hard_limit) = resource.getrlimit(resource.RLIMIT_NOFILE)
+      resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))
+  except (ImportError, ValueError):
+      pass
 
   comfychair.main(tests)
