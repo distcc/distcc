@@ -95,7 +95,7 @@ int ddc_discrepancy_filename(char **filename)
         /* Because include_server_port_suffix is a suffix of include_server_port
          * we expect to find a '/' at slash_pos in filename. */
         assert((*filename)[slash_pos] == '/');
-        strcpy(*filename + slash_pos, discrepancy_suffix);
+        (void) strcpy(*filename + slash_pos, discrepancy_suffix);
         return 0;
     } else 
         return 0;
