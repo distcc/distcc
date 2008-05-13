@@ -25,40 +25,12 @@ import glob
 import os.path
 import resource
 import signal
+import shutil
 import sys
 import tempfile
 
 
 # MANAGEMENT OF TEMPORARY LOCATIONS FOR GENERATIONS OF COMPRESSED FILES
-
-
-def _RemoveDirectoryTree(tree_top):
-  """Recursively remove everything.
-
-  Ignore filesystem errors, because this function may be called as a last resort
-  and it does its job on a best-effort basis.
-  """
-  # Copied, more or less, from Python 2.4 Library Reference.
-  if not os.access(tree_top, os.W_OK):
-    return
-  for root, dirs, files in os.walk(tree_top, topdown=False):
-    for name in files:
-      try:
-        os.remove(os.path.join(root, name))
-      except (IOError, OSError):  # should not happen
-        pass
-    for name in dirs:
-      try:
-        if os.path.islink(os.path.join(root, name)):
-          os.remove(os.path.join(root, name))
-        else:
-          os.rmdir(os.path.join(root, name))
-      except (IOError, OSError):  # should not happen
-          pass
-    try:
-      os.rmdir(root)
-    except (IOError, OSError):  # should not happen
-      pass
 
 
 class ClientRootKeeper(object):
@@ -142,8 +114,8 @@ class ClientRootKeeper(object):
     """
     if not pid:
       pid = os.getpid()
-    for client_root_ in self.Glob(str(pid)):
-      _RemoveDirectoryTree(client_root_)
+    for client_root in self.Glob(str(pid)):
+      shutil.rmtree(client_root, ignore_errors=True)
 
   def CleanOutOthers(self):
     """Search for left-overs from include servers that have passed away."""
