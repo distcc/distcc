@@ -210,7 +210,7 @@ def _CleanOutClientRoots(client_root):
   # Determine all generations of this directory.
   hyphen_ultimate_position = client_root.rfind('-')
   client_roots = glob.glob("%s-*" % client_root[:hyphen_ultimate_position])
-  assert client_root in client_roots
+  assert client_root in client_roots, (client_root, client_roots)
   for client_root_ in client_roots:
     _RemoveDirectoryTree(client_root_)
 
