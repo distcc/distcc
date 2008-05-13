@@ -21,6 +21,7 @@
 
 __author__ = 'Nils Klarlund'
 
+import glob
 import os.path
 import resource
 import signal
@@ -28,69 +29,82 @@ import sys
 import tempfile
 
 
-# MISCELLANEOUS CONSTANTS
-
-# Place for creation of temporary directories.
-client_tmp = None
-# And, the current such temporary directory.
-client_root = None
-
-# This constant is embedded in names of client root directories.
-INCLUDE_SERVER_NAME = 'include_server'
+# TEMPORARY LOCATIONS FOR GENERATIONS OF COMPRESSED FILES
 
 
-def InitializeClientTmp():
-  """Determine the tmp directory to use.
+class ClientRootKeeper(object):
+  """Determine the tmp directory to use for compressed files.
 
   Use the RAM disk-like /dev/shm as default place to store compressed files if
-  available.
+  available.  The protocol between the include server and distcc client
+  stipulates that the top three directories constitute the prefix prepended to
+  absolute file paths.
+
+  Instance vars:
+    client_tmp: a path, the place for creation of temporary directories.
+    client_root: a path, the current such temporary directory
+
+  A typical client root looks like:
+
+  -  /tmp/tmpBDoZQV.include_server-6642-13/padding, or
+  -  /dev/shm/tmpBDoZQV.include_server-6642-19
+
+  Note that each path has exactly three directory components to it.  This is an
+  invariant.  Some client roots are padded with '/padding' to satisfy the
+  invariant.
   """
-
-  global client_tmp
-  if 'DISTCC_CLIENT_TMP' in os.environ:
-    client_tmp = os.environ['DISTCC_CLIENT_TMP']
-  elif os.path.isdir('/dev/shm') and os.access('/dev/shm',
-                                               os.X_OK + os.W_OK + os.R_OK):
-    client_tmp = '/dev/shm'
-  else:
-    client_tmp = '/tmp'
-  if not client_tmp or client_tmp[0] != '/':
-    sys.exit("""DISTCC_CLIENT_TMP must start with '/'.""")
-  client_tmp = client_tmp.rstrip('/')
-  # The protocol between the include server and distcc client stipulates
-  # that the top three directories constitute the prefix prepended to absolute
-  # file paths. To have room to make a temp directory, we'll need to have less
-  # than two levels at this point.
-  # Note: '/a/b'.split('/') == ['', 'a', 'b'].
-  if len(client_tmp.split('/')) > 3:
-    sys.exit('DISTCC_CLIENT_TMP must have at most two directory levels.')
-
-
-def InitializeClientRoot(generation):
-  """Make a client directory for a generation of compressed files.
   
-  Arguments:
-    generation: a natural number, usually 1 or slightly bigger; this number,
-      minus 1, indicates how many times a reset of the caches has taken place.
-  """
-  assert client_tmp
-  global client_root
-  try:
-    # Create a unique identifier that will never repeat. Use pid as suffix for
-    # cleanout mechanism that wipes files not associated with a running pid.
-    client_root = tempfile.mkdtemp('.%s-%s-%d' %
-                                   (INCLUDE_SERVER_NAME,
-                                    os.getpid(), generation),
-                                   dir=client_tmp)
-    number_missing_levels = 3 - len(client_tmp.split('/'))
-    # Stuff client_root path until we have exactly three levels in all.
-    for unused_i in range(number_missing_levels):
-      client_root += '/padding'
-      os.mkdir(client_root)
-  except (IOError, OSError), why:
-    sys.exit('Could not create client root directory %s: %s' %
-             (client_root, why))
-      
+  # This constant is embedded in names of client root directories.
+  INCLUDE_SERVER_NAME = 'include_server'
+
+  def __init__(self):
+    """Constructor."""
+    if 'DISTCC_CLIENT_TMP' in os.environ:
+      self.client_tmp = os.environ['DISTCC_CLIENT_TMP']
+    elif os.path.isdir('/dev/shm') and os.access('/dev/shm',
+                                                 os.X_OK + os.W_OK + os.R_OK):
+      self.client_tmp = '/dev/shm'
+    else:
+      self.client_tmp = '/tmp'
+    if not self.client_tmp or self.client_tmp[0] != '/':
+      sys.exit("""DISTCC_CLIENT_TMP must start with '/'.""")
+    self.client_tmp = self.client_tmp.rstrip('/')
+    # To have room to make a temp directory, we'll need to have less than two
+    # levels at this point.  Note: '/a/b'.split('/') == ['', 'a', 'b'].
+    if len(self.client_tmp.split('/')) > 3:
+      sys.exit('DISTCC_CLIENT_TMP must have at most two directory levels.')
+    self.number_missing_levels = 3 - len(self.client_tmp.split('/'))
+    self.client_root = None
+
+  def Glob(self, pid_expr):
+    """Glob unpadded client roots whose pid is matched by pid expression."""
+    return glob.glob('%s/*.%s-%s-*'
+                     % (self.client_tmp, self.INCLUDE_SERVER_NAME,
+                        pid_expr))
+  
+  def ClientRootMakedir(self, generation):
+    """Make a new client directory for a generation of compressed files.
+
+    Arguments:
+      generation: a natural number, usually 1 or slightly bigger; this number,
+        minus 1, indicates how many times a reset of the caches has taken place.
+    """
+    try:
+      # Create a unique identifier that will never repeat. Use pid as suffix for
+      # cleanout mechanism that wipes files not associated with a running pid.
+      client_root_before_padding = tempfile.mkdtemp(
+          '.%s-%s-%d' %
+          (self.INCLUDE_SERVER_NAME,
+           os.getpid(), generation),
+          dir=self.client_tmp)
+      self.client_root = (client_root_before_padding
+                          + '/padding' * self.number_missing_levels)
+      if not os.path.isdir(self.client_root):
+        os.makedirs(self.client_root)
+    except (IOError, OSError), why:
+      sys.exit('Could not create client root directory %s: %s' %
+               (self.client_root, why))
+
 
 # For automated emails, see also src/emaillog.h.
 DCC_EMAILLOG_WHOM_TO_BLAME = os.getenv('DISTCC_EMAILLOG_WHOM_TO_BLAME',

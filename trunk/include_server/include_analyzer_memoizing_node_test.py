@@ -35,15 +35,17 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     """Translate the indices in an include closure to their denoted strings."""
     return (
       dict((self.realpath_map.string[rp_idx],
-            [ (self.directory_map.string[dir_idx], self.includepath_map.string[ip_idx])
+            [ (self.directory_map.string[dir_idx],
+               self.includepath_map.string[ip_idx])
               for (dir_idx, ip_idx) in include_closure[rp_idx] ])
            for rp_idx in include_closure))
   
   def setUp(self):
     basics.opt_debug_pattern = 1
-    basics.InitializeClientTmp()
+    client_root_keeper = basics.ClientRootKeeper()
     self.include_analyzer = (
-      include_analyzer_memoizing_node.IncludeAnalyzerMemoizingNode())
+      include_analyzer_memoizing_node.IncludeAnalyzerMemoizingNode(
+        client_root_keeper))
 
     self.includepath_map = self.include_analyzer.includepath_map
     self.canonical_path = self.include_analyzer.canonical_path

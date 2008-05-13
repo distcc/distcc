@@ -40,20 +40,19 @@ class CompressFiles(object):
     # The realpath_map indices of files that have been compressed already.
     self.files_compressed = set([])
 
-  def Compress(self, include_closure, client_root):
+  def Compress(self, include_closure, client_root_keeper):
     """Copy files in include_closure to the client_root directory, compressing
     them as we go, and also inserting #line directives.
 
     Arguments:
       include_closure: a dictionary, see IncludeAnalyzer.RunAlgorithm
-      client_root: a directory name, see basics.py, the directory to which
-        compressed files are mirrored
+      client_root_keeper: an object as defined in basics.py
     Returns: a list of filepaths under client_root
 
     Walk through the files in the include closure. Make sure their compressed
-    images (with either .lzo or lzo.abs extension) exist under client_root. Also
-    collect all the .lzo or .lzo.abs filepaths in a list, which is the return
-    value.
+    images (with either .lzo or lzo.abs extension) exist under client_root as
+    handled by client_root_keeper. Also collect all the .lzo or .lzo.abs
+    filepaths in a list, which is the return value.
     """
     realpath_string = self.realpath_map.string
     files = [] # where we accumulate files
@@ -66,9 +65,11 @@ class CompressFiles(object):
       if len(include_closure[realpath_idx]) > 0:
         # Designate by suffix '.abs' that this file is to become known by an
         # absolute filepath through a #line directive.
-	new_filepath = "%s%s.lzo.abs" % (client_root, realpath)
+	new_filepath = "%s%s.lzo.abs" % (client_root_keeper.client_root,
+                                         realpath)
       else:
-	new_filepath = "%s%s.lzo" % (client_root, realpath)
+	new_filepath = "%s%s.lzo" % (client_root_keeper.client_root,
+                                     realpath)
       files.append(new_filepath)
       if not new_filepath in self.files_compressed:
         self.files_compressed.add(new_filepath)

@@ -90,10 +90,10 @@ class IncludeAnalyzer(object):
     self.include_dir_pairs = set([]) # the pairs (quote search list,
                                      # angle search lists)
 
-  def __init__(self, stat_reset_triggers={}):
+  def __init__(self, client_root_keeper, stat_reset_triggers={}):
     self.generation = 1
-    basics.InitializeClientRoot(self.generation)
-    self.client_root = basics.client_root
+    self.client_root_keeper = client_root_keeper
+    self.client_root_keeper.ClientRootMakedir(self.generation)
     self.stat_reset_triggers = stat_reset_triggers
     self.translation_unit = "unknown translation unit"
     self.timer = None
@@ -217,7 +217,7 @@ class IncludeAnalyzer(object):
             path)
       self.ClearStatCaches()
 
-  def DoCompilationCommand(self, cmd, currdir):
+  def DoCompilationCommand(self, cmd, currdir, client_root_keeper):
     """Parse and and process the command; then gather files and links."""
 
     self.translation_unit = "unknown translation unit"  # don't know yet 
@@ -254,7 +254,7 @@ class IncludeAnalyzer(object):
     # performance degradation for large link farms. We expect at most a
     # handful.
     links = self.mirror_path.Links()
-    files = self.compress_files.Compress(include_closure, basics.client_root)
+    files = self.compress_files.Compress(include_closure, client_root_keeper)
     realpath_map = self.realpath_map
 
     files_and_links = files + links
@@ -357,6 +357,5 @@ class IncludeAnalyzer(object):
     # But we cannot delete any such information, because slow-poke distcc
     # clients that have received earlier include manifests perhaps only now get
     # around to reading a previous generation client root directory.
-    basics.InitializeClientRoot(self.generation)
-    self.client_root = basics.client_root
+    self.client_root_keeper.ClientRootMakedir(self.generation)
     self._InitializeAllCaches()

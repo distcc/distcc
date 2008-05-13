@@ -276,9 +276,10 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
     # symbol that is being defined or redefined.
     self.parse_file.SetDefineCallback(self.support_master.InvalidateRecords)
 
-  def __init__(self, stat_reset_triggers={}):
+  def __init__(self, client_root_keeper, stat_reset_triggers={}):
     """Constructor."""
     include_analyzer.IncludeAnalyzer.__init__(self,
+                                              client_root_keeper,
                                               stat_reset_triggers)
     self._InitializeAllCachesMemoizing()
 
@@ -446,7 +447,7 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
                          dir_map.string[d_],
                          includepath_map.string[fp_]),
             currdir_idx,
-            self.client_root)
+            self.client_root_keeper.client_root)
 
     # We have fp_resolved_pair if and only if we have fp_real_idx
     assert not fp_resolved_pair or fp_real_idx
