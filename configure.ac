@@ -326,10 +326,11 @@ then
     AC_MSG_RESULT($srcdir/popt)
     # popt_OBJS gets appended to distccd object list
     BUILD_POPT='$(popt_OBJS)'
-    POPT_INCLUDES="$srcdir/popt"
+    POPT_INCLUDES='-I"$(srcdir)/popt"'
 else
     LIBS="$LIBS -lpopt"
     AC_MSG_RESULT(no)
+    POPT_INCLUDES=''
 fi
 
 
