@@ -66,12 +66,12 @@ class BasicsTest(unittest.TestCase):
       
       os.environ['DISTCC_CLIENT_TMP'] = '/to/be'
       client_root_keeper = basics.ClientRootKeeper()
-      client_root_keeper.NewClientRoot(1)
+      client_root_keeper.ClientRootMakedir(1)
       self.assertEqual(os.path.dirname(client_root_keeper.client_root),
                        "/to/be")
       os.environ['DISTCC_CLIENT_TMP'] = '/to'
       client_root_keeper = basics.ClientRootKeeper()
-      client_root_keeper.NewClientRoot(2)
+      client_root_keeper.ClientRootMakedir(2)
       print 'xxxxxxxxxxxx', client_root_keeper.client_root
       self.assertEqual(os.path.dirname(
           os.path.dirname(client_root_keeper.client_root)), "/to")

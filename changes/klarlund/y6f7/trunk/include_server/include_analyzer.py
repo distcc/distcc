@@ -93,7 +93,7 @@ class IncludeAnalyzer(object):
   def __init__(self, client_root_keeper, stat_reset_triggers={}):
     self.generation = 1
     self.client_root_keeper = client_root_keeper
-    self.client_root_keeper.NewClientRoot(self.generation)
+    self.client_root_keeper.ClientRootMakedir(self.generation)
     self.stat_reset_triggers = stat_reset_triggers
     self.translation_unit = "unknown translation unit"
     self.timer = None
@@ -357,5 +357,5 @@ class IncludeAnalyzer(object):
     # But we cannot delete any such information, because slow-poke distcc
     # clients that have received earlier include manifests perhaps only now get
     # around to reading a previous generation client root directory.
-    self.client_root_keeper.NewClientRoot(self.generation)
+    self.client_root_keeper.ClientRootMakedir(self.generation)
     self._InitializeAllCaches()

@@ -82,7 +82,7 @@ class ClientRootKeeper(object):
                      % (self.client_tmp, self.INCLUDE_SERVER_NAME,
                         pid_expr))
   
-  def NewClientRoot(self, generation):
+  def ClientRootMakedir(self, generation):
     """Make a new client directory for a generation of compressed files.
 
     Arguments:
