@@ -1195,6 +1195,7 @@ class NoDetachDaemon_Case(CompileHello_Case):
         self.pid = self.runcmd_background(cmd)
         self.add_cleanup(self.killDaemon)
         # Wait until the server is ready for connections.
+        time.sleep(0.2)   # Give distccd chance to start listening on the port 
         sock = socket.socket()
         while sock.connect_ex(('127.0.0.1', self.server_port)) != 0:
             time.sleep(0.2)
@@ -1220,7 +1221,7 @@ class ImplicitCompiler_Case(CompileHello_Case):
             raise comfychair.NotRunError ('HP-UX bundled C compiler non-ANSI')
         # We can't run if cc is not installed on the system (maybe only gcc is)
         error_rc, _, _ = self.runcmd_unchecked("cc -c testtmp.c")
-	self.runcmd_unchecked("rm -f testtmp.o")   # clean up the 'cc' output
+        self.runcmd_unchecked("rm -f testtmp.o")   # clean up the 'cc' output
         if error_rc != 0:
             raise comfychair.NotRunError ('Cannot find working "cc"')
         else:
