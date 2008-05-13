@@ -535,6 +535,7 @@ class DotD_Case(SimpleDistCC_Case):
 #         ("foo.c -o hello.D -MD -MT tootoo", "hello.*d", 1, "tootoo"),
           ("foo.c -o hello. -MD -MT tootoo",  "hello.*d", 1, "tootoo"),
           ("foo.c -o hello.o -MD -MT tootoo", "hello.*d", 1, "tootoo"),
+          ("foo.c -o hello.o -MD -MF foobar", "foobar", 1, None),
            ]
 
         def _eval(out):
@@ -1188,7 +1189,7 @@ class NoDetachDaemon_Case(CompileHello_Case):
         # Wait until the server is ready for connections.
         sock = socket.socket()
         while sock.connect_ex(('127.0.0.1', self.server_port)) != 0:
-          time.sleep(0.2)
+            time.sleep(0.2)
 
     def killDaemon(self):
         os.kill(self.pid, signal.SIGTERM)
@@ -1425,7 +1426,7 @@ class NoHosts_Case(CompileHello_Case):
         # string.
         os.environ['DISTCC_HOSTS'] = ''
         os.environ['DISTCC_LOG'] = ''
-        self.runcmd('printenv')
+        self.runcmd('env')
         msgs, errs = self.runcmd(self.compileCmd())
 
         # We expect only one message, a warning from distcc
