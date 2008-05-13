@@ -26,7 +26,7 @@ CPP = @CPP@
 # We add a few cppflags.  -Isrc is so that config.h can be found in the build
 # directory.  It is before I"$(srcdir)/src" to reflect VPATH semantics.
 CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} \
-	   -Isrc -I"$(srcdir)/src" -I"$(srcdir)/lzo" -I"$(POPT_INCLUDES)"
+	   -Isrc -I"$(srcdir)/src" -I"$(srcdir)/lzo" $(POPT_INCLUDES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
