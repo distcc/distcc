@@ -112,7 +112,7 @@ class IncludeServerTest(unittest.TestCase):
     def Expect1(txt, force, never):
       self_test.assert_(
         "Include server not covering: " +
-        "Could not find translation unit 'parse.c'" in txt)
+        "Could not find translation unit 'parse.c'" in txt, txt)
       self_test.assertEqual(never, True)
 
     mock_email_sender.expect = Expect1
@@ -138,10 +138,9 @@ class IncludeServerTest(unittest.TestCase):
     got_here = []  
 
     def Expect2(txt, force, never):
-
-      self.assert_("Include server internal error: " in txt, txt)
-      self.assert_('exceptions.AssertionError' in txt, txt)
-      self.assert_("""for translation unit 'parse.c'""" in txt, txt)
+      self_test.assert_("Include server internal error" in txt, txt)
+      self_test.assert_("exceptions.AssertionError" in txt, txt)
+      self_test.assert_("for translation unit 'parse.c'" in txt, txt)
 
       # This email should be sent.
       self_test.assertEqual(never, False)
@@ -168,7 +167,7 @@ class IncludeServerTest(unittest.TestCase):
     def Expect3(txt, force, never):
       self_test.assert_(
         "Filepath must be relative but isn't: '/love/of/my/life'."
-        in txt)
+        in txt, txt)
       # Now check that this email is scheduled to not be sent.
       self_test.assertEqual(never, True)
 
