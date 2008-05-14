@@ -704,8 +704,8 @@ include-server-maintainer-check: include-server
 	    p_base=`basename "$$p"`; \
 	    echo -n "Running: "; \
 	    echo \
-              "PYTHONPATH=$$CURDIR/$$include_server_loc $(INCLUDESERVER_PYTHON) $$p_base"; \
-	    if PYTHONPATH="$$CURDIR/$$include_server_loc" $(INCLUDESERVER_PYTHON) "$$p_base" \
+              "PYTHONPATH=$$CURDIR/$$include_server_loc:$$PYTHONPATH $(INCLUDESERVER_PYTHON) $$p_base"; \
+	    if PYTHONPATH="$$CURDIR/$$include_server_loc:$$PYTHONPATH" $(INCLUDESERVER_PYTHON) "$$p_base" \
 		 > "$$CURDIR/$(tempdir)/$$p_base.out" 2>&1; then \
 	      echo "PASS"; \
 	      rm "$$CURDIR/$(tempdir)/$$p_base.out"; \
