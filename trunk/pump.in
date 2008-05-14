@@ -251,7 +251,14 @@ StartIncludeServer() {
 
   # solaris sh's built-in test does not support -S, so we need to use
   # the binary.
-  if /usr/bin/test ! -S "$socket"; then
+  if [ -x /bin/test ]; then
+    TEST=/bin/test
+  elif [ -x /usr/bin/test ]; then
+    TEST=/usr/bin/test
+  else
+    TEST=test
+  fi
+  if $TEST ! -S "$socket"; then
     echo "__________Expected a socket at '$socket'" 1>&2
     PrintIncludeServerStatusMessage 1
     return 1
