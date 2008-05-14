@@ -215,7 +215,7 @@ AC_PROG_INSTALL
 #
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
-AC_PATH_PROGS(PYTHON, [python2.4 python-2.4 python])
+AC_PATH_PROGS(PYTHON, [python2.5 python-2.5 python2.4 python-2.4 python])
 AC_ARG_VAR(PYTHON, [Python interpreter])
 # Python 1 doesn't even support -V
 if ! "$PYTHON" -V 2>&1 | grep "^Python" >/dev/null; then
