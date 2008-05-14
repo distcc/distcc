@@ -72,7 +72,6 @@ class BasicsTest(unittest.TestCase):
       os.environ['DISTCC_CLIENT_TMP'] = '/to'
       client_root_keeper = basics.ClientRootKeeper()
       client_root_keeper.ClientRootMakedir(2)
-      print 'xxxxxxxxxxxx', client_root_keeper.client_root
       self.assertEqual(os.path.dirname(
           os.path.dirname(client_root_keeper.client_root)), "/to")
       self.assertEqual(os.path.basename(client_root_keeper.client_root),
@@ -82,5 +81,37 @@ class BasicsTest(unittest.TestCase):
     finally:
       tempfile.mkdtemp = tempfile_mkdtemp
       os.makedirs = os_makedirs
-    
+
+
+  def test_ClientRootKeeper_Deletions(self):
+    """Test whether directories emerge and go away appropriately."""
+
+    # Test with a one-level value of DISTCC_CLIENT_TMP.
+    os.environ['DISTCC_CLIENT_TMP'] = '/tmp'
+    client_root_keeper = basics.ClientRootKeeper()
+    client_root_keeper.ClientRootMakedir(117)
+    self.assert_(os.path.isdir(client_root_keeper._client_root_before_padding))
+    self.assert_(os.path.isdir(client_root_keeper.client_root))
+    self.assert_(client_root_keeper.client_root.endswith('/padding'))
+    client_root_keeper.ClientRootMakedir(118)
+    client_root_keeper.CleanOutClientRoots()
+    # Directories must be gone now!
+    self.assert_(not os.path.isdir(
+        client_root_keeper._client_root_before_padding))
+    # Test with a two-level value of DISTCC_CLIENT_TMP.
+    try:
+      os.environ['DISTCC_CLIENT_TMP'] = tempfile.mkdtemp('basics_test',
+                                                         dir='/tmp')
+      client_root_keeper = basics.ClientRootKeeper()
+      client_root_keeper.ClientRootMakedir(117)
+      self.assert_(os.path.isdir(
+          client_root_keeper._client_root_before_padding))
+      self.assert_(os.path.isdir(client_root_keeper.client_root))
+      client_root_keeper.ClientRootMakedir(118)
+      client_root_keeper.CleanOutClientRoots()
+      self.assert_(os.path.isdir,
+                   client_root_keeper._client_root_before_padding)
+    finally:
+      os.rmdir(os.environ['DISTCC_CLIENT_TMP'])
+
 unittest.main()    

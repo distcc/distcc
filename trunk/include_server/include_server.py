@@ -173,79 +173,6 @@ class _EmailSender(object):
     fd.close()
 
 
-def _RemoveDirectoryTree(tree_top):
-  """Recursively remove everything.
-
-  Ignore filesystem errors, because this function may be called as a last resort
-  and it does its job on a best-effort basis.
-  """
-  # Copied, more or less, from Python 2.4 Library Reference.
-  if not os.access(tree_top, os.W_OK):
-    return
-  for root, dirs, files in os.walk(tree_top, topdown=False):
-    for name in files:
-      try:
-        os.remove(os.path.join(root, name))
-      except (IOError, OSError):  # should not happen
-        pass
-    for name in dirs:
-      try:
-        if os.path.islink(os.path.join(root, name)):
-          os.remove(os.path.join(root, name))
-        else:
-          os.rmdir(os.path.join(root, name))
-      except (IOError, OSError):  # should not happen
-          pass
-    try:
-      os.rmdir(root)
-    except (IOError, OSError):  # should not happen
-      pass
-
-
-def _CleanOutClientRoots(client_root_keeper, pid=None):
-  """Delete client root directories pertaining to this process.
-  Args:
-    client_root_keeper: an object of type ClientRootKeeper
-    pid: None (which means 'pid of current process') or an integer
-  """
-  if not pid:
-    pid = os.getpid()
-  for client_root_ in client_root_keeper.Glob(str(pid)):
-    _RemoveDirectoryTree(client_root_)
-
-
-def _CleanOutOthers(client_root_keeper):
-  """Search for left-overs from include servers that have passed away."""
-  # Find all client root subdirectories whether abandoned or not.
-  distcc_directories = client_root_keeper.Glob('*')
-  for directory in distcc_directories:
-    # Fish out pid from end of directory name.
-    hyphen_ultimate_position = directory.rfind('-')
-    assert hyphen_ultimate_position != -1
-    hyphen_penultimate_position = directory[:hyphen_ultimate_position].rfind(
-        '-')
-    assert hyphen_penultimate_position != -1
-    pid_str = directory[hyphen_penultimate_position + 1:
-                        hyphen_ultimate_position]
-    try:
-      pid = int(pid_str)
-    except ValueError:
-      continue  # Happens only if a spoofer is around.
-    try:
-      # Got a pid; does it still exist?
-      os.getpgid(pid)
-      continue
-    except OSError:
-      # Process pid does not exist. Nuke its associated files. This will
-      # of course only succeed if the files belong the current uid of
-      # this process.
-      if not os.access(directory, os.W_OK):
-        continue  # no access, not ours
-      Debug(DEBUG_TRACE,
-            "Cleaning out '%s' after defunct include server." % directory)
-      _CleanOutClientRoots(client_root_keeper, pid)
-
-
 NEWLINE_RE = re.compile(r"\n", re.MULTILINE)
 BACKSLASH_NEWLINE_RE = re.compile(r"\\\n", re.MULTILINE)
 
@@ -638,9 +565,8 @@ def _SetUp(include_server_port):
     sys.exit("Expected '/' as separator in filepaths.")
 
   client_root_keeper = basics.ClientRootKeeper()
-  # So that we can call this function --- to sweep out possible junk. Also, this
-  # will allow the include analyzer to call InitializeClientRoot.
-  _CleanOutOthers(client_root_keeper)
+  # Clean out any junk left over from prior runs.
+  client_root_keeper.CleanOutOthers()
 
   Debug(DEBUG_TRACE, "Starting socketserver %s" % include_server_port)
 
@@ -664,7 +590,7 @@ def _SetUp(include_server_port):
 def _CleanOut(include_analyzer, include_server_port):
   """Prepare shutdown by cleaning out files and unlinking port."""
   if include_analyzer and include_analyzer.client_root_keeper:
-    _CleanOutClientRoots(include_analyzer.client_root_keeper)
+    include_analyzer.client_root_keeper.CleanOutClientRoots()
   try:
     os.unlink(include_server_port)
   except OSError:

@@ -25,11 +25,12 @@ import glob
 import os.path
 import resource
 import signal
+import shutil
 import sys
 import tempfile
 
 
-# TEMPORARY LOCATIONS FOR GENERATIONS OF COMPRESSED FILES
+# MANAGEMENT OF TEMPORARY LOCATIONS FOR GENERATIONS OF COMPRESSED FILES
 
 
 class ClientRootKeeper(object):
@@ -43,6 +44,7 @@ class ClientRootKeeper(object):
   Instance vars:
     client_tmp: a path, the place for creation of temporary directories.
     client_root: a path, the current such temporary directory
+    _client_root_before_padding: a path kept for testing purposes
 
   A typical client root looks like:
 
@@ -92,12 +94,12 @@ class ClientRootKeeper(object):
     try:
       # Create a unique identifier that will never repeat. Use pid as suffix for
       # cleanout mechanism that wipes files not associated with a running pid.
-      client_root_before_padding = tempfile.mkdtemp(
+      self._client_root_before_padding = tempfile.mkdtemp(
           '.%s-%s-%d' %
           (self.INCLUDE_SERVER_NAME,
            os.getpid(), generation),
           dir=self.client_tmp)
-      self.client_root = (client_root_before_padding
+      self.client_root = (self._client_root_before_padding
                           + '/padding' * self.number_missing_levels)
       if not os.path.isdir(self.client_root):
         os.makedirs(self.client_root)
@@ -105,6 +107,49 @@ class ClientRootKeeper(object):
       sys.exit('Could not create client root directory %s: %s' %
                (self.client_root, why))
 
+  def CleanOutClientRoots(self, pid=None):
+    """Delete client root directories pertaining to this process.
+    Args:
+      pid: None (which means 'pid of current process') or an integer
+    """
+    if not pid:
+      pid = os.getpid()
+    for client_root in self.Glob(str(pid)):
+      shutil.rmtree(client_root, ignore_errors=True)
+
+  def CleanOutOthers(self):
+    """Search for left-overs from include servers that have passed away."""
+    # Find all client root subdirectories whether abandoned or not.
+    distcc_directories = self.Glob('*')
+    for directory in distcc_directories:
+      # Fish out pid from end of directory name.
+      hyphen_ultimate_position = directory.rfind('-')
+      assert hyphen_ultimate_position != -1
+      hyphen_penultimate_position = directory.rfind('-', 0,
+                                                    hyphen_ultimate_position)
+      assert hyphen_penultimate_position != -1
+      pid_str = directory[hyphen_penultimate_position + 1:
+                          hyphen_ultimate_position]
+      try:
+        pid = int(pid_str)
+      except ValueError:
+        continue  # Happens only if a spoofer is around.
+      try:
+        # Got a pid; does it still exist?
+        os.getpgid(pid)
+        continue
+      except OSError:
+        # Process pid does not exist. Nuke its associated files. This will
+        # of course only succeed if the files belong the current uid of
+        # this process.
+        if not os.access(directory, os.W_OK):
+          continue  # no access, not ours
+        Debug(DEBUG_TRACE,
+              "Cleaning out '%s' after defunct include server." % directory)
+        self.CleanOutClientRoots(pid)
+
+
+# EMAILS
 
 # For automated emails, see also src/emaillog.h.
 DCC_EMAILLOG_WHOM_TO_BLAME = os.getenv('DISTCC_EMAILLOG_WHOM_TO_BLAME',
@@ -113,6 +158,8 @@ EMAIL_SUBJECT = 'distcc-pump include server email'
 CANT_SEND_MESSAGE = """Please notify %s that the distcc-pump include server
 tried to send them email but failed.""" % DCC_EMAILLOG_WHOM_TO_BLAME
 MAX_EMAILS_TO_SEND = 3
+
+# TIME QUOTAS (SOLVING THE HALTING PROBLEM)
 
 # The maximum user time the include server is allowed handling one request. This
 # is a critical parameter because all caches are reset if this time is
