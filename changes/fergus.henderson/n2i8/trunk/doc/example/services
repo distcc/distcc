@@ -1,0 +1,2 @@
+# Append the following line to /etc/services
+distcc		3632/tcp			# Distcc Distributed Compiler

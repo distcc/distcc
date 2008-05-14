@@ -1,0 +1,83 @@
+#!/bin/sh
+#
+# Init file for Distccd - A distributed compilation front-end.
+# WARNING: Don't enable on untrusted networks
+#
+# Written by Dag Wieers <dag@wieers.com>.
+#
+# chkconfig: - 80 20
+# description: Distccd - distributed compilation front-end (daemon)	\
+#		WARNING: Don't enable on untrusted networks
+#
+# processname: distccd
+#
+# config: /etc/sysconfig/distccd
+
+source /etc/init.d/functions
+source /etc/sysconfig/network
+
+### Check that networking is up.
+[ "${NETWORKING}" == "no" ] && exit 0
+
+[ -x "/usr/bin/distccd" ] || exit 1
+
+### Default variables
+SYSCONFIG="/etc/sysconfig/distccd"
+OPTIONS=""
+USER="distcc"
+DISTCCPATH="$PATH"
+
+### Read configuration
+[ -r "$SYSCONFIG" ] && source "$SYSCONFIG"
+
+RETVAL=0
+prog="distccd"
+desc="Distributed Compiler daemon"
+
+start() {
+	echo -n $"Starting $desc ($prog): "
+	PATH="$DISTCCPATH" daemon --user "$USER" $prog --daemon --log-file="/var/log/distccd.log" $OPTIONS
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Shutting down $desc ($prog): "
+	killproc $prog
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+	return $RETVAL
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  condrestart)
+	[ -e /var/lock/subsys/$prog ] && restart
+	RETVAL=$?
+	;;
+  status)
+	status $prog
+	RETVAL=$?
+	;;
+  *)
+	echo $"Usage $0 {start|stop|restart|condrestart|status}"
+	RETVAL=1
+esac
+
+exit $RETVAL
