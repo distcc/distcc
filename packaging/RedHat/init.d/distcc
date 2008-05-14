@@ -215,18 +215,18 @@ deb_start() {
 	fi
 	export TMPDIR=$TMPDIR
 
-	start-stop-daemon --start --name distccd --pidfile $PIDFILE -m --chuid $USER --exec $EXEC -- $OPTIONS || log_end_msg 1
+	start-stop-daemon --start --name distccd --pidfile $PIDFILE -m --chuid $USER --exec $EXEC -- $OPTIONS
 	RETVAL=$?
-        log_end_msg 0
+        log_end_msg $RETVAL
         return $RETVAL
 }
 
 deb_stop() {
 	log_begin_msg "Shutting down $PROG..."
-        start-stop-daemon --stop  --name distccd --exec $EXEC --retry 30 || \
-                log_success_msg "$PROG not running"
+        start-stop-daemon --stop  --name distccd --exec $EXEC --retry 30
 	RETVAL=$?
-        log_end_msg 0
+	[ $RETVAL -eq 0 ] || log_success_msg "$PROG not running?"
+        log_end_msg $RETVAL
         [ $RETVAL -eq 0 ] && rm -f $PIDFILE
         return $RETVAL
 }
