@@ -595,7 +595,7 @@ distcheck: dist
 	[ ! -d +distcheck ] || chmod -R u+w +distcheck
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
-	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xv
+	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xvf -
 	mkdir "+distcheck/$(distdir)/_build"
 	mkdir "+distcheck/$(distdir)/_inst"
 	chmod -R a-w +distcheck
@@ -624,8 +624,8 @@ dist-sign:
 dist-files: $(dist_files)
 	for f in $(dist_files) $(dist_dirs); do \
 	  mkdir -p "$(distdir)"/`dirname "$$f"` || exit 1; \
-	  cp -a "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
-	      cp -a "$$f" "$(distdir)/$$f" || exit 1; \
+	  cp -pR "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
+	      cp -pR "$$f" "$(distdir)/$$f" || exit 1; \
 	done
 	for f in $(dist_dirs); do \
 	  find "$(distdir)/$$f" -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
@@ -786,8 +786,8 @@ verify-binaries-installcheck:
 # Lookup distcc programs to be checked in $(DISTCC_INSTALLATION).  The
 # check_PROGRAMS binaries, however, are to be found in $(builddir).
 distcc-installcheck: $(check_PROGRAMS)
-	PATH="$(DISTCC_INSTALLATION)":\
-`cd "$(builddir)" && pwd`:"$(RESTRICTED_PATH)" \
+	BUILDDIR=`cd "$(builddir)" && pwd`; \
+	PATH="$(DISTCC_INSTALLATION):$$BUILDDIR:$(RESTRICTED_PATH)" \
 	  TESTDISTCC_OPTS="$(TESTDISTCC_OPTS)" \
 	  $(MAKE) maintainer-check-no-set-path
 
