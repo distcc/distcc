@@ -139,10 +139,9 @@ class IncludeServerTest(unittest.TestCase):
 
     def Expect2(txt, force, never):
 
-      self_test.assert_(
-        "Include server internal error: 'exceptions.AssertionError" in txt)
-
-      self_test.assert_("""for translation unit 'parse.c'""" in txt)
+      self.assert_("Include server internal error: " in txt, txt)
+      self.assert_('exceptions.AssertionError' in txt, txt)
+      self.assert_("""for translation unit 'parse.c'""" in txt, txt)
 
       # This email should be sent.
       self_test.assertEqual(never, False)
