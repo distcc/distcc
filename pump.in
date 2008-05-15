@@ -10,7 +10,15 @@
 # value for @PYTHON@ and @PYTHON_RELATIVE_LIB@.
 
 PYTHON=@PYTHON@
-PYTHON_RELATIVE_LIB=@PYTHON_RELATIVE_LIB@
+
+# This is where include_server.py lives.  It's set to the empty string
+# before pump is installed into its final location.  At install-time,
+# the 'make install' command will rewrite this line of pump to point
+# to the installed include_server.py.
+# NOTE: DO NOT CHANGE THE LINE BELOW WITHOUT CHANGING THE SED IN
+#       Makefile.in:install-include-server.
+include_server=''
+
 
 CheckUsage() {
   if [ "$1" = "" -o "$1" = '-h' -o "$1" = '--help' ]; then
@@ -176,10 +184,11 @@ Announce() {
 # variable $INCLUDE_SERVER_PORT to the socket file ($socket), to tell the distcc
 # clients where to find the include server.
 StartIncludeServer() {
-  # Locate include server depending on whether in installation.
-  if [ -n "$is_in_installation" ]; then
-    include_server_location="$DISTCC_LOCATION/$include_server_relative"
-    pythonpath=$include_server_location
+  # If include_server already exists, that means we're a
+  # installed pump (in /usr/local/bin somewhere or something), and
+  # include_server points to the installed include_server.py.
+  if [ -n "$include_server" ]; then
+    pythonpath=`dirname "$include_server"`
   else
     # We assume this script is run from the build directory.  We pick up .py
     # files from the include_server directory in the source tree, and we pick up
@@ -192,11 +201,11 @@ StartIncludeServer() {
       PrintIncludeServerStatusMessage 1
       exit 1
     fi
-    include_server_location="$DISTCC_SRCDIR/include_server"
+    include_server="$DISTCC_SRCDIR/include_server/include_server.py"
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_dir=`$DISTCC_SRCDIR/find_c_extension.sh $DISTCC_LOCATION`
+    so_dir=`"$DISTCC_SRCDIR/find_c_extension.sh" "$DISTCC_LOCATION"`
     pythonpath="$so_dir"
   fi
 
@@ -240,7 +249,7 @@ StartIncludeServer() {
     if [ -z "$PYTHONOPTIMIZE" ]; then PYTHONOPTIMIZE=1; fi
     PYTHONPATH="$pythonpath::$PYTHONPATH" \
     $PYTHON                          \
-        "$include_server_location/include_server.py" \
+        "$include_server"            \
         --port "$socket"             \
         --pid_file "$tmp_pid_file"   \
         --email                      \

@@ -692,6 +692,7 @@ distcc-maintainer-check: check_programs
 # server.  TODO(klarlund): the outermost if assumes that the include-server
 # target may be satisfied w/o actually building an include server (or rather the
 # C extension); this logic needs to be verified or amended.
+# TODO(csilvers): keep track of failures instead of exiting on the first one.
 include-server-maintainer-check: include-server
 	@if ! test -d "$(include_server_builddir)"; then \
 	  echo "Skipped include-server check"; \
@@ -982,9 +983,9 @@ showpaths:
 install: showpaths install-doc install-man install-programs \
 	install-include-server install-example @INSTALL_GNOME@ install-conf
 
-install-programs: $(bin_PROGRAMS) pump
+install-programs: $(bin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
-	for p in $(bin_PROGRAMS) pump; do \
+	for p in $(bin_PROGRAMS); do \
 	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
 	done
 
@@ -993,7 +994,12 @@ install-programs: $(bin_PROGRAMS) pump
 # into a relative reference if the root is the empty string: we absolutize the
 # destination directory in order to substitute '/' for the empty prefix (the
 # default) when defining the '--root' parameter.
-install-include-server: include-server
+# The final complex issue involves installing pump.  pump wants to
+# know the installed-location of include_server.py.  The only way to
+# tell is to have setup.py install it, and then look what it says (via
+# the --record output).  So when installing pump, we look at the
+# --record output and modify the installed pump to have that location.
+install-include-server: include-server pump
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
@@ -1008,8 +1014,17 @@ install-include-server: include-server
 	        --build-temp="$(include_server_builddir)" \
 	      install 					\
 	         --prefix="$(prefix)" 			\
-	         --record="$(PYTHON_INSTALL_RECORD)"   	\
-	         --root="$$DESTDIR";                    \
+	         --record="$(include_server_builddir)/install.log" \
+	         --root="$$DESTDIR"                     \
+	    || exit 1; \
+	  if test -n "$(PYTHON_INSTALL_RECORD)"; then \
+	    cp -f "$(include_server_builddir)/install.log" "$(PYTHON_INSTALL_RECORD)"; \
+	  fi; \
+	  $(mkinstalldirs) "$(DESTDIR)$(bindir)" && \
+	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
+	  sed "s,^include_server='',include_server='$$DESTDIR$$INCLUDE_SERVER'," \
+	    pump > "$(include_server_builddir)/pump" && \
+	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
 	fi
 
 install-man: $(man1_MEN)
