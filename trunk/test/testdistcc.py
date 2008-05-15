@@ -196,37 +196,45 @@ def _ShellSafe(s):
     return "'" + s.replace("'", "'\"'\"'") + "'"
 
 # Some tests only make sense for certain object formats
+def _FirstBytes(filename, count):
+    '''Returns the first count bytes from the given file.'''
+    f = open(filename)
+    try:
+        return f.read(count)
+    finally:
+        f.close()
+
 def _IsElf(filename):
     '''Given a filename, determine if it's an ELF object file or
     executable.  The magic number used ('\177ELF' at file-start) is
     taken from /usr/share/file/magic on an ubuntu machine.
     '''
-    f = open(filename)
-    try:
-        contents = f.read(5)
-        return contents.startswith('\177ELF')
-    finally:
-        f.close()
+    contents = _FirstBytes(filename, 5)
+    return contents.startswith('\177ELF')
 
 def _IsMachO(filename):
     '''Given a filename, determine if it's an Mach-O object file or
     executable.  The magic number used ('0xcafebabe' or '0xfeedface')
     is taken from /usr/share/file/magic on an ubuntu machine.
     '''
-    f = open(filename)
-    try:
-        contents = f.read(10)
-        return (contents.startswith('\xCA\xFE\xBA\xBE') or
-                contents.startswith('\xFE\xED\xFA\xCE') or
-                contents.startswith('\xCE\xFA\xED\xFE') or
-                # The magic file says '4-bytes (BE) & 0xfeffffff ==
-                # 0xfeedface' and '4-bytes (LE) & 0xfffffffe ==
-                # 0xfeedface' are also mach-o.
-                contents.startswith('\xFF\xED\xFA\xCE') or
-                contents.startswith('\xCE\xFA\xED\xFF'))
-    finally:
-        f.close()
+    contents = _FirstBytes(filename, 10)
+    return (contents.startswith('\xCA\xFE\xBA\xBE') or
+            contents.startswith('\xFE\xED\xFA\xCE') or
+            contents.startswith('\xCE\xFA\xED\xFE') or
+            # The magic file says '4-bytes (BE) & 0xfeffffff ==
+            # 0xfeedface' and '4-bytes (LE) & 0xfffffffe ==
+            # 0xfeedface' are also mach-o.
+            contents.startswith('\xFF\xED\xFA\xCE') or
+            contents.startswith('\xCE\xFA\xED\xFF'))
     
+def _IsPE(filename):
+    '''Given a filename, determine if it's a Microsoft PE object file or
+    executable.  The magic number used ('MZ') is taken from
+    /usr/share/file/magic on an ubuntu machine.
+    '''
+    contents = _FirstBytes(filename, 5)    
+    return contents.startswith('MZ')
+
 
 class SimpleDistCC_Case(comfychair.TestCase):
     '''Abstract base class for distcc tests'''
@@ -1020,6 +1028,12 @@ class Gdb_Case(CompileHello_Case):
             CompileHello_Case.runtest (self)
 
     def checkBuiltProgram(self):
+        # On windows, the binary may be called testtmp.exe.  Check both
+        if os.path.exists('link/testtmp.exe'):
+            testtmp_exe = 'testtmp.exe'
+        else:
+            testtmp_exe = 'testtmp'            
+
         # Run gdb and verify that it is able to correctly locate the
         # testtmp.c source file.  We write the gdb commands to a file
         # and run them via gdb --command.  (The alternative, to specify
@@ -1029,7 +1043,7 @@ class Gdb_Case(CompileHello_Case):
         f.write('break main\nrun\nstep\n')
         f.close()
         out, errs = self.runcmd("gdb --batch --command=gdb_commands "
-                                "link/testtmp </dev/null")
+                                "link/%s </dev/null" % testtmp_exe)
         # Apparently, due to a gdb bug, gdb can produce the (harmless) error
         # message "Failed to read a valid object file" on some systems.
         error_message = 'Failed to read a valid object file image from memory.\n'
@@ -1044,10 +1058,10 @@ class Gdb_Case(CompileHello_Case):
         # binaries, which are the only ones we rewrite at this time.
         os.mkdir('run')
         os.chdir('run')
-        self.runcmd("cp ../link/testtmp ./testtmp")
-        if _IsElf('./testtmp'):
+        self.runcmd("cp ../link/%s ./%s" % (testtmp_exe, testtmp_exe))
+        if _IsElf('./%s' % testtmp_exe):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
-                                    "./testtmp </dev/null")
+                                    "./%s </dev/null" % testtmp_exe)
             if errs:
                 self.assert_equal(errs, error_message)
             self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
@@ -1064,21 +1078,26 @@ class Gdb_Case(CompileHello_Case):
         self.runcmd(self.compiler() + " -o obj/testtmp.o -I. -c %s" %
             self.sourceFilename())
         self.runcmd(self.compiler() + " -o link/testtmp obj/testtmp.o")
-        self.runcmd("strip link/testtmp && strip run/testtmp")
+        self.runcmd("strip link/%s && strip run/%s" % (testtmp_exe, testtmp_exe))
         # On OS X, the strict bit-by-bit comparison will fail, because
         # mach-o format includes a unique UUID which will differ
-        # between the two testtmp binaries.  But even in that case we
-        # can verify the cmp differs in at most 16 characters (since
-        # the UUID is 16 bytes long).
-        if _IsMachO('link/testtmp'):
-            rc, msgs, errs = self.runcmd_unchecked("cmp -l link/testtmp run/testtmp")
+        # between the two testtmp binaries.  For Microsoft PE output,
+        # I've seen binaries differ in two places, though I don't know
+        # why (timestamp?).  We do the best we can in those cases.
+        if _IsMachO('link/%s' % testtmp_exe):
             # TODO(csilvers): we can do better (make sure all 16 bytes are
             # consecutive, or even parse Mach-O to remove the UUID first).
-            if rc != 0 and (errs or len(msgs.strip().splitlines()) > 16):
-                # Just do the cmp again to give a good error message
-                self.runcmd("cmp link/testtmp run/testtmp")
+            acceptable_diffbytes = 16
+        elif _IsPE('link/%s' % testtmp_exe):
+            acceptable_diffbytes = 2
         else:
-            self.runcmd("cmp link/testtmp run/testtmp")
+            acceptable_diffbytes = 0
+        rc, msgs, errs = self.runcmd_unchecked("cmp -l link/%s run/%s"
+                                               % (testtmp_exe, testtmp_exe))
+        if (rc != 0 and
+            (errs or len(msgs.strip().splitlines()) > acceptable_diffbytes)):
+            # Just do the cmp again to give a good error message
+            self.runcmd("cmp link/%s run/%s" % (testtmp_exe, testtmp_exe))
 
 class GdbOpt1_Case(Gdb_Case):
     def compiler(self):
@@ -1735,10 +1754,13 @@ class Lsdistcc_Case(WithDaemon_Case):
         out_list = out.split()
         out_list.sort()
         if multiple_loopback_addrs:
-          expected = ["127.0.0.1", "127.0.0.2", "localhost"]
+          self.assert_equal(out_list, ["127.0.0.1", "127.0.0.2", "localhost"])
         else:
-          expected = ["127.0.0.1", "localhost"]
-        self.assert_equal(out_list, expected)
+            # It may be that 127.0.0.2 isn't a loopback address, or it
+            # may be that it is, but ping doesn't support -c or -i or
+            # -w.  So be happy if 127.0.0.2 is there, or if it's not.
+            if out_list != ["127.0.0.1", "127.0.0.2", "localhost"]:
+                self.assert_equal(out_list, ["127.0.0.1", "localhost"])
         self.assert_equal(err, "")
 
         # Test "lsdistcc host%d".
