@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -225,7 +225,7 @@ int dcc_fresh_dependency_exists(const char *dotd_fname,
     struct stat stat_dotd;
     off_t dotd_fname_size = 0;
     FILE *fp;
-    char c;
+    int c;
     int res;
     char *dep_name;
 

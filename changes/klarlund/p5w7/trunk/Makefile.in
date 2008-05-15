@@ -438,7 +438,7 @@ check_include_server_PY = \
 
 ## NOTE: "all" must be the first (default) rule, aside from patterns.
 
-all: $(bin_PROGRAMS) include-server
+all: $(bin_PROGRAMS) pump include-server
 
 #  src/config.h.in is used by config.status
 Makefile: Makefile.in src/config.h.in config.status
@@ -595,7 +595,7 @@ distcheck: dist
 	[ ! -d +distcheck ] || chmod -R u+w +distcheck
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
-	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xv
+	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xvf -
 	mkdir "+distcheck/$(distdir)/_build"
 	mkdir "+distcheck/$(distdir)/_inst"
 	chmod -R a-w +distcheck
@@ -624,8 +624,8 @@ dist-sign:
 dist-files: $(dist_files)
 	for f in $(dist_files) $(dist_dirs); do \
 	  mkdir -p "$(distdir)"/`dirname "$$f"` || exit 1; \
-	  cp -a "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
-	      cp -a "$$f" "$(distdir)/$$f" || exit 1; \
+	  cp -pR "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
+	      cp -pR "$$f" "$(distdir)/$$f" || exit 1; \
 	done
 	for f in $(dist_dirs); do \
 	  find "$(distdir)/$$f" -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
@@ -692,6 +692,7 @@ distcc-maintainer-check: check_programs
 # server.  TODO(klarlund): the outermost if assumes that the include-server
 # target may be satisfied w/o actually building an include server (or rather the
 # C extension); this logic needs to be verified or amended.
+# TODO(csilvers): keep track of failures instead of exiting on the first one.
 include-server-maintainer-check: include-server
 	@if ! test -d "$(include_server_builddir)"; then \
 	  echo "Skipped include-server check"; \
@@ -719,7 +720,6 @@ include-server-maintainer-check: include-server
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
 	  DISTCC_HOSTS='<invalid>' \
-	  DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
 	    "$(builddir)/pump" \
               $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -786,8 +786,8 @@ verify-binaries-installcheck:
 # Lookup distcc programs to be checked in $(DISTCC_INSTALLATION).  The
 # check_PROGRAMS binaries, however, are to be found in $(builddir).
 distcc-installcheck: $(check_PROGRAMS)
-	PATH="$(DISTCC_INSTALLATION)":\
-`cd "$(builddir)" && pwd`:"$(RESTRICTED_PATH)" \
+	BUILDDIR=`cd "$(builddir)" && pwd`; \
+	PATH="$(DISTCC_INSTALLATION):$$BUILDDIR:$(RESTRICTED_PATH)" \
 	  TESTDISTCC_OPTS="$(TESTDISTCC_OPTS)" \
 	  $(MAKE) maintainer-check-no-set-path
 
@@ -796,7 +796,6 @@ pump-installcheck:
 	which_loc=`which which`; \
 	pump_loc=`PATH="$(DISTCC_INSTALLATION)" "$$which_loc" pump`; \
 	DISTCC_HOSTS='<invalid>' \
-	DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
 	  "$$pump_loc" \
             $(MAKE) DISTCC_INSTALLATION="$(DISTCC_INSTALLATION)" \
 	      RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -885,6 +884,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f distccmon-gnome
 	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
 	rm -rf +distcheck
+	rm -f pump
 	rm -rf "$(include_server_builddir)"
 
 clean-autoconf:
@@ -982,9 +982,9 @@ showpaths:
 install: showpaths install-doc install-man install-programs \
 	install-include-server install-example @INSTALL_GNOME@ install-conf
 
-install-programs: $(bin_PROGRAMS) pump
+install-programs: $(bin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
-	for p in $(bin_PROGRAMS) pump; do \
+	for p in $(bin_PROGRAMS); do \
 	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
 	done
 
@@ -993,7 +993,12 @@ install-programs: $(bin_PROGRAMS) pump
 # into a relative reference if the root is the empty string: we absolutize the
 # destination directory in order to substitute '/' for the empty prefix (the
 # default) when defining the '--root' parameter.
-install-include-server: include-server
+# The final complex issue involves installing pump.  pump wants to
+# know the installed-location of include_server.py.  The only way to
+# tell is to have setup.py install it, and then look what it says (via
+# the --record output).  So when installing pump, we look at the
+# --record output and modify the installed pump to have that location.
+install-include-server: include-server pump
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
@@ -1008,8 +1013,17 @@ install-include-server: include-server
 	        --build-temp="$(include_server_builddir)" \
 	      install 					\
 	         --prefix="$(prefix)" 			\
-	         --record="$(PYTHON_INSTALL_RECORD)"   	\
-	         --root="$$DESTDIR";                    \
+	         --record="$(include_server_builddir)/install.log" \
+	         --root="$$DESTDIR"                     \
+	    || exit 1; \
+	  if test -n "$(PYTHON_INSTALL_RECORD)"; then \
+	    cp -f "$(include_server_builddir)/install.log" "$(PYTHON_INSTALL_RECORD)"; \
+	  fi; \
+	  $(mkinstalldirs) "$(DESTDIR)$(bindir)" && \
+	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
+	  sed "s,^include_server='',include_server='$$DESTDIR$$INCLUDE_SERVER'," \
+	    pump > "$(include_server_builddir)/pump" && \
+	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
 	fi
 
 install-man: $(man1_MEN)
