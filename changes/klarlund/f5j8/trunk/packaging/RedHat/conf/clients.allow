@@ -1,0 +1,16 @@
+# Comments start with "#" and go to end of line.  Non-comment lines should
+# contain entries suitable for passing to the --allow option of distccd, e.g.
+#    192.168.1.100
+#    192.168.2.0/8
+#
+# From the distccd man page:
+#      -a, --allow IPADDR[/MASK]
+#              Instructs  distccd  to  accept  connections  from the IP address
+#              IPADDR.  A CIDR mask length can be supplied optionally  after  a
+#              trailing  slash,  e.g.  192.168.0.0/24,  in which case addresses
+#              that match in the most significant MASK bits  will  be  allowed.
+#              If  no  --allow  options are specified, no clients are allowed!
+#              Unauthorized connections are rejected by closing the TCP connec-
+#              tion immediately.  A warning is logged on the server but nothing
+#              is sent to the client.
+127.0.0.1
