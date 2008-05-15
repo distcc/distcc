@@ -178,7 +178,7 @@ int dcc_get_new_tmpdir(char **tempdir)
     return 0;
 }
 
-
+/* This function returns a directory-name, it does not end in a slash. */
 int dcc_get_tmp_top(const char **p_ret)
 {
 #ifdef __CYGWIN32__
@@ -188,8 +188,11 @@ int dcc_get_tmp_top(const char **p_ret)
     int f,ln;
     GetTempPath(MAXPATHLEN+1,s);
     /* Convert slashes */
-    for(f=0,ln=strlen(s);f!=ln;f++)
+    for (f = 0, ln = strlen(s); f != ln; f++)
 	    if (s[f]=='\\') s[f]='/';
+    /* Delete trailing slashes -- but leave one slash if s is all slashes */
+    for (f = strlen(s)-1; f > 0 && s[f] == '/'; f--)
+	    s[f]='\0';
 
     if ((ret = dcc_add_cleanup(s))) {
 	    free(s);
