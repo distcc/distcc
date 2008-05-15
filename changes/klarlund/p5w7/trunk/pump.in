@@ -75,10 +75,6 @@ Environment variables (all optional):
                          If this location is the build directory, then Python 
                          sources are retrived from the source directory.
 
-  DISTCC_SRCDIR          The location of the source directory.  This is used
-                         only during development when the include server is run
-                         out of the source directory.
-
   DISTCC_POTENTIAL_HOSTS The distcc servers that will be queried by lsdistcc
                          in order to produce a value for DISTCC_HOSTS.
                          This value may be unset or null. In such
@@ -122,12 +118,6 @@ GetScriptDir() {
 if [ -z "$DISTCC_LOCATION" ]; then
    # Set the default for location of 'pump' script'.
    DISTCC_LOCATION=`GetScriptDir "$0"`
-fi
-
-if [ -z "$DISTCC_SRCDIR" ]; then
-  # Set the default value for the location of the source directory.
-  # This is for running the include server out of the source directory.
-  DISTCC_SRCDIR=`cd $DISTCC_LOCATION; cd @srcdir@; pwd`
 fi
 
 
@@ -221,17 +211,14 @@ StartIncludeServer() {
     # the .so file from the include_server/build/libXXX/include_server
     # directory. 
     #
+    # Calculate the location of the source directory.
+    distcc_srcdir=`cd $DISTCC_LOCATION; cd @srcdir@; pwd`
     # The source tree location must be passed.
-    if [ -z "$DISTCC_SRCDIR" ]; then
-      echo "__________Expected DISTCC_SRCDIR to point to distcc source directory." 1>&2
-      PrintIncludeServerStatusMessage 1
-      exit 1
-    fi
-    include_server="$DISTCC_SRCDIR/include_server/include_server.py"
+    include_server="$distcc_srcdir/include_server/include_server.py"
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_dir=`"$DISTCC_SRCDIR/find_c_extension.sh" "$DISTCC_LOCATION"`
+    so_dir=`"$distcc_srcdir/find_c_extension.sh" "$DISTCC_LOCATION"`
     pythonpath="$so_dir"
   fi
 
