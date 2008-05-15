@@ -35,6 +35,7 @@ directories cannot be determined. Should this be improved upon?
 __author__ = "Nils Klarlund"
 
 
+import os
 import re
 import sys
 import basics
@@ -77,15 +78,23 @@ def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
              "/dev/null"]
 
   try:
-    # We annul the environment, because otherwise, directories declared by
+    # We clear the environment, because otherwise, directories declared by
     # CPATH, for example, will be incorporated into the result. (See the CPP
-    # manual for the meaning of CPATH.)
+    # manual for the meaning of CPATH.)  The only thing we keep is PATH,
+    # so we can be sure to find the compiler.
+    # TODO(csilvers): it's possible we could need to pass in some
+    # other environment vars, like LD_LIBRARY_PATH.  Instead of adding
+    # in more env-vars by hand, consider just removing from os.environ
+    # all the env-vars that are meaningful to gcc, such as CPATH.  See
+    # http://docs.freebsd.org/info/gcc/gcc.info.Environment_Variables.html,
+    # or the "Environment Variables Affecting GCC" section of the gcc
+    # info page.
     p = subprocess.Popen(command,
                          shell=False,
                          stdin=None,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT,
-                         env={})
+                         env={'PATH': os.environ['PATH']})
     out = p.communicate()[0]
   except (IOError, OSError), why:
     raise NotCoveredError (
