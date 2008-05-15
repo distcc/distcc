@@ -438,7 +438,7 @@ check_include_server_PY = \
 
 ## NOTE: "all" must be the first (default) rule, aside from patterns.
 
-all: $(bin_PROGRAMS) include-server
+all: $(bin_PROGRAMS) pump include-server
 
 #  src/config.h.in is used by config.status
 Makefile: Makefile.in src/config.h.in config.status
@@ -886,6 +886,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f distccmon-gnome
 	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
 	rm -rf +distcheck
+	rm -f pump
 	rm -rf "$(include_server_builddir)"
 
 clean-autoconf:
