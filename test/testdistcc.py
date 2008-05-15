@@ -195,6 +195,39 @@ def _ShellSafe(s):
     '''Returns a version of s that will be interpreted literally by the shell.'''
     return "'" + s.replace("'", "'\"'\"'") + "'"
 
+# Some tests only make sense for certain object formats
+def _IsElf(filename):
+    '''Given a filename, determine if it's an ELF object file or
+    executable.  The magic number used ('\177ELF' at file-start) is
+    taken from /usr/share/file/magic on an ubuntu machine.
+    '''
+    f = open(filename)
+    try:
+        contents = f.read(5)
+        return contents.startswith('\177ELF')
+    finally:
+        f.close()
+
+def _IsMachO(filename):
+    '''Given a filename, determine if it's an Mach-O object file or
+    executable.  The magic number used ('0xcafebabe' or '0xfeedface')
+    is taken from /usr/share/file/magic on an ubuntu machine.
+    '''
+    f = open(filename)
+    try:
+        contents = f.read(10)
+        return (contents.startswith('\xCA\xFE\xBA\xBE') or
+                contents.startswith('\xFE\xED\xFA\xCE') or
+                contents.startswith('\xCE\xFA\xED\xFE') or
+                # The magic file says '4-bytes (BE) & 0xfeffffff ==
+                # 0xfeedface' and '4-bytes (LE) & 0xfffffffe ==
+                # 0xfeedface' are also mach-o.
+                contents.startswith('\xFF\xED\xFA\xCE') or
+                contents.startswith('\xCE\xFA\xED\xFF'))
+    finally:
+        f.close()
+    
+
 class SimpleDistCC_Case(comfychair.TestCase):
     '''Abstract base class for distcc tests'''
     def setup(self):
@@ -1005,18 +1038,20 @@ class Gdb_Case(CompileHello_Case):
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
         self.assert_re_search('testtmp.c:[45]', out)
 
-        # Now do the same, but in a subdirectory.
-        # This tests that the "compilation directory" field
-        # of the object file is set correctly.
+        # Now do the same, but in a subdirectory.  This tests that the
+        # "compilation directory" field of the object file is set
+        # correctly.  Note this test should only be run on ELF
+        # binaries, which are the only ones we rewrite at this time.
         os.mkdir('run')
         os.chdir('run')
         self.runcmd("cp ../link/testtmp ./testtmp")
-        out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
-                                "./testtmp </dev/null")
-        if errs:
-            self.assert_equal(errs, error_message)
-        self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
-        self.assert_re_search('testtmp.c:[45]', out)
+        if _IsElf('./testtmp'):
+            out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
+                                    "./testtmp </dev/null")
+            if errs:
+                self.assert_equal(errs, error_message)
+            self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
+            self.assert_re_search('testtmp.c:[45]', out)
         os.chdir('..')
 
         # Now recompile and relink the executable using ordinary
@@ -1030,7 +1065,20 @@ class Gdb_Case(CompileHello_Case):
             self.sourceFilename())
         self.runcmd(self.compiler() + " -o link/testtmp obj/testtmp.o")
         self.runcmd("strip link/testtmp && strip run/testtmp")
-        self.runcmd("cmp link/testtmp run/testtmp")
+        # On OS X, the strict bit-by-bit comparison will fail, because
+        # mach-o format includes a unique UUID which will differ
+        # between the two testtmp binaries.  But even in that case we
+        # can verify the cmp differs in at most 16 characters (since
+        # the UUID is 16 bytes long).
+        if _IsMachO('link/testtmp'):
+            rc, msgs, errs = self.runcmd_unchecked("cmp -l link/testtmp run/testtmp")
+            # TODO(csilvers): we can do better (make sure all 16 bytes are
+            # consecutive, or even parse Mach-O to remove the UUID first).
+            if rc != 0 and (errs or len(msgs.strip().splitlines()) > 16):
+                # Just do the cmp again to give a good error message
+                self.runcmd("cmp link/testtmp run/testtmp")
+        else:
+            self.runcmd("cmp link/testtmp run/testtmp")
 
 class GdbOpt1_Case(Gdb_Case):
     def compiler(self):
