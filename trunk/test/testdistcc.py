@@ -1315,6 +1315,21 @@ int main(void) {
     def checkBuiltProgramMsgs(self, msgs):
         self.assert_equal(msgs, "hello world\n")
 
+class DashWpMD_Case(CompileHello_Case):
+    """Test -Wp,-MD,depfile"""
+
+    def compileCmd(self):
+        return self.distcc() + _gcc + \
+               " -c -Wp,-MD,depsfile -o testtmp.o testtmp.c"
+
+    def runtest(self):
+        try:
+          os.remove('depsfile')
+        except OSError:
+          pass
+        self.compile()
+        deps = open('depsfile').read()
+        self.assert_re_search(r"stdio.h", deps);
 
 class AbsSourceFilename_Case(CompileHello_Case):
     """Test remote compilation of files with absolute names."""
