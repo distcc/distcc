@@ -195,6 +195,47 @@ def _ShellSafe(s):
     '''Returns a version of s that will be interpreted literally by the shell.'''
     return "'" + s.replace("'", "'\"'\"'") + "'"
 
+# Some tests only make sense for certain object formats
+def _FirstBytes(filename, count):
+    '''Returns the first count bytes from the given file.'''
+    f = open(filename)
+    try:
+        return f.read(count)
+    finally:
+        f.close()
+
+def _IsElf(filename):
+    '''Given a filename, determine if it's an ELF object file or
+    executable.  The magic number used ('\177ELF' at file-start) is
+    taken from /usr/share/file/magic on an ubuntu machine.
+    '''
+    contents = _FirstBytes(filename, 5)
+    return contents.startswith('\177ELF')
+
+def _IsMachO(filename):
+    '''Given a filename, determine if it's an Mach-O object file or
+    executable.  The magic number used ('0xcafebabe' or '0xfeedface')
+    is taken from /usr/share/file/magic on an ubuntu machine.
+    '''
+    contents = _FirstBytes(filename, 10)
+    return (contents.startswith('\xCA\xFE\xBA\xBE') or
+            contents.startswith('\xFE\xED\xFA\xCE') or
+            contents.startswith('\xCE\xFA\xED\xFE') or
+            # The magic file says '4-bytes (BE) & 0xfeffffff ==
+            # 0xfeedface' and '4-bytes (LE) & 0xfffffffe ==
+            # 0xfeedface' are also mach-o.
+            contents.startswith('\xFF\xED\xFA\xCE') or
+            contents.startswith('\xCE\xFA\xED\xFF'))
+    
+def _IsPE(filename):
+    '''Given a filename, determine if it's a Microsoft PE object file or
+    executable.  The magic number used ('MZ') is taken from
+    /usr/share/file/magic on an ubuntu machine.
+    '''
+    contents = _FirstBytes(filename, 5)    
+    return contents.startswith('MZ')
+
+
 class SimpleDistCC_Case(comfychair.TestCase):
     '''Abstract base class for distcc tests'''
     def setup(self):
@@ -978,7 +1019,21 @@ class Gdb_Case(CompileHello_Case):
         if err != '':
             self.fail("command %s produced error:\n%s" % (`cmd`, `err`))
 
+    def runtest(self):
+        # Don't try to run the test if gdb is not installed
+        error_rc, _, _ = self.runcmd_unchecked("gdb --help")
+        if error_rc != 0:
+            raise comfychair.NotRunError ('gdb could not be found on path')
+        else:
+            CompileHello_Case.runtest (self)
+
     def checkBuiltProgram(self):
+        # On windows, the binary may be called testtmp.exe.  Check both
+        if os.path.exists('link/testtmp.exe'):
+            testtmp_exe = 'testtmp.exe'
+        else:
+            testtmp_exe = 'testtmp'            
+
         # Run gdb and verify that it is able to correctly locate the
         # testtmp.c source file.  We write the gdb commands to a file
         # and run them via gdb --command.  (The alternative, to specify
@@ -988,7 +1043,7 @@ class Gdb_Case(CompileHello_Case):
         f.write('break main\nrun\nstep\n')
         f.close()
         out, errs = self.runcmd("gdb --batch --command=gdb_commands "
-                                "link/testtmp </dev/null")
+                                "link/%s </dev/null" % testtmp_exe)
         # Apparently, due to a gdb bug, gdb can produce the (harmless) error
         # message "Failed to read a valid object file" on some systems.
         error_message = 'Failed to read a valid object file image from memory.\n'
@@ -997,18 +1052,20 @@ class Gdb_Case(CompileHello_Case):
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
         self.assert_re_search('testtmp.c:[45]', out)
 
-        # Now do the same, but in a subdirectory.
-        # This tests that the "compilation directory" field
-        # of the object file is set correctly.
+        # Now do the same, but in a subdirectory.  This tests that the
+        # "compilation directory" field of the object file is set
+        # correctly.  Note this test should only be run on ELF
+        # binaries, which are the only ones we rewrite at this time.
         os.mkdir('run')
         os.chdir('run')
-        self.runcmd("cp ../link/testtmp ./testtmp")
-        out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
-                                "./testtmp </dev/null")
-        if errs:
-            self.assert_equal(errs, error_message)
-        self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
-        self.assert_re_search('testtmp.c:[45]', out)
+        self.runcmd("cp ../link/%s ./%s" % (testtmp_exe, testtmp_exe))
+        if _IsElf('./%s' % testtmp_exe):
+            out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
+                                    "./%s </dev/null" % testtmp_exe)
+            if errs:
+                self.assert_equal(errs, error_message)
+            self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
+            self.assert_re_search('testtmp.c:[45]', out)
         os.chdir('..')
 
         # Now recompile and relink the executable using ordinary
@@ -1021,8 +1078,26 @@ class Gdb_Case(CompileHello_Case):
         self.runcmd(self.compiler() + " -o obj/testtmp.o -I. -c %s" %
             self.sourceFilename())
         self.runcmd(self.compiler() + " -o link/testtmp obj/testtmp.o")
-        self.runcmd("strip link/testtmp && strip run/testtmp")
-        self.runcmd("cmp link/testtmp run/testtmp")
+        self.runcmd("strip link/%s && strip run/%s" % (testtmp_exe, testtmp_exe))
+        # On OS X, the strict bit-by-bit comparison will fail, because
+        # mach-o format includes a unique UUID which will differ
+        # between the two testtmp binaries.  For Microsoft PE output,
+        # I've seen binaries differ in two places, though I don't know
+        # why (timestamp?).  We do the best we can in those cases.
+        if _IsMachO('link/%s' % testtmp_exe):
+            # TODO(csilvers): we can do better (make sure all 16 bytes are
+            # consecutive, or even parse Mach-O to remove the UUID first).
+            acceptable_diffbytes = 16
+        elif _IsPE('link/%s' % testtmp_exe):
+            acceptable_diffbytes = 2
+        else:
+            acceptable_diffbytes = 0
+        rc, msgs, errs = self.runcmd_unchecked("cmp -l link/%s run/%s"
+                                               % (testtmp_exe, testtmp_exe))
+        if (rc != 0 and
+            (errs or len(msgs.strip().splitlines()) > acceptable_diffbytes)):
+            # Just do the cmp again to give a good error message
+            self.runcmd("cmp link/%s run/%s" % (testtmp_exe, testtmp_exe))
 
 class GdbOpt1_Case(Gdb_Case):
     def compiler(self):
@@ -1187,9 +1262,10 @@ class NoDetachDaemon_Case(CompileHello_Case):
         self.pid = self.runcmd_background(cmd)
         self.add_cleanup(self.killDaemon)
         # Wait until the server is ready for connections.
+        time.sleep(0.2)   # Give distccd chance to start listening on the port 
         sock = socket.socket()
         while sock.connect_ex(('127.0.0.1', self.server_port)) != 0:
-          time.sleep(0.2)
+            time.sleep(0.2)
 
     def killDaemon(self):
         os.kill(self.pid, signal.SIGTERM)
@@ -1208,10 +1284,15 @@ class ImplicitCompiler_Case(CompileHello_Case):
         return self.distcc() + "-o testtmp testtmp.o "
 
     def runtest(self):
-        if sys.platform != 'hp-ux10':
-            CompileHello_Case.runtest (self)
-        else:
+        if sys.platform == 'hp-ux10':
             raise comfychair.NotRunError ('HP-UX bundled C compiler non-ANSI')
+        # We can't run if cc is not installed on the system (maybe only gcc is)
+        error_rc, _, _ = self.runcmd_unchecked("cc -c testtmp.c")
+        self.runcmd_unchecked("rm -f testtmp.o")   # clean up the 'cc' output
+        if error_rc != 0:
+            raise comfychair.NotRunError ('Cannot find working "cc"')
+        else:
+            CompileHello_Case.runtest (self)
 
 
 class DashD_Case(Compilation_Case):
@@ -1441,7 +1522,7 @@ class NoHosts_Case(CompileHello_Case):
         # string.
         os.environ['DISTCC_HOSTS'] = ''
         os.environ['DISTCC_LOG'] = ''
-        self.runcmd('printenv')
+        self.runcmd('env')
         msgs, errs = self.runcmd(self.compileCmd())
 
         # We expect only one message, a warning from distcc
@@ -1688,10 +1769,13 @@ class Lsdistcc_Case(WithDaemon_Case):
         out_list = out.split()
         out_list.sort()
         if multiple_loopback_addrs:
-          expected = ["127.0.0.1", "127.0.0.2", "localhost"]
+          self.assert_equal(out_list, ["127.0.0.1", "127.0.0.2", "localhost"])
         else:
-          expected = ["127.0.0.1", "localhost"]
-        self.assert_equal(out_list, expected)
+            # It may be that 127.0.0.2 isn't a loopback address, or it
+            # may be that it is, but ping doesn't support -c or -i or
+            # -w.  So be happy if 127.0.0.2 is there, or if it's not.
+            if out_list != ["127.0.0.1", "127.0.0.2", "localhost"]:
+                self.assert_equal(out_list, ["127.0.0.1", "localhost"])
         self.assert_equal(err, "")
 
         # Test "lsdistcc host%d".
@@ -1788,5 +1872,14 @@ if __name__ == '__main__':
     elif sys.argv[1] == "--pump":
       _server_options = ",lzo,cpp"
       del sys.argv[1]
+
+  # Some of these tests need lots of file descriptors (especially to fork),
+  # but sometimes the os only supplies a few.  Try to raise that if we can.
+  try:
+      import resource
+      (_, hard_limit) = resource.getrlimit(resource.RLIMIT_NOFILE)
+      resource.setrlimit(resource.RLIMIT_NOFILE, (hard_limit, hard_limit))
+  except (ImportError, ValueError):
+      pass
 
   comfychair.main(tests)

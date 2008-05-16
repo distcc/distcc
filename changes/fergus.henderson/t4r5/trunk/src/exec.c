@@ -527,7 +527,10 @@ int dcc_critique_status(int status,
         logmode = RS_LOG_ERR | RS_LOG_NONAME;
     else
         logmode = RS_LOG_INFO | RS_LOG_NONAME;
-    
+
+    if (input_fname == NULL)
+        input_fname = "(null)";
+
     if (WIFSIGNALED(status)) {
 #ifdef HAVE_STRSIGNAL
         rs_log(logmode,

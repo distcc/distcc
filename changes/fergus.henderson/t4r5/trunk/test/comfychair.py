@@ -31,7 +31,7 @@ For more information, see the file README.comfychair.
 To run a test suite based on ComfyChair, just run it as a program.
 """
 
-import sys, re
+import sys, re, shutil
 
 
 class TestCase:
@@ -58,9 +58,8 @@ class TestCase:
                                    '_testtmp', 
                                    self.__class__.__name__)
         self.tmpdir = os.path.join(self.rundir, 'tmp')
-        os.system("rm -fr %s" % self.rundir)
+        shutil.rmtree(self.rundir, ignore_errors=1)
         os.makedirs(self.tmpdir)
-        os.system("mkdir -p %s" % self.rundir)
         os.chdir(self.rundir)
 	os.environ['LANG'] = 'C'
 

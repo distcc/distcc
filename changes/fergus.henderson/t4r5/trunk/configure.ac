@@ -215,27 +215,21 @@ AC_PROG_INSTALL
 #
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
-AC_PATH_PROGS(PYTHON, [python2.4 python-2.4 python])
+AC_PATH_PROGS(PYTHON, [python2.5 python-2.5 python2.4 python-2.4 python])
 AC_ARG_VAR(PYTHON, [Python interpreter])
 # Python 1 doesn't even support -V
 if ! "$PYTHON" -V 2>&1 | grep "^Python" >/dev/null; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
-  PYTHON_RELATIVE_LIB=""
 elif "$PYTHON" -V 2>&1 | grep "^Python 2.1" >/dev/null; then
   TEST_PYTHON=""
   INCLUDESERVER_PYTHON=""
-  PYTHON_RELATIVE_LIB=""
 elif "$PYTHON" -V 2>&1 | grep "^Python 2.[[23]]" >/dev/null; then
   TEST_PYTHON="$PYTHON"
   INCLUDESERVER_PYTHON=""
-  PYTHON_RELATIVE_LIB=""
 else
   TEST_PYTHON="$PYTHON"
   INCLUDESERVER_PYTHON="$PYTHON"
-  PYTHON_RELATIVE_LIB=`"$PYTHON" -c \
-    "import distutils.sysconfig;\
-     print distutils.sysconfig.get_python_lib(prefix=\"\")"`
 fi
 AC_SUBST(TEST_PYTHON)
 AC_SUBST(INCLUDESERVER_PYTHON)
@@ -326,10 +320,11 @@ then
     AC_MSG_RESULT($srcdir/popt)
     # popt_OBJS gets appended to distccd object list
     BUILD_POPT='$(popt_OBJS)'
-    POPT_INCLUDES="$srcdir/popt"
+    POPT_INCLUDES='-I"$(srcdir)/popt"'
 else
     LIBS="$LIBS -lpopt"
     AC_MSG_RESULT(no)
+    POPT_INCLUDES=''
 fi
 
 
