@@ -720,7 +720,6 @@ include-server-maintainer-check: include-server
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
 	  DISTCC_HOSTS='<invalid>' \
-	  DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
 	    "$(builddir)/pump" \
               $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -797,7 +796,6 @@ pump-installcheck:
 	which_loc=`which which`; \
 	pump_loc=`PATH="$(DISTCC_INSTALLATION)" "$$which_loc" pump`; \
 	DISTCC_HOSTS='<invalid>' \
-	DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
 	  "$$pump_loc" \
             $(MAKE) DISTCC_INSTALLATION="$(DISTCC_INSTALLATION)" \
 	      RESTRICTED_PATH="$(RESTRICTED_PATH)" \
