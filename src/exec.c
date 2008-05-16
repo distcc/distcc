@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  * 
  * distcc -- A simple distributed compiler system
  *
@@ -131,13 +131,15 @@ int dcc_redirect_fds(const char *stdin_file,
 
 #ifdef __CYGWIN__
 /* Execute a process WITHOUT console window and correctly redirect output. */
-static void dcc_execvp_cyg(char **argv, const char *input_file, 
+static DWORD dcc_execvp_cyg(char **argv, const char *input_file, 
 	const char *output_file, const char *error_file)
 {
 	STARTUPINFO	m_siStartInfo;
 	PROCESS_INFORMATION m_piProcInfo;
 	char cmdline[MAX_PATH+1]={0}; 
-	HANDLE stdin_hndl=0, stdout_hndl=0, stderr_hndl=0;
+	HANDLE stdin_hndl=INVALID_HANDLE_VALUE;
+	HANDLE stdout_hndl=INVALID_HANDLE_VALUE;
+	HANDLE stderr_hndl=INVALID_HANDLE_VALUE;
 	char **ptr;
 	DWORD exit_code;
 	BOOL bRet=0;
@@ -148,26 +150,32 @@ static void dcc_execvp_cyg(char **argv, const char *input_file,
 	/* Open files for IO redirection */
 	if (input_file && strcmp(input_file,"/dev/null")!=0)
 	{
-		if ((stdin_hndl = CreateFile(input_file,FILE_READ_DATA,FILE_SHARE_READ,NULL,OPEN_ALWAYS,
-			FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE)
+		if ((stdin_hndl = CreateFile(input_file,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_ALWAYS,
+			FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
+            exit_code = GetLastError();
 			goto cleanup;
+        }
 	} else
 		stdin_hndl = GetStdHandle(STD_INPUT_HANDLE);
 
 	if (output_file && strcmp(output_file,"/dev/null")!=0)
 	{
-		if ((stdout_hndl = CreateFile(output_file,FILE_ALL_ACCESS,FILE_SHARE_READ,NULL,
-			CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE)
+		if ((stdout_hndl = CreateFile(output_file,GENERIC_WRITE,FILE_SHARE_READ,NULL,
+			CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
+            exit_code = GetLastError();
 			goto cleanup;
+        }
 	} else
 		stdout_hndl = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	if (error_file && strcmp(error_file,"/dev/null")!=0)
 	{
-		if ((stderr_hndl = CreateFile(error_file, FILE_WRITE_DATA,
+		if ((stderr_hndl = CreateFile(error_file, GENERIC_WRITE,
 			FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,
-			OPEN_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE)
+			OPEN_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
+            exit_code = GetLastError();
 			goto cleanup;
+        }
 		/* Seek to the end of file (ignore return code) */
 		SetFilePointer(stderr_hndl,0,NULL,FILE_END);
 
@@ -196,7 +204,7 @@ static void dcc_execvp_cyg(char **argv, const char *input_file,
 	
 	/* Create the child process.  */
 	bRet = CreateProcess(NULL, 
-		cmdline, 	   /* applicatin name */
+		cmdline, 	   /* application name */
 		NULL, 		  /* process security attributes */
 		NULL, 		  /* primary thread security attributes */
 		TRUE, 		  /* handles are inherited */
@@ -205,8 +213,10 @@ static void dcc_execvp_cyg(char **argv, const char *input_file,
 		NULL, 		  /* use parent's current directory */
 		&m_siStartInfo,  /* STARTUPINFO pointer */
 		&m_piProcInfo);  /* receives PROCESS_INFORMATION */
-	if (!bRet)
+	if (!bRet) {
+        exit_code = GetLastError();
 		goto cleanup;
+    }
 
     WaitForSingleObject(m_piProcInfo.hProcess, (DWORD)(-1L));
 	/* return termination code and exit code*/
@@ -215,12 +225,14 @@ static void dcc_execvp_cyg(char **argv, const char *input_file,
 
 	/* We can get here only if process creation failed */
 	cleanup:
-	if (stdin_hndl) CloseHandle(stdin_hndl);
-	if (stdout_hndl) CloseHandle(stdout_hndl);
-	if (stderr_hndl) CloseHandle(stderr_hndl);
+	if (stdin_hndl != INVALID_HANDLE_VALUE) CloseHandle(stdin_hndl);
+	if (stdout_hndl != INVALID_HANDLE_VALUE) CloseHandle(stdout_hndl);
+	if (stderr_hndl != INVALID_HANDLE_VALUE) CloseHandle(stderr_hndl);
 
 	if (bRet)
-	    ExitProcess(exit_code); //Return error code to parent process
+	    ExitProcess(exit_code); //Return cmdline's exit-code to parent process
+    else
+        return exit_code;       //Return failure reason to calling fn
 }
 #endif
 
@@ -277,28 +289,51 @@ static void dcc_execvp(char **argv)
 static void dcc_inside_child(char **argv,
                              const char *stdin_file,
                              const char *stdout_file,
-                             const char *stderr_file) 
+                             const char *stderr_file)
 {
     int ret;
-    
+
     if ((ret = dcc_ignore_sigpipe(0)))
         goto fail;              /* set handler back to default */
 
     /* Ignore failure */
     dcc_increment_safeguard();
 
-#ifndef __CYGWIN__
+#ifdef __CYGWIN__
+    /* This will execute compiler and CORRECTLY redirect output if compiler is
+     * a native Windows application.  If this never returns, it means the
+     * compiler-execute succeeded.  We use a hack to decide if it's a windows
+     * application: if argv[0] starts with "<letter>:" or with "\\", then it's
+     * a windows path and we try dcc_execvp_cyg.  If not, we assume it's a
+     * cygwin app and fall through to the unix-style forking, below.  If we
+     * guess wrong, dcc_execvp_cyg will probably fail with error 3
+     * (windows-exe for "path not found"), so again we'll fall through to the
+     * unix-fork case.  Otherwise we just fail in a generic way.
+     * TODO(csilvers): Figure out the right way to deal with this.  Running
+     *                 cygwin apps via dcc_execvp_cyg segfaults (and takes a
+     *                 long time to do it too), so I want to avoid that if
+     *                 possible.  I don't know enough about cygwin or
+     *                 cygwin/windows interactions to know the right thing to
+     *                 do here.  Until distcc has cl.exe support, this may
+     *                 all be a moot point anyway.
+     */
+    if (argv[0] && ((argv[0][0] != '\0' && argv[0][1] == ':') ||
+                    (argv[0][0] == '\\' && argv[0][1] == '\\'))) {
+        DWORD status;
+        status = dcc_execvp_cyg(argv, stdin_file, stdout_file, stderr_file);
+        if (status != 3) {
+            ret = EXIT_DISTCC_FAILED;
+            goto fail;
+        }
+    }
+#endif
+
     /* do this last, so that any errors from previous operations are
      * visible */
     if ((ret = dcc_redirect_fds(stdin_file, stdout_file, stderr_file)))
         goto fail;
-    
+
     dcc_execvp(argv);
-#else
-	/* This will execute compiler and CORRECTLY redirect output if
-	compiler is a native Windows application. */
-	dcc_execvp_cyg(argv, stdin_file, stdout_file, stderr_file);
-#endif
 
     ret = EXIT_DISTCC_FAILED;
 
