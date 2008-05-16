@@ -1,0 +1,56 @@
+.TH distccmon-text 1 "2 October 2004"
+.SH "NAME"
+.LP 
+distccmon\-text \- Displays current compilation jobs in text form.
+.SH "SYNTAX"
+.LP 
+distccmon-text [DELAY]
+.SH "DESCRIPTION"
+.LP 
+Displays current compilation jobs in text form.  distccmon-text must
+be run on the client machine, with the same setting for 
+.I DISTCC_DIR
+(or home directory) 
+as the user running the distcc client.
+.SH "OPTIONS"
+.LP 
+.TP 
+\fBDELAY\fR
+repeatedly updates after \fIdelay\fP (fractional) seconds.
+.SH "OUTPUT FORMAT"
+.LP
+The output of distccmon-text contains one line for each job currently
+being compiled.   Each line contains the following columns:
+.TP
+.I PID
+ID of the distcc client process.
+.TP
+.I STATE
+Identifies the phase of operation.  In order these may be "Startup",
+"Blocked", "Connected", "Preprocess", "Conect", "Send", "Receive" and
+"Done".
+.TP
+.I FILE
+The input filename, if known.
+.TP
+.I HOST[SLOT]
+The compile hostname.  May be followed in square brackets by the slot
+index for that host.
+.LP
+When a delay is specified, each block of output is terminated by a
+blank line.
+.SH "EXAMPLES"
+.LP 
+To display currently active jobs (updated every second):
+.IP
+distccmon\-text 1
+.LP 
+To display the status once:
+.IP
+distccmon\-text
+.SH "AUTHORS"
+.LP 
+distcc  was  written  by Martin Pool <mbp@sourcefrog.net>, with the co\-operation of many scholars including Wayne Davison, Frerich Raabe, Dimitri Papadopoulos  and  others  noted  in  the  NEWS  file. Please  report  bugs  to <distcc@lists.samba.org>.
+.SH "SEE ALSO"
+.LP d
+distccd(1), ccache(1), gcc(1), make(1) http://distcc.samba.org/ http://ccache.samba.org/
