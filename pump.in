@@ -260,6 +260,7 @@ StartIncludeServer() {
     esac
 
     if [ -z "$PYTHONOPTIMIZE" ]; then PYTHONOPTIMIZE=1; fi
+    PYTHONOPTIMIZE=$PYTHONOPTIMIZE \
     PYTHONPATH="$pythonpath::$PYTHONPATH" \
     $PYTHON                          \
         "$include_server"            \
