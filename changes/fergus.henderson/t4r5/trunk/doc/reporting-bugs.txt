@@ -1,0 +1,73 @@
+How to report bugs in distcc                    -*- indented-text -*-
+
+
+If you are having trouble with distcc, please send email to
+distcc@lists.samba.org.  Please don't send mail direct to the author:
+if you use the list, other people may be able to help you faster and
+the answers are archived to help others.
+
+
+  * The first aim of a bug report is to let the programmer see the
+    failure with their own eyes. If you can't be with them to make it
+    fail in front of them, give them detailed instructions so that
+    they can make it fail for themselves.
+
+  * In case the first aim doesn't succeed, and the programmer can't
+    see it failing themselves, the second aim of a bug report is to
+    describe what went wrong. Describe everything in detail. State
+    what you saw, and also state what you expected to see. Write down
+    the error messages, especially if they have numbers in.
+
+  * By all means try to diagnose the fault yourself if you think you
+    can, but if you do, you should still report the symptoms as well.
+
+  * Write clearly. Say what you mean, and make sure it can't be
+    misinterpreted.
+
+  * Above all, be precise.
+
+A good bug report for distcc should include these details:
+
+  * What version of distcc you're using, e.g. "2.7.1".  If you got it
+    from a distribution package rather than building from source,
+    please say so.
+
+  * Your platform (e.g. "Red Hat 8.0", "HP-UX 11.11") and compiler
+    "gcc 3.3"
+
+  * What you're trying to do: e.g. "install distcc", "build Mozilla",
+    "build my own program".
+
+  * What went wrong: e.g. did you get an error message, did it hang,
+    did it build a program that didn't work, did it not distribute
+    compilation to machines that ought to get it?  You'd be surprised
+    how many people don't say what actually happened.
+
+  * If you have an example of a compiler invocation that failed, quote
+    it, e.g.:
+
+       distcc gcc -DHAVE_CONFIG_H -D_GNU_SOURCE -I./src \
+       "-DSYSCONFDIR=\"/etc/\"" -I./lzo -g -O2 -W -Wall -W \
+       -Wimplicit -Wshadow -Wpointer-arith -Wcast-align \
+       -Wwrite-strings -Waggregate-return -Wstrict-prototypes \
+       -Wmissing-prototypes -Wnested-externs -o src/clirpc.o \
+       -c src/clirpc.c 
+
+  * Turn on client and server error logging.  On the client, set these
+    environment variables, and try to reproduce the problem:
+
+       export DISTCC_VERBOSE=1 DISTCC_LOG=/tmp/distcc.log
+
+    Start the server with the --verbose option.  If the problem is
+    intermittent, leave logging enabled and then pull out the lines
+    from the log file when the problem recurs.
+
+  * If you got an error message on stderr, quote that error exactly.
+    Find the lines in the log files pertaining to the compile, and
+    include all of them in your report, by looking at the process ID
+    in square brackets.  If you can't work that out, quote the last
+    few hundred lines leading up to the failure.
+
+An error report with all the necessary details is often answered and
+resolved within two days or less.  If you don't include enough
+information to know what is going wrong it can take much longer.
