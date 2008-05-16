@@ -58,21 +58,35 @@ Description:
   may cause inconsistent results.
 
 Environment variables (all optional):
-  DISTCC_LOCATION        The location of the distcc 'bin' directory, which is
-                         normally inferred from the link-resolved dirname of 
-                         argv[0]. If this location is in fact the bin directory
-                         inside an installation (as will be the case when the 
-                         'pump' script in the installation executes), then
-                         Python executables and distcc itself will be retrieved
-                         from the parent directory of the location.
+
+  DISTCC_LOCATION        Either the distcc 'bin' install directory (when the
+                         pump script in the installation executes) or the build
+                         directory (when the pump script is run during 
+                         development).
+
+                         This location is normally inferred from the dirname
+                         of argv[0].  It is resolved with respect to links.
+
+                         If this location is the bin directory inside an
+                         installation, then Python executables and distcc
+                         itself will be retrieved from the parent directory of
+                         the location.
+
+                         If this location is the build directory, then Python 
+                         sources are retrived from the source directory.
+
   DISTCC_POTENTIAL_HOSTS The distcc servers that will be queried by lsdistcc
                          in order to produce a value for DISTCC_HOSTS.
                          This value may be unset or null. In such
                          cases, use DISTCC_HOSTS.
+
   DISTCC_HOSTS           This variable is passed through to distcc but only if 
                          DISTCC_POTENTIAL_HOSTS is not set.
+
   LSDISTCC_ARGS          Extra arguments to lsdistcc.
+
   INCLUDE_SERVER_ARGS    Extra arguments to the include server.
+
   PYTHONOPTIMIZE         If set to "", then Python optimization is disabled.
 
 Example: 
@@ -102,8 +116,10 @@ GetScriptDir() {
 
 # Variables inherited from the environment of the caller.
 if [ -z "$DISTCC_LOCATION" ]; then
+   # Set the default for location of 'pump' script'.
    DISTCC_LOCATION=`GetScriptDir "$0"`
 fi
+
 
 # Variables used by this process.
 program_name="$0"
@@ -195,17 +211,14 @@ StartIncludeServer() {
     # the .so file from the include_server/build/libXXX/include_server
     # directory. 
     #
+    # Calculate the location of the source directory.
+    distcc_srcdir=`cd $DISTCC_LOCATION; cd @srcdir@; pwd`
     # The source tree location must be passed.
-    if [ -z "$DISTCC_SRCDIR" ]; then
-      echo "__________Expected DISTCC_SRCDIR to point to distcc source directory." 1>&2
-      PrintIncludeServerStatusMessage 1
-      exit 1
-    fi
-    include_server="$DISTCC_SRCDIR/include_server/include_server.py"
+    include_server="$distcc_srcdir/include_server/include_server.py"
     # Now locate the single directory containing the .so file from the build
     # directory. Possibly there may be more than one such file; first identify
     # them all.
-    so_dir=`"$DISTCC_SRCDIR/find_c_extension.sh" "$DISTCC_LOCATION"`
+    so_dir=`"$distcc_srcdir/find_c_extension.sh" "$DISTCC_LOCATION"`
     pythonpath="$so_dir"
   fi
 
