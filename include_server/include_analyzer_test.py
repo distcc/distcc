@@ -147,8 +147,8 @@ class IncludeAnalyzerTest(unittest.TestCase):
     includes = self.RetrieveCanonicalPaths(
       self.ProcessCompilationCommandLine(
         """gcc  -D"STR(X)=# X" """
-        + """-D"FINCLUDE(P)=STR(../TEST_DATA/dfoo/P)" """
-        + """-DTEST_DATA=test_data """
+        + """-D"FINCLUDE(P)=STR(../MY_TEST_DATA/dfoo/P)" """
+        + """-DMY_TEST_DATA=test_data """
         + "test_data/func_macro.c",
         os.getcwd()))
 
