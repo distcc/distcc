@@ -152,6 +152,10 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
     int ret;
     int i;
     char *a;
+
+    if ((ret = dcc_expand_preprocessor_options(&argv)) != 0) {
+      return ret;
+    }
     
     *needs_dotd = 0;
     *sets_dotd_target = 0;
