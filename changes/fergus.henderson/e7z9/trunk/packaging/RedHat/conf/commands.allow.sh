@@ -30,8 +30,14 @@
 
 numwords=1
 allowed_compilers="
+  /usr/bin/cc
+  /usr/bin/c++
+  /usr/bin/c89
+  /usr/bin/c99
   /usr/bin/gcc
+  /usr/bin/g++
   /usr/bin/*gcc-*
+  /usr/bin/*g++-*
 "
 
 # You shouldn't need to alter anything below here.

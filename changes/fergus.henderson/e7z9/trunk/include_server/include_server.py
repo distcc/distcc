@@ -173,81 +173,6 @@ class _EmailSender(object):
     fd.close()
 
 
-def _RemoveDirectoryTree(tree_top):
-  """Recursively remove everything.
-
-  Ignore filesystem errors, because this function may be called as a last resort
-  and it does its job on a best-effort basis.
-  """
-  # Copied, more or less, from Python 2.4 Library Reference.
-  if not os.access(tree_top, os.W_OK):
-    return
-  for root, dirs, files in os.walk(tree_top, topdown=False):
-    for name in files:
-      try:
-        os.remove(os.path.join(root, name))
-      except (IOError, OSError):  # should not happen
-        pass
-    for name in dirs:
-      try:
-        if os.path.islink(os.path.join(root, name)):
-          os.remove(os.path.join(root, name))
-        else:
-          os.rmdir(os.path.join(root, name))
-      except (IOError, OSError):  # should not happen
-          pass
-    try:
-      os.rmdir(root)
-    except (IOError, OSError):  # should not happen
-      pass
-
-
-def _CleanOutClientRoots(client_root):
-  """Delete client root directory and everything below, for all generations.
-  Argument:
-    client_root: a directory path ending in "*distcc-*-*"
-  """
-  # Determine all generations of this directory.
-  hyphen_ultimate_position = client_root.rfind('-')
-  client_roots = glob.glob("%s-*" % client_root[:hyphen_ultimate_position])
-  assert client_root in client_roots
-  for client_root_ in client_roots:
-    _RemoveDirectoryTree(client_root_)
-
-
-def _CleanOutOthers():
-  """Search for left-overs from include servers that have passed away."""
-  # Find all distcc-pump directories whether abandoned or not.
-  distcc_directories = glob.glob("%s/*.%s-*-*" % (basics.client_tmp,
-                                                   basics.INCLUDE_SERVER_NAME))
-  for directory in distcc_directories:
-    # Fish out pid from end of directory name.
-    hyphen_ultimate_position = directory.rfind('-')
-    assert hyphen_ultimate_position != -1
-    hyphen_penultimate_position = directory[:hyphen_ultimate_position].rfind(
-        '-')
-    assert hyphen_penultimate_position != -1
-    pid_str = directory[hyphen_penultimate_position + 1:
-                        hyphen_ultimate_position]
-    try:
-      pid = int(pid_str)
-    except ValueError:
-      continue  # Happens only if a spoofer is around.
-    try:
-      # Got a pid; does it still exist?
-      os.getpgid(pid)
-      continue
-    except OSError:
-      # Process pid does not exist. Nuke its associated files. This will
-      # of course only succeed if the files belong the current uid of
-      # this process.
-      if not os.access(directory, os.W_OK):
-        continue  # no access, not ours
-      Debug(DEBUG_TRACE,
-            "Cleaning out '%s' after defunct include server." % directory)
-      _CleanOutClientRoots(directory)
-
-
 NEWLINE_RE = re.compile(r"\n", re.MULTILINE)
 BACKSLASH_NEWLINE_RE = re.compile(r"\\\n", re.MULTILINE)
 
@@ -424,7 +349,10 @@ def DistccIncludeHandlerGenerator(include_analyzer):
           # accumulated operations can be executed after DoCompilationCommand
           # when the timer has been cancelled.
           include_analyzer.timer = basics.IncludeAnalyzerTimer()
-          files_and_links = include_analyzer.DoCompilationCommand(cmd, currdir)
+          files_and_links = (
+              include_analyzer.
+                  DoCompilationCommand(cmd, currdir,
+                                       include_analyzer.client_root_keeper))
         finally:
           # The timer should normally be cancelled during normal execution
           # flow. Still, we want to make sure that this is indeed the case in
@@ -636,19 +564,19 @@ def _SetUp(include_server_port):
   if os.sep != '/':
     sys.exit("Expected '/' as separator in filepaths.")
 
-  # Determine basics.client_tmp now.
-  basics.InitializeClientTmp()
-  # So that we can call this function --- to sweep out possible junk. Also, this
-  # will allow the include analyzer to call InitializeClientRoot.
-  _CleanOutOthers()
+  client_root_keeper = basics.ClientRootKeeper()
+  # Clean out any junk left over from prior runs.
+  client_root_keeper.CleanOutOthers()
 
   Debug(DEBUG_TRACE, "Starting socketserver %s" % include_server_port)
 
   # Create the analyser.
   include_analyzer = (
       include_analyzer_memoizing_node.IncludeAnalyzerMemoizingNode(
-        basics.opt_stat_reset_triggers))
+           client_root_keeper,
+           basics.opt_stat_reset_triggers))
   include_analyzer.email_sender = _EmailSender()
+  
   # Wrap it inside a handler that is a part of a UnixStreamServer.
   server = QueuingSocketServer(
     include_server_port,
@@ -661,8 +589,8 @@ def _SetUp(include_server_port):
 
 def _CleanOut(include_analyzer, include_server_port):
   """Prepare shutdown by cleaning out files and unlinking port."""
-  if include_analyzer and include_analyzer.client_root:
-    _CleanOutClientRoots(include_analyzer.client_root)
+  if include_analyzer and include_analyzer.client_root_keeper:
+    include_analyzer.client_root_keeper.CleanOutClientRoots()
   try:
     os.unlink(include_server_port)
   except OSError:

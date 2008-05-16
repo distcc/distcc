@@ -162,7 +162,7 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
     if (env_var != NULL) {
         *needs_dotd = 1;
     }
-                    
+
     for (i = 0; (a = argv[i]); i++) {
         if (strcmp(a, "-MT") == 0) {
             *sets_dotd_target = 1;
@@ -186,7 +186,14 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
             has_dash_o = 1;
         }
     }
-    
+
+    /* TODO(csilvers): we also need to parse -Wp,-x,-y,-z, in the same
+     * way we do gcc flags in the for loop above.  Note that the -Wp
+     * flags are passed to cpp, with slightly different semantics than
+     * gcc flags (eg -Wp,-MD takes a filename argument, while -MD does
+     * not).
+     */
+
     if (deps_output) {
         *dotd_fname = strdup(deps_output);
         if (*dotd_fname == NULL) {
