@@ -79,6 +79,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <sys/stat.h>
 
@@ -391,4 +392,108 @@ int dcc_set_input(char **a, char *ifname)
 
     rs_log_error("failed to find input file");
     return EXIT_DISTCC_FAILED;
+}
+
+/* Subroutine of dcc_expand_preprocessor_options().
+ * Calculate how many extra arguments we'll need to convert
+ * a "-Wp,..." option into regular gcc options.
+ * Returns the number of extra arguments needed.
+ */
+static int count_extra_args(char *dash_Wp_option) {
+    int extra_args = 0;
+    char *comma = dash_Wp_option + strlen("-Wp");
+    while (comma != NULL) {
+        char *opt = comma + 1;
+        comma = strchr(opt, ',');
+        if (str_startswith(opt, "-MD,") ||
+            str_startswith(opt, "-MMD,"))
+        {
+            char *filename = comma + 1;
+            comma = strchr(filename, ',');
+            extra_args += 3;  // "-MD", "-MF", filename.
+        } else {
+            extra_args++;
+        }
+    }
+    return extra_args;
+}
+
+/* Subroutine of dcc_expand_preprocessor_options().
+ * Convert a "-Wp,..." option into one or more regular gcc options.
+ * Copy the resulting gcc options to dest_argv, which should be
+ * pre-allocated by the caller.
+ * Destructively modifies dash_Wp_option as it goes.
+ * Returns 0 on success, nonzero for error (out of memory).
+ */
+static int copy_extra_args(char **dest_argv, char *dash_Wp_option,
+                           int extra_args) {
+    int i = 0;
+    char *comma = dash_Wp_option + strlen("-Wp");
+    while (comma != NULL) {
+        char *opt = comma + 1;
+        comma = strchr(opt, ',');
+        if (comma) *comma = '\0';
+        dest_argv[i] = strdup(opt);
+        if (!dest_argv[i]) return EXIT_OUT_OF_MEMORY;
+        i++;
+        if (strcmp(opt, "-MD") == 0 || strcmp(opt, "-MMD")) {
+            char *filename;
+            if (!comma) {
+                rs_log_warning("'-Wp,-MD' or '-Wp,-MMD' option is missing "
+                               "filename argument");
+                break;
+            }
+            filename = comma + 1;
+            comma = strchr(filename, ',');
+            if (comma) *comma = '\0';
+            dest_argv[i] = strdup("-MF");
+            if (!dest_argv[i]) return EXIT_OUT_OF_MEMORY;
+            i++;
+            dest_argv[i] = strdup(filename);
+            if (!dest_argv[i]) return EXIT_OUT_OF_MEMORY;
+            i++;
+        }
+    }
+    assert(i == extra_args);
+    return 0;
+}
+
+
+/*
+ * Convert any "-Wp," options into regular gcc options.
+ * We do this because it simplifies the command-line
+ * option handling elsewhere; this is the only place
+ * that needs to parse "-Wp," options.
+ * Returns 0 on success, nonzero for error (out of memory).
+ */
+int dcc_expand_preprocessor_options(char ***argv_ptr) {
+    int i, j, ret;
+    char **argv = *argv_ptr;
+    char **new_argv;
+    int argc = dcc_argv_len(argv);
+    for (i = 0; argv[i]; i++) {
+        if (str_startswith(argv[i], "-Wp,")) {
+            /* First, calculate how many extra arguments we'll need. */
+            int extra_args = count_extra_args(argv[i]);
+            assert(extra_args >= 1);
+
+            new_argv = calloc(argc + extra_args, sizeof(char *));
+            if (!new_argv) {
+              return EXIT_OUT_OF_MEMORY;
+            }
+            for (j = 0; j < i; j++) {
+              new_argv[j] = argv[j];
+            }
+            if ((ret = copy_extra_args(argv + i, argv[i], extra_args)) != 0) {
+              free(new_argv);
+              return ret;
+            }
+            for (j = i + 1; j <= argc; j++) {
+              new_argv[j + extra_args - 1] = argv[j];
+            }
+            free(argv);
+            *argv_ptr = argv = new_argv;
+        }
+    }
+    return 0;
 }
