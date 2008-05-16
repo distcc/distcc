@@ -721,9 +721,10 @@ pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
 	  DISTCC_HOSTS='<invalid>' \
 	    "$(builddir)/pump" \
-              $(MAKE) \
+	        $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
-                TESTDISTCC_OPTS=--pump distcc-maintainer-check; \
+	        TESTDISTCC_OPTS="--pump $(TESTDISTCC_OPTS)" \
+	        distcc-maintainer-check; \
 	fi
 
 # Do distcc-maintainer-check, for non-pumped distcc, and try the include_server

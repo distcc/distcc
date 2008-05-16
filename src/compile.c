@@ -84,7 +84,7 @@ int ddc_discrepancy_filename(char **filename)
         int delta = strlen(discrepancy_suffix) - 
             strlen(include_server_port_suffix);
         assert (delta > 0);
-        *filename = malloc(strlen(include_server_port) + delta);
+        *filename = malloc(strlen(include_server_port) + 1 + delta);
         if (!*filename) {
             rs_log_error("failed to allocate space for filename");
             return EXIT_OUT_OF_MEMORY;
