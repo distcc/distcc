@@ -1,0 +1,16 @@
+#! /bin/sh
+
+# Example script contributed by Luke Gorrie
+
+# "Drop-in" front end to 'make' that uses the distributed compile farm
+# via `distcc'
+
+# Compile farm hosts are stored in ~bluetail/distcc-hosts. We exclude
+# the local machine to free up resources for preprocessing and
+# linking, since it seems to be the bottleneck (at least on
+# kookaburra).
+
+DISTCC_HOSTS=$(sed s/$(hostname -s)// < /home/share/bluetail/distcc-hosts)
+
+make CC='/home/share/luke/bin/distcc gcc' -j 7 "$@"
+

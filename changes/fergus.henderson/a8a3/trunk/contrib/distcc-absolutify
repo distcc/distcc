@@ -1,0 +1,47 @@
+#! /bin/sh
+# Copyright 2002 Free Software Foundation
+# by Alexandre Oliva <aoliva@redhat.com>
+
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
+# This is a wrapper for distcc that turns relative pathnames into
+# network-neutral ones.  It modifies anything containing a slash and
+# not starting with dash or slash, as well as -B flags.  We need not
+# be concerned about -I and -L, since distcc always does preprocessing
+# and linking locally.
+
+
+# If the first pathname is relative (.../xgcc, ./libtool, etc),
+case "$1" in
+[^/]*/*)
+  nargs=$#
+  basedir=`${NETPWD-netpwd}`
+  # then process arguments
+  for arg
+  do
+    case $arg in
+    -B[^/]*)
+      arg=-B$basedir/`echo "X$arg" | sed -e '1s/^X-B//'`
+      ;;
+    [^-/]*/*)
+      arg=$basedir/$arg
+      ;;
+    esac
+    set fnord ${1+"$@"} "$arg"
+  done
+  shift $nargs # take list of fnords out
+  shift $nargs # take original args out
+  ;;
+esac
+
+# Now run the real distcc thingie, or just run the program directly if
+# distcc is found to be missing.
+if test -x ${REAL_DISTCC-/usr/bin/distcc}; then
+  x=${REAL_DISTCC-/usr/bin/distcc}
+else
+  x=$1
+  shift
+fi
+exec $x ${1+"$@"}
