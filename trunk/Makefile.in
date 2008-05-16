@@ -884,7 +884,6 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f distccmon-gnome
 	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
 	rm -rf +distcheck
-	rm -f pump
 	rm -rf "$(include_server_builddir)"
 
 clean-autoconf:
