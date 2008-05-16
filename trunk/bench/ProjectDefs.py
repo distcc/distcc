@@ -57,10 +57,19 @@ Project(url='http://ftp.gnu.org/gnu/make/make-3.80.tar.bz2',
 #        build_cmd='make bzImage',
 #        ).register()
 
-Project(url='http://www.kernel.org/pub/linux/kernel/v2.5/linux-2.5.51.tar.bz2',
-        md5='2300b7b7d2ce4c017fe6dae49717fd9a *linux-2.5.51.tar.bz2',
-        configure_cmd='make defconfig',
-        build_cmd='make bzImage'
+# failed: compilation error
+#   scripts/kconfig/mconf.c:91: error: static declaration of 'current_menu' follows non-static declaration
+#   scripts/kconfig/lkc.h:59: error: previous declaration of 'current_menu' was here
+#Project(url='http://www.kernel.org/pub/linux/kernel/v2.5/linux-2.5.51.tar.bz2',
+#        md5='2300b7b7d2ce4c017fe6dae49717fd9a *linux-2.5.51.tar.bz2',
+#        configure_cmd='make defconfig',
+#        build_cmd='make bzImage'
+#        ).register()
+
+Project(url='http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2',
+        md5='db95a49a656a3247d4995a797d333153 *linux-2.6.25.tar.bz2',
+        configure_cmd="make V=1 HOSTCC='$(CC)' defconfig",
+        build_cmd="make V=1 HOSTCC='$(CC)' bzImage",
         ).register()
 
 Project(url='http://sources-redhat.oc1.mirrors.redwire.net/gdb/old-releases/gdb-5.3.tar.gz',
