@@ -24,6 +24,7 @@ __author__ = "Nils Klarlund"
 # ppid is 0; if so, then abort.
 
 # Python imports
+import gc
 import os
 import re
 import sys
@@ -628,6 +629,10 @@ def Main():
     include_server_port_ready.Release()
     try:
       try:
+        gc.set_threshold(basics.GC_THRESHOLD)
+        # Use commented-out line below to have a message printed for each
+        # collection.
+        # gc.set_debug(gc.DEBUG_STATS + gc.DEBUG_COLLECTABLE)
         server.serve_forever()
       except KeyboardInterrupt:
         print >> sys.stderr, (
