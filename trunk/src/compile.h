@@ -43,4 +43,4 @@ int dcc_fresh_dependency_exists(const char *dotd_fname,
                                 time_t reference_time,
                                 char **fresh_dependency);
 
-int ddc_discrepancy_filename(char **filename);
+int dcc_discrepancy_filename(char **filename);
