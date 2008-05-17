@@ -71,7 +71,7 @@ static const char *const discrepancy_suffix = "/discrepancy_counter";
  * locally. This function may return NULL in @param filename if the name cannot
  * be determined.
  **/ 
-int ddc_discrepancy_filename(char **filename) 
+int dcc_discrepancy_filename(char **filename) 
 {
     const char *include_server_port = getenv("INCLUDE_SERVER_PORT");
     *filename = NULL;
@@ -453,7 +453,7 @@ dcc_build_somewhere(char *argv[],
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename;
 
-    if ((ret = ddc_discrepancy_filename(&discrepancy_filename)))
+    if ((ret = dcc_discrepancy_filename(&discrepancy_filename)))
         return ret;
 
     if (sg_level)

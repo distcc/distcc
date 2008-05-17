@@ -656,7 +656,7 @@ class Compile_c_Case(SimpleDistCC_Case):
   """Unit tests for source file 'compile.c.'
   
   Currently, only the functions dcc_fresh_dependency_exists() and
-  ddc_discrepancy_filename() are tested.
+  dcc_discrepancy_filename() are tested.
   """
 
   def getDep(self, line):
@@ -682,12 +682,12 @@ class Compile_c_Case(SimpleDistCC_Case):
       # ********************************
       os.environ['INCLUDE_SERVER_PORT'] = "abc/socket"
       out, err = self.runcmd(
-              "h_compile ddc_discrepancy_filename")
+              "h_compile dcc_discrepancy_filename")
       self.assert_equal(out, "abc/discrepancy_counter")
 
       os.environ['INCLUDE_SERVER_PORT'] = "socket"
       out, err = self.runcmd(
-              "h_compile ddc_discrepancy_filename")
+              "h_compile dcc_discrepancy_filename")
       self.assert_equal(out, "(NULL)")
 
       # os.environ will be cleaned out at start of next test.

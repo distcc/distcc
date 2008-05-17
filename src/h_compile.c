@@ -48,7 +48,7 @@
 "  COMMAND is dcc_fresh_dependency_exists,\n" \
 "    with ARGS being DOTD_FNAME EXCL_PAT REF_TIME\n" \
 "or\n" \
-"  COMMAND is ddc_discrepancy_filename\n"
+"  COMMAND is dcc_discrepancy_filename\n"
 
 const char *rs_program_name = __FILE__;
 
@@ -87,13 +87,13 @@ int main(int argc, char *argv[])
                 printf("result %s\n", result ? result : "(NULL)");
             if (result) free(result);
         }
-    } else if (strcmp(argv[1], "ddc_discrepancy_filename") == 0) {
+    } else if (strcmp(argv[1], "dcc_discrepancy_filename") == 0) {
         if (argc != 2) {
             rs_log_error("dcc_discrepancy_filename expects no arguments");
             return 1;
         }
         char *result;
-        int ret = ddc_discrepancy_filename(&result);
+        int ret = dcc_discrepancy_filename(&result);
         if (ret) 
             printf("h_compile.c: UNEXPECTED RETURN VALUE\n");
         else
