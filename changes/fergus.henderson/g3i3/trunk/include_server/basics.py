@@ -184,6 +184,16 @@ SIMPLE = 0     # not implemented
 MEMOIZING = 1  # only one currently implemented
 ALGORITHMS = [SIMPLE, MEMOIZING]
 
+# PYTHON TUNING
+
+# The default for the first parameter of gc.set_threshold is 700; see
+# http://www.isi.edu/~chiang/python.html for a discussion of why this parameter
+# can be bumped up considerably for speed-up.  The new default of 10000 was
+# tested on a very large application, where include server time CPU time drops
+# from 151s to 118s (best times out of 10 runs). There was no seeming changes to
+# memory usage.  Trying with 100,000 did not speed up the application further.
+GC_THRESHOLD = 10000  
+
 
 # FLAGS FOR COMMAND LINE OPTIONS
 
