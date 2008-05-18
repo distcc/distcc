@@ -192,8 +192,8 @@ static void dcc_concurrency_level(void) {
 int main(int argc, char **argv)
 {
     int status, sg_level, tweaked_path = 0;
-    char **compiler_args;
-    char *compiler_name;
+    char **compiler_args = NULL; /* dynamically allocated */
+    char *compiler_name; /* points into argv[0] */
     int ret;
 
     dcc_client_catch_signals();
@@ -240,7 +240,9 @@ int main(int argc, char **argv)
             goto out;
         }
         
-        dcc_find_compiler(argv, &compiler_args);
+        if ((ret = dcc_find_compiler(argv, &compiler_args)) != 0) {
+            goto out;
+        }
         /* compiler_args is now respectively either "cc -c hello.c" or
          * "gcc -c hello.c" */
 
@@ -257,8 +259,16 @@ int main(int argc, char **argv)
                                           &tweaked_path)) != 0)
             goto out;
         
-        dcc_copy_argv(argv, &compiler_args, 0);
-        compiler_args[0] = compiler_name;
+        if ((ret = dcc_copy_argv(argv, &compiler_args, 0)) != 0) {
+            goto out;
+        }
+        free(compiler_args[0]);
+        compiler_args[0] = strdup(compiler_name);
+        if (!compiler_args[0]) {
+            rs_log_error("strdup failed - out of memory?");
+            ret = EXIT_OUT_OF_MEMORY;
+            goto out;
+        }
     }
 
     if (sg_level - tweaked_path > 0) {
@@ -268,8 +278,12 @@ int main(int argc, char **argv)
     }
 
     ret = dcc_build_somewhere_timed(compiler_args, sg_level, &status);
+    compiler_args = NULL; /* dcc_build_somewhere_timed already free'd it. */
 
     out:
+    if (compiler_args) {
+      dcc_free_argv(compiler_args);
+    }
     dcc_maybe_send_email();
     dcc_exit(ret);
 }

@@ -427,8 +427,7 @@ static int dcc_please_send_email_after_investigation(
  * be a big performance problem because this should occur only rarely.
  *
  * @param argv Command to execute.  Does not include 0='distcc'.
- * Treated as read-only, because it is a pointer to the program's real
- * argv.
+ * Must be dynamically allocated.  This routine deallocates it.
  *
  * @param status On return, contains the waitstatus of the compiler or
  * preprocessor.  This function can succeed (in running the compiler) even if
@@ -443,6 +442,7 @@ dcc_build_somewhere(char *argv[],
     char *input_fname = NULL, *output_fname, *cpp_fname, *deps_fname = NULL;
     char **files;
     char **server_side_argv = NULL;
+    int server_side_argv_deep_copied = 0;
     char *server_stderr_fname = NULL;
     int needs_dotd = 0;
     int sets_dotd_target = 0;
@@ -451,21 +451,31 @@ dcc_build_somewhere(char *argv[],
     int ret;
     int remote_ret = 0;
     struct dcc_hostdef *host = NULL;
-    char *discrepancy_filename;
+    char *discrepancy_filename = NULL;
+    char **new_argv;
+
+    if ((ret = dcc_expand_preprocessor_options(&argv)) != 0)
+        goto clean_up;
 
     if ((ret = dcc_discrepancy_filename(&discrepancy_filename)))
-        return ret;
+        goto clean_up;
 
     if (sg_level)
         goto run_local;
 
     /* TODO: Perhaps tidy up these gotos. */
 
-    if (dcc_scan_args(argv, &input_fname, &output_fname, &argv) != 0) {
+    /* FIXME: this may leak memory for argv. */
+
+    ret = dcc_scan_args(argv, &input_fname, &output_fname, &new_argv);
+    dcc_free_argv(argv);
+    argv = new_argv;
+    if (ret != 0) {
         /* we need to scan the arguments even if we already know it's
          * local, so that we can pick up distcc client options. */
         goto lock_local;
     }
+
 #if 0
     /* turned off because we never spend long in this state. */
     dcc_note_state(DCC_PHASE_STARTUP, input_fname, NULL);
@@ -543,6 +553,7 @@ dcc_build_somewhere(char *argv[],
     	cpp_pid = 0;
         dcc_get_dotd_info(argv, &deps_fname, &needs_dotd, 
                           &sets_dotd_target, &dotd_target);
+        server_side_argv_deep_copied = 1;
     	if ((ret = dcc_copy_argv(argv, &server_side_argv, 2)))
     	    goto fallback;
         if (needs_dotd && !sets_dotd_target) {
@@ -655,12 +666,22 @@ dcc_build_somewhere(char *argv[],
     }
 
   clean_up:
-    free(server_side_argv);
+    dcc_free_argv(argv);
+    if (server_side_argv_deep_copied) {
+      if (server_side_argv != NULL) {
+        dcc_free_argv(server_side_argv);
+      }
+    } else {
+      free(server_side_argv);
+    }
     free(discrepancy_filename);
     return ret;
 }
 
-
+/*
+ * argv must be dynamically allocated.
+ * This routine will deallocate it.
+ */
 int dcc_build_somewhere_timed(char *argv[],
                               int sg_level,
                               int *status)

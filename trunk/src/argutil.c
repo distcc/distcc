@@ -101,7 +101,7 @@ int dcc_copy_argv(char **from, char ***out, int delta)
     b = malloc((l+1+delta) * (sizeof from[0]));
     if (b == NULL) {
         rs_log_error("failed to allocate copy of argv");
-        exit(EXIT_OUT_OF_MEMORY);
+        return EXIT_OUT_OF_MEMORY;
     }
     for (i = 0; i < l; i++) {
         if ((b[i] = strdup(from[i])) == NULL) {
@@ -161,5 +161,3 @@ char *dcc_argv_tostr(char **a)
 
     return s;
 }
-
-
