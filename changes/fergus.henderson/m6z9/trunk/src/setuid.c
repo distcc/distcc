@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; fill-column: 78; -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  * 
  * distcc -- A simple distributed compiler system
  *
@@ -20,7 +20,7 @@
  * USA
  */
 
-#include "config.h"
+#include <config.h>
 
 #include <stdlib.h>
 #include <unistd.h>

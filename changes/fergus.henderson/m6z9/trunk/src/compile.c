@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -22,7 +22,7 @@
 
 
 
-#include "config.h"
+#include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,7 +71,7 @@ static const char *const discrepancy_suffix = "/discrepancy_counter";
  * locally. This function may return NULL in @param filename if the name cannot
  * be determined.
  **/ 
-int ddc_discrepancy_filename(char **filename) 
+int dcc_discrepancy_filename(char **filename) 
 {
     const char *include_server_port = getenv("INCLUDE_SERVER_PORT");
     *filename = NULL;
@@ -84,7 +84,7 @@ int ddc_discrepancy_filename(char **filename)
         int delta = strlen(discrepancy_suffix) - 
             strlen(include_server_port_suffix);
         assert (delta > 0);
-        *filename = malloc(strlen(include_server_port) + delta);
+        *filename = malloc(strlen(include_server_port) + 1 + delta);
         if (!*filename) {
             rs_log_error("failed to allocate space for filename");
             return EXIT_OUT_OF_MEMORY;
@@ -95,7 +95,7 @@ int ddc_discrepancy_filename(char **filename)
         /* Because include_server_port_suffix is a suffix of include_server_port
          * we expect to find a '/' at slash_pos in filename. */
         assert((*filename)[slash_pos] == '/');
-        strcpy(*filename + slash_pos, discrepancy_suffix);
+        (void) strcpy(*filename + slash_pos, discrepancy_suffix);
         return 0;
     } else 
         return 0;
@@ -225,7 +225,7 @@ int dcc_fresh_dependency_exists(const char *dotd_fname,
     struct stat stat_dotd;
     off_t dotd_fname_size = 0;
     FILE *fp;
-    char c;
+    int c;
     int res;
     char *dep_name;
 
@@ -453,7 +453,7 @@ dcc_build_somewhere(char *argv[],
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename;
 
-    if ((ret = ddc_discrepancy_filename(&discrepancy_filename)))
+    if ((ret = dcc_discrepancy_filename(&discrepancy_filename)))
         return ret;
 
     if (sg_level)

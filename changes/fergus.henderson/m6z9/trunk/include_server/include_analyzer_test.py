@@ -40,10 +40,11 @@ class IncludeAnalyzerTest(unittest.TestCase):
     self.global_dirs = []
     basics.opt_print_statistics = False
     basics.opt_debug_pattern = 1
-    basics.InitializeClientTmp()
+    client_root_keeper = basics.ClientRootKeeper()
     if algorithm == basics.MEMOIZING:
       self.include_analyzer = (
-        include_analyzer_memoizing_node.IncludeAnalyzerMemoizingNode())
+        include_analyzer_memoizing_node.IncludeAnalyzerMemoizingNode(
+            client_root_keeper))
     else:
       self.fail("Algorithm not known.")
 
@@ -146,8 +147,8 @@ class IncludeAnalyzerTest(unittest.TestCase):
     includes = self.RetrieveCanonicalPaths(
       self.ProcessCompilationCommandLine(
         """gcc  -D"STR(X)=# X" """
-        + """-D"FINCLUDE(P)=STR(../TEST_DATA/dfoo/P)" """
-        + """-DTEST_DATA=test_data """
+        + """-D"FINCLUDE(P)=STR(../MY_TEST_DATA/dfoo/P)" """
+        + """-DMY_TEST_DATA=test_data """
         + "test_data/func_macro.c",
         os.getcwd()))
 
@@ -170,10 +171,12 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
     def CheckGeneration(lst, expected):
       for f_name in lst:
-        self.failUnless(re.match(r"/dev/shm/.+[.]include_server[-][0-9]+[-]%s"
-                                 % expected,
-                                 f_name),
-                        f_name)
+        self.failUnless(
+            re.match(r"%s/.+[.]include_server[-][0-9]+[-]%s"
+                     % (self.include_analyzer.client_root_keeper.client_tmp,
+                        expected),
+                     f_name),
+            f_name)
 
     def GetFileNamesFromAbsLzoName(lst):
       """Transform lists with elements like:
@@ -222,7 +225,8 @@ class IncludeAnalyzerTest(unittest.TestCase):
       
       files_and_links = self.include_analyzer.DoCompilationCommand(
         "gcc -Itest_data/dfoo test_data/stat_triggers.c".split(),
-        os.getcwd())
+        os.getcwd(),
+        self.include_analyzer.client_root_keeper)
 
       # Check that we picked up the dfoo version of the .h file!
       self.assertEqual(GetFileNamesFromAbsLzoName(files_and_links),
@@ -253,7 +257,8 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
       files_and_links = self.include_analyzer.DoCompilationCommand(
         "gcc -Itest_data/dfoo test_data/stat_triggers.c".split(),
-        os.getcwd())
+        os.getcwd(),
+        self.include_analyzer.client_root_keeper)
 
       self.assertEqual(self.include_analyzer.generation, 2)
       CheckGeneration(files_and_links, 2)
@@ -294,7 +299,8 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
       files_and_links = self.include_analyzer.DoCompilationCommand(
         "gcc -Itest_data/dfoo test_data/stat_triggers.c".split(),
-        os.getcwd())
+        os.getcwd(),
+        self.include_analyzer.client_root_keeper)
 
       # Now, check that we again picked up the dfoo version of the .h file.
       self.assertEqual(GetFileNamesFromAbsLzoName(files_and_links),

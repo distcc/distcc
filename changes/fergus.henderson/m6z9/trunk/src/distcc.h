@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  * 
  * distcc -- A simple distributed compiler system
  *
@@ -251,6 +251,7 @@ int dcc_set_output(char **, char *);
 int dcc_set_input(char **, char *);
 int dcc_scan_args(char *argv[], /*@out@*/ /*@relnull@*/ char **orig_o,
                   char **orig_i, char ***ret_newargv);
+int dcc_expand_preprocessor_options(char ***argv_ptr);
 
 /* argutil.c */
 unsigned int dcc_argv_len(char **a);

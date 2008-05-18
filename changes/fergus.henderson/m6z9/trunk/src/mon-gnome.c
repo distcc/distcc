@@ -1,4 +1,4 @@
-/* -*- c-file-style: "k&r"; c-basic-offset: 4; indent-tabs-mode: nil; -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  * 
  * distcc -- A simple distributed compiler system
  *
@@ -45,7 +45,7 @@
 
 /* last one using chart drawingarea is 1.43.2.37 */
 
-#include "config.h"
+#include <config.h>
 
 #include <sys/types.h>
 

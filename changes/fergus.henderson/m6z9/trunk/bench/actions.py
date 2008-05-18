@@ -24,9 +24,9 @@ all_actions = [('download', True, ''),
                ('sweep', True, 'remove build directory before unpacking'),
                ('unpack', True, 'unpack source'),
                ('configure', True, ''),
-               ('clean', True, 'run "make clean" or equivalent'),
                ('build', True, ''),
-               ('scrub', True, 'remove build directory')]
+               ('clean', True, 'run "make clean" or equivalent'),
+               ('scrub', False, 'remove build directory')]
 
 
 def action_help():

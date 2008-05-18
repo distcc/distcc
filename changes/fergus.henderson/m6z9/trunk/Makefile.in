@@ -18,13 +18,15 @@ SHELL = @SHELL@
 CFLAGS = @CFLAGS@
 WERROR_CFLAGS = @WERROR_CFLAGS@
 POPT_CFLAGS = @POPT_CFLAGS@
+POPT_INCLUDES = @POPT_INCLUDES@
 
 LDFLAGS = @LDFLAGS@
 CC = @CC@
 CPP = @CPP@
-# We add a few cppflags.
-# -Isrc is so src .h-files are available to files in the tests directory.
-CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} -Isrc -Ilzo -I"$(srcdir)/src" -I"$(srcdir)/lzo"
+# We add a few cppflags.  -Isrc is so that config.h can be found in the build
+# directory.  It is before I"$(srcdir)/src" to reflect VPATH semantics.
+CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} \
+	   -Isrc -I"$(srcdir)/src" -I"$(srcdir)/lzo" $(POPT_INCLUDES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -48,7 +50,7 @@ oldincludedir = /usr/include
 docdir = @docdir@
 pkgdatadir = $(datadir)/@PACKAGE_NAME@
 
-include_server_builddir = $(builddir)/_builddir
+include_server_builddir = $(builddir)/_include_server
 
 # These must be done from here, not from autoconf, because they can 
 # contain variable expansions written in Make syntax.  Ew.
@@ -436,7 +438,7 @@ check_include_server_PY = \
 
 ## NOTE: "all" must be the first (default) rule, aside from patterns.
 
-all: $(bin_PROGRAMS) include-server
+all: $(bin_PROGRAMS) pump include-server
 
 #  src/config.h.in is used by config.status
 Makefile: Makefile.in src/config.h.in config.status
@@ -541,21 +543,21 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 		$(mon_obj) $(gnome_obj) \
 		$(LIBS) $(GNOME_CFLAGS) $(GNOME_LIBS)
 
-# The include-server is a python app, so we use Python's build system.
-# The jumping through hoops with cd is to normalize builddir if it's relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+# The include-server is a python app, so we use Python's build system.  We pass
+# the distcc version, the source location, the CPP flags (for location of the
+# includes), and the build location.
 include-server:
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
-	  CURDIR=`pwd` && mkdir -p "$(include_server_builddir)" && \
-	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
-	  cd "$$CURDIR" && cd "$(srcdir)/include_server" &&	\
+	  mkdir -p "$(include_server_builddir)" &&      \
 	  DISTCC_VERSION="$(VERSION)"			\
-	  $(INCLUDESERVER_PYTHON) ./setup.py		\
+	  SRCDIR="$(srcdir)"                            \
+	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
-	         --build-base="$$BUILDDIR" 		\
-	         --build-temp="$$BUILDDIR";             \
+	        --build-base="$(include_server_builddir)"  \
+	        --build-temp="$(include_server_builddir)"; \
 	fi
 
 
@@ -593,7 +595,7 @@ distcheck: dist
 	[ ! -d +distcheck ] || chmod -R u+w +distcheck
 	rm -rf '+distcheck'
 	mkdir '+distcheck'
-	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xv
+	cd '+distcheck' && $(GZIP_BIN) -d < "../$(tarball_gz)" | $(TAR) xvf -
 	mkdir "+distcheck/$(distdir)/_build"
 	mkdir "+distcheck/$(distdir)/_inst"
 	chmod -R a-w +distcheck
@@ -622,8 +624,8 @@ dist-sign:
 dist-files: $(dist_files)
 	for f in $(dist_files) $(dist_dirs); do \
 	  mkdir -p "$(distdir)"/`dirname "$$f"` || exit 1; \
-	  cp -a "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
-	      cp -a "$$f" "$(distdir)/$$f" || exit 1; \
+	  cp -pR "$(srcdir)/$$f" "$(distdir)/$$f" 2>/dev/null || \
+	      cp -pR "$$f" "$(distdir)/$$f" || exit 1; \
 	done
 	for f in $(dist_dirs); do \
 	  find "$(distdir)/$$f" -name '.[^.]*' -exec rm -rf \{\} \; -prune ; \
@@ -690,6 +692,7 @@ distcc-maintainer-check: check_programs
 # server.  TODO(klarlund): the outermost if assumes that the include-server
 # target may be satisfied w/o actually building an include server (or rather the
 # C extension); this logic needs to be verified or amended.
+# TODO(csilvers): keep track of failures instead of exiting on the first one.
 include-server-maintainer-check: include-server
 	@if ! test -d "$(include_server_builddir)"; then \
 	  echo "Skipped include-server check"; \
@@ -702,8 +705,8 @@ include-server-maintainer-check: include-server
 	    p_base=`basename "$$p"`; \
 	    echo -n "Running: "; \
 	    echo \
-              "PYTHONPATH=$$CURDIR/$$include_server_loc $(INCLUDESERVER_PYTHON) $$p_base"; \
-	    if PYTHONPATH="$$CURDIR/$$include_server_loc" $(INCLUDESERVER_PYTHON) "$$p_base" \
+              "PYTHONPATH=$$CURDIR/$$include_server_loc:$$PYTHONPATH $(INCLUDESERVER_PYTHON) $$p_base"; \
+	    if PYTHONPATH="$$CURDIR/$$include_server_loc:$$PYTHONPATH" $(INCLUDESERVER_PYTHON) "$$p_base" \
 		 > "$$CURDIR/$(tempdir)/$$p_base.out" 2>&1; then \
 	      echo "PASS"; \
 	      rm "$$CURDIR/$(tempdir)/$$p_base.out"; \
@@ -716,12 +719,12 @@ include-server-maintainer-check: include-server
 # Do distcc-maintainer-check in pump-mode, if possible.
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
-	  DISTCC_HOSTS='<invalid>' \
-	  DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
+	  DISTCC_HOSTS='<invalid>,cpp' \
 	    "$(builddir)/pump" \
-              $(MAKE) \
+	        $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
-                TESTDISTCC_OPTS=--pump distcc-maintainer-check; \
+	        TESTDISTCC_OPTS="--pump $(TESTDISTCC_OPTS)" \
+	        distcc-maintainer-check; \
 	fi
 
 # Do distcc-maintainer-check, for non-pumped distcc, and try the include_server
@@ -763,7 +766,7 @@ single-test: check_programs
 ## CHECK targets for code that has been installed.
 
 .PHONY: pump-installcheck distcc-installcheck maintainer-installcheck
-.PHONY: installcheck 
+.PHONY: installcheck verify-binaries-installcheck daemon-installcheck
 
 # Verify that DISTCC_INSTALLATION contains the expected set of binaries.
 verify-binaries-installcheck:
@@ -784,8 +787,8 @@ verify-binaries-installcheck:
 # Lookup distcc programs to be checked in $(DISTCC_INSTALLATION).  The
 # check_PROGRAMS binaries, however, are to be found in $(builddir).
 distcc-installcheck: $(check_PROGRAMS)
-	PATH="$(DISTCC_INSTALLATION):`cd $(builddir) && pwd`:\
-$(RESTRICTED_PATH)" \
+	BUILDDIR=`cd "$(builddir)" && pwd`; \
+	PATH="$(DISTCC_INSTALLATION):$$BUILDDIR:$(RESTRICTED_PATH)" \
 	  TESTDISTCC_OPTS="$(TESTDISTCC_OPTS)" \
 	  $(MAKE) maintainer-check-no-set-path
 
@@ -793,8 +796,7 @@ $(RESTRICTED_PATH)" \
 pump-installcheck:
 	which_loc=`which which`; \
 	pump_loc=`PATH="$(DISTCC_INSTALLATION)" "$$which_loc" pump`; \
-	DISTCC_HOSTS='<invalid>' \
-	DISTCC_SRCDIR=`cd "$(srcdir)" && pwd` \
+	DISTCC_HOSTS='<invalid>,cpp' \
 	  "$$pump_loc" \
             $(MAKE) DISTCC_INSTALLATION="$(DISTCC_INSTALLATION)" \
 	      RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -821,6 +823,30 @@ installcheck:
 	   echo "Cannot run install-tests: python binary not found"; \
 	   false; \
 	fi
+
+# This tests that the distcc daemon is running, and that it and distcc
+# and the pump script have been installed correctly, by compiling a simple
+# hello world program with distcc and distcc-pump.
+# This can be used after "make install-deb".
+#
+# This uses distcc from your PATH and (for the first test)
+# may use DISTCC_HOSTS from your environment or /etc/distcc/hosts.
+#
+# This test might fail if the --allow options passed to distccd
+# (which may be set in the /etc/distcc/clients.allow file)
+# do not include 127.0.0.1.
+daemon-installcheck:
+	mkdir -p _testtmp/daemon-installcheck && \
+	    cd _testtmp/daemon-installcheck && \
+	    echo '#include <stdio.h>' > hello.c && \
+	    echo 'int main(void) { puts("hello world"); return 0; }' >> hello.c && \
+	    rm -f hello.o && \
+	    DISTCC_FALLBACK=0 distcc $(CC) $(CFLAGS) -c hello.c -o hello.o && \
+	    test -f hello.o && \
+	    rm -f hello.o && \
+	    DISTCC_POTENTIAL_HOSTS=127.0.0.1 DISTCC_FALLBACK=0 \
+	        pump distcc $(CC) $(CFLAGS) -c hello.c -o hello.o && \
+	    test -f hello.o
 
 ######################################################################
 ## BENCHMARK targets
@@ -857,7 +883,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
-	rm -rf _testtmp  # produced by test/testdistcc.py
+	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
 	rm -rf +distcheck
 	rm -rf "$(include_server_builddir)"
 
@@ -867,17 +893,16 @@ clean-autoconf:
 clean-lzo:
 	rm -f lzo/*.[od] lzo/testmini
 
-# The jumping through hoops with cd is to normalize build/destdir if relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
+
 clean-include-server:
 	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
-	  CURDIR=`pwd` && mkdir -p "$(include_server_builddir)" && \
-	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
-	  cd "$$CURDIR" && cd "$(srcdir)/include_server" &&	\
 	  DISTCC_VERSION="$(VERSION)"			\
-	  $(INCLUDESERVER_PYTHON) ./setup.py clean	\
-	     --build-base="$$BUILDDIR" 			\
-	     --build-temp="$$BUILDDIR";			\
+	  SRCDIR="$(srcdir)"                            \
+	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
+	      clean	\
+	         --build-base="$(include_server_builddir)"  \
+	         --build-temp="$(include_server_builddir)"; \
 	fi
 
 maintainer-clean: distclean \
@@ -899,7 +924,7 @@ distclean: distclean-autoconf clean
 ######################################################################
 ## MAINTAINER targets
 
-.PHONY: upload-man upload-dist
+.PHONY: upload-man upload-dist rpm deb install-deb
 
 upload-man: $(man_HTML)
 	rsync -avz $(man_HTML) \
@@ -911,18 +936,15 @@ upload-dist: alldist
 	  `find . -name '*.tar.gz' -o -name '*.tar.bz2' \
 	          -o -name '*.rpm' -o -name '*.deb'`
 
-.PHONY: rpm
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
 	cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
 
 # This uses the output of 'make rpm' to convert rpm files to deb files
-.PHONY: deb
 deb: rpm packaging/deb.sh
 	cd packaging && ./deb.sh *.rpm
 
-.PHONY: install-deb
+# We copy .deb files to /tmp to avoid problems with NFS root_squash.
 install-deb: deb
-	# Copy .deb files to /tmp to avoid problems with NFS root_squash
 	tmpdir=`mktemp -d /tmp/distcc-install-deb-XXXXXX` && \
 	cp packaging/*.deb $$tmpdir && \
 	cd "$$tmpdir" && \
@@ -960,31 +982,48 @@ showpaths:
 install: showpaths install-doc install-man install-programs \
 	install-include-server install-example @INSTALL_GNOME@ install-conf
 
-install-programs: $(bin_PROGRAMS) pump
+install-programs: $(bin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
-	for p in $(bin_PROGRAMS) pump; do \
+	for p in $(bin_PROGRAMS); do \
 	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
 	done
 
-# The jumping through hoops with cd is to normalize build/destdir if relative.
-# And we always set BUILDDIR and DISTCC_VERSION since setup.py looks for them.
-install-include-server: include-server
+# See comments for the include-server target.  Also, we work around an issue in
+# the change_root function of distutils/utils.py that turns the absolute prefix
+# into a relative reference if the root is the empty string: we absolutize the
+# destination directory in order to substitute '/' for the empty prefix (the
+# default) when defining the '--root' parameter.
+# The final complex issue involves installing pump.  pump wants to
+# know the installed-location of include_server.py.  The only way to
+# tell is to have setup.py install it, and then look what it says (via
+# the --record output).  So when installing pump, we look at the
+# --record output and modify the installed pump to have that location.
+install-include-server: include-server pump
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
-	  CURDIR=`pwd` && 				\
-	  cd "$(include_server_builddir)" && BUILDDIR=`pwd` && export BUILDDIR && \
-	  cd "$(DESTDIR)" && DESTDIR=`pwd` && export DESTDIR && cd "$$CURDIR" && \
-	  cd "$(srcdir)/include_server" && 		\
+	  mkdir -p "$(include_server_builddir)" &&      \
+	  DESTDIR=`cd "$(DESTDIR)/" && pwd` &&            \
 	  DISTCC_VERSION="$(VERSION)"			\
-	  $(INCLUDESERVER_PYTHON) ./setup.py 		\
+	  SRCDIR="$(srcdir)"                            \
+	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
-	         --build-base="$$BUILDDIR" 		\
-	         --build-temp="$$BUILDDIR"		\
+	        --build-base="$(include_server_builddir)" \
+	        --build-temp="$(include_server_builddir)" \
 	      install 					\
 	         --prefix="$(prefix)" 			\
-	         --record="$(PYTHON_INSTALL_RECORD)"   	\
-	         --root="$$DESTDIR";			\
+	         --record="$(include_server_builddir)/install.log" \
+	         --root="$$DESTDIR"                     \
+	    || exit 1; \
+	  if test -n "$(PYTHON_INSTALL_RECORD)"; then \
+	    cp -f "$(include_server_builddir)/install.log" "$(PYTHON_INSTALL_RECORD)"; \
+	  fi; \
+	  $(mkinstalldirs) "$(DESTDIR)$(bindir)" && \
+	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
+	  sed "s,^include_server='',include_server='$$DESTDIR$$INCLUDE_SERVER'," \
+	    pump > "$(include_server_builddir)/pump" && \
+	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
 	fi
 
 install-man: $(man1_MEN)

@@ -44,4 +44,6 @@ def std(m):
     return v and Numeric.sqrt(v)
 
 def mean(m):
+    if len(m) < 1:
+        return None
     return Numeric.average(m)
