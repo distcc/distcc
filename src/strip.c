@@ -55,6 +55,11 @@
  * describes some options, such as -d, that only take effect when
  * passed directly to cpp.  When given to gcc they have different
  * meanings.
+ *
+ * The value stored in '*out_argv' is malloc'd, but the arguments that
+ * are pointed to by that array are aliased with the values pointed
+ * to by 'from'.  The caller is responsible for calling free() on
+ * '*out_argv'.
  **/
 int dcc_strip_local_args(char **from, char ***out_argv)
 {
@@ -173,6 +178,3 @@ int dcc_strip_dasho(char **from, char ***out_argv)
 
     return 0;
 }
-
-
-

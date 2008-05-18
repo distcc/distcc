@@ -119,6 +119,11 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
  * This code is called on both the client and the server, though they use the
  * results differently.
  *
+ * This function makes a copy of the arguments, modified to ensure that
+ * the arguments include '-o <filename>'.  This is returned in *ret_newargv.
+ * The copy is dynamically allocated and the caller is responsible for
+ * deallocating it.
+ *
  * @returns 0 if it's ok to distribute this compilation, or an error code.
  **/
 int dcc_scan_args(char *argv[], char **input_file, char **output_file,
@@ -405,8 +410,8 @@ static int count_extra_args(char *dash_Wp_option) {
     while (comma != NULL) {
         char *opt = comma + 1;
         comma = strchr(opt, ',');
-        if (str_startswith(opt, "-MD,") ||
-            str_startswith(opt, "-MMD,"))
+        if (str_startswith("-MD,", opt) ||
+            str_startswith("-MMD,", opt))
         {
             char *filename = comma + 1;
             comma = strchr(filename, ',');
@@ -465,6 +470,10 @@ static int copy_extra_args(char **dest_argv, char *dash_Wp_option,
  * option handling elsewhere; this is the only place
  * that needs to parse "-Wp," options.
  * Returns 0 on success, nonzero for error (out of memory).
+ *
+ * The argv array pointed to by argv_ptr when this function
+ * is called must have been dynamically allocated.  It remains
+ * the caller's responsibility to deallocate it.
  */
 int dcc_expand_preprocessor_options(char ***argv_ptr) {
     int i, j, ret;
@@ -472,7 +481,7 @@ int dcc_expand_preprocessor_options(char ***argv_ptr) {
     char **new_argv;
     int argc = dcc_argv_len(argv);
     for (i = 0; argv[i]; i++) {
-        if (str_startswith(argv[i], "-Wp,")) {
+        if (str_startswith("-Wp,", argv[i])) {
             /* First, calculate how many extra arguments we'll need. */
             int extra_args = count_extra_args(argv[i]);
             assert(extra_args >= 1);
@@ -484,7 +493,8 @@ int dcc_expand_preprocessor_options(char ***argv_ptr) {
             for (j = 0; j < i; j++) {
               new_argv[j] = argv[j];
             }
-            if ((ret = copy_extra_args(argv + i, argv[i], extra_args)) != 0) {
+            if ((ret = copy_extra_args(new_argv + i, argv[i],
+                                       extra_args)) != 0) {
               free(new_argv);
               return ret;
             }

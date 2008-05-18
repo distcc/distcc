@@ -76,20 +76,29 @@
  * We can tell there's no compiler name because argv[1] will be either
  * a source filename or an object filename or an option.  I don't
  * think anything else is possible.
+ *
+ * Returns a dynamically allocated argv array in *out_argv.
+ * The caller is responsible for deallocating it.
  **/
 int dcc_find_compiler(char **argv, char ***out_argv)
 {
+    int ret;
     if (argv[1][0] == '-'
         || dcc_is_source(argv[1])
         || dcc_is_object(argv[1])) {
-        dcc_copy_argv(argv, out_argv, 0);
+        if ((ret = dcc_copy_argv(argv, out_argv, 0)) != 0) {
+            return ret;
+        }
 
         /* change "distcc -c foo.c" -> "cc -c foo.c" */
+        free((*out_argv)[0]);
         (*out_argv)[0] = strdup("cc");
+        if ((*out_argv)[0] == NULL) {
+          return EXIT_OUT_OF_MEMORY;
+        }
         return 0;
     } else {
         /* skip "distcc", point to "gcc -c foo.c"  */
-        *out_argv = argv+1;
-        return 0;
+        return dcc_copy_argv(argv + 1, out_argv, 0);
     }
 }
