@@ -119,6 +119,11 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
  * This code is called on both the client and the server, though they use the
  * results differently.
  *
+ * This function makes a copy of the arguments, modified to ensure that
+ * the arguments include '-o <filename>'.  This is returned in *ret_newargv.
+ * The copy is dynamically allocated and the caller is responsible for
+ * deallocating it.
+ *
  * @returns 0 if it's ok to distribute this compilation, or an error code.
  **/
 int dcc_scan_args(char *argv[], char **input_file, char **output_file,
@@ -468,7 +473,7 @@ static int copy_extra_args(char **dest_argv, char *dash_Wp_option,
  *
  * The argv array pointed to by argv_ptr when this function
  * is called must have been dynamically allocated.  It remains
- * the caller's responsibility to dealloated it.
+ * the caller's responsibility to deallocate it.
  */
 int dcc_expand_preprocessor_options(char ***argv_ptr) {
     int i, j, ret;
