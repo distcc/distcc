@@ -411,7 +411,7 @@ StartIncludeServerAndDetermineHosts() {
         exit 1
       elif [ $num_pump_hosts -eq 0 ]; then
         echo "$program_name: error: pump mode requested, but distcc" \
-          "hosts lists does not contain any hosts with ',cpp' option" 1>&2
+          "hosts list does not contain any hosts with ',cpp' option" 1>&2
         exit 1
       else
         if [ "$verbose" = 1 ]; then
@@ -420,6 +420,7 @@ StartIncludeServerAndDetermineHosts() {
           else
             echo "__________Using $num_hosts distcc servers, of which only" \
                  "$num_pump_hosts support pump mode"
+          fi
         fi
       fi
     fi
