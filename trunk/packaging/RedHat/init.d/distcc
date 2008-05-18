@@ -223,7 +223,7 @@ deb_start() {
 
 deb_stop() {
 	log_begin_msg "Shutting down $PROG..."
-        start-stop-daemon --stop  --name distccd --exec $EXEC --retry 30
+        start-stop-daemon --stop --name distccd --retry 30
 	RETVAL=$?
 	[ $RETVAL -eq 0 ] || log_success_msg "$PROG not running?"
         log_end_msg $RETVAL
