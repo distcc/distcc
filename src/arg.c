@@ -488,18 +488,18 @@ int dcc_expand_preprocessor_options(char ***argv_ptr) {
 
             new_argv = calloc(argc + extra_args, sizeof(char *));
             if (!new_argv) {
-              return EXIT_OUT_OF_MEMORY;
+                return EXIT_OUT_OF_MEMORY;
             }
             for (j = 0; j < i; j++) {
-              new_argv[j] = argv[j];
+                new_argv[j] = argv[j];
             }
             if ((ret = copy_extra_args(new_argv + i, argv[i],
                                        extra_args)) != 0) {
-              free(new_argv);
-              return ret;
+                free(new_argv);
+                return ret;
             }
             for (j = i + 1; j <= argc; j++) {
-              new_argv[j + extra_args - 1] = argv[j];
+                new_argv[j + extra_args - 1] = argv[j];
             }
             free(argv);
             *argv_ptr = argv = new_argv;
