@@ -76,7 +76,7 @@ def parse_compiler_opt(optarg, cc, cxx):
     else:
       raise ValueError, ("invalid compiler option: "
                          "expecting '...,j<NUMBER OF JOBS>', found %s"
-                         % `hosts`)
+                         % `jobs`)
     if where == 'local':
         return CompilerSpec(name='local_%02d' % jobs,
                             cc=cc,
