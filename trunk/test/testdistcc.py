@@ -1827,6 +1827,7 @@ tests = [
          NoDetachDaemon_Case,
          SBeatsC_Case,
          DashD_Case,
+         DashWpMD_Case,
          BinFalse_Case,
          BinTrue_Case,
          VersionOption_Case,
