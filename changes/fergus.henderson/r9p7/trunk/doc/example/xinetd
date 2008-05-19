@@ -1,0 +1,28 @@
+# default: off
+# description: distccd serves C/C++ compilation requests from distcc clients.
+#              WARNING: This service should ONLY be used on trusted networks.
+
+# xinetd service description for distcc, contributed by akpm, updated
+# by mbp.
+
+# To use this, just check the parameters below and copy this file into
+# /etc/xinet.d/distcc, or the appropriate location for your system,
+# and then restart xinetd.  You should also create a 'distcc' user.
+
+# ===> Note that running from inetd is generally NOT recommended for
+# distcc. distccd should give better performance when it can run as a
+# standalone daemon and regulate its own load.
+
+service distcc
+{
+	disable	= 	yes
+	socket_type     = stream
+	wait            = no
+	user            = distcc
+	server          = /usr/local/bin/distccd
+	server_args     = --inetd
+
+        # This makes xinetd cope if there is no service listed in
+        # /etc/services
+        type            = UNLISTED
+}
