@@ -1,7 +1,7 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*- 
+/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
  *
  * distcc -- A simple distributed compiler system
- * $Header: /data/cvs/distcc/src/h_exten.c,v 1.7 2003/07/13 08:08:02 mbp Exp $ 
+ * $Header: /data/cvs/distcc/src/h_exten.c,v 1.7 2003/07/13 08:08:02 mbp Exp $
  *
  * Copyright (C) 2002 by Martin Pool <mbp@samba.org>
  *
@@ -14,7 +14,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     rs_trace_set_level(RS_LOG_DEBUG);
     rs_add_logger(rs_logger_file, RS_LOG_DEBUG, NULL, STDERR_FILENO);
     if (argc < 2) {
-	rs_log_error(USAGE);
-	return 1;
+        rs_log_error(USAGE);
+        return 1;
     }
 
     if (strcmp(argv[1], "dcc_fresh_dependency_exists") == 0) {
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
                                               (const char *)argv[3],
                                               ref_time,
                                               &result);
-            if (ret) 
+            if (ret)
                 printf("h_compile.c: UNEXPECTED RETURN VALUE\n");
             else
                 printf("result %s\n", result ? result : "(NULL)");
@@ -94,13 +94,13 @@ int main(int argc, char *argv[])
         }
         char *result;
         int ret = dcc_discrepancy_filename(&result);
-        if (ret) 
+        if (ret)
             printf("h_compile.c: UNEXPECTED RETURN VALUE\n");
         else
             printf("%s", result ? result : "(NULL)");
     } else {
-	rs_log_error(USAGE);
-	return 1;
+        rs_log_error(USAGE);
+        return 1;
     }
     return 0;
 }

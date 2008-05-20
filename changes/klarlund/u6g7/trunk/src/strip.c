@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -55,6 +55,11 @@
  * describes some options, such as -d, that only take effect when
  * passed directly to cpp.  When given to gcc they have different
  * meanings.
+ *
+ * The value stored in '*out_argv' is malloc'd, but the arguments that
+ * are pointed to by that array are aliased with the values pointed
+ * to by 'from'.  The caller is responsible for calling free() on
+ * '*out_argv'.
  **/
 int dcc_strip_local_args(char **from, char ***out_argv)
 {
@@ -69,7 +74,7 @@ int dcc_strip_local_args(char **from, char ***out_argv)
         rs_log_error("failed to allocate space for arguments");
         return EXIT_OUT_OF_MEMORY;
     }
-    
+
     /* skip through argv, copying all arguments but skipping ones that
      * ought to be omitted */
     for (from_i = to_i = 0; from[from_i]; from_i++) {
@@ -117,7 +122,7 @@ int dcc_strip_local_args(char **from, char ***out_argv)
             to[to_i++] = from[from_i];
         }
     }
-    
+
     /* NULL-terminate */
     to[to_i] = NULL;
 
@@ -149,7 +154,7 @@ int dcc_strip_dasho(char **from, char ***out_argv)
         rs_log_error("failed to allocate space for arguments");
         return EXIT_OUT_OF_MEMORY;
     }
-    
+
     /* skip through argv, copying all arguments but skipping ones that
      * ought to be omitted */
     for (from_i = to_i = 0; from[from_i]; ) {
@@ -173,6 +178,3 @@ int dcc_strip_dasho(char **from, char ***out_argv)
 
     return 0;
 }
-
-
-

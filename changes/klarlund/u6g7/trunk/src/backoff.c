@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -94,7 +94,7 @@ static int dcc_check_backoff(struct dcc_hostdef *host)
 int dcc_remove_disliked(struct dcc_hostdef **hostlist)
 {
     struct dcc_hostdef *h;
-    
+
     while ((h = *hostlist) != NULL) {
         if (dcc_check_backoff(h) != 0) {
             rs_trace("remove %s from list", h->hostdef_string);
@@ -105,6 +105,6 @@ int dcc_remove_disliked(struct dcc_hostdef **hostlist)
             hostlist = &h->next;
         }
     }
-    
+
     return 0;
 }

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -71,12 +71,12 @@ int dcc_x_argv(int fd, char **argv)
     int i;
     int ret;
     int argc;
-    
+
     argc = dcc_argv_len(argv);
-    
+
     if (dcc_x_token_int(fd, "ARGC", (unsigned) argc))
         return EXIT_PROTOCOL_ERROR;
-    
+
     for (i = 0; i < argc; i++) {
         if ((ret = dcc_x_token_string(fd, "ARGV", argv[i])))
             return ret;
@@ -109,7 +109,7 @@ int dcc_r_result_header(int ifd,
 {
     unsigned vers;
     int ret;
-    
+
     if ((ret = dcc_r_token_int(ifd, "DONE", &vers)))
         return ret;
 
@@ -129,7 +129,7 @@ int dcc_r_cc_status(int ifd, int *status)
 {
     unsigned u_status;
     int ret;
-    
+
     ret = dcc_r_token_int(ifd, "STAT", &u_status);
     *status = u_status;
     return ret;
@@ -162,7 +162,7 @@ int dcc_retrieve_results(int net_fd,
 
     if ((ret = dcc_r_token_int(net_fd, "SERR", &len)))
         return ret;
-        
+
     /* Save the server-side errors into a file. This way, we can
        decide later whether we want to report them to the user
        or not. We don't want to report them to the user if
@@ -182,19 +182,19 @@ int dcc_retrieve_results(int net_fd,
         || (ret = dcc_r_bulk(STDOUT_FILENO, net_fd, len, host->compr))
         || (ret = dcc_r_token_int(net_fd, "DOTO", &o_len)))
         return ret;
-        
- 
+
+
     /* If the compiler succeeded, then we always retrieve the result,
      * even if it's 0 bytes.  */
     if (*status == 0) {
         if ((ret = dcc_r_file_timed(net_fd, output_fname, o_len, host->compr)))
             return ret;
         if (host->cpp_where == DCC_CPP_ON_SERVER) {
-    	    if ((ret = dcc_r_token_int(net_fd, "DOTD", &len) == 0) 
+            if ((ret = dcc_r_token_int(net_fd, "DOTD", &len) == 0)
                 && deps_fname != NULL) {
                 ret = dcc_r_file_timed(net_fd, deps_fname, len, host->compr);
                 return ret;
-    	    }
+            }
         }
     } else if (o_len != 0) {
         rs_log_error("remote compiler failed but also returned output: "
@@ -209,7 +209,7 @@ static int dcc_read_link(const char* fname, char *points_to)
 {
     int len;
     if ((len = readlink(fname, points_to, MAXPATHLEN)) == -1) {
-        rs_log_error("readlink '%s' failed: %s", fname, strerror(errno));    
+        rs_log_error("readlink '%s' failed: %s", fname, strerror(errno));
         return EXIT_IO_ERROR;
     }
     points_to[len] = '\0';
@@ -218,15 +218,15 @@ static int dcc_read_link(const char* fname, char *points_to)
 
 static int dcc_is_link(const char *fname, int *is_link)
 {
-	struct stat buf;
-	
-	if (lstat(fname, &buf) == -1) {
-		rs_log_error("stat '%s' failed: %s", fname, strerror(errno));
-		return EXIT_IO_ERROR;
-	}
-	
-	*is_link = ((buf.st_mode & S_IFLNK) == S_IFLNK);
-	return 0;
+    struct stat buf;
+
+    if (lstat(fname, &buf) == -1) {
+        rs_log_error("stat '%s' failed: %s", fname, strerror(errno));
+        return EXIT_IO_ERROR;
+    }
+
+    *is_link = ((buf.st_mode & S_IFLNK) == S_IFLNK);
+    return 0;
 }
 
 /* Send to @p ofd @p n_files whose names are in @p fnames.
@@ -249,16 +249,16 @@ int dcc_x_many_files(int ofd,
     char *original_fname;
 
     dcc_x_token_int(ofd, "NFIL", n_files);
-    
+
     for (; *fnames != NULL; ++fnames) {
-    	fname = *fnames;
-    	ret = dcc_get_original_fname(fname, &original_fname);
-    	if (ret) return ret;
-    	
+        fname = *fnames;
+        ret = dcc_get_original_fname(fname, &original_fname);
+        if (ret) return ret;
+
         if ((ret = dcc_is_link(fname, &is_link))) {
             return ret;
         }
-		
+
         if (is_link) {
             if ((ret = dcc_read_link(fname, link_points_to)) ||
                 (ret = dcc_x_token_string(ofd, "NAME", original_fname)) ||
@@ -272,8 +272,8 @@ int dcc_x_many_files(int ofd,
                If we ever support non-compressed server-side-cpp,
                we should have some checks here and then uncompress
                the file if it is compressed. */
-            ret = dcc_x_file(ofd, fname, "FILE", DCC_COMPRESS_NONE, 
-                             NULL); 
+            ret = dcc_x_file(ofd, fname, "FILE", DCC_COMPRESS_NONE,
+                             NULL);
             if (ret) return ret;
         }
     }

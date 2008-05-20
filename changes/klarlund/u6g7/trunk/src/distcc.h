@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -42,9 +42,9 @@
 #  define UNUSED(x) UNUSED_ ## x __attribute__((unused))
 #elif defined(__LCLINT__)
 #  define UNUSED(x) /*@unused@*/ x
-#else				/* !__GNUC__ && !__LCLINT__ */
+#else                /* !__GNUC__ && !__LCLINT__ */
 #  define UNUSED(x) x
-#endif				/* !__GNUC__ && !__LCLINT__ */
+#endif                /* !__GNUC__ && !__LCLINT__ */
 
 /* According to the gcc info page, __attribute__((unused)) means "this
  * variable is *possibly* unused" (emphasis added).  So we can use it for
@@ -57,9 +57,9 @@
 #  define POSSIBLY_UNUSED(x) x __attribute__((unused))
 #elif defined(__LCLINT__)
 #  define POSSIBLY_UNUSED(x) /*@unused@*/ x
-#else				/* !__GNUC__ && !__LCLINT__ */
+#else                /* !__GNUC__ && !__LCLINT__ */
 #  define POSSIBLY_UNUSED(x) x
-#endif				/* !__GNUC__ && !__LCLINT__ */
+#endif                /* !__GNUC__ && !__LCLINT__ */
 
 #if defined(__GNUC__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 3))
 /* This works on Gentoo's (patched?) gcc 3.3.3 but not 3.2.3, and not Debian's
@@ -162,15 +162,15 @@ int dcc_r_cwd(int ifd, char **cwd);
 
 /* remote.c */
 int dcc_send_job_corked(int net_fd,
-			char **argv,
-			pid_t cpp_pid,
+            char **argv,
+            pid_t cpp_pid,
                         int *status,
                         const char *,
-			const char *cpp_fname,
+            const char *cpp_fname,
                         struct dcc_hostdef *);
 
 int dcc_retrieve_results(int net_fd,
-                         int *status, 
+                         int *status,
                          const char *output_fname,
                          const char *deps_fname,
                          const char *server_stderr_fname,
@@ -230,10 +230,10 @@ int dcc_compress_file_lzo1x(int in_fd,
                             size_t in_len,
                             char **out_buf,
                             size_t *out_len);
-                            
+
 int dcc_compress_lzo1x_alloc(const char *in_buf,
                             size_t in_len,
-                            char **out_buf_ret, 
+                            char **out_buf_ret,
                             size_t *out_len_ret);
 
 
@@ -287,7 +287,7 @@ int dcc_strip_dasho(char **from, char ***out_argv);
 
 /* cpp.c */
 int dcc_cpp_maybe(char **argv, char *input_fname, char **cpp_fname,
-		  pid_t *cpp_pid);
+          pid_t *cpp_pid);
 
 /* filename.c */
 int dcc_is_source(const char *sfile);

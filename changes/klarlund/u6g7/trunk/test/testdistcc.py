@@ -665,7 +665,7 @@ class Compile_c_Case(SimpleDistCC_Case):
          return "bar_bar".
       """
       m_obj = re.search(r"Checking dependency: ((\w|[.])*)", line)
-      assert m_obj
+      assert m_obj, line
       return m_obj.group(1)
 
   def makeFile(self, f):
@@ -1827,6 +1827,7 @@ tests = [
          NoDetachDaemon_Case,
          SBeatsC_Case,
          DashD_Case,
+         DashWpMD_Case,
          BinFalse_Case,
          BinTrue_Case,
          VersionOption_Case,

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -31,7 +31,7 @@
                  * before you can even aspire to crudeness.
                  *              -- William Gibson, "Johnny Mnemonic" */
 
-    
+
 /**
  * @file
  *
@@ -88,7 +88,7 @@ int dcc_pick_host_from_list(struct dcc_hostdef **buildhost,
     struct dcc_hostdef *hostlist;
     int ret;
     int n_hosts;
-    
+
     if ((ret = dcc_get_hostlist(&hostlist, &n_hosts)) != 0) {
         return EXIT_NO_HOSTS;
     }
@@ -99,7 +99,7 @@ int dcc_pick_host_from_list(struct dcc_hostdef **buildhost,
     if (!hostlist) {
         return EXIT_NO_HOSTS;
     }
-    
+
     return dcc_lock_one(hostlist, buildhost, cpu_lock_fd);
 
     /* FIXME: Host list is leaked? */
@@ -124,7 +124,7 @@ static void dcc_lock_pause(void)
     unsigned pause_time = 1;
 
     dcc_note_state(DCC_PHASE_BLOCKED, NULL, NULL);
-    
+
     rs_trace("nothing available, sleeping %us...", pause_time);
 
     sleep(pause_time);
@@ -155,7 +155,7 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
                     continue;
 
                 ret = dcc_lock_host("cpu", h, i_cpu, 0, cpu_lock_fd);
-                
+
                 if (ret == 0) {
                     *buildhost = h;
                     dcc_note_state_slot(i_cpu);
@@ -168,7 +168,7 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
                 }
             }
         }
-        
+
         dcc_lock_pause();
     }
 }
@@ -182,7 +182,7 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
 int dcc_lock_local(int *cpu_lock_fd)
 {
     struct dcc_hostdef *chosen;
-    
+
     return dcc_lock_one(dcc_hostdef_local, &chosen, cpu_lock_fd);
 }
 
@@ -190,8 +190,8 @@ int dcc_lock_local_cpp(int *cpu_lock_fd)
 {
     int ret;
     struct dcc_hostdef *chosen;
-    ret = dcc_lock_one(dcc_hostdef_local_cpp, &chosen, cpu_lock_fd); 
-    dcc_note_state(DCC_PHASE_CPP, NULL, chosen->hostname); 
+    ret = dcc_lock_one(dcc_hostdef_local_cpp, &chosen, cpu_lock_fd);
+    dcc_note_state(DCC_PHASE_CPP, NULL, chosen->hostname);
     return ret;
 }
 

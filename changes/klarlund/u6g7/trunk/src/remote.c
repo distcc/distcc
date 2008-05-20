@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -69,7 +69,7 @@ static int dcc_remote_connect(struct dcc_hostdef *host,
                               pid_t *ssh_pid)
 {
     int ret;
-    
+
     if (host->mode == DCC_MODE_TCP) {
         *ssh_pid = 0;
         if ((ret = dcc_connect_by_name(host->hostname, host->port,
@@ -96,12 +96,12 @@ static int dcc_wait_for_cpp(pid_t cpp_pid,
                             const char *input_fname)
 {
     int ret;
-    
+
     if (cpp_pid) {
         dcc_note_state(DCC_PHASE_CPP, NULL, NULL);
         /* Wait for cpp to finish (if not already done), check the
          * result, then send the .i file */
-        
+
         if ((ret = dcc_collect_child("cpp", cpp_pid, status, timeout_null_fd)))
             return ret;
 
@@ -134,7 +134,7 @@ dcc_send_header(int net_fd,
         return ret;
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
         if ((ret = dcc_x_cwd(net_fd)))
-            return ret;        
+            return ret;
     }
     if ((ret = dcc_x_argv(net_fd, argv)))
         return ret;
@@ -159,12 +159,12 @@ dcc_send_header(int net_fd,
  *
  * @param cpp_fname Filename of preprocessed source.  May not be complete yet,
  * depending on @p cpp_pid.
- * 
+ *
  * @param files If we are doing preprocessing on the server, the names of
  * all the files needed; otherwise, NULL.
  *
  * @param output_fname File that the object code should be delivered to.
- * 
+ *
  * @param cpp_pid If nonzero, the pid of the preprocessor.  Must be
  * allowed to complete before we send the input file.
  *
@@ -177,7 +177,7 @@ dcc_send_header(int net_fd,
  * necessarily imply the remote compiler itself succeeded, only that
  * there were no communications problems.
  */
-int dcc_compile_remote(char **argv, 
+int dcc_compile_remote(char **argv,
                        char *input_fname,
                        char *cpp_fname,
                        char **files,
@@ -195,7 +195,7 @@ int dcc_compile_remote(char **argv,
     int ssh_status;
     off_t doti_size;
     struct timeval before, after;
-    unsigned int n_files;    	    	        
+    unsigned int n_files;
 
     if (gettimeofday(&before, NULL))
         rs_log_warning("gettimeofday failed");
@@ -210,18 +210,18 @@ int dcc_compile_remote(char **argv,
     *status = 0;
     if ((ret = dcc_remote_connect(host, &to_net_fd, &from_net_fd, &ssh_pid)))
         goto out;
-    
-    dcc_note_state(DCC_PHASE_SEND, NULL, NULL);    
-    
+
+    dcc_note_state(DCC_PHASE_SEND, NULL, NULL);
+
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
         if ((ret = dcc_send_header(to_net_fd, argv, host))) {
           goto out;
         }
-    
+
         n_files = dcc_argv_len(files);
         if ((ret = dcc_x_many_files(to_net_fd, n_files, files))) {
             goto out;
-        }                       
+        }
     } else {
         /* This waits for cpp and puts its status in *status.  If cpp failed,
          * then the connection will have been dropped and we need not bother
@@ -230,19 +230,19 @@ int dcc_compile_remote(char **argv,
         if ((ret = dcc_send_header(to_net_fd, argv, host))) {
             goto out;
         }
-            
+
         if ((ret = dcc_wait_for_cpp(cpp_pid, status, input_fname)))
             goto out;
-        
 
-	/* We are done preprocessing.  Unlock to allow someone else to 
-	   start preprocessing */ 
-	if(local_cpu_lock_fd) { dcc_unlock(local_cpu_lock_fd); }
- 
+
+    /* We are done preprocessing.  Unlock to allow someone else to
+       start preprocessing */
+    if(local_cpu_lock_fd) { dcc_unlock(local_cpu_lock_fd); }
+
         if (*status != 0)
             goto out;
 
-        if ((ret = dcc_x_file(to_net_fd, cpp_fname, "DOTI", host->compr, 
+        if ((ret = dcc_x_file(to_net_fd, cpp_fname, "DOTI", host->compr,
                               &doti_size)))
             goto out;
     }
@@ -268,14 +268,14 @@ int dcc_compile_remote(char **argv,
         rs_log_warning("gettimeofday failed");
     } else if (host->cpp_where == DCC_CPP_ON_CLIENT) {
         double secs, rate;
-        
+
         dcc_calc_rate(doti_size, &before, &after, &secs, &rate);
         rs_log(RS_LOG_INFO|RS_LOG_NONAME,
                "%lu bytes from %s compiled on %s in %.4fs, rate %.0fkB/s",
                (unsigned long) doti_size, input_fname, host->hostname,
                secs, rate);
     }
-   
+
   out:
     /* Close socket so that the server can terminate, rather than
      * making it wait until we've finished our work. */
@@ -294,7 +294,7 @@ int dcc_compile_remote(char **argv,
     if (ssh_pid) {
         dcc_collect_child("ssh", ssh_pid, &ssh_status, timeout_null_fd); /* ignore failure */
     }
-    
+
     return ret;
 }
 

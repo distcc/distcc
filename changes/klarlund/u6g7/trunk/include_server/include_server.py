@@ -101,26 +101,11 @@ Options:
                              exceptions to distcc_pump's normal assumption that
                              source files are not modified during the build.
 
- --unsafe_absolute_includes  Do preprocessing on server even if absolute
-                             includes are encountered.  Such includes are then
-                             ignored for the purposes of gathering the include
-                             closure.
-
-                             Usually, a source file that directly or indirectly
-                             may attempt to include a file in an absolute
-                             location, such as in '#include
-                             "/usr/include/acl.h"', forces local preprocessing.
-                             We write 'may attempt' because this situation
-                             occurs even when the inclusion is governed by #ifdef's
-                             or #if's that actually evaluate in way that the include
-                             disappears after preprocessing.  With the
-                             --unsafe_absolute_includes set to true, the source
-                             file is compiled on the server WITHOUT the files on
-                             the client that may be included through absolute
-                             references.  Note that the server may, or may not,
-                             process the absolutely included file, which may, or
-                             may not, be needed during preprocessing on the
-                             server.
+ --unsafe_absolute_includes  Do preprocessing on the compilation server even if 
+                             includes of absolute filepaths are encountered.
+                             Such includes are then ignored for the purposes of
+                             gathering the include closure. See the
+                             include_server(1) man page for futher information.
 
  -x, --exact_analysis        Use CPP instead, do not omit system headers files.
  

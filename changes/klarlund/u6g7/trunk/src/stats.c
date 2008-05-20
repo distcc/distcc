@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2005 by Google
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -206,7 +206,7 @@ static long dcc_get_tmpdirinfo(void) {
     struct statvfs buf;
 
     if (dcc_get_tmp_top(&tmp_dir) != 0)
-	return -1;
+        return -1;
 
     if (statvfs(tmp_dir, &buf) != 0)
         return -1;
@@ -280,8 +280,8 @@ dcc_free_space %d MB\n\
         strcpy(dcc_stats.longest_job_compiler, "none");
 
     acc_fd = accept(http_fd, (struct sockaddr *) &cli_addr, &cli_len);
-    if (dcc_check_client((struct sockaddr *)&cli_addr, 
-                         (int) cli_len, 
+    if (dcc_check_client((struct sockaddr *)&cli_addr,
+                         (int) cli_len,
                          opt_allowed) == 0) {
         reply_len = snprintf(reply, 2048, replytemplate,
                                dcc_stats.counters[STATS_TCP_ACCEPT],
@@ -369,7 +369,7 @@ int dcc_stats_server(int listen_fd)
     dcc_stats.longest_job_name[0] = 0;
     dcc_stats.io_rate = -1;
 
-    if ((ret = dcc_socket_listen(arg_stats_port, &http_fd, 
+    if ((ret = dcc_socket_listen(arg_stats_port, &http_fd,
                                     opt_listen_addr)) != 0) {
         return ret;
     }
@@ -378,7 +378,7 @@ int dcc_stats_server(int listen_fd)
     /* We don't want children to inherit this FD */
     fcntl(http_fd, F_SETFD, FD_CLOEXEC);
 
-    max_fd = (http_fd > dcc_statspipe[0]) ? (http_fd + 1) 
+    max_fd = (http_fd > dcc_statspipe[0]) ? (http_fd + 1)
                                            : (dcc_statspipe[0] + 1);
 
     FD_ZERO(&fds_master);

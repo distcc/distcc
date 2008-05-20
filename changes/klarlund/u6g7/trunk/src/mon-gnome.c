@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -179,7 +179,7 @@ dcc_set_row_from_task (GtkListStore *model,
 
   gtk_list_store_set (model, tree_iter,
                       COLUMN_HOST, task->host,
-                      COLUMN_SLOT, task->slot, 
+                      COLUMN_SLOT, task->slot,
                       COLUMN_FILE, task->file,
                       COLUMN_STATE, dcc_get_phase_name(task->curr_phase),
                       -1);
@@ -197,12 +197,12 @@ dcc_insert_row_from_task (GtkListStore *model,
      history = dcc_history_new();
 
      dcc_history_push(history, task_iter->curr_phase);
-  
+
      gtk_list_store_insert_before(chart_model, tree_iter, insert_before);
-     
+
      gtk_list_store_set(model, tree_iter,
                         COLUMN_HOST, task_iter->host,
-                        COLUMN_SLOT, task_iter->slot, 
+                        COLUMN_SLOT, task_iter->slot,
                         COLUMN_FILE, task_iter->file,
                         COLUMN_STATE, dcc_get_phase_name(task_iter->curr_phase),
                         COLUMN_HISTORY, history,
@@ -224,7 +224,7 @@ dcc_set_row_idle(GtkListStore *model,
      if (history->past_phases[history->now] != DCC_PHASE_DONE) {
           gtk_list_store_set (model, tree_iter,
                               COLUMN_FILE, NULL,
-                              COLUMN_STATE, NULL, 
+                              COLUMN_STATE, NULL,
                               -1);
      } else {
           /* it still changed... */
@@ -234,7 +234,7 @@ dcc_set_row_idle(GtkListStore *model,
           gtk_tree_model_row_changed(GTK_TREE_MODEL(model), path, tree_iter);
           gtk_tree_path_free(path);
      }
-     
+
      dcc_history_push(history, DCC_PHASE_DONE);
 }
 
@@ -275,14 +275,14 @@ dcc_update_store_from_tasks (struct dcc_task_state *task_list)
   GtkTreeModel *tree_model = GTK_TREE_MODEL (chart_model);
 
   tree_valid = gtk_tree_model_get_iter_first (tree_model, tree_iter);
-  
+
   for (task_iter = task_list;
        task_iter != NULL && tree_valid;
        )
     {
       gchar *row_host;
       int row_slot;
-      
+
       if (task_iter->curr_phase == DCC_PHASE_DONE
           || task_iter->host[0] == '\0'
           || task_iter->file[0] == '\0')
@@ -381,7 +381,7 @@ dcc_update_store_from_tasks (struct dcc_task_state *task_list)
 static gint dcc_gnome_update_cb (gpointer UNUSED(view_void))
 {
   struct dcc_task_state *task_list;
-  
+
   if (dcc_mon_poll (&task_list))
     {
       rs_log_warning("poll failed");
@@ -391,7 +391,7 @@ static gint dcc_gnome_update_cb (gpointer UNUSED(view_void))
   dcc_update_store_from_tasks (task_list);
 
   dcc_task_state_free (task_list);
-  
+
   return TRUE;                  /* please call again */
 }
 
@@ -401,7 +401,7 @@ static gchar *dcc_gnome_get_title (void)
   char host[256];
   const char *user;
   struct passwd *pw;
-  
+
   if (gethostname(host, sizeof host) == -1)
     strcpy (host, "localhost");
 
@@ -414,7 +414,7 @@ static gchar *dcc_gnome_get_title (void)
     user = pw->pw_name;
   if (!user)
     user = "";
-  
+
   return g_strdup_printf ("distcc Monitor - %s@%s",
                           user, host);
 }
@@ -453,7 +453,7 @@ static void
 dcc_create_state_gcs (GtkWidget *widget)
 {
   enum dcc_phase i_state;
-  
+
   for (i_state = 0; i_state < DCC_PHASE_DONE; i_state++)
     {
       dcc_phase_gc[i_state] = gdk_gc_new (widget->window);
@@ -511,7 +511,7 @@ static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
      NULL);
   gtk_tree_view_column_set_resizable (column, TRUE);
   gtk_tree_view_append_column (GTK_TREE_VIEW (chart_treeview), column);
- 
+
   /* File */
   column = gtk_tree_view_column_new_with_attributes
     ("File", text_renderer,
@@ -519,14 +519,14 @@ static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
      NULL);
   gtk_tree_view_column_set_resizable (column, TRUE);
   gtk_tree_view_append_column (GTK_TREE_VIEW (chart_treeview), column);
-  
+
   column = gtk_tree_view_column_new_with_attributes
     ("State", text_renderer,
      "text", COLUMN_STATE,
      NULL);
   gtk_tree_view_column_set_resizable (column, TRUE);
   gtk_tree_view_append_column (GTK_TREE_VIEW (chart_treeview), column);
-  
+
   /* Tasks - for each cell, rebind the stock-id property onto that
      value from the table model */
   column = gtk_tree_view_column_new_with_attributes
@@ -586,15 +586,15 @@ static GtkWidget * dcc_gnome_make_mainwin (void)
                           title);
     free (title);
   }
-  
+
   /* Set a reasonable default size that allows all columns and a few
      rows to be seen with a typical theme */
   gtk_window_set_default_size (GTK_WINDOW (mainwin), 500, 300);
 
   /* Quit when it's closed */
-  g_signal_connect (GTK_OBJECT(mainwin), "delete-event", 
+  g_signal_connect (GTK_OBJECT(mainwin), "delete-event",
                     G_CALLBACK (gtk_main_quit), NULL);
-  g_signal_connect (GTK_OBJECT(mainwin), "destroy", 
+  g_signal_connect (GTK_OBJECT(mainwin), "destroy",
                     G_CALLBACK (gtk_main_quit), NULL);
 
 #if GTK_CHECK_VERSION(2,2,0)
@@ -621,7 +621,7 @@ static int dcc_gnome_make_app (void)
                      topbox);
 
   load_bar = dcc_gnome_make_load_bar ();
-    
+
   dcc_setup_tree_model ();
   dcc_gnome_make_proc_view (GTK_TREE_MODEL (chart_model),
                             &proc_align);
@@ -633,7 +633,7 @@ static int dcc_gnome_make_app (void)
                     FALSE, /* expand */
                     FALSE,
                     0);
-    
+
   g_timeout_add_full (G_PRIORITY_HIGH_IDLE,
                       500, /* ms */
                       dcc_gnome_update_cb,
@@ -655,8 +655,8 @@ int main(int argc, char **argv)
 
 #if defined(WITH_GNOME)
   gnome_program_init ("distccmon-gnome", PACKAGE_VERSION,
-		      LIBGNOMEUI_MODULE,
-		      argc, argv, NULL);
+              LIBGNOMEUI_MODULE,
+              argc, argv, NULL);
 #elif defined(WITH_GTK)
   gtk_init (&argc, &argv);
 #else

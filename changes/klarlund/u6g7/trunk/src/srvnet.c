@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -88,11 +88,11 @@ static int dcc_listen_by_addr(int fd,
 
     /* now we've got a socket - we need to bind it */
     if (bind(fd, sa, salen) == -1) {
-	rs_log_error("bind of %s failed: %s", sa_buf ? sa_buf : "UNKNOWN",
+        rs_log_error("bind of %s failed: %s", sa_buf ? sa_buf : "UNKNOWN",
                      strerror(errno));
         free(sa_buf);
-	close(fd);
-	return EXIT_BIND_FAILED;
+        close(fd);
+        return EXIT_BIND_FAILED;
     }
 
     rs_log_info("listening on %s", sa_buf ? sa_buf : "UNKNOWN");
@@ -138,7 +138,7 @@ int dcc_socket_listen(int port, int *fd_out, const char *listen_addr)
         hints.ai_flags = AI_PASSIVE; /* bind all */
 
     error = getaddrinfo(listen_addr, portname, &hints, &res);
-    
+
     if (error) {
         rs_log_error("getaddrinfo failed for host %s service %s: %s",
                      listen_addr ? listen_addr : "(passive)",
@@ -197,8 +197,8 @@ int dcc_socket_listen(int port, int *listen_fd, const char *listen_addr)
     }
 
     if ((*listen_fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-	rs_log_error("socket creation failed: %s", strerror(errno));
-	return EXIT_BIND_FAILED;
+        rs_log_error("socket creation failed: %s", strerror(errno));
+        return EXIT_BIND_FAILED;
     }
 
     return dcc_listen_by_addr(*listen_fd, (struct sockaddr *) &sock,
@@ -230,10 +230,10 @@ int dcc_check_client(struct sockaddr *psa,
     char *client_ip;
     struct dcc_allow_list *l;
     int ret;
-    
+
     if ((ret = dcc_sockaddr_to_string(psa, salen, &client_ip)) != 0)
         return ret;
-    
+
     rs_log_info("connection from %s", client_ip);
     dcc_job_summary_append("client: ");
     dcc_job_summary_append(client_ip);
@@ -249,12 +249,12 @@ int dcc_check_client(struct sockaddr *psa,
         free(client_ip);
         return 0;
     }
-    
+
     for (l = allowed; l; l = l->next) {
         if (psa->sa_family == AF_INET) {
             in_addr_t cli_inaddr;
             cli_inaddr = ((struct sockaddr_in *) psa)->sin_addr.s_addr;
-                
+
             if ((ret = dcc_check_address(cli_inaddr, l->addr, l->mask)) == 0)
                 break;
 #ifdef ENABLE_RFC2553
@@ -262,7 +262,7 @@ int dcc_check_client(struct sockaddr *psa,
             const struct sockaddr_in6 *sa6 = (const struct sockaddr_in6 *) psa;
             const struct in6_addr *a6 = &sa6->sin6_addr;
             const in_addr_t *a4;
-            
+
             if (IN6_IS_ADDR_V4MAPPED(a6) || IN6_IS_ADDR_V4COMPAT(a6)) {
                 a4 = (const in_addr_t *) &a6->s6_addr[12];
                 if ((ret = dcc_check_address(*a4, l->addr, l->mask)) == 0)

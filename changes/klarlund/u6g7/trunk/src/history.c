@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -46,7 +46,7 @@ dcc_history_new(void)
 {
      struct dcc_history *history;
      int i;
-     
+
      history = malloc(sizeof *history);
      if (!history) {
           rs_log_crit("allocation failed!");
@@ -62,7 +62,7 @@ dcc_history_new(void)
 
      for (i = 0; i < history->len; i++)
           history->past_phases[i] = DCC_PHASE_DONE;
-     
+
      return history;
 }
 

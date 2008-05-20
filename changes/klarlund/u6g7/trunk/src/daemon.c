@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -30,7 +30,7 @@
  * files.
  *
  * May be run from inetd (default if stdin is a socket), or as a
- * daemon by itself.  
+ * daemon by itself.
  *
  * distcc has an adequate but perhaps not optimal system for deciding
  * where to send files.  The general principle is that the server
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 
     if ((ret = dcc_set_lifetime()) != 0)
         dcc_exit(ret);
-    
+
     /* do this before giving away root */
     if (nice(opt_niceness) == -1) {
         rs_log_warning("nice %d failed: %s", opt_niceness,
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
      * failure... */
     if ((ret = dcc_get_tmp_top(&tmp)))
         goto out;
-    
+
     if (chdir(tmp) == -1) {
         rs_log_error("failed to chdir to %s: %s", tmp, strerror(errno));
         ret = EXIT_IO_ERROR;
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
         ret = dcc_inetd_server();
     else
         ret = dcc_standalone_server();
-    
+
     out:
     dcc_exit(ret);
 }
@@ -235,13 +235,13 @@ static void dcc_setup_real_log(void)
 
     /* Even in inetd mode, we might want to log to stderr, because that will
      * work OK for ssh connections. */
-    
+
     if (opt_log_stderr) {
         rs_remove_all_loggers();
         rs_add_logger(rs_logger_file, opt_log_level_num, 0, STDERR_FILENO);
         return;
     }
-    
+
     if (arg_log_file) {
         /* Don't remove loggers yet, in case this fails and needs to go to the
          * default. */
@@ -255,7 +255,7 @@ static void dcc_setup_real_log(void)
             return;
         }
     }
-    
+
     rs_remove_all_loggers();
     openlog("distccd", LOG_PID, LOG_DAEMON);
     rs_add_logger(rs_logger_syslog, opt_log_level_num, NULL, 0);
@@ -267,7 +267,7 @@ int dcc_log_daemon_started(const char *role)
     rs_log_info("%s started (%s %s, built %s %s)",
                 role,
                 PACKAGE_VERSION,
-                GNU_HOST, 
+                GNU_HOST,
                 __DATE__, __TIME__);
 
     return 0;
@@ -283,7 +283,7 @@ static int dcc_inetd_server(void)
     struct dcc_sockaddr_storage ss;
     struct sockaddr *psa = (struct sockaddr *) &ss;
     socklen_t len = sizeof ss;
-    
+
     dcc_log_daemon_started("inetd server");
 
     if ((getpeername(STDIN_FILENO, psa, &len) == -1)) {

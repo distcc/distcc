@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -50,8 +50,8 @@
 #include "exitcode.h"
 
 #ifdef __CYGWIN32__
-	#define NOGDI
-	#include <windows.h>
+    #define NOGDI
+    #include <windows.h>
 #endif
 
 
@@ -97,7 +97,7 @@ int dcc_mk_tmpdir(const char *path)
 {
     struct stat buf;
     int ret;
-	
+
     if (stat(path, &buf) == -1) {
         if (mkdir(path, 0777) == -1) {
             return EXIT_IO_ERROR;
@@ -135,7 +135,7 @@ int dcc_mkdir(const char *path)
 
     return 0;
 }
- 
+
 
 #ifndef HAVE_MKDTEMP
 static char* mkdtemp(char *pattern)
@@ -150,7 +150,7 @@ static char* mkdtemp(char *pattern)
 }
 #endif
 
-/* This function creates a temporary directory, to be used for 
+/* This function creates a temporary directory, to be used for
  * all (input) files during one compilation.
  * The name of the directory is stored in @p tempdir, which is
  * malloc'ed here. The caller is responsible for freeing it.
@@ -189,14 +189,14 @@ int dcc_get_tmp_top(const char **p_ret)
     GetTempPath(MAXPATHLEN+1,s);
     /* Convert slashes */
     for (f = 0, ln = strlen(s); f != ln; f++)
-	    if (s[f]=='\\') s[f]='/';
+        if (s[f]=='\\') s[f]='/';
     /* Delete trailing slashes -- but leave one slash if s is all slashes */
     for (f = strlen(s)-1; f > 0 && s[f] == '/'; f--)
-	    s[f]='\0';
+        s[f]='\0';
 
     if ((ret = dcc_add_cleanup(s))) {
-	    free(s);
-	    return ret;
+        free(s);
+        return ret;
     }
     *p_ret = s;
     return 0;
@@ -224,47 +224,47 @@ int dcc_mk_tmp_ancestor_dirs(const char *path)
     char *copy = 0;
     char *p;
     int ret;
-    
+
     copy = strdup(path);
-    if (copy == NULL) { 
+    if (copy == NULL) {
         return EXIT_OUT_OF_MEMORY;
     }
-    
+
     dcc_truncate_to_dirname(copy);
     if (copy[0] == '\0') {
         free(copy);
         return 0;
     }
-                        
+
     /* First, let's try and see if all parent directories
      * exist already */
-    if ((ret = dcc_mk_tmpdir(copy)) == 0) { 
+    if ((ret = dcc_mk_tmpdir(copy)) == 0) {
         free(copy);
         return 0;
-    }       
-    
+    }
+
     /* This is the "pessimistic" algorithm for making directories,
      * which assumes that most directories that it's asked to create
      * do not exist. It's expensive for very deep directories;
-     * it tries to make all the directories from the root to that 
+     * it tries to make all the directories from the root to that
      * dir. However, it only gets called if we tried to make a dir
      * in a directory and failed; which means we only get called
      * once per directory.
-     */     
+     */
     // Body of this loop does not execute when *p=='\0';
     // therefore the very last component of the directory does not
     // get created here.
     for (p = copy; *p != '\0'; ++p) {
-        if (*p == '/' && p != copy) { 
-            *p = '\0'; 
+        if (*p == '/' && p != copy) {
+            *p = '\0';
             if ((ret = dcc_mk_tmpdir(copy))) {
                 free(copy);
                 return ret;
-            }       
+            }
             *p = '/';
-        }       
+        }
     }
-    ret = dcc_mk_tmpdir(copy); 
+    ret = dcc_mk_tmpdir(copy);
     free(copy);
     return ret;
 }
@@ -409,7 +409,7 @@ int dcc_make_tmpnam(const char *prefix,
 
     do {
         free(s);
-        
+
         if (asprintf(&s, "%s/%s_%08lx%s",
                      tempdir,
                      prefix,
@@ -429,12 +429,12 @@ int dcc_make_tmpnam(const char *prefix,
             random_bits += 7777; /* fairly prime */
             continue;
         }
-        
+
         if (close(fd) == -1) {  /* huh? */
             rs_log_warning("failed to close %s: %s", s, strerror(errno));
             return EXIT_IO_ERROR;
         }
-        
+
         break;
     } while (1);
 

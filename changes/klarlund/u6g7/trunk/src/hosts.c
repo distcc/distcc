@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -29,7 +29,7 @@
 
                 /* The lyf so short, the craft so long to lerne.
                  * -- Chaucer */
-    
+
 
 
 /**
@@ -232,7 +232,7 @@ static int dcc_parse_multiplier(const char **psrc, struct dcc_hostdef *hostdef)
 /**
  * Parse an optionally present option string.
  *
- * At the moment the only two options we have is "lzo" for compression, 
+ * At the moment the only two options we have is "lzo" for compression,
  * and "cpp" if the server supports doing the preprocessing there, also.
  **/
 static int dcc_parse_options(const char **psrc,
@@ -242,17 +242,17 @@ static int dcc_parse_options(const char **psrc,
 
     host->compr = DCC_COMPRESS_NONE;
     host->cpp_where = DCC_CPP_ON_CLIENT;
-    
+
     while (p[0] == ',') {
         p++;
         if (str_startswith("lzo", p)) {
             rs_trace("got LZO option");
             host->compr = DCC_COMPRESS_LZO1X;
             p += 3;
-	} else if (str_startswith("down", p)) {
-	    /* if "hostid,down", mark it down, and strip down from hostname */
+    } else if (str_startswith("down", p)) {
+        /* if "hostid,down", mark it down, and strip down from hostname */
             host->is_up = 0;
-	    p += 4;
+        p += 4;
         } else if (str_startswith("cpp", p)) {
             rs_trace("got CPP option");
             host->cpp_where = DCC_CPP_ON_SERVER;
@@ -263,11 +263,11 @@ static int dcc_parse_options(const char **psrc,
             return EXIT_BAD_HOSTSPEC;
         }
     }
-    dcc_get_protover_from_features(host->compr, host->cpp_where, 
+    dcc_get_protover_from_features(host->compr, host->cpp_where,
                                    &host->protover);
 
     *psrc = p;
-    
+
     return 0;
 }
 
@@ -276,7 +276,7 @@ static int dcc_parse_ssh_host(struct dcc_hostdef *hostdef,
 {
     int ret;
     const char *token = token_start;
-    
+
     /* Everything up to '@' is the username */
     if ((ret = dcc_dup_part(&token, &hostdef->user, "@")) != 0)
         return ret;
@@ -305,7 +305,7 @@ static int dcc_parse_ssh_host(struct dcc_hostdef *hostdef,
         if ((ret = dcc_dup_part(&token, &hostdef->ssh_command, " \t\n\r\f,")))
             return ret;
     }
-    
+
     if ((ret = dcc_parse_options(&token, hostdef)))
         return ret;
 
@@ -319,7 +319,7 @@ static int dcc_parse_tcp_host(struct dcc_hostdef *hostdef,
 {
     int ret;
     const char *token = token_start;
-    
+
     if ((ret = dcc_dup_part(&token, &hostdef->hostname, "/: \t\n\r\f,")))
         return ret;
 
@@ -341,12 +341,12 @@ static int dcc_parse_tcp_host(struct dcc_hostdef *hostdef,
         hostdef->port = strtol(token, &tail, 10);
         if (*tail != '\0' && !isspace(*tail) && *tail != '/' && *tail != ',') {
             rs_log_error("invalid tcp port specification in \"%s\"", token);
-            return EXIT_BAD_HOSTSPEC; 
+            return EXIT_BAD_HOSTSPEC;
         } else {
             token = tail;
         }
     }
-        
+
     if ((ret = dcc_parse_multiplier(&token, hostdef)) != 0)
         return ret;
 
@@ -374,7 +374,7 @@ static int dcc_parse_localhost(struct dcc_hostdef *hostdef,
      * machine can specify a number in the host list.
      */
     hostdef->n_slots = 2;
-    
+
     return dcc_parse_multiplier(&token, hostdef);
 }
 
@@ -382,9 +382,9 @@ static int dcc_parse_localhost(struct dcc_hostdef *hostdef,
  *  its feature fields appropriately. Returns 0 if the protocol
  *  is known, non-zero otherwise.
  */
-int dcc_get_features_from_protover(enum dcc_protover protover, 
+int dcc_get_features_from_protover(enum dcc_protover protover,
                                    enum dcc_compress *compr,
-                                   enum dcc_cpp_where *cpp_where) 
+                                   enum dcc_cpp_where *cpp_where)
 {
     if (protover > 1) {
         *compr = DCC_COMPRESS_LZO1X;
@@ -410,20 +410,20 @@ int dcc_get_features_from_protover(enum dcc_protover protover,
  */
 int dcc_get_protover_from_features(enum dcc_compress compr,
                                    enum dcc_cpp_where cpp_where,
-                                   enum dcc_protover *protover) 
+                                   enum dcc_protover *protover)
 {
     *protover = -1;
 
-    if (compr == DCC_COMPRESS_NONE && 
+    if (compr == DCC_COMPRESS_NONE &&
         cpp_where == DCC_CPP_ON_CLIENT) {
         *protover = DCC_VER_1;
     }
 
-    if (compr == DCC_COMPRESS_LZO1X && 
+    if (compr == DCC_COMPRESS_LZO1X &&
         cpp_where == DCC_CPP_ON_SERVER) {
         *protover = DCC_VER_3;
     }
-    if (compr == DCC_COMPRESS_LZO1X && 
+    if (compr == DCC_COMPRESS_LZO1X &&
         cpp_where == DCC_CPP_ON_CLIENT) {
         *protover = DCC_VER_2;
     }
@@ -466,10 +466,10 @@ int dcc_parse_hosts(const char *where, const char *source_name,
         int token_len;
         const char *token_start;
         int has_at;
-        
+
         if (where[0] == '\0')
             break;              /* end of string */
-        
+
         /* skip over comments */
         if (where[0] == '#') {
             do
@@ -493,26 +493,26 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             continue;
         }
 
-	if(!strncmp(token_start, "--localslots_cpp", 16)) {
+    if(!strncmp(token_start, "--localslots_cpp", 16)) {
             const char *ptr;
             ptr = token_start + 16;
-	    if(dcc_parse_multiplier(&ptr, dcc_hostdef_local_cpp) == 0) {
+        if(dcc_parse_multiplier(&ptr, dcc_hostdef_local_cpp) == 0) {
                 where = token_start + token_len;
                 continue;
             }
-	}
+    }
 
-	if(!strncmp(token_start, "--localslots", 12)) {
+    if(!strncmp(token_start, "--localslots", 12)) {
             const char *ptr;
-            ptr = token_start + 12; 
-	    if(dcc_parse_multiplier(&ptr, dcc_hostdef_local) == 0) {
+            ptr = token_start + 12;
+        if(dcc_parse_multiplier(&ptr, dcc_hostdef_local) == 0) {
                 where = token_start + token_len;
                 continue;
             }
-	}
+    }
 
 #ifdef HAVE_AVAHI
-        if (token_len == sizeof(ZEROCONF_MAGIC)-1 && 
+        if (token_len == sizeof(ZEROCONF_MAGIC)-1 &&
             !strncmp(token_start, ZEROCONF_MAGIC, (unsigned) token_len)) {
             if ((ret = dcc_zeroconf_add_hosts(ret_list, ret_nhosts, 4, ret_prev) != 0))
                 return ret;
@@ -527,8 +527,8 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             return EXIT_OUT_OF_MEMORY;
         }
 
-	/* by default, mark the host up */
-	curr->is_up = 1;
+    /* by default, mark the host up */
+    curr->is_up = 1;
 
         /* Store verbatim hostname */
         if (!(curr->hostdef_string = strndup(token_start, (size_t) token_len))) {
@@ -549,7 +549,7 @@ int dcc_parse_hosts(const char *where, const char *source_name,
 
         curr->protover = DCC_VER_1; /* default */
         curr->compr = DCC_COMPRESS_NONE;
-            
+
         has_at = (memchr(token_start, '@', (size_t) token_len) != NULL);
 
         if (!strncmp(token_start, "localhost", 9)
@@ -567,9 +567,9 @@ int dcc_parse_hosts(const char *where, const char *source_name,
                 return ret;
         }
 
-	if (!curr->is_up) {
+    if (!curr->is_up) {
             rs_trace("host %s is down", curr->hostdef_string);
-	}
+    }
 
         (*ret_nhosts)++;
         *ret_prev = curr;
@@ -577,18 +577,18 @@ int dcc_parse_hosts(const char *where, const char *source_name,
 #ifdef HAVE_AVAHI
         skip:
 #endif
-        
+
         /* continue to next token if any */
         where = token_start + token_len;
     }
-    
+
     if (*ret_nhosts) {
         if (flag_randomize)
             if ((ret = dcc_randomize_host_list(ret_list, *ret_nhosts)) != 0)
                 return ret;
         return 0;
     } else {
-        rs_log_warning("%s contained no hosts; can't distribute work", source_name); 
+        rs_log_warning("%s contained no hosts; can't distribute work", source_name);
         return EXIT_BAD_HOSTSPEC;
     }
 }
@@ -665,7 +665,7 @@ int dcc_randomize_host_list(struct dcc_hostdef **host_list, int length)
 int dcc_free_hostdef(struct dcc_hostdef *host)
 {
     /* ANSI C requires free() to accept NULL */
-    
+
     free(host->user);
     free(host->hostname);
     free(host->ssh_command);
