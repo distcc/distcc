@@ -497,6 +497,10 @@ class RelpathMapToIndex(MapToIndex):
   This is useful for "cheap" normalization: this invariant ensures that
   os.path.join(some-directorymap-string, some-relpathmap-string) can
   be implemented using +.
+
+  We actually do allow storing absolute paths if option
+  --unsafe_absolute_includes is in use.  But, then, we're careful in Resolve
+  (below) to bail out.
   """
 
   def Index(self, relpath):
@@ -505,7 +509,7 @@ class RelpathMapToIndex(MapToIndex):
       directory: a string not starting with /.
     """
     if os.path.isabs(relpath):
-      if basics.opt_ignore_absolute_includes:
+      if basics.opt_unsafe_absolute_includes:
         Debug(DEBUG_WARNING,
               "absolute filepath '%s' was IGNORED"
               " (correctness of build may be affected)", relpath)
@@ -699,6 +703,11 @@ class BuildStatCache(object):
        os.getcwd() + '/' == self.directory_map.string[currdir_idx]
     """
     includepath = self.includepath_map.string[includepath_idx]
+    if includepath.startswith('/'):
+      # We really don't want to start exploring absolute includepaths; what's
+      # the sl_idx to return for example? And what about the use of '+'
+      # (as an optimization) below instead of os.path.join.
+      return (None, None)
     dir_map_string = self.directory_map.string   # memoize the fn pointer
     build_stat = self.build_stat
     real_stat = self.real_stat

@@ -23,7 +23,6 @@ __author__ = "Nils Klarlund"
 # TODO (klarlund) Implement abort mechanism: regularly check whether
 # ppid is 0; if so, then abort.
 
-
 # Python imports
 import gc
 import os
@@ -73,30 +72,25 @@ server has been spawned.
 Options:
  --pid_file FILEPATH         The pid of the include server is written to file
                              FILEPATH.
+                             
  -dPAT, --debug_pattern=PAT  Bit vector for turning on warnings and debugging
                                1 = warnings
                                2 = trace some functions
                              other powers of two: see basics.py.
+                             
  -e, --email                 Send email to discc-pump developers when include
                              server gets in trouble.
- --ignore_absolute_includes  Do preprocessing on server without absolute
-                             includes.  Usually, a source file that directly or
-                             indirectly attemps to include a file in an absolute
-                             location such as:
-                               #include "/usr/include/acl.h"
-                             forces local preprocessing (unless the file is 
-                             part of the compiler installation). With this
-                             option set to true, the source file is compiled
-                             on the server WITHOUT files included through
-                             absolute references.  Note: this may produce wrong
-                             results.
+
  --no-email                  Do not send email.
+ 
  --email_bound NUMBER        Maximal number of emails to send (in addition to
                              a final email). Default: 3.
+                             
  --realpath_warning_re=RE    Write a warning to stderr whenever a filename is
                              resolved to a realpath that is matched by RE,
                              which is a regular expression in Python syntax.
                              (Warnings must be enabled with at least -d1.)
+                             
  --stat_reset_triggers=LIST  Flush stat caches when the timestamp of any
                              filepath in LIST changes or the filepath comes in
                              or out of existence.  LIST is a colon separated
@@ -106,11 +100,37 @@ Options:
                              warnings are enabled). This option allows limited
                              exceptions to distcc_pump's normal assumption that
                              source files are not modified during the build.
+
+ --unsafe_absolute_includes  Do preprocessing on server even if absolute
+                             includes are encountered.  Such includes are then
+                             ignored for the purposes of gathering the include
+                             closure.
+
+                             Usually, a source file that directly or indirectly
+                             may attempt to include a file in an absolute
+                             location, such as in '#include
+                             "/usr/include/acl.h"', forces local preprocessing.
+                             We write 'may attempt' because this situation
+                             occurs even when the inclusion is governed by #ifdef's
+                             or #if's that actually evaluate in way that the include
+                             disappears after preprocessing.  With the
+                             --unsafe_absolute_includes set to true, the source
+                             file is compiled on the server WITHOUT the files on
+                             the client that may be included through absolute
+                             references.  Note that the server may, or may not,
+                             process the absolutely included file, which may, or
+                             may not, be needed during preprocessing on the
+                             server.
+
  -x, --exact_analysis        Use CPP instead, do not omit system headers files.
+ 
  -v, --verify                Verify that files in CPP closure are contained in
                              closure calculated by include processor.
+                             
  -s, --statistics            Print information to stdout about include analysis.
+ 
  -t, --time                  Print elapsed, user, and system time to stderr.
+ 
  -w, --write_include_closure Write a .d_approx file which lists all the
                              included files calculated by the include server;
                              with -x, additionally write the included files
@@ -459,7 +479,6 @@ def _ParseCommandLineOptions():
                                 "pid_file=",
                                 "debug_pattern=",
                                 "email",
-                                "ignore_absolute_includes",
                                 "no-email",
                                 "email_bound=",
                                 "exact_analysis",
@@ -468,6 +487,7 @@ def _ParseCommandLineOptions():
                                 "realpath_warning_re=",
                                 "statistics",
                                 "time",
+                                "unsafe_absolute_includes",
                                 "verify",
                                 "write_include_closure"])
   except getopt.GetoptError:
@@ -490,8 +510,6 @@ def _ParseCommandLineOptions():
         basics.opt_send_email = False
       if opt in ("--email_bound",):
         basics.opt_email_bound = int(arg)
-      if opt in ("--ignore_absolute_includes",):
-        basics.opt_ignore_absolute_includes = True
       if opt in ("--realpath_warning_re",):
         basics.opt_realpath_warning_re = re.compile(arg)
       if opt in ("--stat_reset_triggers",):
@@ -503,6 +521,8 @@ def _ParseCommandLineOptions():
       if opt in ("--simple_algorithm",):
         basics.opt_simple_algorithm = True
         sys.exit("Not implemented")
+      if opt in ("--unsafe_absolute_includes",):
+        basics.opt_unsafe_absolute_includes = True
       if opt in ("-s", "--statistics"):
         basics.opt_statistics = True
       if opt in ("-t", "--time"):
@@ -670,15 +690,4 @@ def Main():
 if __name__ == "__main__":
   # Treat SIGTERM (the default of kill) as Ctrl-C.  
   signal.signal(signal.SIGTERM, basics.RaiseSignalSIGTERM)
-  
-
-  # Import Psyco if available
-#  try:
-
- #   import psyco    
- #   psyco.full()
-
-  #except ImportError:
-  #  pass
-
   Main()
