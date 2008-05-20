@@ -47,10 +47,6 @@
 
 # TODO: Allow choice of which compiler and make options to use.
 
-# TODO: Try building something large in C++.
-
-# TODO: Set CXX as well.
-
 # TODO: Add option to run tests repeatedly and show mean and std. dev.
 
 # TODO: Perhaps add option to do "make clean" -- this might be faster
@@ -113,6 +109,7 @@ Options:
   --list-projects            show defined projects
   --cc=PATH                  specify base value of CC to pass to configure
   --cxx=PATH                 specify base value of CXX to pass to configure
+  --output=FILE              print final summary to FILE in addition to stdout
   -c, --compiler=COMPILER    specify one compiler to use; format is
                              {local|dist|lzo|pump},h<NUMHOSTS>,j<NUMJOBS>
   -n N                       repeat compilation N times
@@ -133,7 +130,7 @@ Multiple -c/--compiler options specify different scenarios to measure.
 The default is to measure a few reasonable scenarios.
 
 """
-actions.action_help()
+    actions.action_help()
 
 
 # -a is for developer use only and not documented; unless you're
@@ -148,11 +145,12 @@ def main():
     sum = Summary()
     options, args = getopt(sys.argv[1:], 'a:c:n:',
                            ['list-projects', 'actions=', 'help', 'compiler=',
-                            'cc=', 'cxx='])
+                            'cc=', 'cxx=', 'output='])
     opt_actions = actions.default_actions
     opt_cc = 'cc'
     opt_cxx = 'cxx'
-    set_compilers = []
+    opt_output = None
+    opt_compilers = []
     opt_repeats = 1
 
     for opt, optarg in options:
@@ -168,14 +166,17 @@ def main():
             opt_cc = optarg
         elif opt == '--cxx':
             opt_cxx = optarg
+        elif opt == '--output':
+            opt_output = optarg
         elif opt == '--compiler' or opt == '-c':
-            set_compilers.append(compiler.parse_compiler_opt(optarg,
-                                                             cc=opt_cc,
-                                                             cxx=opt_cxx))
+            opt_compilers.append(optarg)
         elif opt == '-n':
             opt_repeats = int(optarg)
 
-    if not set_compilers:
+    if opt_compilers:
+        set_compilers = [compiler.parse_compiler_opt(c, cc=opt_cc, cxx=opt_cxx)
+                         for c in opt_compilers]
+    else:
         set_compilers = compiler.default_compilers(cc=opt_cc, cxx=opt_cxx)
 
     # Find named projects, or run all by default
@@ -191,6 +192,15 @@ def main():
             build.build_actions(opt_actions, sum)
 
     sum.print_table()
+    # If --output was specified, print the table to the output-file too
+    if opt_output:
+        old_stdout = sys.stdout
+        sys.stdout = open(opt_output, 'w')
+        try:
+            sum.print_table()
+        finally:
+            sys.stdout.close()
+            sys.stdout = old_stdout
 
 if __name__ == '__main__':
     main()
