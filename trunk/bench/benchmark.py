@@ -47,8 +47,6 @@
 
 # TODO: Allow choice of which compiler and make options to use.
 
-# TODO: Add option to run tests repeatedly and show mean and std. dev.
-
 # TODO: Perhaps add option to do "make clean" -- this might be faster
 # than unzipping and configuring every time.  But perhaps also less
 # reproducible.
@@ -117,7 +115,7 @@ Options:
                              to perform
 
 The C and C++ compiler versions used can be set with the --cc and --cxx
-options.  These must precede any -c/--compiler options.
+options.
 
 Use of distcc features is set with the -c/--compiler option.  The argument
 to -c/--compiler has three components, separated by commas.  The first
