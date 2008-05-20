@@ -151,11 +151,12 @@ class CompilerDefaults(object):
     self.system_dirs_default = {}
 
 
-  def SetSystemDirsDefaults(self, compiler, timer=None):
+  def SetSystemDirsDefaults(self, compiler, language, timer=None):
     """Set instance variables according to compiler.
 
     Arguments:
-      compiler: a string "c", "c++",...
+      compiler: a filepath (the first argument on the distcc command line)
+      language: 'c' or 'c++' or other item in basics.LANGUAGES
       timer: a basis.IncludeAnalyzerTimer or None
 
     The timer will be disabled during this routine because the select involved
@@ -164,23 +165,26 @@ class CompilerDefaults(object):
     See also the constructor documentation for this class.
     """
     assert isinstance(compiler, str)
-    Debug(DEBUG_TRACE, "SetSystemDirsDefauls with CC: %s" % compiler)
-    if compiler in self.system_dirs_default: return
+    assert isinstance(language, str)
+    Debug(DEBUG_TRACE, "SetSystemDirsDefaults with CC, LANG: %s, %s" %
+                       (compiler, language))
+    if compiler in self.system_dirs_default:
+      if language in self.system_dirs_default[compiler]:
+        return
+    else:
+      self.system_dirs_default[compiler] = {}
     try:
       if timer:
         # We have to disable the timer because the select system call that is
         # executed when calling the compiler through Popen gives up if presented
         # with a SIGALRM.
         timer.Stop()
-      self.system_dirs_default[compiler] = {}
-      # Try 'c', 'c++', ...
-      for language in basics.LANGUAGES:
-        self.system_dirs_default[compiler][language] = (
-          _SystemSearchdirsGCC(compiler, language, self.canonical_lookup))
-        Debug(DEBUG_DATA,
-              "system_dirs_default[%s][%s]: %s" %
-              (compiler, language,
-               self.system_dirs_default[compiler][language]))
+      self.system_dirs_default[compiler][language] = (
+        _SystemSearchdirsGCC(compiler, language, self.canonical_lookup))
+      Debug(DEBUG_DATA,
+            "system_dirs_default[%s][%s]: %s" %
+            (compiler, language,
+             self.system_dirs_default[compiler][language]))
       # Now summarize what we know and add to system_dirs_default_all.
       self.system_dirs_default_all |= set(
         [ _default

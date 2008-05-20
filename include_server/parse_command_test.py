@@ -47,7 +47,7 @@ class ParseCommandUnitTest(unittest.TestCase):
     mock_compiler = '/usr/crosstool/v8/gcc-4.1.0-glibc-2.2.2/blah/gcc'
     self.mock_compiler = mock_compiler
 
-    def Mock_SetSystemDirsDefaults(compiler, timer=None):
+    def Mock_SetSystemDirsDefaults(compiler, language, timer=None):
       if compiler != mock_compiler:
         raise Exception, "compiler: %s, mock_compiler: %s" % (
           compiler, mock_compiler)

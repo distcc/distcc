@@ -235,17 +235,7 @@ BAD_REALPATH_WARNING_MSG = (
 # LANGUAGES AND FILE EXTENSIONS
 
 # The languages that we recognize.
-#
-# TODO(klarlund): add "objective-c" and "objective-c++".  Currently we try to
-# compute the default include path for all languages at startup, and barf if it
-# fails.  We need to fix that before enabling objective-c or objective-c++.  So
-# Objective C and Objective C++ support is disabled for now.
-#
-# To enable, uncomment the code below and the test case
-# ObjectiveC(PlusPlus)_Case in ../test/testdistcc.py.)
-
-LANGUAGES = set(['c', 'c++'])
-#LANGUAGES = set(['c', 'c++', 'objective-c', 'objective-c++'])
+LANGUAGES = set(['c', 'c++', 'objective-c', 'objective-c++'])
 
 # The suffixes, following last period, used for source files and
 # preprocessed files, each with their corresponding source language.
@@ -256,9 +246,9 @@ TRANSLATION_UNIT_MAP = {
     'cc': 'c++', 'cpp': 'c++', 'cxx': 'c++', 'C': 'c++', 'CXX': 'c++',
     'ii': 'c++',
     # Objective C
-    # 'm': 'objective-c', 'mi': 'objective-c'
+    'm': 'objective-c', 'mi': 'objective-c',
     # Objective C++
-    # 'mm': 'objective-c++', 'M': 'objective-c++', 'mii': 'objective-c++',
+    'mm': 'objective-c++', 'M': 'objective-c++', 'mii': 'objective-c++',
     }
 
 # All languages are described by suffixes.

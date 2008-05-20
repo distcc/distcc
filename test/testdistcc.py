@@ -938,6 +938,15 @@ int main(void) {
 class ObjectiveC_Case(Compilation_Case):
     """Test building an Objective-C program."""
 
+    def runtest(self):
+        # Don't try to run the test if GNU Objective C is not installed
+        error_rc, _, _ = self.runcmd_unchecked("touch testtmp.m; " +
+            _gcc + " -c testtmp.m -o /dev/null")
+        if error_rc != 0:
+            raise comfychair.NotRunError ('GNU Objective C not installed')
+        else:
+            Compilation_Case.runtest (self)
+
     def sourceFilename(self):
       return "testtmp.m"
 
@@ -959,6 +968,15 @@ int main(void) {
 
 class ObjectiveCPlusPlus_Case(Compilation_Case):
     """Test building an Objective-C++ program."""
+
+    def runtest(self):
+        # Don't try to run the test if GNU Objective C++ is not installed
+        error_rc, _, _ = self.runcmd_unchecked("touch testtmp.mm; " +
+            _gcc + " -c testtmp.mm -o /dev/null")
+        if error_rc != 0:
+            raise comfychair.NotRunError ('GNU Objective C++ not installed')
+        else:
+            Compilation_Case.runtest (self)
 
     def sourceFilename(self):
       return "testtmp.mm"
@@ -1804,12 +1822,8 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
-         # Support for Objective C in distcc-pump is currently disabled.
-         ### ObjectiveC_Case,
-         # I couldn't test the Objective C++ case,
-         # because I couldn't figure out how to install
-         # GNU Objective C++.  So this test is disabled for now.
-         ### ObjectiveCPlusPlus_Case,
+         ObjectiveC_Case,
+         ObjectiveCPlusPlus_Case,
          Gdb_Case,
          GdbOpt1_Case,
          GdbOpt2_Case,
