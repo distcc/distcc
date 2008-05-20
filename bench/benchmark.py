@@ -114,7 +114,7 @@ Options:
   --cc=PATH                  specify base value of CC to pass to configure
   --cxx=PATH                 specify base value of CXX to pass to configure
   -c, --compiler=COMPILER    specify one compiler to use; format is
-                             {local|distcc|lzo|pump},h<NUMHOSTS>,j<NUMJOBS>
+                             {local|dist|lzo|pump},h<NUMHOSTS>,j<NUMJOBS>
   -n N                       repeat compilation N times
   -a, --actions=ACTIONS      comma-separated list of action phases
                              to perform
