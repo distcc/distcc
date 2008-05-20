@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -23,17 +23,17 @@
 
 /**
  * @file
- * 
+ *
  * Implementation of a GtkCellRenderer subclass that draws a little
  * chart of programs that have run in that slot.
  **/
 
 
-#define DCC_TYPE_CELL_RENDERER_CHART			(dcc_cell_renderer_chart_get_type ())
-#define DCC_CELL_RENDERER_CHART(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), DCC_TYPE_CELL_RENDERER_CHART, DccCellRendererChart))
-#define DCC_CELL_RENDERER_CHART_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), DCC_TYPE_CELL_RENDERER_CHART, DccCellRendererChartClass))
-#define DCC_IS_CELL_RENDERER_CHART(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), DCC_TYPE_CELL_RENDERER_CHART))
-#define DCC_IS_CELL_RENDERER_CHART_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), DCC_TYPE_CELL_RENDERER_CHART))
+#define DCC_TYPE_CELL_RENDERER_CHART            (dcc_cell_renderer_chart_get_type ())
+#define DCC_CELL_RENDERER_CHART(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), DCC_TYPE_CELL_RENDERER_CHART, DccCellRendererChart))
+#define DCC_CELL_RENDERER_CHART_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), DCC_TYPE_CELL_RENDERER_CHART, DccCellRendererChartClass))
+#define DCC_IS_CELL_RENDERER_CHART(obj)        (G_TYPE_CHECK_INSTANCE_TYPE ((obj), DCC_TYPE_CELL_RENDERER_CHART))
+#define DCC_IS_CELL_RENDERER_CHART_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), DCC_TYPE_CELL_RENDERER_CHART))
 #define DCC_CELL_RENDERER_CHART_GET_CLASS(obj)         (G_TYPE_INSTANCE_GET_CLASS ((obj), DCC_TYPE_CELL_RENDERER_CHART, DccCellRendererChartClass))
 
 typedef struct _DccCellRendererChart DccCellRendererChart;

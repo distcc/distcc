@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -133,7 +133,7 @@ int dcc_select_for_write(int fd, int timeout)
         FD_SET(fd, &write_fds);
         FD_SET(fd, &except_fds);
         rs_trace("select for write on fd%d", fd);
-        
+
         rs = select(fd + 1, NULL, &write_fds, &except_fds, &tv);
 
         if (rs == -1 && errno == EINTR) {
@@ -174,7 +174,7 @@ int dcc_readx(int fd, void *buf, size_t len)
     int ret;
 
     while (len > 0) {
-	r = read(fd, buf, len);
+        r = read(fd, buf, len);
 
         if (r == -1 && errno == EAGAIN) {
             if ((ret = dcc_select_for_read(fd, dcc_io_timeout)))
@@ -184,15 +184,15 @@ int dcc_readx(int fd, void *buf, size_t len)
         } else if (r == -1 && errno == EINTR) {
             continue;
         } else if (r == -1) {
-	    rs_log_error("failed to read: %s", strerror(errno));
-	    return EXIT_IO_ERROR;
-	} else if (r == 0) {
-	    rs_log_error("unexpected eof on fd%d", fd);
-	    return EXIT_TRUNCATED;
-	} else {
-	    buf = &((char *) buf)[r];
-	    len -= r;
-	}
+            rs_log_error("failed to read: %s", strerror(errno));
+            return EXIT_IO_ERROR;
+        } else if (r == 0) {
+            rs_log_error("unexpected eof on fd%d", fd);
+            return EXIT_TRUNCATED;
+        } else {
+            buf = &((char *) buf)[r];
+            len -= r;
+        }
     }
 
     return 0;
@@ -209,7 +209,7 @@ int dcc_writex(int fd, const void *buf, size_t len)
 {
     ssize_t r;
     int ret;
-	
+
     while (len > 0) {
         r = write(fd, buf, len);
 

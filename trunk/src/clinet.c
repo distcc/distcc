@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -77,7 +77,7 @@ const int dcc_connect_timeout = 4; /* seconds */
 
 /*
  * Connect to a host given its binary address, with a timeout.
- * 
+ *
  * host and port are only here to aid printing debug messages.
  */
 int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
@@ -105,8 +105,8 @@ int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
     /* start the nonblocking connect... */
     do
         failed = connect(fd, sa, salen);
-    while (failed == -1 && 
-           (errno == EINTR || 
+    while (failed == -1 &&
+           (errno == EINTR ||
             (errno == EAGAIN && tries-- && poll(NULL, 0, 500) == 0)));
 
    if (failed == -1 && errno != EINPROGRESS) {
@@ -147,7 +147,7 @@ int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
     *p_fd = fd;
     free(s);
     return 0;
-    
+
 out_failed:
     free(s);
     return ret;
@@ -168,7 +168,7 @@ int dcc_connect_by_name(const char *host, int port, int *p_fd)
     char portname[20];
 
     rs_trace("connecting to %s port %d", host, port);
-    
+
     /* Unfortunately for us, getaddrinfo wants the port (service) as a string */
     snprintf(portname, sizeof portname, "%d", port);
 
@@ -197,7 +197,7 @@ int dcc_connect_by_name(const char *host, int port, int *p_fd)
 /**
  * Open a socket to a tcp remote host with the specified port.
  *
- * @todo Don't try for too long to connect. 
+ * @todo Don't try for too long to connect.
  **/
 int dcc_connect_by_name(const char *host, int port, int *p_fd)
 {
@@ -208,9 +208,9 @@ int dcc_connect_by_name(const char *host, int port, int *p_fd)
      * instead!" (or indeed perhaps use getaddrinfo?) */
     hp = gethostbyname(host);
     if (!hp) {
-	rs_log_error("failed to look up host \"%s\": %s", host,
+        rs_log_error("failed to look up host \"%s\": %s", host,
                      hstrerror(h_errno));
-	return EXIT_CONNECT_FAILED;
+        return EXIT_CONNECT_FAILED;
     }
 
     memcpy(&sock_out.sin_addr, hp->h_addr, (size_t) hp->h_length);

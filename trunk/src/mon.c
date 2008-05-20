@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -145,7 +145,7 @@ static int dcc_mon_read_state(int fd, char *fullpath,
                        fullpath);
         return EXIT_IO_ERROR;
     }
-    
+
     lp->file[sizeof lp->file - 1] = '\0';
     lp->host[sizeof lp->host - 1] = '\0';
     if (lp->curr_phase > DCC_PHASE_DONE) {
@@ -197,7 +197,7 @@ static int dcc_mon_load_state(int fd,
         rs_log_crit("failed to allocate dcc_task_state");
         return EXIT_OUT_OF_MEMORY;
     }
-    
+
     ret = dcc_mon_read_state(fd, fullpath, tl);
     if (ret) {
         dcc_task_state_free(tl);
@@ -215,7 +215,7 @@ static int dcc_mon_load_state(int fd,
     }
 
     *ppl = tl;
-    
+
     return ret;
 }
 
@@ -233,7 +233,7 @@ int dcc_task_state_free(struct dcc_task_state *lp)
         /* nothing dynamically allocated in them anymore */
         lp = next;
     }
-    
+
     return 0;
 }
 
@@ -252,7 +252,7 @@ static int dcc_mon_do_file(char *dirname, char *filename,
     int ret;
 
     *lp = NULL;
-    
+
     /* Is this a file we want to see */
     if (!str_startswith(dcc_state_prefix, filename)) {
 /*         rs_trace("skipped"); */
@@ -283,10 +283,10 @@ static int dcc_mon_do_file(char *dirname, char *filename,
     }
 
     ret = dcc_mon_load_state(fd, fullpath, lp);
-    
+
     dcc_close(fd);
-    
-    out_free:    
+
+    out_free:
     free(fullpath);
     return ret;           /* ok */
 }
@@ -300,7 +300,7 @@ static void dcc_mon_insert_sorted(struct dcc_task_state **list,
 {
     int s;
     struct dcc_task_state *i;
-    
+
     for (; (i = *list) != NULL; list = &i->next) {
         /* Should we go before *list?  If the hostname comes first, or
          * the name is the same and the slot is lower. */
@@ -313,9 +313,9 @@ static void dcc_mon_insert_sorted(struct dcc_task_state **list,
             /* same host; compare slots */
             if (new->slot < i->slot)
                 break;
-        } 
+        }
     }
-    
+
     /* OK, insert it before the current contents of *list, which may
      * be NULL */
     *list = new;
@@ -339,7 +339,7 @@ int dcc_mon_poll(struct dcc_task_state **p_list)
     struct dirent *de;
 
     *p_list = NULL;
-    
+
     if ((ret = dcc_get_state_dir(&dirname)))
         return ret;
 
@@ -362,7 +362,7 @@ int dcc_mon_poll(struct dcc_task_state **p_list)
 
     closedir(d);
 
-    return 0;    
+    return 0;
 }
 
 

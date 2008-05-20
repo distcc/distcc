@@ -70,8 +70,8 @@ static const char *const discrepancy_suffix = "/discrepancy_counter";
  * discrepancies (a compilation failing on the server, but succeeding
  * locally. This function may return NULL in @param filename if the name cannot
  * be determined.
- **/ 
-int dcc_discrepancy_filename(char **filename) 
+ **/
+int dcc_discrepancy_filename(char **filename)
 {
     const char *include_server_port = getenv("INCLUDE_SERVER_PORT");
     *filename = NULL;
@@ -81,7 +81,7 @@ int dcc_discrepancy_filename(char **filename)
                             include_server_port)) {
         /* We're going to make a longer string from include_server_port: one
          * that replaces include_server_port_suffix with discrepancy_suffix. */
-        int delta = strlen(discrepancy_suffix) - 
+        int delta = strlen(discrepancy_suffix) -
             strlen(include_server_port_suffix);
         assert (delta > 0);
         *filename = malloc(strlen(include_server_port) + 1 + delta);
@@ -97,7 +97,7 @@ int dcc_discrepancy_filename(char **filename)
         assert((*filename)[slash_pos] == '/');
         (void) strcpy(*filename + slash_pos, discrepancy_suffix);
         return 0;
-    } else 
+    } else
         return 0;
 }
 
@@ -107,19 +107,19 @@ int dcc_discrepancy_filename(char **filename)
  * memory; return 0 if it's not possible to determine the length (if
  * e.g. @param discrepancy_filename is NULL).
  **/
-static int dcc_read_number_discrepancies(const char *discrepancy_filename) 
+static int dcc_read_number_discrepancies(const char *discrepancy_filename)
 {
     if (!discrepancy_filename) return 0;
     struct stat stat_record;
     if (stat(discrepancy_filename, &stat_record) == 0) {
         size_t size = stat_record.st_size;
         /* Does size fit in an 'int'? */
-        if ((((size_t) (int) size) == size) && 
+        if ((((size_t) (int) size) == size) &&
             ((int) size) > 0)
             return ((int) size);
-        else 
+        else
             return INT_MAX;
-    } else 
+    } else
         return 0;
 }
 
@@ -128,7 +128,7 @@ static int dcc_read_number_discrepancies(const char *discrepancy_filename)
  *  Lengthen the file whose name is @param discrepancy_filename by one byte. Or,
  *  do nothing, if @param discrepancy_filename is NULL.
  **/
-static int dcc_note_discrepancy(const char *discrepancy_filename) 
+static int dcc_note_discrepancy(const char *discrepancy_filename)
 {
     FILE *discrepancy_file;
     if (!discrepancy_filename) return 0;
@@ -173,8 +173,8 @@ static void dcc_perhaps_adjust_cpp_where_and_protover(
         max_discrepancies_before_demotion) {
         /* Give up on using distcc-pump */
         host->cpp_where = DCC_CPP_ON_CLIENT;
-        dcc_get_protover_from_features(host->compr, 
-                                       host->cpp_where, 
+        dcc_get_protover_from_features(host->compr,
+                                       host->cpp_where,
                                        &host->protover);
     }
 
@@ -184,20 +184,20 @@ static void dcc_perhaps_adjust_cpp_where_and_protover(
         rs_log_warning("cannot use distcc_pump on already preprocessed file"
                        " (such as emitted by ccache)");
         host->cpp_where = DCC_CPP_ON_CLIENT;
-        dcc_get_protover_from_features(host->compr, 
-                                       host->cpp_where, 
+        dcc_get_protover_from_features(host->compr,
+                                       host->cpp_where,
                                        &host->protover);
     }
     /* Environment variables CPATH and two friends are hidden ways of passing
      * -I's. Beware! */
-    if (getenv("CPATH") || getenv("C_INCLUDE_PATH") 
+    if (getenv("CPATH") || getenv("C_INCLUDE_PATH")
         || getenv("CPLUS_INCLUDE_PATH")) {
         rs_log_warning("cannot use distcc_pump with any of environment"
                        " variables CPATH, C_INCLUDE_PATH or CPLUS_INCLUDE_PATH"
                        " set, preprocessing locally");
         host->cpp_where = DCC_CPP_ON_CLIENT;
-        dcc_get_protover_from_features(host->compr, 
-                                       host->cpp_where, 
+        dcc_get_protover_from_features(host->compr,
+                                       host->cpp_where,
                                        &host->protover);
     }
 }
@@ -213,11 +213,11 @@ static void dcc_perhaps_adjust_cpp_where_and_protover(
  * string describing the offending dependency.
 
  * If @param exclude_pattern is not NULL, then files matching the glob @param
- * exclude_pattern are not considered in the above comparison. 
+ * exclude_pattern are not considered in the above comparison.
  *
  *  This function is not declared static --- for purposes of testing.
  **/
-int dcc_fresh_dependency_exists(const char *dotd_fname, 
+int dcc_fresh_dependency_exists(const char *dotd_fname,
                                 const char *exclude_pattern,
                                 time_t reference_time,
                                 char **result)
@@ -259,7 +259,7 @@ int dcc_fresh_dependency_exists(const char *dotd_fname,
         free(dep_name);
         return 0;
     }
-    
+
     /* Find ':'. */
     while ((c = getc(fp)) != EOF && c != ':');
     if (c != ':') goto return_0;
@@ -272,7 +272,7 @@ int dcc_fresh_dependency_exists(const char *dotd_fname,
         while ((c = getc(fp)) != EOF && (isspace(c) || c == '\\'));
         /* Now, we're at start of file name. */
         ungetc(c, fp);
-        while ((c = getc(fp)) != EOF && 
+        while ((c = getc(fp)) != EOF &&
                (!isspace(c) || c == '\\')) {
             if (i >= dotd_fname_size) {
                 /* Impossible */
@@ -312,7 +312,7 @@ int dcc_fresh_dependency_exists(const char *dotd_fname,
             }
         }
     }
-  return_0: 
+  return_0:
     fclose(fp);
     free(dep_name);
     return 0;
@@ -482,7 +482,7 @@ dcc_build_somewhere(char *argv[],
 #endif
     if ((ret = dcc_make_tmpnam("distcc_server_stderr", ".txt",
                                &server_stderr_fname))) {
-        // So we are failing locally to make a temp file to store the 
+        // So we are failing locally to make a temp file to store the
         // server-side errors in; it's unlikely anything else will
         // work, but let's try the compilation locally.
         // FIXME: this will blame the server for a failure that is
@@ -491,11 +491,11 @@ dcc_build_somewhere(char *argv[],
         // and some of those reasons are local.
         goto fallback;
     }
-	
+
     if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
         goto fallback;
     }
-    
+
     if ((ret = dcc_pick_host_from_list(&host, &cpu_lock_fd)) != 0) {
         /* Doesn't happen at the moment: all failures are masked by
            returning localhost. */
@@ -513,7 +513,7 @@ dcc_build_somewhere(char *argv[],
                                                   discrepancy_filename);
     }
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
-    	if ((ret = dcc_talk_to_include_server(argv, &files))) {
+        if ((ret = dcc_talk_to_include_server(argv, &files))) {
             /* Fallback to doing cpp locally */
             /* It's unfortunate that the variable that controls that is in the
              * "host" datastructure, even though in this case it's the client
@@ -527,40 +527,40 @@ dcc_build_somewhere(char *argv[],
                            "preprocessing locally");
             if (dcc_getenv_bool("DISTCC_TESTING_INCLUDE_SERVER", 0))
                 dcc_exit(ret);
-    	    host->cpp_where = DCC_CPP_ON_CLIENT;
-            dcc_get_protover_from_features(host->compr, 
-                                           host->cpp_where, 
+            host->cpp_where = DCC_CPP_ON_CLIENT;
+            dcc_get_protover_from_features(host->compr,
+                                           host->cpp_where,
                                            &host->protover);
-    	} else {
+        } else {
             // done "preprocessing"
             dcc_unlock(local_cpu_lock_fd);
             // don't try to unlock again in dcc_compile_remote
-            local_cpu_lock_fd = 0; 
+            local_cpu_lock_fd = 0;
         }
     }
 
     if (host->cpp_where == DCC_CPP_ON_CLIENT) {
-    	files = NULL;
-    	
+        files = NULL;
+
         if ((ret = dcc_cpp_maybe(argv, input_fname, &cpp_fname, &cpp_pid) != 0))
             goto fallback;
-    
+
         if ((ret = dcc_strip_local_args(argv, &server_side_argv)))
             goto fallback;
     } else {
         char *dotd_target = NULL;
-    	cpp_fname = NULL;
-    	cpp_pid = 0;
-        dcc_get_dotd_info(argv, &deps_fname, &needs_dotd, 
+        cpp_fname = NULL;
+        cpp_pid = 0;
+        dcc_get_dotd_info(argv, &deps_fname, &needs_dotd,
                           &sets_dotd_target, &dotd_target);
         server_side_argv_deep_copied = 1;
-    	if ((ret = dcc_copy_argv(argv, &server_side_argv, 2)))
-    	    goto fallback;
+        if ((ret = dcc_copy_argv(argv, &server_side_argv, 2)))
+            goto fallback;
         if (needs_dotd && !sets_dotd_target) {
            dcc_argv_append(server_side_argv, strdup("-MT"));
            if (dotd_target == NULL)
                dcc_argv_append(server_side_argv, strdup(output_fname));
-           else 
+           else
                dcc_argv_append(server_side_argv, strdup(dotd_target));
         }
     }
@@ -571,8 +571,8 @@ dcc_build_somewhere(char *argv[],
                                   output_fname,
                                   needs_dotd ? deps_fname : NULL,
                                   server_stderr_fname,
-                                  cpp_pid, local_cpu_lock_fd, 
-				  host, status)) != 0) {
+                                  cpp_pid, local_cpu_lock_fd,
+                  host, status)) != 0) {
         /* Returns zero if we successfully ran the compiler, even if
          * the compiler itself bombed out. */
         goto fallback;
@@ -588,7 +588,7 @@ dcc_build_somewhere(char *argv[],
         // If that fails, even though the compilation succeeded,
         // we haven't managed to give these errors to the user,
         // so we have to try again.
-        // FIXME: Just like in the attempt to make a temporary file, this 
+        // FIXME: Just like in the attempt to make a temporary file, this
         // is unlikely to fail, if it does it's unlikely any other
         // operation will work, and this makes the mistake of
         // blaming the server for what is (clearly?) a local failure.
@@ -599,19 +599,19 @@ dcc_build_somewhere(char *argv[],
         goto clean_up;
     }
     if (ret < 128) {
-        /* Remote compile just failed, e.g. with syntax error. 
+        /* Remote compile just failed, e.g. with syntax error.
            It may be that the remote compilation failed because
            the file has an error, or because we did something
            wrong (e.g. we did not send all the necessary files.)
-           Retry locally. If the local compilation also fails, 
+           Retry locally. If the local compilation also fails,
            then we know it's the program that has the error,
            and it doesn't really matter that we recompile, because
            this is rare.
-           If the local compilation succeeds, then we know it's our 
+           If the local compilation succeeds, then we know it's our
            fault, and we should do something about it later.
            (Currently, we send email to an appropriate email address).
         */
-        rs_log_warning("remote compilation of '%s' failed, retrying locally", 
+        rs_log_warning("remote compilation of '%s' failed, retrying locally",
                        input_fname);
         remote_ret = ret;
         goto fallback;
@@ -625,10 +625,10 @@ dcc_build_somewhere(char *argv[],
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
         rs_log_warning("failed to distribute and fallbacks are disabled");
         // Try copying any server-side error message to stderr;
-        // If we fail the user will miss all the messages from the server; so 
+        // If we fail the user will miss all the messages from the server; so
         // we pretend we failed remotely.
         if ((dcc_copy_file_to_fd(server_stderr_fname, STDERR_FILENO))) {
-            rs_log_error("Could not print error messages from '%s'", 
+            rs_log_error("Could not print error messages from '%s'",
                          server_stderr_fname);
         }
         goto clean_up;

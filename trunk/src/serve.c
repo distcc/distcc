@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -23,7 +23,7 @@
                 /* He who waits until circumstances completely favour *
                  * his undertaking will never accomplish anything.    *
                  *              -- Martin Luther                      */
-   
+
 
 /**
  * @file
@@ -109,7 +109,7 @@ static int dcc_add_log_to_file(const char *err_fname)
         rs_log_crit("compile log already open?");
         return 0;               /* continue? */
     }
-    
+
     dcc_compile_log_fd = open(err_fname, O_WRONLY|O_CREAT|O_TRUNC, 0600);
     if (dcc_compile_log_fd == -1) {
         rs_log_error("failed to open %s: %s", err_fname, strerror(errno));
@@ -176,7 +176,7 @@ static int dcc_input_tmpnam(char * orig_input,
                             char **tmpnam_ret)
 {
     const char *input_exten;
-    
+
     rs_trace("input file %s", orig_input);
     input_exten = dcc_find_extension(orig_input);
     if (input_exten)
@@ -197,11 +197,11 @@ static int dcc_input_tmpnam(char * orig_input,
  * refuse to serve any command whose last DISTCC_CMDLIST_NUMWORDS last words
  * don't match those of a command in that list.
  * Each line of the file is simply a filename.
- * This is chiefly useful for those few installations which have so many 
+ * This is chiefly useful for those few installations which have so many
  * compilers available such that the compiler must be specified with an absolute pathname.
  *
- * Example: if the compilers are installed in a different location on 
- * this server, e.g. if they've been copied from a shared NFS directory onto a 
+ * Example: if the compilers are installed in a different location on
+ * this server, e.g. if they've been copied from a shared NFS directory onto a
  * local hard drive, you might have lines like
  *   /local/tools/blort/sh4-linux/gcc-3.3.3-glibc-2.2.5/bin/sh4-linux-gcc
  *   /local/tools/blort/sh4-linux/gcc-2.95.3-glibc-2.2.5/bin/sh4-linux-gcc
@@ -209,10 +209,10 @@ static int dcc_input_tmpnam(char * orig_input,
  *   /local/tools/gcc-3.3.3-glibc-2.2.5/bin/sh4-linux-gcc
  *   /shared/tools/gcc-3.3.3-glibc-2.2.5/bin/sh4-linux-gcc
  *   /zounds/gcc-3.3.3-glibc-2.2.5/bin/sh4-linux-gcc
- * will invoke 
+ * will invoke
  *   /local/tools/blort/sh4-linux/gcc-3.3.3-glibc-2.2.5/bin/sh4-linux-gcc
  *
- * Returns 0 (which will abort the compile) if compiler not in list. 
+ * Returns 0 (which will abort the compile) if compiler not in list.
  * (This is because the list is intended to be complete,
  * and any attempt to use a command not in the list indicates a confused user.
  * FIXME: should probably give user the option of changing this
@@ -221,47 +221,47 @@ static int dcc_input_tmpnam(char * orig_input,
  **/
 static int dcc_remap_compiler(char **compiler_name)
 {
-	static int cmdlist_checked=0;
-	static stringmap_t *map=0;
-	const char *newname;
+    static int cmdlist_checked=0;
+    static stringmap_t *map=0;
+    const char *newname;
 
-	/* load file if not already */
-	if (!cmdlist_checked) {
-		char *filename;
-		cmdlist_checked = 1;
-		filename = getenv("DISTCC_CMDLIST");
-		if (filename) {
-			const char *nw = getenv("DISTCC_CMDLIST_NUMWORDS");
-			int numFinalWordsToMatch=1;
-			if (nw)
-				numFinalWordsToMatch = atoi(nw);
-			map = stringmap_load(filename, numFinalWordsToMatch);
-			if (map) {
-				rs_trace("stringmap_load(%s, %d) found %d commands", filename, numFinalWordsToMatch, map->n);
-			} else {
-				rs_log_error("stringmap_load(%s, %d) failed: %s", filename, numFinalWordsToMatch, strerror(errno));
-				return EXIT_IO_ERROR;
-			}
-		}
-	}
+    /* load file if not already */
+    if (!cmdlist_checked) {
+        char *filename;
+        cmdlist_checked = 1;
+        filename = getenv("DISTCC_CMDLIST");
+        if (filename) {
+            const char *nw = getenv("DISTCC_CMDLIST_NUMWORDS");
+            int numFinalWordsToMatch=1;
+            if (nw)
+                numFinalWordsToMatch = atoi(nw);
+            map = stringmap_load(filename, numFinalWordsToMatch);
+            if (map) {
+                rs_trace("stringmap_load(%s, %d) found %d commands", filename, numFinalWordsToMatch, map->n);
+            } else {
+                rs_log_error("stringmap_load(%s, %d) failed: %s", filename, numFinalWordsToMatch, strerror(errno));
+                return EXIT_IO_ERROR;
+            }
+        }
+    }
 
-	if (!map)
-		return 1;	/* no list of allowed names, so ok */
+    if (!map)
+        return 1;    /* no list of allowed names, so ok */
 
-	/* Find what this compiler maps to */
-	newname = stringmap_lookup(map, *compiler_name);
-	if (!newname) {
-		rs_log_warning("lookup of %s in DISTCC_CMDLIST failed", *compiler_name);
-		return 0;	/* not in list, so forbidden.  FIXME: make failure an option */
-	}
+    /* Find what this compiler maps to */
+    newname = stringmap_lookup(map, *compiler_name);
+    if (!newname) {
+        rs_log_warning("lookup of %s in DISTCC_CMDLIST failed", *compiler_name);
+        return 0;    /* not in list, so forbidden.  FIXME: make failure an option */
+    }
 
-	/* If mapping is not the identity mapping, replace the original name */
-	if (strcmp(newname, *compiler_name)) {
-		rs_trace("changed compiler from %s to %s", *compiler_name, newname);
-		free(*compiler_name);
-		*compiler_name = strdup(newname);
-	}
-	return 1;
+    /* If mapping is not the identity mapping, replace the original name */
+    if (strcmp(newname, *compiler_name)) {
+        rs_trace("changed compiler from %s to %s", *compiler_name, newname);
+        free(*compiler_name);
+        *compiler_name = strdup(newname);
+    }
+    return 1;
 }
 
 
@@ -285,9 +285,9 @@ static int dcc_check_compiler_masq(char *compiler_name)
     int len;
     char linkbuf[MAXPATHLEN];
 
-    if (compiler_name[0] == '/') 
+    if (compiler_name[0] == '/')
         return 0;
-    
+
     if (!(envpath = getenv("PATH"))) {
         rs_trace("PATH seems not to be defined");
         return 0;
@@ -315,7 +315,7 @@ static int dcc_check_compiler_masq(char *compiler_name)
         if ((len = readlink(buf, linkbuf, sizeof linkbuf)) <= 0)
             continue;
         linkbuf[len] = '\0';
-        
+
         if (strstr(linkbuf, "distcc")) {
             rs_log_warning("%s on distccd's path is %s and really a link to %s",
                            compiler_name, buf, linkbuf);
@@ -346,25 +346,25 @@ static const char *include_options[] = {
 
 /**
  * Prepend @p root_dir string to source file if absolute.
- **/    
-static int tweak_input_argument_for_server(char **argv, 
+ **/
+static int tweak_input_argument_for_server(char **argv,
                                            const char *root_dir)
 {
     unsigned i;
     /* Look for the source file and act if absolute. Note: dcc_scan_args
      * rejects compilations with more than one source file. */
-    for (i=0; argv[i]; i++) 
+    for (i=0; argv[i]; i++)
         if (dcc_is_source(argv[i]) && argv[i][0]=='/') {
             unsigned j = 0;
             char *prefixed_name;
             while (argv[i][j] == '/') j++;
-            if (asprintf(&prefixed_name, "%s/%s", 
-                         root_dir, 
+            if (asprintf(&prefixed_name, "%s/%s",
+                         root_dir,
                          argv[i] + j) == -1) {
                 rs_log_crit("asprintf failed");
                 return EXIT_OUT_OF_MEMORY;
             }
-            rs_trace("changed input from \"%s\" to \"%s\"", argv[i], 
+            rs_trace("changed input from \"%s\" to \"%s\"", argv[i],
                      prefixed_name);
             free(argv[i]);
             argv[i] = prefixed_name;
@@ -379,11 +379,11 @@ static int tweak_input_argument_for_server(char **argv,
  * Prepend @p root_dir to arguments of include options that are absolute.
  **/
 static int tweak_include_arguments_for_server(char **argv,
-                                              const char *root_dir) 
+                                              const char *root_dir)
 {
     int index_of_first_filename_char = 0;
     const char *include_option;
-    unsigned int i, j; 
+    unsigned int i, j;
     for (i = 0; argv[i]; ++i) {
         for (j = 0; include_options[j]; ++j) {
             if (str_startswith(include_options[j], argv[i])) {
@@ -400,9 +400,9 @@ static int tweak_include_arguments_for_server(char **argv,
                 if (argv[i] != NULL) { // in case of a dangling -I
                     if (argv[i][index_of_first_filename_char] == '/') {
                         char *buf;
-                        asprintf(&buf, "%s%s%s", 
-                                 include_option, 
-                                 root_dir, 
+                        asprintf(&buf, "%s%s%s",
+                                 include_option,
+                                 root_dir,
                                  argv[i] + index_of_first_filename_char);
                         if (buf == NULL) {
                             return EXIT_OUT_OF_MEMORY;
@@ -422,7 +422,7 @@ static int tweak_include_arguments_for_server(char **argv,
  * it augments, rather than replace, the list of targets in the dotd file.
  * The behavior we want though, is the replacing behavior.
  * So here we delete the "-MT target" arguments, and we return the target,
- * for use in the .d rewritting in dotd.c. 
+ * for use in the .d rewritting in dotd.c.
  */
 static int dcc_convert_mt_to_dotd_target(char **argv, char **dotd_target)
 {
@@ -458,16 +458,16 @@ static int dcc_convert_mt_to_dotd_target(char **argv, char **dotd_target)
 
     return 0;
 }
-                                              
+
 
 /**
- * Add -MMD and -MF to get a .d file.  
+ * Add -MMD and -MF to get a .d file.
  * Find what the dotd target should be (if any).
  * Prepend @p root_dir to every command
  * line argument that refers to a file/dir by an absolute name.
  **/
-static int tweak_arguments_for_server(char **argv, 
-                                      const char *root_dir, 
+static int tweak_arguments_for_server(char **argv,
+                                      const char *root_dir,
                                       const char *deps_fname,
                                       char **dotd_target,
                                       char ***tweaked_argv)
@@ -483,12 +483,12 @@ static int tweak_arguments_for_server(char **argv,
     dcc_argv_append(*tweaked_argv, strdup("-MMD"));
     dcc_argv_append(*tweaked_argv, strdup("-MF"));
     dcc_argv_append(*tweaked_argv, strdup(deps_fname));
-    
+
     tweak_include_arguments_for_server(*tweaked_argv, root_dir);
     tweak_input_argument_for_server(*tweaked_argv, root_dir);
     return 0;
 }
-                       
+
 
 /**
  * Read the client working directory from in_fd socket,
@@ -508,10 +508,10 @@ static int make_temp_dir_and_chdir_for_cpp(int in_fd,
 
         int ret = 0;
 
-    	if ((ret = dcc_get_new_tmpdir(temp_dir)))
-    	    return ret;
-    	if ((ret = dcc_r_cwd(in_fd, client_side_cwd)))
-    	    return ret;
+        if ((ret = dcc_get_new_tmpdir(temp_dir)))
+            return ret;
+        if ((ret = dcc_r_cwd(in_fd, client_side_cwd)))
+            return ret;
 
         asprintf(server_side_cwd, "%s%s", *temp_dir, *client_side_cwd);
         if (*server_side_cwd == NULL) {
@@ -555,14 +555,14 @@ static int dcc_run_job(int in_fd,
     char *client_cwd = NULL;
 
     gettimeofday(&start, NULL);
-    
+
     if ((ret = dcc_make_tmpnam("distcc", ".deps", &deps_fname)))
         goto out_cleanup;
     if ((ret = dcc_make_tmpnam("distcc", ".stderr", &err_fname)))
         goto out_cleanup;
     if ((ret = dcc_make_tmpnam("distcc", ".stdout", &out_fname)))
         goto out_cleanup;
-    
+
     dcc_remove_if_exists(deps_fname);
     dcc_remove_if_exists(err_fname);
     dcc_remove_if_exists(out_fname);
@@ -584,12 +584,12 @@ static int dcc_run_job(int in_fd,
         goto out_cleanup;
 
     dcc_get_features_from_protover(protover, &compr, &cpp_where);
-        
+
     if (cpp_where == DCC_CPP_ON_SERVER)
         if ((ret = make_temp_dir_and_chdir_for_cpp(in_fd,
                           &temp_dir, &client_cwd, &server_cwd)))
             goto out_cleanup;
-     
+
     if ((ret = dcc_r_argv(in_fd, &argv))
         || (ret = dcc_scan_args(argv, &orig_input_tmp, &orig_output_tmp,
                                 &tweaked_argv)))
@@ -617,20 +617,20 @@ static int dcc_run_job(int in_fd,
         goto out_cleanup;
 
     /* if the protocol is multi-file, then we need to do the following
-     * in a loop. 
+     * in a loop.
      */
     if (cpp_where == DCC_CPP_ON_SERVER) {
-    	if (dcc_r_many_files(in_fd, temp_dir, compr)
-    	    || dcc_set_output(argv, temp_o) 
+        if (dcc_r_many_files(in_fd, temp_dir, compr)
+            || dcc_set_output(argv, temp_o)
             || tweak_arguments_for_server(argv, temp_dir, deps_fname,
-                                          &dotd_target, &tweaked_argv)) 
-    	    goto out_cleanup;
+                                          &dotd_target, &tweaked_argv))
+            goto out_cleanup;
         /* Repeat the switcharoo trick a few lines above. */
         dcc_free_argv(argv);
         argv = tweaked_argv;
         tweaked_argv = NULL;
     } else {
-    	if ((ret = dcc_input_tmpnam(orig_input, &temp_i)))
+        if ((ret = dcc_input_tmpnam(orig_input, &temp_i)))
             goto out_cleanup;
         if ((ret = dcc_r_token_file(in_fd, "DOTI", temp_i, compr))
             || (ret = dcc_set_input(argv, temp_i))
@@ -639,7 +639,7 @@ static int dcc_run_job(int in_fd,
     }
 
     if (!dcc_remap_compiler(&argv[0]))
-	goto out_cleanup;
+    goto out_cleanup;
 
     if ((ret = dcc_check_compiler_masq(argv[0])))
         goto out_cleanup;
@@ -651,7 +651,7 @@ static int dcc_run_job(int in_fd,
          * compiler */
         status = W_EXITCODE(compile_ret, 0);
     }
-    
+
     if ((ret = dcc_x_result_header(out_fd, protover))
         || (ret = dcc_x_cc_status(out_fd, status))
         || (ret = dcc_x_file(out_fd, err_fname, "SERR", compr, NULL))
@@ -661,7 +661,7 @@ static int dcc_run_job(int in_fd,
         /* Something went wrong, so send DOTO 0 */
         dcc_x_token_int(out_fd, "DOTO", 0);
 
-	if (job_result == -1)
+    if (job_result == -1)
             job_result = STATS_COMPILE_ERROR;
     } else {
         if (cpp_where == DCC_CPP_ON_SERVER) {
@@ -684,10 +684,10 @@ static int dcc_run_job(int in_fd,
 
         if (cpp_where == DCC_CPP_ON_SERVER) {
             char *cleaned_dotd;
-            ret = dcc_cleanup_dotd(deps_fname, 
+            ret = dcc_cleanup_dotd(deps_fname,
                                    &cleaned_dotd,
-                                   temp_dir, 
-                                   dotd_target ? dotd_target : orig_output, 
+                                   temp_dir,
+                                   dotd_target ? dotd_target : orig_output,
                                    temp_o);
             if (ret) goto out_cleanup;
             ret = dcc_x_file(out_fd, cleaned_dotd, "DOTD", compr, NULL);
@@ -724,8 +724,8 @@ out_cleanup:
     default:
         if (job_result != STATS_COMPILE_ERROR
             && job_result != STATS_COMPILE_OK
-	    && job_result != STATS_CLI_DISCONN
-	    && job_result != STATS_COMPILE_TIMEOUT) {
+        && job_result != STATS_CLI_DISCONN
+        && job_result != STATS_COMPILE_TIMEOUT) {
             job_result = STATS_OTHER;
         }
     }

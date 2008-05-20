@@ -1,3 +1,23 @@
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+ *
+ * Copyright (C) 2005, 2006, 2007 by Google
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -15,17 +35,17 @@
 #include "bulk.h"
 #include "snprintf.h"
 
-/* if never_send_email is true, we won't send email 
+/* if never_send_email is true, we won't send email
    even if should_send_email is true */
 static int should_send_email = 0;
-static int never_send_email = 0; 
+static int never_send_email = 0;
 static char *email_fname;
 static int email_fileno = -1;
 static int email_errno;
 
 static const char logmailer[] = "/bin/mail";
 static const char email_subject[] = "distcc-pump email" ;
-static const char cant_send_message_format[] = 
+static const char cant_send_message_format[] =
    "Please notify %s that distcc tried to send them email but failed";
 static const char will_send_message_format[] = "Will send an email to %s";
 
@@ -39,7 +59,7 @@ void dcc_setup_log_email(void) {
     never_send_email = !dcc_getenv_bool("DISTCC_ENABLE_DISCREPANCY_EMAIL", 0);
     if (never_send_email)
       return;
-     
+
     /* email_fname lives until the program exits.
        The file itself will eventually get unlinked by dcc_cleanup_tempfiles(),
        but email_fileno survives until after we send email, so the file won't
@@ -57,7 +77,7 @@ void dcc_setup_log_email(void) {
     }
 }
 
-int dcc_add_file_to_log_email(const char *description, 
+int dcc_add_file_to_log_email(const char *description,
                               const char *fname) {
   char begin[] = "\nBEGIN ";
   char end[] = "\nEND ";
@@ -87,7 +107,7 @@ int dcc_add_file_to_log_email(const char *description,
 void dcc_maybe_send_email(void) {
   int child_pid = 0;
   const char *whom_to_blame;
-  if ((whom_to_blame = getenv("DISTCC_EMAILLOG_WHOM_TO_BLAME")) 
+  if ((whom_to_blame = getenv("DISTCC_EMAILLOG_WHOM_TO_BLAME"))
       == NULL) {
     whom_to_blame = dcc_emaillog_whom_to_blame;
   }
@@ -114,8 +134,8 @@ void dcc_maybe_send_email(void) {
   if (child_pid == 0) {
     if (dup2(email_fileno, 0) == -1 ||
         lseek(email_fileno, 0, SEEK_SET) == -1 ||
-        execl(logmailer, 
-              logmailer, "-s", email_subject, whom_to_blame, 
+        execl(logmailer,
+              logmailer, "-s", email_subject, whom_to_blame,
               (char*)NULL) == -1) {
       perror(cant_send_message_to);
       /* The fork succeeded but we didn't get to exec, or the exec

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -36,7 +36,7 @@
  *
  * We use locks rather than e.g. a database or a central daemon because we
  * want to make sure that the lock will be removed if the client terminates
- * unexpectedly.  
+ * unexpectedly.
  *
  * The files themselves (as opposed to the lock on them) are never cleaned up;
  * since locking & creation is nonatomic I can't think of a clean way to do
@@ -83,7 +83,7 @@ struct dcc_hostdef _dcc_local = {
     DCC_VER_1,                  /* protocol (ignored) */
     DCC_COMPRESS_NONE,          /* compression (ignored) */
     DCC_CPP_ON_CLIENT,          /* where to cpp (ignored) */
-    NULL    
+    NULL
 };
 
 struct dcc_hostdef *dcc_hostdef_local = &_dcc_local;
@@ -102,9 +102,9 @@ struct dcc_hostdef _dcc_local_cpp = {
     DCC_CPP_ON_CLIENT,          /* where to cpp (ignored) */
     NULL
 };
- 
+
 struct dcc_hostdef *dcc_hostdef_local_cpp = &_dcc_local_cpp;
- 
+
 
 
 /**
@@ -123,7 +123,7 @@ int dcc_make_lock_filename(const char *lockname,
         return ret;
 
     if (host->mode == DCC_MODE_LOCAL) {
-        if (asprintf(&buf, "%s/%s_localhost_%d", lockdir, lockname, 
+        if (asprintf(&buf, "%s/%s_localhost_%d", lockdir, lockname,
                      iter) == -1)
             return EXIT_OUT_OF_MEMORY;
     } else if (host->mode == DCC_MODE_TCP) {
@@ -161,7 +161,7 @@ static int sys_lock(int fd, int block)
     lockparam.l_whence = SEEK_SET;
     lockparam.l_start = 0;
     lockparam.l_len = 0;        /* whole file */
-    
+
     return fcntl(fd, block ? F_SETLKW : F_SETLK, &lockparam);
 #elif defined(HAVE_FLOCK)
     return flock(fd, LOCK_EX | (block ? 0 : LOCK_NB));
@@ -257,15 +257,15 @@ int dcc_lock_host(const char *lockname,
 
     /* if host is down, return EXIT_BUSY */
     if (!host->is_up)
-	return EXIT_BUSY;
-    
+    return EXIT_BUSY;
+
     if ((ret = dcc_make_lock_filename(lockname, host, slot, &fname)))
         return ret;
 
     if ((ret = dcc_open_lockfile(fname, lock_fd)) != 0) {
         free(fname);
         return ret;
-    }        
+    }
 
     if (sys_lock(*lock_fd, block) == 0) {
         rs_trace("got %s lock on %s slot %d as fd%d", lockname,

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
     rs_add_logger(rs_logger_file, RS_LOG_DEBUG, NULL, STDERR_FILENO);
     rs_trace_set_level(RS_LOG_INFO);
-    
+
     if (argc != 3) {
         rs_log_error("usage: h_parsemask MASK CLIENT");
         return EXIT_BAD_ARGUMENTS;

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003, 2004 by Martin Pool <mbp@sourcefrog.net>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -102,7 +102,7 @@ int dcc_compress_file_lzo1x(int in_fd,
 
     if ((ret = dcc_readx(in_fd, in_buf, in_len)))
         goto out;
-    
+
     if ((ret = dcc_compress_lzo1x_alloc(in_buf, in_len, out_buf, out_len)))
         goto out;
 
@@ -110,7 +110,7 @@ int dcc_compress_file_lzo1x(int in_fd,
     if (in_buf != NULL) {
         free(in_buf);
     }
-    
+
     return ret;
 }
 
@@ -158,7 +158,7 @@ int dcc_compress_lzo1x_alloc(const char *in_buf,
     rs_trace("compressed %ld bytes to %ld bytes: %d%%",
              (long) in_len, (long) out_len,
              (int) (in_len ? 100*out_len / in_len : 0));
-    
+
     return ret;
 }
 
@@ -187,7 +187,7 @@ int dcc_r_bulk_lzo1x(int out_fd, int in_fd,
     char *in_buf = NULL, *out_buf = NULL;
     size_t out_size = 0;
     lzo_uint out_len;
- 
+
     /* NOTE: out_size is the buffer size, out_len is the amount of actual
      * data. */
 
@@ -228,7 +228,7 @@ int dcc_r_bulk_lzo1x(int out_fd, int in_fd,
         rs_trace("decompressed %ld bytes to %ld bytes: %d%%",
                  (long) in_len, (long) out_len,
                  (int) (out_len ? 100*in_len / out_len : 0));
-    
+
         ret = dcc_writex(out_fd, out_buf, out_len);
 
         goto out;
@@ -249,6 +249,6 @@ int dcc_r_bulk_lzo1x(int out_fd, int in_fd,
 out:
     free(in_buf);
     free(out_buf);
-    
+
     return ret;
 }

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -40,7 +40,7 @@ struct dcc_hostdef {
     int port;
     char * ssh_command;
 
-    /** Mark the host as up == 1, by default, or down == 0, if !hostname */ 
+    /** Mark the host as up == 1, by default, or down == 0, if !hostname */
     int is_up;
 
     /** Number of tasks that can be dispatched concurrently to this machine. */
@@ -71,7 +71,7 @@ int dcc_get_hostlist(struct dcc_hostdef **ret_list,
 
 int dcc_free_hostdef(struct dcc_hostdef *host);
 
-int dcc_get_features_from_protover(enum dcc_protover protover, 
+int dcc_get_features_from_protover(enum dcc_protover protover,
                                    enum dcc_compress *compr,
                                    enum dcc_cpp_where *cpp_where);
 

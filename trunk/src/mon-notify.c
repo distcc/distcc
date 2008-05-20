@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -83,12 +83,12 @@ int dcc_mon_setup_notify (int *dummy_fd)
     char *state_dir;
     int ret;
     int fd;
-  
+
     if (signal (SIGIO, dcc_mon_siginfo_handler) == SIG_ERR) {
         rs_log_error ("signal(SIGINFO) failed: %s", strerror(errno));
         return EXIT_IO_ERROR;
     }
-  
+
     if (pipe ((int *) pipe_fd) == -1) {
         rs_log_error ("pipe failed: %s", strerror (errno));
         return EXIT_IO_ERROR;

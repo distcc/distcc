@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -52,7 +52,7 @@
  * use many cycles, with running the preprocessor.
  **/
 int dcc_cpp_maybe(char **argv, char *input_fname, char **cpp_fname,
-		  pid_t *cpp_pid)
+          pid_t *cpp_pid)
 {
     char **cpp_argv;
     int ret;
@@ -60,12 +60,12 @@ int dcc_cpp_maybe(char **argv, char *input_fname, char **cpp_fname,
     const char *output_exten;
 
     *cpp_pid = 0;
-    
+
     if (dcc_is_preprocessed(input_fname)) {
         /* TODO: Perhaps also consider the option that says not to use cpp.
          * Would anyone do that? */
         rs_trace("input is already preprocessed");
-        
+
         /* already preprocessed, great. */
         if (!(*cpp_fname = strdup(input_fname))) {
             rs_log_error("couldn't duplicate string");
@@ -89,7 +89,7 @@ int dcc_cpp_maybe(char **argv, char *input_fname, char **cpp_fname,
      * versions of gcc.  This is only a problem for people who have the source
      * and objects in different directories, and who don't specify -MF.  They
      * can fix it by specifying -MF.  */
-    
+
     if ((ret = dcc_strip_dasho(argv, &cpp_argv))
         || (ret = dcc_set_action_opt(cpp_argv, "-E")))
         return ret;

@@ -1,4 +1,5 @@
-/*
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+ *
  * lsdistcc -- A simple distcc server discovery program
  * Assumes all distcc servers are in DNS and are named distcc1...distccN.
  *
@@ -592,7 +593,7 @@ void server_handle_event(state_t *sp)
             break;
 
         case STATE_READ_REST:
-             {
+          {
             char buf[1000];
             int nread;
             nread = read(sp->fd, buf, sizeof(buf));
@@ -604,8 +605,8 @@ void server_handle_event(state_t *sp)
                 sp->up = 1;
                 sp->status = STATE_CLOSE;
             }
-            }
-            break;
+          }
+          break;
 
         case STATE_CLOSE:
             if (sp->fd != -1) {

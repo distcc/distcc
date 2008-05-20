@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -100,7 +100,7 @@ dcc_cell_renderer_chart_new (void)
 }
 
 
-static void 
+static void
 dcc_cell_renderer_chart_set_property (GObject      *object,
                                       guint         prop_id,
                                       const GValue *value,
@@ -109,7 +109,7 @@ dcc_cell_renderer_chart_set_property (GObject      *object,
   DccCellRendererChart *renderer;
 
   renderer = DCC_CELL_RENDERER_CHART (object);
-  
+
   switch (prop_id)
     {
     case PROP_HISTORY:
@@ -123,7 +123,7 @@ dcc_cell_renderer_chart_set_property (GObject      *object,
 }
 
 
-static void 
+static void
 dcc_cell_renderer_chart_get_property (GObject     *object,
                                       guint        prop_id,
                                       GValue      *value,
@@ -132,7 +132,7 @@ dcc_cell_renderer_chart_get_property (GObject     *object,
   DccCellRendererChart *renderer;
 
   renderer = DCC_CELL_RENDERER_CHART (object);
-  
+
   switch (prop_id)
     {
     case PROP_HISTORY:
@@ -176,10 +176,10 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
   const enum dcc_phase *phases;
 
   DccCellRendererChart *cellchart = (DccCellRendererChart *) cell;
-  
+
   history = cellchart->history;
   g_return_if_fail (history);  /* Perhaps we should just ignore this.. */
-  
+
   x1 = cell_area->x + cell->xpad;
   y1 = cell_area->y + cell->ypad;
   bar_height = cell_area->height - (2 * cell->ypad);
@@ -192,7 +192,7 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
     bar_width = 1;
 
   phases = history->past_phases;
-  for (i = 0; i < history->len; i++) 
+  for (i = 0; i < history->len; i++)
     {
       state = phases[(history->len + history->now - i) % history->len];
 
@@ -234,10 +234,10 @@ static void
 dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
 {
   GParamSpec *spec;
-  
+
   GObjectClass *object_class = G_OBJECT_CLASS (class);
   GtkCellRendererClass *cell_class = GTK_CELL_RENDERER_CLASS (class);
-  
+
   object_class->get_property = dcc_cell_renderer_chart_get_property;
   object_class->set_property = dcc_cell_renderer_chart_set_property;
 
@@ -248,9 +248,9 @@ dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
                                "Slot history",
                                "",
                                G_PARAM_READABLE | G_PARAM_WRITABLE);
-    
+
   g_object_class_install_property (object_class,
-				   PROP_HISTORY,
+                   PROP_HISTORY,
                                    spec);
 }
 
@@ -277,20 +277,20 @@ dcc_cell_renderer_chart_get_type (void)
     {
       static const GTypeInfo cell_chart_info =
       {
-	sizeof (DccCellRendererChartClass),
-	NULL,		/* base_init */
-	NULL,		/* base_finalize */
-	(GClassInitFunc) dcc_cell_renderer_chart_class_init,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-	sizeof (DccCellRendererChart),
-	0,              /* n_preallocs */
-	(GInstanceInitFunc) dcc_cell_renderer_chart_init,
+    sizeof (DccCellRendererChartClass),
+    NULL,        /* base_init */
+    NULL,        /* base_finalize */
+    (GClassInitFunc) dcc_cell_renderer_chart_class_init,
+    NULL,        /* class_finalize */
+    NULL,        /* class_data */
+    sizeof (DccCellRendererChart),
+    0,              /* n_preallocs */
+    (GInstanceInitFunc) dcc_cell_renderer_chart_init,
         NULL                    /* value_table */
       };
 
       cell_chart_type =
-	g_type_register_static (GTK_TYPE_CELL_RENDERER,
+    g_type_register_static (GTK_TYPE_CELL_RENDERER,
                                 "DccCellRendererChart",
                                 &cell_chart_info, 0);
     }

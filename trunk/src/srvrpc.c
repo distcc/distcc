@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,14 +13,14 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
 
-   
+
 
 /**
  * @file
@@ -53,7 +53,7 @@ int dcc_r_request_header(int ifd,
 {
     unsigned vers;
     int ret;
-    
+
     if ((ret = dcc_r_token_int(ifd, "DIST", &vers)) != 0) {
         rs_log_error("client did not provide distcc magic fairy dust");
         return ret;
@@ -65,7 +65,7 @@ int dcc_r_request_header(int ifd,
     }
 
     *ver_ret = (enum dcc_protover) vers;
-    
+
     return 0;
 }
 
@@ -85,13 +85,13 @@ int dcc_r_cwd(int ifd, char **cwd)
  */
 static int prepend_dir_to_name(const char *dirname, char **path)
 {
-	char *buf;
-	asprintf(&buf, "%s%s", dirname, *path);
-	if (buf == NULL) {
+    char *buf;
+    asprintf(&buf, "%s%s", dirname, *path);
+    if (buf == NULL) {
             return EXIT_OUT_OF_MEMORY;
-	}
-	free(*path);
-	*path = buf;		
+    }
+    free(*path);
+    *path = buf;
         return 0;
 }
 
@@ -105,23 +105,23 @@ int dcc_r_many_files(int in_fd,
     char *name = 0;
     char *link_target = 0;
     char token[5];
-    
+
     if ((ret = dcc_r_token_int(in_fd, "NFIL", &n_files)))
         return ret;
-        
+
     for (i = 0; i < n_files; ++i) {
         // like dcc_r_argv
         unsigned int link_or_file_len;
-        
-        if ((ret = dcc_r_token_string(in_fd, "NAME", &name))) 
+
+        if ((ret = dcc_r_token_string(in_fd, "NAME", &name)))
             goto out_cleanup;
 
-        if ((ret = prepend_dir_to_name(dirname, &name))) 
+        if ((ret = prepend_dir_to_name(dirname, &name)))
             goto out_cleanup;
-        
+
         if ((ret = dcc_r_sometoken_int(in_fd, token, &link_or_file_len)))
             goto out_cleanup;
-                        
+
         // Must prepend the dirname for the file name, a link's target name.
         if (strncmp(token, "LINK", 4) == 0) {
 
@@ -136,7 +136,7 @@ int dcc_r_many_files(int in_fd,
             if ((ret = dcc_mk_tmp_ancestor_dirs(name))) {
                 goto out_cleanup;
             }
-            if (symlink(link_target, name) != 0) {				
+            if (symlink(link_target, name) != 0) {
                 rs_log_error("failed to create path for %s: %s", name,
                              strerror(errno));
                 ret = 1;
@@ -146,7 +146,7 @@ int dcc_r_many_files(int in_fd,
                 // bailing out
                 unlink(name);
                 goto out_cleanup;
-            } 
+            }
         } else if (strncmp(token, "FILE", 4) == 0) {
             if ((ret = dcc_r_file(in_fd, name, link_or_file_len, compr))) {
                 goto out_cleanup;
@@ -155,16 +155,16 @@ int dcc_r_many_files(int in_fd,
               // bailing out
               unlink(name);
               goto out_cleanup;
-            } 
+            }
         } else {
             char buf[4 + sizeof(link_or_file_len)];
             // unexpected token
             rs_log_error("protocol derailment: expected token FILE or LINK");
-            // We should explain what happened here, but we have already read 
+            // We should explain what happened here, but we have already read
             // a few more bytes.
             strncpy(buf, token, 4);
             // TODO(manos): this is probably not kosher
-            memcpy(&buf[4], &link_or_file_len, sizeof(link_or_file_len));			
+            memcpy(&buf[4], &link_or_file_len, sizeof(link_or_file_len));
             dcc_explain_mismatch(buf, 12, in_fd);
             ret = EXIT_PROTOCOL_ERROR;
             goto out_cleanup;

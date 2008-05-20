@@ -1,4 +1,5 @@
-/* Copyright 2007 Google Inc.
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+ * Copyright 2007 Google Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -56,23 +57,23 @@ int dcc_talk_to_include_server(char **argv, char ***files)
     int ret;
     char *stub;
 
-    /* for testing purposes, if INCLUDE_SERVER_STUB is set, 
+    /* for testing purposes, if INCLUDE_SERVER_STUB is set,
        use its value rather than the include server */
     stub = getenv("INCLUDE_SERVER_STUB");
     if (stub != NULL) {
         ret = dcc_tokenize_string(stub, files);
         rs_log_warning("INCLUDE_SERVER_STUB is set to '%s'; "
-                       "ignoring include server", 
+                       "ignoring include server",
                        dcc_argv_tostr(*files));
         return ret;
     }
-    
+
     include_server_port = getenv("INCLUDE_SERVER_PORT");
     if (include_server_port == NULL) {
         rs_log_warning("INCLUDE_SERVER_PORT not set");
         return 1;
     }
-    
+
     if (strlen(include_server_port) >= ((int)sizeof(sa.sun_path) - 1)) {
         rs_log_warning("$INCLUDE_SERVER_PORT is longer than %d characters",
                        (sizeof(sa.sun_path) - 1));
@@ -81,17 +82,17 @@ int dcc_talk_to_include_server(char **argv, char ***files)
 
     strcpy(sa.sun_path, include_server_port);
     sa.sun_family = AF_UNIX;
-    
+
     if (dcc_connect_by_addr((struct sockaddr *) &sa, sizeof(sa), &fd))
         return 1;
-    
+
     /* the following code uses dcc_r_arg to receive an array of strings
      * which are NOT command line arguments. TODO: implement dcc_r_argv
      * on top a generic array-of-strings function */
     if (dcc_x_cwd(fd) ||
         dcc_x_argv(fd, argv) ||
         dcc_r_argv(fd, files)) {
-        rs_log_warning("failed to talk to include server '%s'", 
+        rs_log_warning("failed to talk to include server '%s'",
                        include_server_port);
         dcc_close(fd);
         /* We are failing anyway, so we can ignore
@@ -119,22 +120,22 @@ int dcc_get_original_fname(const char *fname, char **original_fname)
 {
     int i;
     char *work, *alloced_work, *extension;
-	 
+
     alloced_work = work = strdup(fname);
     if (work == NULL)
         return EXIT_OUT_OF_MEMORY;
-     
+
     /* Since all names are supposed to be absolute, they start with
      * a slash. We are trying to drop INCLUDE_SERVER_DIR_DEPTH path
-     * components, so we start right after the first slash, and we look 
+     * components, so we start right after the first slash, and we look
      * for a slash, and then we skip that slash and look for a slash, etc.
      */
-        
+
     for (i = 0; i < INCLUDE_SERVER_DIR_DEPTH; ++i) {
-    	work = strchr(work + 1, '/');
-    	if (work == NULL) {
-    		return 1;
-    	}
+        work = strchr(work + 1, '/');
+        if (work == NULL) {
+            return 1;
+        }
     }
 
     /* This code removes an abs extension if it's there, and
@@ -150,11 +151,11 @@ int dcc_get_original_fname(const char *fname, char **original_fname)
     if (extension && (strcmp(extension, ".lzo") == 0)) {
         *extension = '\0';
     }
-    
+
     *original_fname = strdup(work);
     if (*original_fname == NULL) {
         free(alloced_work);
-    	return EXIT_OUT_OF_MEMORY;
+        return EXIT_OUT_OF_MEMORY;
     }
     free(alloced_work);
     return 0;

@@ -1,4 +1,5 @@
-/* Copyright (C) 2005 by Google
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+ * Copyright (C) 2005 by Google
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -9,7 +10,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -20,7 +21,7 @@
 
 /* don't blame me, I was in a hurry */
 
-#include <unistd.h>	/* for pid_t */
+#include <unistd.h>    /* for pid_t */
 
 /* maximum length of hostname */
 #define rslave_HOSTLEN 200
