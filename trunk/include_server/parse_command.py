@@ -425,10 +425,11 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, compiler_defaults,
     if not language_match:
       raise NotCoveredError(
           "For source file '%s': unrecognized filename extension" % source_file)
-    parse_state.language = language_match.group('suffix')
-  assert parse_state.language in basics.TRANSLATION_UNIT_MAP
+    suffix = language_match.group('suffix')
+    parse_state.language = basics.TRANSLATION_UNIT_MAP[suffix]
+  assert parse_state.language in basics.LANGUAGES
 
-  compiler_defaults.SetSystemDirsDefaults(compiler, timer)
+  compiler_defaults.SetSystemDirsDefaults(compiler, parse_state.language, timer)
 
   def IndexDirs(dir_list):
     """Normalize directory names and index.
@@ -446,7 +447,7 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, compiler_defaults,
   if not parse_state.nostdinc:
     angle_dirs.extend(
       IndexDirs(compiler_defaults.system_dirs_default
-                [compiler][basics.TRANSLATION_UNIT_MAP[parse_state.language]]))
+                [compiler][parse_state.language]))
   angle_dirs.extend(IndexDirs(parse_state.after_system_dirs))
 
   quote_dirs = IndexDirs(parse_state.quote_dirs)
