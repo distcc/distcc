@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -482,13 +482,14 @@ dcc_build_somewhere(char *argv[],
 #endif
     if ((ret = dcc_make_tmpnam("distcc_server_stderr", ".txt",
                                &server_stderr_fname))) {
-        // So we are failing locally to make a temp file to store the
-        // server-side errors in; it's unlikely anything else will
-        // work, but let's try the compilation locally.
-        // FIXME: this will blame the server for a failure that is
-        // local. However, we don't make any distrinction between
-        // all the reasons dcc_compile_remote can fail either;
-        // and some of those reasons are local.
+        /* So we are failing locally to make a temp file to store the
+         * server-side errors in; it's unlikely anything else will
+         * work, but let's try the compilation locally.
+         * FIXME: this will blame the server for a failure that is
+         * local. However, we don't make any distrinction between
+         * all the reasons dcc_compile_remote can fail either;
+         * and some of those reasons are local.
+         */
         goto fallback;
     }
 
@@ -532,9 +533,9 @@ dcc_build_somewhere(char *argv[],
                                            host->cpp_where,
                                            &host->protover);
         } else {
-            // done "preprocessing"
+            /* done "preprocessing" */
             dcc_unlock(local_cpu_lock_fd);
-            // don't try to unlock again in dcc_compile_remote
+            /* don't try to unlock again in dcc_compile_remote */
             local_cpu_lock_fd = 0;
         }
     }
@@ -584,14 +585,15 @@ dcc_build_somewhere(char *argv[],
 
     ret = dcc_critique_status(*status, "compile", input_fname, host, 1);
     if (ret == 0) {
-        // Try to copy the server-side errors on stderr.
-        // If that fails, even though the compilation succeeded,
-        // we haven't managed to give these errors to the user,
-        // so we have to try again.
-        // FIXME: Just like in the attempt to make a temporary file, this
-        // is unlikely to fail, if it does it's unlikely any other
-        // operation will work, and this makes the mistake of
-        // blaming the server for what is (clearly?) a local failure.
+        /* Try to copy the server-side errors on stderr.
+         * If that fails, even though the compilation succeeded,
+         * we haven't managed to give these errors to the user,
+         * so we have to try again.
+         * FIXME: Just like in the attempt to make a temporary file, this
+         * is unlikely to fail, if it does it's unlikely any other
+         * operation will work, and this makes the mistake of
+         * blaming the server for what is (clearly?) a local failure.
+         */
         if ((dcc_copy_file_to_fd(server_stderr_fname, STDERR_FILENO))) {
             rs_log_warning("Could not show server-side errors");
             goto fallback;
@@ -624,9 +626,10 @@ dcc_build_somewhere(char *argv[],
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
         rs_log_warning("failed to distribute and fallbacks are disabled");
-        // Try copying any server-side error message to stderr;
-        // If we fail the user will miss all the messages from the server; so
-        // we pretend we failed remotely.
+        /* Try copying any server-side error message to stderr;
+         * If we fail the user will miss all the messages from the server; so
+         * we pretend we failed remotely.
+         */
         if ((dcc_copy_file_to_fd(server_stderr_fname, STDERR_FILENO))) {
             rs_log_error("Could not print error messages from '%s'",
                          server_stderr_fname);
@@ -634,7 +637,7 @@ dcc_build_somewhere(char *argv[],
         goto clean_up;
     }
 
-    // At this point, we can abandon the remote errors.
+    /* At this point, we can abandon the remote errors. */
 
     /* "You guys are so lazy!  Do I have to do all the work myself??" */
     if (host) {

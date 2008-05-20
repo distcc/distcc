@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -170,7 +170,7 @@ static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
     }
 }
 #else
-// Please write a sendfile implementation for your system!
+/* Please write a sendfile implementation for your system! */
 static ssize_t sys_sendfile(int UNUSED(ofd), int UNUSED(ifd),
                             off_t *UNUSED(offset), size_t UNUSED(size))
 {

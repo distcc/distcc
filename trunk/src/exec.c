@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -230,9 +230,9 @@ static DWORD dcc_execvp_cyg(char **argv, const char *input_file,
     if (stderr_hndl != INVALID_HANDLE_VALUE) CloseHandle(stderr_hndl);
 
     if (bRet)
-        ExitProcess(exit_code); //Return cmdline's exit-code to parent process
+        ExitProcess(exit_code); /* Return cmdline's exit-code to parent process */
     else
-        return exit_code;       //Return failure reason to calling fn
+        return exit_code;       /* Return failure reason to calling fn */
 }
 #endif
 

@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -415,7 +415,7 @@ static int count_extra_args(char *dash_Wp_option) {
         {
             char *filename = comma + 1;
             comma = strchr(filename, ',');
-            extra_args += 3;  // "-MD", "-MF", filename.
+            extra_args += 3;  /* "-MD", "-MF", filename. */
         } else {
             extra_args++;
         }

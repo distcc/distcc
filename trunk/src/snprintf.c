@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * Copyright Patrick Powell 1995
  * This code is based on code written by Patrick Powell (papowell@astart.com)
@@ -106,7 +106,7 @@
 #  include <math.h>
 #endif /* TEST_SNPRINTF */
 
-// Solaris x86, for instance, declares vsnprintf here.
+/* Solaris x86, for instance, declares vsnprintf here. */
 #include <stdio.h>
 
 #ifdef HAVE_STRING_H

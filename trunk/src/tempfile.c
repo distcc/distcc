@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -103,7 +103,7 @@ int dcc_mk_tmpdir(const char *path)
             return EXIT_IO_ERROR;
         }
         if ((ret = dcc_add_cleanup(path))) {
-            // bailing out
+            /* bailing out */
             rmdir(path);
             return ret;
         }
@@ -171,7 +171,7 @@ int dcc_get_new_tmpdir(char **tempdir)
         return EXIT_IO_ERROR;
     }
     if ((ret = dcc_add_cleanup(s))) {
-        // bailing out
+        /* bailing out */
         rmdir(s);
         return ret;
     }
@@ -251,9 +251,10 @@ int dcc_mk_tmp_ancestor_dirs(const char *path)
      * in a directory and failed; which means we only get called
      * once per directory.
      */
-    // Body of this loop does not execute when *p=='\0';
-    // therefore the very last component of the directory does not
-    // get created here.
+    /* Body of this loop does not execute when *p=='\0';
+     * therefore the very last component of the directory does not
+     * get created here.
+     */
     for (p = copy; *p != '\0'; ++p) {
         if (*p == '/' && p != copy) {
             *p = '\0';
@@ -439,7 +440,7 @@ int dcc_make_tmpnam(const char *prefix,
     } while (1);
 
     if ((ret = dcc_add_cleanup(s))) {
-        // bailing out
+        /* bailing out */
         unlink(s);
         free(s);
         return ret;

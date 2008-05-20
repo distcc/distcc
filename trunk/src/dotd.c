@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * Copyright (C) 2005, 2006, 2007 by Google
  *
@@ -78,9 +78,10 @@ int dcc_cleanup_dotd(const char *dotd_fname,
                      const char *client_out_name,
                      const char *server_out_name)
 {
-    // When we do the substitution of server-side output name to
-    // client-side output name, we may end up with a line that
-    // longer than the longest line we expect from the compiler.
+    /* When we do the substitution of server-side output name to
+     * client-side output name, we may end up with a line that
+     * longer than the longest line we expect from the compiler.
+     */
     char buf[2 * MAX_DOTD_LINE_LEN];
 
     FILE *dotd, *tmp_dotd;
@@ -166,7 +167,7 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
 
     char *input_file;
     char *output_file;
-    char **new_args; // will throw this away
+    char **new_args;  /* will throw this away */
     int has_dash_o = 0;
     char *env_var = 0;
     int ret;
@@ -194,8 +195,9 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
             ++i;
             continue;
         }
-        // Catch-all for all -MD, -MMD, etc, options.
-        // -MQ and -MT do not imply a deps file is expected.
+        /* Catch-all for all -MD, -MMD, etc, options.
+         * -MQ and -MT do not imply a deps file is expected.
+         */
         if (strncmp(a, "-M", 2) == 0) {
             *needs_dotd = 1;
         }

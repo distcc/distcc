@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  * Copyright 2007 Google Inc.
 
 This program is free software; you can redistribute it and/or
@@ -145,12 +145,12 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
                " (e_shstrndx == SHN_UNDEF)");
       return 0;
     }
-    // Special case for more sections than will fit in e_shstrndx.
+    /* Special case for more sections than will fit in e_shstrndx. */
     if (elf_header->e_shstrndx == SHN_XINDEX) {
       string_section = sections + sections[0].sh_link;
     }
     num_sections = elf_header->e_shnum;
-    // Special case for more sections than will fit in e_shnum.
+    /* Special case for more sections than will fit in e_shnum. */
     if (num_sections == 0) {
       num_sections = sections[0].sh_size;
     }
@@ -192,13 +192,13 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
                " (e_shstrndx == SHN_UNDEF)");
       return 0;
     }
-    // Special case for more sections than will fit in e_shstrndx.
+    /* Special case for more sections than will fit in e_shstrndx. */
     if (elf_header->e_shstrndx == SHN_XINDEX) {
       string_section = sections + sections[0].sh_link;
     }
     num_sections = elf_header->e_shnum;
     if (num_sections == 0) {
-      // Special case for more sections than will fit in e_shnum.
+      /* Special case for more sections than will fit in e_shnum. */
       num_sections = sections[0].sh_size;
     }
     for (i = 0; i < num_sections; ++i) {
@@ -349,10 +349,11 @@ static void update_section(const char *path,
   if (FindElfSection(base, size, desired_section_name,
                      &desired_section, &desired_section_size)
       && desired_section_size > 0) {
-    // The local variable below works around a bug in some versions
-    // of gcc (4.2.1?), which issues an erroneous warning if
-    // 'desired_section_rw' is replaced with '(void *) desired_section'
-    // in the call below, causing compile errors with -Werror.
+    /* The local variable below works around a bug in some versions
+     * of gcc (4.2.1?), which issues an erroneous warning if
+     * 'desired_section_rw' is replaced with '(void *) desired_section'
+     * in the call below, causing compile errors with -Werror.
+     */
     void *desired_section_rw = (void *) desired_section;
     int count = replace_string(desired_section_rw, desired_section_size,
                                search, replace);

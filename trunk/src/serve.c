@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -388,16 +388,16 @@ static int tweak_include_arguments_for_server(char **argv,
         for (j = 0; include_options[j]; ++j) {
             if (str_startswith(include_options[j], argv[i])) {
                 if (strcmp(argv[i], include_options[j]) == 0) {
-                    // "-I foo" , change the next argument
+                    /* "-I foo" , change the next argument */
                     ++i;
                     include_option = "";
                     index_of_first_filename_char = 0;
                 } else {
-                    // "-Ifoo", change this argument
+                    /* "-Ifoo", change this argument */
                     include_option = include_options[j];
                     index_of_first_filename_char = strlen(include_option);
                 }
-                if (argv[i] != NULL) { // in case of a dangling -I
+                if (argv[i] != NULL) {  /* in case of a dangling -I */
                     if (argv[i][index_of_first_filename_char] == '/') {
                         char *buf;
                         asprintf(&buf, "%s%s%s",
@@ -411,7 +411,7 @@ static int tweak_include_arguments_for_server(char **argv,
                         argv[i] = buf;
                     }
                 }
-                break; // from the inner loop; go look at the next argument
+                break;  /* from the inner loop; go look at the next argument */
             }
         }
     }
@@ -435,25 +435,25 @@ static int dcc_convert_mt_to_dotd_target(char **argv, char **dotd_target)
         }
     }
 
-    // if we reached the end without finding -MT, fine.
+    /* if we reached the end without finding -MT, fine. */
     if (argv[i] == NULL)
         return 0;
 
-    // if we find -MT but only at the very end, that's an error.
+    /* if we find -MT but only at the very end, that's an error. */
     if (argv[i+1] == NULL) {
         rs_trace("found -MF at the end of the command line");
         return 1;
     }
 
-    // the dotd_target is the argument of -MT
+    /* the dotd_target is the argument of -MT */
     *dotd_target = argv[i+1];
 
-    // copy the next-next argument on top of this.
+    /* copy the next-next argument on top of this. */
     for (; argv[i+2]; ++i) {
         argv[i] = argv[i+2];
     }
 
-    // and then put the terminal null in.
+    /* and then put the terminal null in. */
     argv[i] = argv[i+2];
 
     return 0;
@@ -517,9 +517,9 @@ static int make_temp_dir_and_chdir_for_cpp(int in_fd,
         if (*server_side_cwd == NULL) {
             ret = EXIT_OUT_OF_MEMORY;
         } else if ((ret = dcc_mk_tmp_ancestor_dirs(*server_side_cwd))) {
-            ; // leave ret the way it is
+            ; /* leave ret the way it is */
         } else if ((ret = dcc_mk_tmpdir(*server_side_cwd))) {
-            ; // leave ret the way it is
+            ; /* leave ret the way it is */
         } else if (chdir(*server_side_cwd) == -1) {
             ret = EXIT_IO_ERROR;
         }
