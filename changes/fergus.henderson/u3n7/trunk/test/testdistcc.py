@@ -1817,11 +1817,7 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
-         # Support for Objective C in distcc-pump is currently disabled.
          ObjectiveC_Case,
-         # I couldn't test the Objective C++ case,
-         # because I couldn't figure out how to install
-         # GNU Objective C++.  So this test is disabled for now.
          ObjectiveCPlusPlus_Case,
          Gdb_Case,
          GdbOpt1_Case,
