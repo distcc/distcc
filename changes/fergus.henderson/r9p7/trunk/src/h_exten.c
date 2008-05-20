@@ -1,7 +1,7 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*- 
+/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
  *
  * distcc -- A simple distributed compiler system
- * $Header: /data/cvs/distcc/src/h_exten.c,v 1.7 2003/07/13 08:08:02 mbp Exp $ 
+ * $Header: /data/cvs/distcc/src/h_exten.c,v 1.7 2003/07/13 08:08:02 mbp Exp $
  *
  * Copyright (C) 2002 by Martin Pool <mbp@samba.org>
  *
@@ -14,7 +14,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -48,13 +48,13 @@ const char *rs_program_name = __FILE__;
 int main(int argc, char *argv[])
 {
     char *ex;
-    
+
     if (argc != 2) {
         rs_log_error("usage: h_exten FILENAME");
         return 1;
     }
 
     printf("%s", (ex = dcc_find_extension(argv[1])) ? ex : "(NULL)");
-    
+
     return 0;
 }

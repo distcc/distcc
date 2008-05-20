@@ -1,7 +1,7 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*- 
+/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
  *
  * distcc -- A simple distributed compiler system
- * $Header: /data/cvs/distcc/src/h_issource.c,v 1.7 2003/07/13 08:08:02 mbp Exp $ 
+ * $Header: /data/cvs/distcc/src/h_issource.c,v 1.7 2003/07/13 08:08:02 mbp Exp $
  *
  * Copyright (C) 2002 by Martin Pool <mbp@samba.org>
  *
@@ -14,7 +14,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
     }
 
     printf("%s %s\n",
-	   dcc_is_source(argv[1]) ? "source" : "not-source",
-	   dcc_is_preprocessed(argv[1]) ? "preprocessed" : "not-preprocessed");
-    
+       dcc_is_source(argv[1]) ? "source" : "not-source",
+       dcc_is_preprocessed(argv[1]) ? "preprocessed" : "not-preprocessed");
+
     return 0;
 }

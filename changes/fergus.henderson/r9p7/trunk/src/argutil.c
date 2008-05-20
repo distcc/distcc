@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; fill-column: 78 -*- 
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -60,7 +60,7 @@
 int dcc_argv_search(char **a,
                     const char *needle)
 {
-    for (; *a; a++) 
+    for (; *a; a++)
         if (!strcmp(*a, needle))
             return 1;
     return 0;
@@ -110,7 +110,7 @@ int dcc_copy_argv(char **from, char ***out, int delta)
         }
     }
     b[l] = NULL;
-    
+
     *out = b;
 
     return 0;
@@ -131,7 +131,7 @@ char *dcc_argv_tostr(char **a)
 {
     int l, i;
     char *s, *ss;
-    
+
     /* calculate total length */
     for (l = 0, i = 0; a[i]; i++) {
         l += strlen(a[i]) + 3;  /* two quotes and space */
@@ -142,7 +142,7 @@ char *dcc_argv_tostr(char **a)
         rs_log_crit("failed to allocate %d bytes", l+1);
         exit(EXIT_OUT_OF_MEMORY);
     }
-    
+
     for (i = 0; a[i]; i++) {
         /* kind of half-assed quoting; won't handle strings containing
          * quotes properly, but good enough for debug messages for the

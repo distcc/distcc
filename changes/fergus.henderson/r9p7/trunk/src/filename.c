@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*- 
+/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -79,32 +79,32 @@ const char * dcc_find_basename(const char *sfile)
 
     if (!sfile)
         return sfile;
-    
+
     slash = strrchr(sfile, '/');
 
-    if (slash == NULL || slash[1] == '\0') 
+    if (slash == NULL || slash[1] == '\0')
         return sfile;
 
     return slash+1;
 }
 
 /** Truncate the filename to its dirname (everything before the last slash).
- *  If the filename ends with a slash, just lop off the last slash. 
+ *  If the filename ends with a slash, just lop off the last slash.
  *  Note: this is destructive.
  */
 void dcc_truncate_to_dirname(char *file)
 {
     char *slash = 0;
-    
+
     slash = strrchr(file, '/');
-    
+
     if (slash == NULL) {
       file[0] = '\0';
     } else {
         *slash = '\0';
     }
 }
-	
+
 
 static int dcc_set_file_extension(const char *sfile,
                                   const char *new_ext,
@@ -131,15 +131,15 @@ static int dcc_set_file_extension(const char *sfile,
 
 /*
  * Apple extensions:
- * file.mm, file.M 
- * Objective-C++ source code which must be preprocessed. (APPLE ONLY) 
+ * file.mm, file.M
+ * Objective-C++ source code which must be preprocessed. (APPLE ONLY)
  *
  * file.mii Objective-C++ source code which should not be
  * preprocessed. (APPLE ONLY)
  *
  * http://developer.apple.com/techpubs/macosx/DeveloperTools/gcc3/gcc/Overall-Options.html
  */
-    
+
 
 
 /**
@@ -171,7 +171,7 @@ const char * dcc_preproc_exten(const char *e)
         return ".s";
     } else {
         return NULL;
-    }        
+    }
 }
 
 
@@ -282,7 +282,7 @@ dcc_source_needs_local(const char *filename)
 
     return 0;
 }
-    
+
 
 
 /**
@@ -302,7 +302,7 @@ int dcc_output_from_source(const char *sfile,
                            char **ofile)
 {
     char *slash;
-    
+
     if ((slash = strrchr(sfile, '/')))
         sfile = slash+1;
     if (strlen(sfile) < 3) {
