@@ -681,7 +681,6 @@ maintainer-check-no-set-path:
 	    echo "Please change RESTRICTED_PATH to change this PATH value."; \
 	    exit 1; \
 	  fi; \
-	  echo $(TEST_PYTHON) "$(srcdir)/test/testdistcc.py" $(TESTDISTCC_OPTS); \
 	  $(TEST_PYTHON) "$(srcdir)/test/testdistcc.py" $(TESTDISTCC_OPTS); \
 	fi
 
@@ -720,7 +719,7 @@ include-server-maintainer-check: include-server
 # Do distcc-maintainer-check in pump-mode, if possible.
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
-	  DISTCC_HOSTS='<invalid>' \
+	  DISTCC_HOSTS='<invalid>,cpp' \
 	    "$(builddir)/pump" \
 	        $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -797,7 +796,7 @@ distcc-installcheck: $(check_PROGRAMS)
 pump-installcheck:
 	which_loc=`which which`; \
 	pump_loc=`PATH="$(DISTCC_INSTALLATION)" "$$which_loc" pump`; \
-	DISTCC_HOSTS='<invalid>' \
+	DISTCC_HOSTS='<invalid>,cpp' \
 	  "$$pump_loc" \
             $(MAKE) DISTCC_INSTALLATION="$(DISTCC_INSTALLATION)" \
 	      RESTRICTED_PATH="$(RESTRICTED_PATH)" \
