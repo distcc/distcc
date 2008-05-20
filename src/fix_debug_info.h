@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
 * Copyright 2007 Google Inc.
 
 This program is free software; you can redistribute it and/or
@@ -24,4 +24,4 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 int dcc_fix_debug_info(const char *path, const char *client_cwd,
                               const char *server_cwd);
 
-#endif  // DISTCC_FIX_DEBUG_INFO_H__
+#endif  /* DISTCC_FIX_DEBUG_INFO_H__ */

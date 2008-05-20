@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  * Copyright (C) 2005 by Google
  *
  * This program is free software; you can redistribute it and/or
@@ -104,7 +104,7 @@ void be_a_dnsslave(struct rslave_s *rslave)
     while (rslave_readRequest(rslave, &req) == 0) {
         struct rslave_result_s result;
         struct hostent *h;
-        //fprintf(stderr, "Calling gethostbyname on %s\n", req.hname);
+        /* fprintf(stderr, "Calling gethostbyname on %s\n", req.hname); */
         h = gethostbyname(req.hname);
         memset(&result, 0, sizeof(result));
         result.id = req.id;

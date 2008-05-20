@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -110,7 +110,7 @@ int dcc_r_many_files(int in_fd,
         return ret;
 
     for (i = 0; i < n_files; ++i) {
-        // like dcc_r_argv
+        /* like dcc_r_argv */
         unsigned int link_or_file_len;
 
         if ((ret = dcc_r_token_string(in_fd, "NAME", &name)))
@@ -122,7 +122,7 @@ int dcc_r_many_files(int in_fd,
         if ((ret = dcc_r_sometoken_int(in_fd, token, &link_or_file_len)))
             goto out_cleanup;
 
-        // Must prepend the dirname for the file name, a link's target name.
+        /* Must prepend the dirname for the file name, a link's target name. */
         if (strncmp(token, "LINK", 4) == 0) {
 
             if ((ret = dcc_r_str_alloc(in_fd, link_or_file_len, &link_target))){
@@ -143,7 +143,7 @@ int dcc_r_many_files(int in_fd,
                 goto out_cleanup;
             }
             if ((ret = dcc_add_cleanup(name))) {
-                // bailing out
+                /* bailing out */
                 unlink(name);
                 goto out_cleanup;
             }
@@ -152,18 +152,19 @@ int dcc_r_many_files(int in_fd,
                 goto out_cleanup;
             }
             if ((ret = dcc_add_cleanup(name))) {
-              // bailing out
+              /* bailing out */
               unlink(name);
               goto out_cleanup;
             }
         } else {
             char buf[4 + sizeof(link_or_file_len)];
-            // unexpected token
+            /* unexpected token */
             rs_log_error("protocol derailment: expected token FILE or LINK");
-            // We should explain what happened here, but we have already read
-            // a few more bytes.
+            /* We should explain what happened here, but we have already read
+             * a few more bytes.
+             */
             strncpy(buf, token, 4);
-            // TODO(manos): this is probably not kosher
+            /* TODO(manos): this is probably not kosher */
             memcpy(&buf[4], &link_or_file_len, sizeof(link_or_file_len));
             dcc_explain_mismatch(buf, 12, in_fd);
             ret = EXIT_PROTOCOL_ERROR;

@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -20,7 +20,7 @@
  * USA
  */
 
-// Author: Thomas Kho
+/* Author: Thomas Kho */
 
 #include <config.h>
 
@@ -308,7 +308,9 @@ dcc_free_space %d MB\n\
     }
 
     /* Don't think we need this to prevent RST anymore, since we read() now */
-    //shutdown(acc_fd, SHUT_WR); /* prevent connection reset */
+#if 0
+    shutdown(acc_fd, SHUT_WR); /* prevent connection reset */
+#endif
     dcc_close(acc_fd);
 }
 

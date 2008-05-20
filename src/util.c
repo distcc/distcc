@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -681,10 +681,12 @@ void dcc_get_disk_io_stats(int *n_reads, int *n_writes) {
             *n_reads += reads;
             *n_writes += writes;
         } else {
+#if 0
             /* individual parition stats */
-            //retval = fscanf(f, " %*d %d %*d %d", &reads, &writes);
-            //if (retval == EOF || retval != 2)
-            //    break;
+            retval = fscanf(f, " %*d %d %*d %d", &reads, &writes);
+            if (retval == EOF || retval != 2)
+                break;
+#endif
             /* assume the lines aren't longer that 1024 characters */
             fgets(tmp, 1024, f);
         }
@@ -748,20 +750,22 @@ int dcc_tokenize_string(const char *input, char ***argv_ptr)
     char **ap;
     char *input_copy;
 
-    // First of all, make a copy of the input string;
-    // this way, we can destroy the copy.
+    /* First of all, make a copy of the input string;
+     * this way, we can destroy the copy.
+     */
     input_copy = strdup(input);
     if (input_copy == NULL)
         return 1;
 
-    // Count the spaces in the string.
+    /* Count the spaces in the string. */
     for (for_count = input_copy; *for_count; for_count++)
         if (isspace(*for_count))
             n_spaces++;
 
-    // The maximum number of space-delimited strings we
-    // can have is n_spaces + 1, and we need to add another 1 for
-    // the null-termination.
+    /* The maximum number of space-delimited strings we
+     * can have is n_spaces + 1, and we need to add another 1 for
+     * the null-termination.
+     */
     *argv_ptr = malloc(sizeof(char*) * (n_spaces + 1 + 1));
     if (*argv_ptr == NULL) {
         free(input_copy);
@@ -771,7 +775,7 @@ int dcc_tokenize_string(const char *input, char ***argv_ptr)
     ap = *argv_ptr;
     while((*ap = strsep(&input_copy, " \t\n")) != NULL) {
 
-      // If the field is empty, do nothing
+        /* If the field is empty, do nothing */
       if (**ap == '\0')
           continue;
 
