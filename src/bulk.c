@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -38,7 +38,7 @@
  * @note We don't time transmission of files: because the write returns when
  * they've just been written into the OS buffer, we don't really get
  * meaningful numbers except for files that are very large.
- **/ 
+ **/
 
 #include <config.h>
 
@@ -81,7 +81,7 @@
 int dcc_open_read(const char *fname, int *ifd, off_t *fsize)
 {
     struct stat buf;
-    
+
     *ifd = open(fname, O_RDONLY|O_BINARY);
     if (*ifd == -1) {
         int save_errno = errno;
@@ -96,7 +96,7 @@ int dcc_open_read(const char *fname, int *ifd, off_t *fsize)
     }
 
     if (fstat(*ifd, &buf) == -1) {
-	rs_log_error("fstat %s failed: %s", fname, strerror(errno));
+        rs_log_error("fstat %s failed: %s", fname, strerror(errno));
         dcc_close(*ifd);
         return EXIT_IO_ERROR;
     }
@@ -116,7 +116,7 @@ void dcc_calc_rate(off_t size_out,
 
     /* FIXME: Protect against division by zero and other floating-point
      * exceptions. */
-    
+
     timeval_subtract(&delta, after, before);
 
     *secs = (double) delta.tv_sec + (double) delta.tv_usec / 1e6;
@@ -202,7 +202,7 @@ int dcc_x_file(int ofd,
         ret = dcc_pump_readwrite(ofd, ifd, (size_t) f_size);
 #endif
     } else if (compression == DCC_COMPRESS_LZO1X) {
-        ret = dcc_x_file_lzo1x(ofd, ifd, token, f_size);        
+        ret = dcc_x_file_lzo1x(ofd, ifd, token, f_size);
     } else {
         rs_log_error("invalid compression");
         return EXIT_PROTOCOL_ERROR;
@@ -226,7 +226,7 @@ int dcc_x_file(int ofd,
  * Can handle compression.
  *
  * @param len Compressed length of the incoming file.
- * @param filename local filename to create.  
+ * @param filename local filename to create.
  **/
 int dcc_r_file(int ifd, const char *filename,
                unsigned len,
@@ -251,7 +251,7 @@ int dcc_r_file(int ifd, const char *filename,
      * However, failure to remove the file does not cause a warning; we may
      * not have write permission on the directory, but +w for the file.
      */
-     
+
     if (dcc_mk_tmp_ancestor_dirs(filename)) {
         rs_log_error("failed to create path for '%s'", filename);
         return EXIT_IO_ERROR;
@@ -301,7 +301,7 @@ int dcc_r_file(int ifd, const char *filename,
 /**
  * Receive a file and print timing statistics.  Only used for big files.
  *
- * Wrapper around dcc_r_file(). 
+ * Wrapper around dcc_r_file().
  **/
 int dcc_r_file_timed(int ifd, const char *fname, unsigned size,
                      enum dcc_compress compr)
@@ -318,7 +318,7 @@ int dcc_r_file_timed(int ifd, const char *fname, unsigned size,
         rs_log_warning("gettimeofday failed");
     } else {
         double secs, rate;
-        
+
         dcc_calc_rate(size, &before, &after, &secs, &rate);
         rs_log_info("%ld bytes received in %.6fs, rate %.0fkB/s",
                     (long) size, secs, rate);
@@ -337,7 +337,7 @@ int dcc_r_token_file(int in_fd,
 
     if ((ret = dcc_r_token_int(in_fd, token, &i_size)))
         return ret;
-    
+
     if ((ret = dcc_r_file_timed(in_fd, fname, (size_t) i_size, compr)))
         return ret;
 

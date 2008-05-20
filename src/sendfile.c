@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -86,7 +86,7 @@ static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
 {
     off_t sent_bytes;
     int ret;
-    
+
     /* According to the manual, this can never partially complete on a
      * socket open for blocking IO. */
     ret = sendfile(ifd, ofd, *offset, size, 0, &sent_bytes, 0);
@@ -125,7 +125,7 @@ static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
 static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
 {
     ssize_t ret;
-    
+
     ret = sendfile(ofd, ifd, *offset, size, NULL, 0);
     if (ret == -1) {
         return -1;

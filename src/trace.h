@@ -1,19 +1,19 @@
-/*= -*- c-basic-offset: 4; indent-tabs-mode: nil; -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  *
  * librsync -- generate and apply network deltas
- * 
+ *
  * Copyright (C) 2000, 2001, 2002, 2003, 2004 by Martin Pool
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -44,15 +44,15 @@
  */
 #if !(defined (RS_STMT_START) && defined (RS_STMT_END))
 #  if defined (__GNUC__) && !defined (__STRICT_ANSI__) && !defined (__cplusplus)
-#    define RS_STMT_START	(void)(
-#    define RS_STMT_END		)
+#    define RS_STMT_START    (void)(
+#    define RS_STMT_END        )
 #  else
 #    if (defined (sun) || defined (__sun__))
-#      define RS_STMT_START	if (1)
-#      define RS_STMT_END	else (void)0
+#      define RS_STMT_START    if (1)
+#      define RS_STMT_END    else (void)0
 #    else
-#      define RS_STMT_START	do
-#      define RS_STMT_END	while (0)
+#      define RS_STMT_START    do
+#      define RS_STMT_END    while (0)
 #    endif
 #  endif
 #endif
@@ -146,7 +146,7 @@ void rs_log0(int level, char const *fn, char const *fmt, ...)
     } while (0)
 #else
 #  define rs_trace(s, str...)
-#endif	/* !DO_RS_TRACE */
+#endif    /* !DO_RS_TRACE */
 
 #define rs_log(l, s, str...) do {              \
      rs_log0((l), __FUNCTION__, (s) , ##str);  \

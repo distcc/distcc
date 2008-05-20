@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -21,10 +21,10 @@
  */
 
 
-			/* 15 Every one that is found shall be thrust
-			 * through; and every one that is joined unto
-			 * them shall fall by the sword.
-			 *		-- Isaiah 13 */
+            /* 15 Every one that is found shall be thrust
+             * through; and every one that is joined unto
+             * them shall fall by the sword.
+             *        -- Isaiah 13 */
 
 
 #include <config.h>
@@ -53,7 +53,7 @@
  * little packets each containing a 4-byte ascii token, an 8-byte hex
  * value or length, and optionally data corresponding to the length.
  *
- * 'x' means transmit, and 'r' means receive. 
+ * 'x' means transmit, and 'r' means receive.
  *
  * This builds on top of io.c and is called by the various routines
  * that handle communication.
@@ -130,7 +130,7 @@ int dcc_explain_mismatch(const char *buf,
     size_t l;
 
     memcpy(extrabuf, buf, buflen);
-    
+
     /* Read a bit more context, and find the printable prefix. */
     ret = read(ifd, extrabuf + buflen, sizeof extrabuf - 1 - buflen);
     if (ret == -1) {
@@ -145,7 +145,7 @@ int dcc_explain_mismatch(const char *buf,
             *p = '\0';
             break;
         }
-    
+
     rs_log_error("error context: \"%s\"", extrabuf);
 
     return 0;                   /* i just feel really sad... */
@@ -165,7 +165,7 @@ int dcc_r_token_int(int ifd, const char *expected, unsigned *val)
 {
     char buf[13], *bum;
     int ret;
-    
+
     if (strlen(expected) != 4) {
         rs_log_error("expected token \"%s\" seems wrong", expected);
         return EXIT_PROTOCOL_ERROR;
@@ -176,7 +176,7 @@ int dcc_r_token_int(int ifd, const char *expected, unsigned *val)
                     expected);
         return ret;
     }
-    
+
     if (memcmp(buf, expected, 4)) {
         rs_log_error("protocol derailment: expected token \"%s\"", expected);
         dcc_explain_mismatch(buf, 12, ifd);
@@ -187,7 +187,7 @@ int dcc_r_token_int(int ifd, const char *expected, unsigned *val)
 
     *val = strtoul(&buf[4], &bum, 16);
     if (bum != &buf[12]) {
-        rs_log_error("failed to parse parameter of token \"%s\"", 
+        rs_log_error("failed to parse parameter of token \"%s\"",
                      expected);
         dcc_explain_mismatch(buf, 12, ifd);
         return EXIT_PROTOCOL_ERROR;
@@ -202,9 +202,9 @@ int dcc_r_token_int(int ifd, const char *expected, unsigned *val)
  * Read a token and value.  Fill in both token and value;
  * unlike dcc_r_token_int this is for the case when we do not know what
  * the next token will be.
- * 
+ *
  * @param ifd      fd to read from
- * @param token    receives the 4-char token 
+ * @param token    receives the 4-char token
  * @param val      receives the parameter value
  **/
 int dcc_r_sometoken_int(int ifd, char *token, unsigned *val)
@@ -219,12 +219,12 @@ int dcc_r_sometoken_int(int ifd, char *token, unsigned *val)
 
     strncpy(token, buf, 4);
     token[4] = '\0';
-    
+
     buf[12] = '\0';             /* terminate */
 
     *val = strtoul(&buf[4], &bum, 16);
     if (bum != &buf[12]) {
-        rs_log_error("failed to parse parameter of token \"%s\"", 
+        rs_log_error("failed to parse parameter of token \"%s\"",
                      token);
         dcc_explain_mismatch(buf, 12, ifd);
         return EXIT_PROTOCOL_ERROR;
@@ -291,7 +291,7 @@ int dcc_r_token_string(int ifd, const char *expect_token,
 {
     unsigned a_len;
     int ret;
-        
+
     if ((ret = dcc_r_token_int(ifd, expect_token, &a_len)))
         return ret;
 
@@ -299,7 +299,7 @@ int dcc_r_token_string(int ifd, const char *expect_token,
         return ret;
 
     rs_trace("got '%s'", *p_str);
-    
+
     return 0;
 }
 
@@ -314,12 +314,12 @@ int dcc_r_argv(int ifd, /*@out@*/ char ***argv)
     int ret;
 
     *argv = NULL;
-     
+
     if (dcc_r_token_int(ifd, "ARGC", &argc))
         return EXIT_PROTOCOL_ERROR;
 
     rs_trace("reading %d arguments from job submission", argc);
-    
+
     /* Have to make the argv one element too long, so that it can be
      * terminated by a null element. */
     *argv = a = (char **) calloc((size_t) argc+1, sizeof a[0]);
@@ -337,7 +337,7 @@ int dcc_r_argv(int ifd, /*@out@*/ char ***argv)
     }
 
     dcc_trace_argv("got arguments", a);
-    
+
     return 0;
 }
 

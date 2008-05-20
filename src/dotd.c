@@ -1,3 +1,23 @@
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
+ *
+ * Copyright (C) 2005, 2006, 2007 by Google
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,7 +35,7 @@
 
 /* Replaces the first occurrence of needle in haystack with
    new_needle. haystack must be of at least hay_size,
-   and hay_size must be large enough to hold the string 
+   and hay_size must be large enough to hold the string
    after the replacement.
    new_needle should not overlap with the haystack.
    Returns 0 if all goes well, 1 otherwise.
@@ -52,10 +72,10 @@ static int dcc_strgraft(char *haystack, size_t hay_size,
  * It will also substitute client_out_name for server_out_name,
  * rewriting the dependency target.
  */
-int dcc_cleanup_dotd(const char *dotd_fname, 
-                     char **new_dotd_fname, 
-                     const char *root_dir, 
-                     const char *client_out_name, 
+int dcc_cleanup_dotd(const char *dotd_fname,
+                     char **new_dotd_fname,
+                     const char *root_dir,
+                     const char *client_out_name,
                      const char *server_out_name)
 {
     // When we do the substitution of server-side output name to
@@ -71,20 +91,20 @@ int dcc_cleanup_dotd(const char *dotd_fname,
     if (dotd == NULL) {
         return 1;
     }
-    ret = dcc_make_tmpnam(dcc_find_basename(dotd_fname), 
+    ret = dcc_make_tmpnam(dcc_find_basename(dotd_fname),
                           ".d", new_dotd_fname);
-    
+
     if (ret) {
         fclose(dotd);
         return ret;
     }
-    
-    tmp_dotd = fopen(*new_dotd_fname, "w");	
+
+    tmp_dotd = fopen(*new_dotd_fname, "w");
     if ((tmp_dotd == NULL)) {
         fclose(dotd);
         return 1;
     }
-    
+
     while (fgets(buf, MAX_DOTD_LINE_LEN, dotd)) {
         if ((strchr(buf, '\n') == NULL) && !feof(dotd)) {
             /* Line length must have exceeded MAX_DOTD_LINE_LEN: bail out. */
@@ -112,7 +132,7 @@ int dcc_cleanup_dotd(const char *dotd_fname,
             fclose(dotd);
             fclose(tmp_dotd);
             return 1;
-        }	 
+        }
     }
     if (ferror(dotd) || ferror(tmp_dotd)) {
        return 1;
@@ -138,12 +158,12 @@ int dcc_cleanup_dotd(const char *dotd_fname,
  *
  * TODO(manos): it does not support SUNPRO_DEPENDENCIES.
  */
-int dcc_get_dotd_info(char **argv, char **dotd_fname, 
+int dcc_get_dotd_info(char **argv, char **dotd_fname,
                       int *needs_dotd, int *sets_dotd_target,
                       char **dotd_target)
 {
     char *deps_output = 0;
-    
+
     char *input_file;
     char *output_file;
     char **new_args; // will throw this away
@@ -156,9 +176,9 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
     *needs_dotd = 0;
     *sets_dotd_target = 0;
     *dotd_target = NULL;
-    
+
     env_var = getenv("DEPENDENCIES_OUTPUT");
-    
+
     if (env_var != NULL) {
         *needs_dotd = 1;
     }
@@ -202,7 +222,7 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
             return 0;
         }
     }
-    
+
     /* ok, so there is no explicit setting of the deps filename. */
     deps_output = env_var;
     if (deps_output) {
@@ -216,23 +236,23 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
             *space = '\0';
             *dotd_target = space + 1;
         }
-        
+
         return 0;
     }
-    
+
     /* and it's not set explicitly in the variable */
-    
+
     { /* Call dcc_scan_args to find the input/output files in order to calculate
          a name for the .d file.*/
 
-        char *extension; 
+        char *extension;
         char *tmp_dotd_fname;
         ret = dcc_scan_args(argv, &input_file, &output_file, &new_args);
         /* if .o is set, just append .d.
          * otherwise, take the basename of the input, and set the suffix to .d */
         if (has_dash_o)
           tmp_dotd_fname = strdup(output_file);
-        else 
+        else
           tmp_dotd_fname = strdup(input_file);
         if (tmp_dotd_fname == NULL) return EXIT_OUT_OF_MEMORY;
         extension = dcc_find_extension(tmp_dotd_fname);
@@ -245,7 +265,7 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
           *dotd_fname = tmp_dotd_fname;
         }
         else { /* There is no extension (or name ends with a "."). */
-          if (tmp_dotd_fname[strlen(tmp_dotd_fname) - 1] == '.') 
+          if (tmp_dotd_fname[strlen(tmp_dotd_fname) - 1] == '.')
             asprintf(dotd_fname, "%s%s", tmp_dotd_fname, "d");
           else
             asprintf(dotd_fname, "%s%s", tmp_dotd_fname, ".d");

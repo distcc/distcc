@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -52,10 +52,10 @@
 #include "exitcode.h"
 #include "snprintf.h"
 
-			/* I will make a man more precious than fine
-			 * gold; even a man than the golden wedge of
-			 * Ophir.
-			 *		-- Isaiah 13:12 */
+            /* I will make a man more precious than fine
+             * gold; even a man than the golden wedge of
+             * Ophir.
+             *        -- Isaiah 13:12 */
 
 
 void dcc_exit(int exitcode)
@@ -70,7 +70,7 @@ void dcc_exit(int exitcode)
         rs_log_warning("getrusage(RUSAGE_CHILDREN) failed: %s", strerror(errno));
         memset(&children_ru, 0, sizeof children_ru);
     }
-    
+
     /* NB fields must match up for microseconds */
     rs_log(RS_LOG_INFO,
            "exit: code %d; self: %d.%06d user %d.%06d sys; children: %d.%06d user %d.%06d sys",
@@ -87,12 +87,12 @@ void dcc_exit(int exitcode)
 int str_endswith(const char *tail, const char *tiger)
 {
         size_t len_tail = strlen(tail);
-	size_t len_tiger = strlen(tiger);
+    size_t len_tiger = strlen(tiger);
 
-	if (len_tail > len_tiger)
-		return 0;
+    if (len_tail > len_tiger)
+        return 0;
 
-	return !strcmp(tiger + len_tiger - len_tail, tail);
+    return !strcmp(tiger + len_tiger - len_tail, tail);
 }
 
 
@@ -108,12 +108,12 @@ int str_startswith(const char *head, const char *worm)
  **/
 int argv_contains(char **argv, const char *s)
 {
-	while (*argv) {
-		if (!strcmp(*argv, s))
-			return 1;
-		argv++;
-	}
-	return 0;
+    while (*argv) {
+        if (!strcmp(*argv, s))
+            return 1;
+        argv++;
+    }
+    return 0;
 }
 
 
@@ -129,7 +129,7 @@ int dcc_redirect_fd(int fd, const char *fname, int mode)
 
     /* ignore errors */
     close(fd);
-    
+
     newfd = open(fname, mode, 0666);
     if (newfd == -1) {
         rs_log_crit("failed to reopen fd%d onto %s: %s",
@@ -182,10 +182,10 @@ int dcc_getenv_bool(const char *name, int default_value)
 
 /* Copy domain part of hostname to static buffer.
  * If hostname has no domain part, returns -1.
- * If domain lookup fails, returns -1.  
+ * If domain lookup fails, returns -1.
  * Otherwise places pointer to domain in *domain_name and returns 0.
  *
- * This should yield the same result as the linux command 
+ * This should yield the same result as the linux command
  * 'dnsdomainname' or 'hostname -d'.
  **/
 int dcc_get_dns_domain(const char **domain_name)
@@ -202,9 +202,9 @@ int dcc_get_dns_domain(const char **domain_name)
 
     h = gethostbyname(host_name);
     if (h == NULL) {
-	rs_log_error("failed to look up self \"%s\": %s", host_name,
+        rs_log_error("failed to look up self \"%s\": %s", host_name,
                      hstrerror(h_errno));
-	return -1;
+        return -1;
     }
 
     strncpy(host_name, h->h_name, sizeof(host_name));
@@ -220,7 +220,7 @@ int dcc_get_dns_domain(const char **domain_name)
      * (glibc retries DNS operations very slowly).
      */
 
-    /* Solaris, BSD tend to put it in HOST.  
+    /* Solaris, BSD tend to put it in HOST.
      * (Some flavors of Linux put the non-qualified hostname in HOST,
      *  so ignore this if it doesn't have a dot in it.)
      */
@@ -228,11 +228,11 @@ int dcc_get_dns_domain(const char **domain_name)
     if (envh && !strchr(envh, '.'))
         envh = NULL;
 
-    /* Some flavors of Linux put the FQDN in HOSTNAME when 
+    /* Some flavors of Linux put the FQDN in HOSTNAME when
      * logged in interactively, but not when ssh'd in noninteractively.
      * Ubuntu's bash puts it in HOSTNAME but doesn't export it!
      */
-    envh2 = getenv("HOSTNAME");      
+    envh2 = getenv("HOSTNAME");
     if (envh2 && !strchr(envh2, '.'))
         envh2 = NULL;
 
@@ -242,33 +242,33 @@ int dcc_get_dns_domain(const char **domain_name)
 
     /* If the above didn't work out, fall back to the real way. */
     if (!envh || !strchr(envh, '.')) {
-	static char host_name[1024];
-	struct hostent *h;
-	int ret;
+        static char host_name[1024];
+        struct hostent *h;
+        int ret;
 
-	ret = gethostname(host_name, sizeof(host_name));
-	if (ret != 0)
-	    return -1;
+        ret = gethostname(host_name, sizeof(host_name));
+        if (ret != 0)
+            return -1;
 
-	/* If hostname has a dot in it, assume it's the DNS address */
-	if (!strchr(host_name, '.')) {
-	    /* Otherwise ask DNS what our full hostname is */
-	    h = gethostbyname(host_name);
-	    if (h == NULL) {
-		rs_log_error("failed to look up self \"%s\": %s", host_name,
-			     hstrerror(h_errno));
-		return -1;
-	    }
-	    strncpy(host_name, h->h_name, sizeof(host_name));
-	}
+        /* If hostname has a dot in it, assume it's the DNS address */
+        if (!strchr(host_name, '.')) {
+            /* Otherwise ask DNS what our full hostname is */
+            h = gethostbyname(host_name);
+            if (h == NULL) {
+                rs_log_error("failed to look up self \"%s\": %s", host_name,
+                             hstrerror(h_errno));
+                return -1;
+            }
+            strncpy(host_name, h->h_name, sizeof(host_name));
+        }
         envh = host_name;
     }
 
     /* validate to avoid possible errors from bad chars or huge value */
     for (i=0; envh[i] != '\0'; i++) {
         if (i > MAXDOMAINLEN || !IS_LEGAL_DOMAIN_CHAR(envh[i])) {
-	    rs_log_error("HOST/HOSTNAME present in environment but illegal: '%s'", envh);
-	    return -1;
+            rs_log_error("HOST/HOSTNAME present in environment but illegal: '%s'", envh);
+            return -1;
         }
     }
     *domain_name = strchr(envh, '.');
@@ -277,7 +277,7 @@ int dcc_get_dns_domain(const char **domain_name)
     if (*domain_name == NULL)
         return -1;
 
-    (*domain_name)++; 
+    (*domain_name)++;
     /* Return 0 on success, or -1 if the domain name is illegal, e.g. empty */
     return ((*domain_name)[0] == '\0') ? -1 : 0;
 }
@@ -437,8 +437,8 @@ char *dcc_abspath(const char *path, int path_len)
     if (path_len <= 0)
         path_len = strlen(path);
     if (path_len >= 2 && *path == '.' && path[1] == '/') {
-	path += 2;
-	path_len -= 2;
+        path += 2;
+        path_len -= 2;
     }
     if (len + (unsigned)path_len >= sizeof buf) {
         rs_log_error("path overflowed in dcc_abspath()");
@@ -447,10 +447,10 @@ char *dcc_abspath(const char *path, int path_len)
     strncpy(buf + len, path, path_len);
     buf[len + path_len] = '\0';
     for (p = buf+len-(len > 0); (p = strstr(p, "/../")) != NULL; p = slash) {
-	*p = '\0';
-	if (!(slash = strrchr(buf, '/')))
-	    slash = p;
-	strcpy(slash, p+3);
+        *p = '\0';
+        if (!(slash = strrchr(buf, '/')))
+            slash = p;
+        strcpy(slash, p+3);
     }
     return buf;
 }
@@ -523,7 +523,7 @@ int dcc_dup_part(const char **psrc, char **pdst, const char *sep)
     len = strcspn(*psrc, sep);
     if (len == 0) {
         *pdst = NULL;
-    } else {    
+    } else {
         if (!(*pdst = malloc(len + 1))) {
             rs_log_error("failed to allocate string duplicate: %d", (int) len);
             return EXIT_OUT_OF_MEMORY;
@@ -594,7 +594,7 @@ void dcc_get_proc_stats(int *num_D, int *max_RSS, char **max_RSS_name) {
         if (f == NULL)
             continue;
 
-        if (fscanf(f, "%*d %s %c %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %d", 
+        if (fscanf(f, "%*d %s %c %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %d",
                         name, &state, &rss_size) != 3) {
             fclose(f);
             continue;
@@ -608,7 +608,7 @@ void dcc_get_proc_stats(int *num_D, int *max_RSS, char **max_RSS_name) {
 
         l = strlen(RSS_name);
         c = RSS_name;
-        
+
         /* check for .*{++,cc} */
         isCC = (l >= 2) && ((c[l-1] == 'c' && c[l-2] == 'c')
                                 || (c[l-1] == '+' && c[l-2] == '+'));
@@ -699,17 +699,17 @@ void dcc_get_disk_io_stats(int *n_reads, int *n_writes) {
 
 
 #ifndef HAVE_STRLCPY
-/* like strncpy but does not 0 fill the buffer and always null 
+/* like strncpy but does not 0 fill the buffer and always null
    terminates. bufsize is the size of the destination buffer */
  size_t strlcpy(char *d, const char *s, size_t bufsize)
 {
-	size_t len = strlen(s);
-	size_t ret = len;
-	if (bufsize <= 0) return 0;
-	if (len >= bufsize) len = bufsize-1;
-	memcpy(d, s, len);
-	d[len] = 0;
-	return ret;
+    size_t len = strlen(s);
+    size_t ret = len;
+    if (bufsize <= 0) return 0;
+    if (len >= bufsize) len = bufsize-1;
+    memcpy(d, s, len);
+    d[len] = 0;
+    return ret;
 }
 #endif
 
@@ -736,7 +736,7 @@ static char* strsep(char** str, const char* delims)
 }
 #endif
 
-/* Given a string @p input, this function fills a 
+/* Given a string @p input, this function fills a
    a newly-allocated array of strings with copies of
    the input's whitespace-separated parts.
    Returns 0 on success, 1 on error.
@@ -760,7 +760,7 @@ int dcc_tokenize_string(const char *input, char ***argv_ptr)
             n_spaces++;
 
     // The maximum number of space-delimited strings we
-    // can have is n_spaces + 1, and we need to add another 1 for 
+    // can have is n_spaces + 1, and we need to add another 1 for
     // the null-termination.
     *argv_ptr = malloc(sizeof(char*) * (n_spaces + 1 + 1));
     if (*argv_ptr == NULL) {

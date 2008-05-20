@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,14 +13,14 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA
  */
 
-                /* 
+                /*
                  * A servant will not be corrected by words: for
                  * though he understand he will not answer.
                  *      -- Proverbs 29:19
@@ -76,7 +76,7 @@ void dcc_daemon_catch_signals(void)
 {
     /* SIGALRM is caught to allow for built-in timeouts when running test
      * cases. */
- 
+
     signal(SIGTERM, &dcc_daemon_terminate);
     signal(SIGINT, &dcc_daemon_terminate);
     signal(SIGHUP, &dcc_daemon_terminate);
@@ -129,7 +129,7 @@ static RETSIGTYPE dcc_daemon_terminate(int whichsig)
 
     if (am_parent) {
         dcc_remove_pid();
-        
+
         /* kill whole group */
         kill(0, whichsig);
     }

@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2001-2004 by Martin Pool
@@ -15,7 +15,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -71,7 +71,7 @@ const char *dcc_default_ssh = "ssh";
 /**
  * Create a file descriptor pair - like pipe() but use socketpair if
  * possible (because of blocking issues on pipes).
- * 
+ *
  * Always set non-blocking.
  */
 static int fd_pair(int fd[2])
@@ -96,8 +96,8 @@ static int fd_pair(int fd[2])
 /**
  * Create a child connected to use on stdin/stdout.
  *
- * This is derived from CVS code 
- * 
+ * This is derived from CVS code
+ *
  * Note that in the child STDIN is set to blocking and STDOUT is set to
  * non-blocking. This is necessary as rsh relies on stdin being blocking and
  * ssh relies on stdout being non-blocking
@@ -127,7 +127,7 @@ static int dcc_run_piped_cmd(char **argv,
 
     *child_pid = pid = fork();
     if (pid == -1) {
-        rs_log_error("fork failed: %s", strerror(errno)); 
+        rs_log_error("fork failed: %s", strerror(errno));
         dcc_close(to_child_pipe[0]);
         dcc_close(to_child_pipe[1]);
         dcc_close(from_child_pipe[0]);
@@ -221,7 +221,7 @@ int dcc_ssh_connect(char *ssh_cmd,
     /* TODO: If we're verbose, perhaps make the server verbose too, and send
      * its log to our stderr? */
     /*     child_argv[i++] = (char *) "--log-stderr"; */
-    
+
     ret = dcc_run_piped_cmd(child_argv, f_in, f_out, ssh_pid);
 
     return ret;

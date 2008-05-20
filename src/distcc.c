@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -21,12 +21,12 @@
  */
 
 
-			/* 4: The noise of a multitude in the
-			 * mountains, like as of a great people; a
-			 * tumultuous noise of the kingdoms of nations
-			 * gathered together: the LORD of hosts
-			 * mustereth the host of the battle.
-			 *		-- Isaiah 13 */
+            /* 4: The noise of a multitude in the
+             * mountains, like as of a great people; a
+             * tumultuous noise of the kingdoms of nations
+             * gathered together: the LORD of hosts
+             * mustereth the host of the battle.
+             *        -- Isaiah 13 */
 
 
 
@@ -151,7 +151,7 @@ static void dcc_free_hostlist(struct dcc_hostdef *list) {
 static void dcc_show_hosts(void) {
     struct dcc_hostdef *list, *l;
     int nhosts;
-    
+
     if (dcc_get_hostlist(&list, &nhosts) != 0) {
         rs_log_crit("Failed to get host list");
         return;
@@ -167,7 +167,7 @@ static void dcc_concurrency_level(void) {
     struct dcc_hostdef *list, *l;
     int nhosts;
     int nslots = 0;
-    
+
     if (dcc_get_hostlist(&list, &nhosts) != 0) {
         rs_log_crit("Failed to get host list");
         return;
@@ -239,7 +239,7 @@ int main(int argc, char **argv)
             ret = 0;
             goto out;
         }
-        
+
         if ((ret = dcc_find_compiler(argv, &compiler_args)) != 0) {
             goto out;
         }
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
         if ((ret = dcc_support_masquerade(argv, compiler_name,
                                           &tweaked_path)) != 0)
             goto out;
-        
+
         if ((ret = dcc_copy_argv(argv, &compiler_args, 0)) != 0) {
             goto out;
         }

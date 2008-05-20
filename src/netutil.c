@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -176,7 +176,7 @@ int dcc_sockaddr_to_string(struct sockaddr *sa,
             *p_buf = strdup("(UNKNOWN)");
             return 0;               /* it's still a valid string */
         }
-        
+
         asprintf(p_buf, "%s:%s", host, port);
     } else if (sa->sa_family == AF_UNIX) {
         /* NB: The word 'sun' is predefined on Solaris */
@@ -198,7 +198,7 @@ int dcc_sockaddr_to_string(struct sockaddr *sa,
         return 0;
     } else if (sa->sa_family == AF_INET) {
         struct sockaddr_in *sain = (struct sockaddr_in *) sa;
-        
+
         asprintf(p_buf, "%s:%d", inet_ntoa(sain->sin_addr),
                  ntohs(sain->sin_port));
     } else if (sa->sa_family == AF_UNIX) {

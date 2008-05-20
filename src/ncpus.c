@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -52,7 +52,7 @@
 
 int dcc_ncpus(int *ncpus)
 {
-    struct pst_dynamic psd; 
+    struct pst_dynamic psd;
     if (pstat_getdynamic(&psd, sizeof(psd), 1, 0) != -1) {
         *ncpus = psd.psd_proc_cnt;
         return 0;
@@ -137,16 +137,16 @@ int dcc_ncpus(int *ncpus)
 #warning "Please port this function"
     *ncpus = -1;                /* unknown */
 #endif
-    
+
     if (*ncpus == -1) {
         rs_log_error("sysconf(_SC_NPROCESSORS_ONLN) failed: %s",
                      strerror(errno));
         *ncpus = 1;
         return EXIT_DISTCC_FAILED;
     } else if (*ncpus == 0) {
-	/* if there are no cpus, what are we running on?  But it has
+    /* if there are no cpus, what are we running on?  But it has
          * apparently been observed to happen on ARM Linux */
-	*ncpus = 1;
+    *ncpus = 1;
     }
 
     return 0;

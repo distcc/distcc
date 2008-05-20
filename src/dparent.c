@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -103,10 +103,10 @@ int dcc_standalone_server(void)
         return ret;
 
     dcc_defer_accept(listen_fd);
-    
+
     set_cloexec_flag(listen_fd, 1);
 
-    if (dcc_ncpus(&n_cpus) == 0) 
+    if (dcc_ncpus(&n_cpus) == 0)
         rs_log_info("%d CPU%s online on this server", n_cpus, n_cpus == 1 ? "" : "s");
 
     /* By default, allow one job per CPU, plus two for the pot.  The extra
@@ -116,7 +116,7 @@ int dcc_standalone_server(void)
         dcc_max_kids = arg_max_jobs;
     else
         dcc_max_kids = 2 + n_cpus;
-    
+
     rs_log_info("allowing up to %d active jobs", dcc_max_kids);
 
     if (!opt_no_detach) {
@@ -135,20 +135,20 @@ int dcc_standalone_server(void)
     /* Don't catch signals until we've detached or created a process group. */
     dcc_daemon_catch_signals();
 
-#ifdef HAVE_AVAHI      
+#ifdef HAVE_AVAHI
     /* Zeroconf registration */
     if (opt_zeroconf) {
         if (!(avahi = dcc_zeroconf_register((uint16_t) arg_port, n_cpus)))
             return EXIT_CONNECT_FAILED;
     }
 #endif
-        
+
     /* This is called in the master daemon, whether that is detached or
      * not.  */
     dcc_master_pid = getpid();
 
     if (opt_no_fork) {
-        dcc_log_daemon_started("non-forking daemon");   
+        dcc_log_daemon_started("non-forking daemon");
         dcc_nofork_parent(listen_fd);
         ret = 0;
     } else {
@@ -163,7 +163,7 @@ int dcc_standalone_server(void)
             return EXIT_CONNECT_FAILED;
     }
 #endif
-    
+
     return ret;
 }
 
@@ -175,7 +175,7 @@ static void dcc_log_child_exited(pid_t kid,
     if (WIFSIGNALED(status)) {
         int sig = WTERMSIG(status);
         int severity = sig == SIGTERM ? RS_LOG_INFO : RS_LOG_ERR;
-        
+
         rs_log(severity, "child %d: signal %d (%s)", (int) kid, sig,
                WCOREDUMP(status) ? "core dumped" : "no core");
     } else if (WIFEXITED(status)) {
@@ -216,7 +216,7 @@ void dcc_reap_kids(int must_reap)
         } else if (errno == ECHILD) {
             /* No children left?  That's ok, we'll go back to waiting
              * for new connections. */
-            break;          
+            break;
         } else if (errno == EINTR) {
             /* If we got a SIGTERM or something, then on the next pass
              * through the loop we'll find no children done, and we'll
@@ -255,7 +255,7 @@ static void dcc_nofork_parent(int listen_fd)
         acc_fd = accept(listen_fd,
                         (struct sockaddr *) &cli_addr, &cli_len);
         if (acc_fd == -1 && errno == EINTR) {
-            ; 
+            ;
         }  else if (acc_fd == -1) {
             rs_log_error("accept failed: %s", strerror(errno));
             dcc_exit(EXIT_CONNECT_FAILED);
@@ -279,7 +279,7 @@ static void dcc_nofork_parent(int listen_fd)
 static void dcc_save_pid(pid_t pid)
 {
     FILE *fp;
-    
+
     if (!arg_pid_file)
         return;
 
@@ -330,7 +330,7 @@ static void dcc_detach(void)
     int i;
     pid_t pid;
     pid_t sid;
-    
+
     dcc_ignore_sighup();
 
     if ((pid = fork()) == -1) {
@@ -343,7 +343,7 @@ static void dcc_detach(void)
         dcc_save_pid(pid);
         _exit(0);
     }
-    
+
     /* This is called in the detached child */
 
     /* detach from the terminal */
@@ -357,16 +357,16 @@ static void dcc_detach(void)
 #ifdef TIOCNOTTY
     i = open("/dev/tty", O_RDWR);
     if (i >= 0) {
-        ioctl(i, (int) TIOCNOTTY, (char *)0);      
+        ioctl(i, (int) TIOCNOTTY, (char *)0);
         close(i);
     }
 #endif /* TIOCNOTTY */
 #endif /* not HAVE_SETSID */
-    
+
     /* make sure that stdin, stdout an stderr don't stuff things
        up (library functions, for example) */
     for (i=0;i<3;i++) {
-        close(i); 
+        close(i);
         open("/dev/null", O_RDWR);
     }
 

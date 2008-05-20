@@ -1,4 +1,4 @@
-/*= -*- c-basic-offset: 4; indent-tabs-mode: nil; -*-
+/* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
  *
  * ecolog - Reusable application logging library.
  *
@@ -60,9 +60,9 @@ int rs_trace_level = RS_LOG_NOTICE;
 #  define UNUSED(x) x __attribute__((unused))
 #elif defined(__LCLINT__)
 #  define UNUSED(x) /*@unused@*/ x
-#else				/* !__GNUC__ && !__LCLINT__ */
+#else                /* !__GNUC__ && !__LCLINT__ */
 #  define UNUSED(x) x
-#endif				/* !__GNUC__ && !__LCLINT__ */
+#endif                /* !__GNUC__ && !__LCLINT__ */
 
 
 static void rs_log_va(int level, char const *fn, char const *fmt, va_list va);
@@ -89,7 +89,7 @@ static const char *rs_severities[] = {
 void rs_remove_all_loggers(void)
 {
     struct rs_logger_list *l, *next;
-    
+
     for (l = logger_list; l; l = next) {
         next = l -> next;       /* save before destruction */
         free(l);
@@ -143,8 +143,8 @@ void rs_remove_logger(rs_logger_fn fn,
 }
 
 
-/** 
- * Set the least important (i.e. largest) message severity that 
+/**
+ * Set the least important (i.e. largest) message severity that
  * will be output.
  */
 void
@@ -156,7 +156,7 @@ rs_trace_set_level(rs_loglevel level)
 
 
 /**
- * Work out a log level from a string name. 
+ * Work out a log level from a string name.
  *
  * Returns -1 for invalid names.
  */
@@ -179,7 +179,7 @@ rs_loglevel_from_name(const char *name)
         return RS_LOG_INFO;
     else if (!strcmp(name, "debug"))
         return RS_LOG_DEBUG;
-    
+
     return -1;
 }
 
@@ -215,7 +215,7 @@ rs_log_va(int flags, char const *caller_fn_name, char const *fmt, va_list va)
     if (level <= rs_trace_level)
       for (l = logger_list; l; l = l->next)
           if (level <= l->max_level)
-              l->fn(flags, caller_fn_name, 
+              l->fn(flags, caller_fn_name,
                     fmt, va, l->private_ptr, l->private_int);
 }
 
@@ -281,7 +281,7 @@ rs_log0_nofn(int level, char const *fmt, ...)
 void rs_log0(int level, char const *fn, char const *fmt, ...)
 {
     va_list         va;
-    
+
     va_start(va, fmt);
     rs_log_va(level, fn, fmt, va);
     va_end(va);
@@ -330,9 +330,9 @@ rs_logger_file(int flags, const char *fn, char const *fmt, va_list va,
 /* This is called directly if the machine doesn't allow varargs
  * macros. */
 void
-rs_log_error_nofn(char const *s, ...) 
+rs_log_error_nofn(char const *s, ...)
 {
-    va_list	va;
+    va_list    va;
 
     va_start(va, s);
     rs_log_va(RS_LOG_ERR, NULL, s, va);
@@ -342,9 +342,9 @@ rs_log_error_nofn(char const *s, ...)
 /* This is called directly if the machine doesn't allow varargs
  * macros. */
 void
-rs_log_warning_nofn(char const *s, ...) 
+rs_log_warning_nofn(char const *s, ...)
 {
-    va_list	va;
+    va_list    va;
 
     va_start(va, s);
     rs_log_va(RS_LOG_WARNING, NULL, s, va);
@@ -355,9 +355,9 @@ rs_log_warning_nofn(char const *s, ...)
 /* This is called directly if the machine doesn't allow varargs
  * macros. */
 void
-rs_log_critical_nofn(char const *s, ...) 
+rs_log_critical_nofn(char const *s, ...)
 {
-    va_list	va;
+    va_list    va;
 
     va_start(va, s);
     rs_log_va(RS_LOG_CRIT, NULL, s, va);
@@ -367,9 +367,9 @@ rs_log_critical_nofn(char const *s, ...)
 /* This is called directly if the machine doesn't allow varargs
  * macros. */
 void
-rs_log_info_nofn(char const *s, ...) 
+rs_log_info_nofn(char const *s, ...)
 {
-    va_list	va;
+    va_list    va;
 
     va_start(va, s);
     rs_log_va(RS_LOG_INFO, NULL, s, va);
@@ -380,9 +380,9 @@ rs_log_info_nofn(char const *s, ...)
 /* This is called directly if the machine doesn't allow varargs
  * macros. */
 void
-rs_log_notice_nofn(char const *s, ...) 
+rs_log_notice_nofn(char const *s, ...)
 {
-    va_list	va;
+    va_list    va;
 
     va_start(va, s);
     rs_log_va(RS_LOG_NOTICE, NULL, s, va);
@@ -393,9 +393,9 @@ rs_log_notice_nofn(char const *s, ...)
 /* This is called directly if the machine doesn't allow varargs
  * macros. */
 void
-rs_log_trace_nofn(char const *s, ...) 
+rs_log_trace_nofn(char const *s, ...)
 {
-    va_list	va;
+    va_list    va;
 
     va_start(va, s);
     rs_log_va(RS_LOG_DEBUG, NULL, s, va);
@@ -415,7 +415,7 @@ rs_supports_trace(void)
     return 1;
 #else
     return 0;
-#endif				/* !DO_RS_TRACE */
+#endif                /* !DO_RS_TRACE */
 }
 
 

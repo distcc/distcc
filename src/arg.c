@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -104,7 +104,7 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
 
     input_base = dcc_find_basename(input_file);
     output_base = dcc_find_basename(output_file);
-        
+
     rs_log(RS_LOG_INFO|RS_LOG_NONAME,
            "compile from %s to %s", input_base, output_base);
 }
@@ -164,7 +164,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
             } else if (!strcmp(a, "-MG") || !strcmp(a, "-MP")) {
                 /* These just modify the behaviour of other -M* options and do
                  * nothing by themselves. */
-            } else if (!strcmp(a, "-MF") || !strcmp(a, "-MT") || 
+            } else if (!strcmp(a, "-MF") || !strcmp(a, "-MT") ||
                        !strcmp(a, "-MQ")) {
                 /* as above but with extra argument */
                 i++;
@@ -256,7 +256,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
     if (!*output_file) {
         /* This is a commandline like "gcc -c hello.c".  They want
          * hello.o, but they don't say so.  For example, the Ethereal
-         * makefile does this. 
+         * makefile does this.
          *
          * Note: this doesn't handle a.out, the other implied
          * filename, but that doesn't matter because it would already
@@ -268,7 +268,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
          * preprocessing" rather than "stop after compilation." */
         if (seen_opt_s) {
             if (dcc_output_from_source(*input_file, ".s", &ofile))
-                return EXIT_DISTCC_FAILED; 
+                return EXIT_DISTCC_FAILED;
         } else if (seen_opt_c) {
             if (dcc_output_from_source(*input_file, ".o", &ofile))
                 return EXIT_DISTCC_FAILED;
@@ -306,8 +306,8 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
 int dcc_set_action_opt(char **a, const char *new_c)
 {
     int gotone = 0;
-    
-    for (; *a; a++) 
+
+    for (; *a; a++)
         if (!strcmp(*a, "-c") || !strcmp(*a, "-S")) {
             *a = strdup(new_c);
             if (*a == NULL) {
@@ -340,7 +340,7 @@ int dcc_set_action_opt(char **a, const char *new_c)
 int dcc_set_output(char **a, char *ofname)
 {
     int i;
- 
+
     for (i = 0; a[i]; i++)
         if (0 == strcmp(a[i], "-o") && a[i+1] != NULL) {
             rs_trace("changed output from \"%s\" to \"%s\"", a[i+1], ofname);

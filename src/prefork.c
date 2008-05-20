@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -151,15 +151,15 @@ static int dcc_preforked_child(int listen_fd)
 {
     int ireq;
     const int child_lifetime = 50;
-    
+
     for (ireq = 0; ireq < child_lifetime; ireq++) {
         int acc_fd;
         struct dcc_sockaddr_storage cli_addr;
         socklen_t cli_len;
-        
+
         cli_len = sizeof cli_addr;
 
-	/* Cancel any previously scheduled alarm */
+    /* Cancel any previously scheduled alarm */
         if (dcc_job_lifetime)
             alarm(0);
 
@@ -180,7 +180,7 @@ static int dcc_preforked_child(int listen_fd)
             rs_log_error("accept failed: %s", strerror(errno));
             dcc_exit(EXIT_CONNECT_FAILED);
         }
-        
+
         dcc_stats_event(STATS_TCP_ACCEPT);
 
         dcc_service_job(acc_fd, acc_fd,

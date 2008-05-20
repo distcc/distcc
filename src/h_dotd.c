@@ -1,4 +1,4 @@
-/* -*- c-file-style: "java"; indent-tabs-mode: nil -*- 
+/* -*- c-file-style: "java"; indent-tabs-mode: nil -*-
  *
  * distcc -- A simple distributed compiler system
  *
@@ -12,7 +12,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
     rs_trace_set_level(RS_LOG_WARNING);
 
     if (argc < 2) {
-	rs_log_error(USAGE);
-	return 1;
+        rs_log_error(USAGE);
+        return 1;
     }
 
     if (strcmp(argv[1], "dcc_get_dotd_info") == 0) {
@@ -62,12 +62,12 @@ int main(int argc, char *argv[])
                           &dotd_target);
         /* Print out in a format easily digested in Python. */
         printf("{'dotd_fname':'%s', 'needs_dotd':%d, 'sets_dotd_target':%d,"
-               " 'dotd_target':'%s'}", 
+               " 'dotd_target':'%s'}",
                dotd_fname, needs_dotd, sets_dotd_target,
                dotd_target ? dotd_target : "None");
     } else {
-	rs_log_error(USAGE);
-	return 1;
+        rs_log_error(USAGE);
+        return 1;
     }
     return 0;
 }

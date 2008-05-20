@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -63,7 +63,7 @@ int dcc_r_bulk(int ofd,
 {
     if (f_size == 0)
         return 0;               /* don't decompress nothing */
-    
+
     if (compression == DCC_COMPRESS_NONE) {
         return dcc_pump_readwrite(ofd, ifd, f_size);
     } else if (compression == DCC_COMPRESS_LZO1X) {
@@ -71,7 +71,7 @@ int dcc_r_bulk(int ofd,
     } else {
         rs_log_error("impossible compression %d", compression);
         return EXIT_PROTOCOL_ERROR;
-    }    
+    }
 }
 
 
@@ -121,7 +121,7 @@ dcc_pump_readwrite(int ofd, int ifd, size_t n)
             rs_log_error("unexpected eof on fd%d", ifd);
             return EXIT_IO_ERROR;
         }
-        
+
         n -= r_in;
         p = buf;
 
@@ -130,7 +130,7 @@ dcc_pump_readwrite(int ofd, int ifd, size_t n)
 
         while (r_in > 0) {
             r_out = write(ofd, p, (size_t) r_in);
-            
+
             if (r_out == -1 && errno == EAGAIN) {
                 if ((ret = dcc_select_for_write(ofd, dcc_io_timeout)) != 0)
                     return ret;
@@ -149,4 +149,4 @@ dcc_pump_readwrite(int ofd, int ifd, size_t n)
 
     return 0;
 }
-        
+

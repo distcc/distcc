@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -63,7 +63,7 @@ void dcc_set_trace_from_env(void)
     if ((logfile = getenv("DISTCC_LOG")) && logfile[0]) {
         fd = open(logfile, O_WRONLY|O_APPEND|O_CREAT, 0666);
         if (fd != -1) {
-            /* asked for a file, and we can open that file: 
+            /* asked for a file, and we can open that file:
                include info messages */
             level = RS_LOG_INFO;
         } else {
@@ -71,7 +71,7 @@ void dcc_set_trace_from_env(void)
             fd = STDERR_FILENO;
             save_errno = errno;
             failed_to_open_logfile = 1;
-        } 
+        }
     } else {
         /* not asked for file */
         if ((logfd_name = getenv("UNCACHED_ERR_FD")) == NULL ||

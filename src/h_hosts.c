@@ -1,7 +1,7 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
- * $Header: /data/cvs/distcc/src/h_hosts.c,v 1.13 2004/01/30 12:39:14 mbp Exp $ 
+ * $Header: /data/cvs/distcc/src/h_hosts.c,v 1.13 2004/01/30 12:39:14 mbp Exp $
  *
  * Copyright (C) 2002, 2004 by Martin Pool <mbp@samba.org>
  *
@@ -14,7 +14,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -72,7 +72,7 @@ int main(int UNUSED(argc), char **argv)
     if (argv[1] && !strcmp(argv[1], "-v")) {
         rs_trace_set_level(RS_LOG_DEBUG);
     }
-    
+
     if ((ret = dcc_get_hostlist(&list, &nhosts)) != 0) {
         rs_log_error("failed to parse \"%s\"", getenv("DISTCC_HOSTS"));
         exit(ret);
@@ -86,7 +86,7 @@ int main(int UNUSED(argc), char **argv)
         }
 
         printf("%4d ", e->n_slots);
-        
+
         if (e->mode == DCC_MODE_LOCAL) {
             printf("LOCAL\n");
         } else if (e->mode == DCC_MODE_SSH) {
@@ -106,6 +106,6 @@ int main(int UNUSED(argc), char **argv)
         rs_log_error("extra entries in list!");
         exit(EXIT_BAD_HOSTSPEC);
     }
-    
+
     exit(0);
 }

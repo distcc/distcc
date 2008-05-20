@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -21,11 +21,11 @@
  */
 
 
-			/* 18 Their bows also shall dash the young men
-			 * to pieces; and they shall have no pity on
-			 * the fruit of the womb; their eyes shall not
-			 * spare children.
-			 *		-- Isaiah 13 */
+            /* 18 Their bows also shall dash the young men
+             * to pieces; and they shall have no pity on
+             * the fruit of the womb; their eyes shall not
+             * spare children.
+             *        -- Isaiah 13 */
 
 /**
  * @file
@@ -60,8 +60,8 @@
 #include <sys/poll.h>
 
 #ifdef __CYGWIN__
-	#define NOGDI
-	#include <windows.h>
+    #define NOGDI
+    #include <windows.h>
 #endif
 
 #include "distcc.h"
@@ -106,17 +106,17 @@ int dcc_redirect_fds(const char *stdin_file,
                      const char *stderr_file)
 {
     int ret;
-    
+
     if (stdin_file)
         if ((ret = dcc_redirect_fd(STDIN_FILENO, stdin_file, O_RDONLY)))
             return ret;
-    
+
     if (stdout_file) {
         if ((ret = dcc_redirect_fd(STDOUT_FILENO, stdout_file,
                                    O_WRONLY | O_CREAT | O_TRUNC)))
             return ret;
     }
-    
+
     if (stderr_file) {
         /* Open in append mode, because the server will dump its own error
          * messages into the compiler's error file.  */
@@ -131,106 +131,106 @@ int dcc_redirect_fds(const char *stdin_file,
 
 #ifdef __CYGWIN__
 /* Execute a process WITHOUT console window and correctly redirect output. */
-static DWORD dcc_execvp_cyg(char **argv, const char *input_file, 
-	const char *output_file, const char *error_file)
+static DWORD dcc_execvp_cyg(char **argv, const char *input_file,
+    const char *output_file, const char *error_file)
 {
-	STARTUPINFO	m_siStartInfo;
-	PROCESS_INFORMATION m_piProcInfo;
-	char cmdline[MAX_PATH+1]={0}; 
-	HANDLE stdin_hndl=INVALID_HANDLE_VALUE;
-	HANDLE stdout_hndl=INVALID_HANDLE_VALUE;
-	HANDLE stderr_hndl=INVALID_HANDLE_VALUE;
-	char **ptr;
-	DWORD exit_code;
-	BOOL bRet=0;
+    STARTUPINFO    m_siStartInfo;
+    PROCESS_INFORMATION m_piProcInfo;
+    char cmdline[MAX_PATH+1]={0};
+    HANDLE stdin_hndl=INVALID_HANDLE_VALUE;
+    HANDLE stdout_hndl=INVALID_HANDLE_VALUE;
+    HANDLE stderr_hndl=INVALID_HANDLE_VALUE;
+    char **ptr;
+    DWORD exit_code;
+    BOOL bRet=0;
 
-	ZeroMemory(&m_siStartInfo, sizeof(STARTUPINFO));
-	ZeroMemory( &m_piProcInfo, sizeof(PROCESS_INFORMATION) );
+    ZeroMemory(&m_siStartInfo, sizeof(STARTUPINFO));
+    ZeroMemory( &m_piProcInfo, sizeof(PROCESS_INFORMATION) );
 
-	/* Open files for IO redirection */
-	if (input_file && strcmp(input_file,"/dev/null")!=0)
-	{
-		if ((stdin_hndl = CreateFile(input_file,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_ALWAYS,
-			FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
+    /* Open files for IO redirection */
+    if (input_file && strcmp(input_file,"/dev/null")!=0)
+    {
+        if ((stdin_hndl = CreateFile(input_file,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_ALWAYS,
+            FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
             exit_code = GetLastError();
-			goto cleanup;
+            goto cleanup;
         }
-	} else
-		stdin_hndl = GetStdHandle(STD_INPUT_HANDLE);
+    } else
+        stdin_hndl = GetStdHandle(STD_INPUT_HANDLE);
 
-	if (output_file && strcmp(output_file,"/dev/null")!=0)
-	{
-		if ((stdout_hndl = CreateFile(output_file,GENERIC_WRITE,FILE_SHARE_READ,NULL,
-			CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
+    if (output_file && strcmp(output_file,"/dev/null")!=0)
+    {
+        if ((stdout_hndl = CreateFile(output_file,GENERIC_WRITE,FILE_SHARE_READ,NULL,
+            CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
             exit_code = GetLastError();
-			goto cleanup;
+            goto cleanup;
         }
-	} else
-		stdout_hndl = GetStdHandle(STD_OUTPUT_HANDLE);
+    } else
+        stdout_hndl = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	if (error_file && strcmp(error_file,"/dev/null")!=0)
-	{
-		if ((stderr_hndl = CreateFile(error_file, GENERIC_WRITE,
-			FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,
-			OPEN_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
+    if (error_file && strcmp(error_file,"/dev/null")!=0)
+    {
+        if ((stderr_hndl = CreateFile(error_file, GENERIC_WRITE,
+            FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,
+            OPEN_ALWAYS, FILE_ATTRIBUTE_TEMPORARY,NULL)) == INVALID_HANDLE_VALUE) {
             exit_code = GetLastError();
-			goto cleanup;
+            goto cleanup;
         }
-		/* Seek to the end of file (ignore return code) */
-		SetFilePointer(stderr_hndl,0,NULL,FILE_END);
+        /* Seek to the end of file (ignore return code) */
+        SetFilePointer(stderr_hndl,0,NULL,FILE_END);
 
-	} else
-		stderr_hndl = GetStdHandle(STD_ERROR_HANDLE);
+    } else
+        stderr_hndl = GetStdHandle(STD_ERROR_HANDLE);
 
-	/* Ensure handles can be inherited */
-	SetHandleInformation(stdin_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
-	SetHandleInformation(stdout_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
-	SetHandleInformation(stderr_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
+    /* Ensure handles can be inherited */
+    SetHandleInformation(stdin_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
+    SetHandleInformation(stdout_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
+    SetHandleInformation(stderr_hndl,HANDLE_FLAG_INHERIT,HANDLE_FLAG_INHERIT);
 
-	/*Set up members of STARTUPINFO structure.*/
-	m_siStartInfo.cb = sizeof(STARTUPINFO); 		
-	m_siStartInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-	m_siStartInfo.wShowWindow = SW_HIDE;
-	m_siStartInfo.hStdInput = stdin_hndl;
-	m_siStartInfo.hStdOutput = stdout_hndl;
-	m_siStartInfo.hStdError = stderr_hndl;
+    /*Set up members of STARTUPINFO structure.*/
+    m_siStartInfo.cb = sizeof(STARTUPINFO);
+    m_siStartInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    m_siStartInfo.wShowWindow = SW_HIDE;
+    m_siStartInfo.hStdInput = stdin_hndl;
+    m_siStartInfo.hStdOutput = stdout_hndl;
+    m_siStartInfo.hStdError = stderr_hndl;
 
-	/* Create command line */
-	for (ptr=argv;*ptr!=NULL;ptr++)
-	{		
-		strcat(cmdline, *ptr);
-		strcat(cmdline, " ");
-	}
-	
-	/* Create the child process.  */
-	bRet = CreateProcess(NULL, 
-		cmdline, 	   /* application name */
-		NULL, 		  /* process security attributes */
-		NULL, 		  /* primary thread security attributes */
-		TRUE, 		  /* handles are inherited */
-		CREATE_NEW_CONSOLE, /* creation flags */
-		NULL, 		  /* use parent's environment */
-		NULL, 		  /* use parent's current directory */
-		&m_siStartInfo,  /* STARTUPINFO pointer */
-		&m_piProcInfo);  /* receives PROCESS_INFORMATION */
-	if (!bRet) {
+    /* Create command line */
+    for (ptr=argv;*ptr!=NULL;ptr++)
+    {
+        strcat(cmdline, *ptr);
+        strcat(cmdline, " ");
+    }
+
+    /* Create the child process.  */
+    bRet = CreateProcess(NULL,
+        cmdline,        /* application name */
+        NULL,           /* process security attributes */
+        NULL,           /* primary thread security attributes */
+        TRUE,           /* handles are inherited */
+        CREATE_NEW_CONSOLE, /* creation flags */
+        NULL,           /* use parent's environment */
+        NULL,           /* use parent's current directory */
+        &m_siStartInfo,  /* STARTUPINFO pointer */
+        &m_piProcInfo);  /* receives PROCESS_INFORMATION */
+    if (!bRet) {
         exit_code = GetLastError();
-		goto cleanup;
+        goto cleanup;
     }
 
     WaitForSingleObject(m_piProcInfo.hProcess, (DWORD)(-1L));
-	/* return termination code and exit code*/
-	GetExitCodeProcess(m_piProcInfo.hProcess, &exit_code);
+    /* return termination code and exit code*/
+    GetExitCodeProcess(m_piProcInfo.hProcess, &exit_code);
     CloseHandle(m_piProcInfo.hProcess);
 
-	/* We can get here only if process creation failed */
-	cleanup:
-	if (stdin_hndl != INVALID_HANDLE_VALUE) CloseHandle(stdin_hndl);
-	if (stdout_hndl != INVALID_HANDLE_VALUE) CloseHandle(stdout_hndl);
-	if (stderr_hndl != INVALID_HANDLE_VALUE) CloseHandle(stderr_hndl);
+    /* We can get here only if process creation failed */
+    cleanup:
+    if (stdin_hndl != INVALID_HANDLE_VALUE) CloseHandle(stdin_hndl);
+    if (stdout_hndl != INVALID_HANDLE_VALUE) CloseHandle(stdout_hndl);
+    if (stderr_hndl != INVALID_HANDLE_VALUE) CloseHandle(stderr_hndl);
 
-	if (bRet)
-	    ExitProcess(exit_code); //Return cmdline's exit-code to parent process
+    if (bRet)
+        ExitProcess(exit_code); //Return cmdline's exit-code to parent process
     else
         return exit_code;       //Return failure reason to calling fn
 }
@@ -245,7 +245,7 @@ static DWORD dcc_execvp_cyg(char **argv, const char *input_file,
 static void dcc_execvp(char **argv)
 {
     char *slash;
-    
+
     execvp(argv[0], argv);
 
     /* If we're still running, the program was not found on the path.  One
@@ -261,7 +261,7 @@ static void dcc_execvp(char **argv)
     slash = strrchr(argv[0], '/');
     if (slash)
         execvp(slash + 1, argv);
-    
+
     /* shouldn't be reached */
     rs_log_error("failed to exec %s: %s", argv[0], strerror(errno));
 
@@ -354,7 +354,7 @@ int dcc_new_pgrp(void)
         rs_trace("already a process group leader");
         return 0;
     }
-    
+
     if (setpgid(0, 0) == 0) {
         rs_trace("entered process group");
         return 0;
@@ -382,23 +382,23 @@ int dcc_spawn_child(char **argv, pid_t *pidptr,
     pid_t pid;
 
     dcc_trace_argv("forking to execute", argv);
-    
+
     pid = fork();
     if (pid == -1) {
         rs_log_error("failed to fork: %s", strerror(errno));
         return EXIT_OUT_OF_MEMORY; /* probably */
     } else if (pid == 0) {
-    	/* If this is a remote compile,
-	 * put the child in a new group, so we can
-	 * kill it and all its descendents without killing distccd 
-	 * FIXME: if you kill distccd while it's compiling, and
-	 * the compiler has an infinite loop bug, the new group
-	 * will run forever until you kill it.
-	 */
-	if (stdout_file != NULL) {
-	    if (dcc_new_pgrp() != 0)
-	        rs_trace("Unable to start a new group\n");
-	}
+        /* If this is a remote compile,
+     * put the child in a new group, so we can
+     * kill it and all its descendents without killing distccd
+     * FIXME: if you kill distccd while it's compiling, and
+     * the compiler has an infinite loop bug, the new group
+     * will run forever until you kill it.
+     */
+    if (stdout_file != NULL) {
+        if (dcc_new_pgrp() != 0)
+            rs_trace("Unable to start a new group\n");
+    }
         dcc_inside_child(argv, stdin_file, stdout_file, stderr_file);
         /* !! NEVER RETURN FROM HERE !! */
     } else {
@@ -456,78 +456,78 @@ int dcc_collect_child(const char *what, pid_t pid,
     int ret;
     int wait_timeout_sec;
     fd_set fds,readfds;
-   
+
     wait_timeout_sec = dcc_job_lifetime;
-	   
+
     FD_ZERO(&readfds);
-    if (in_fd != timeout_null_fd){ 
+    if (in_fd != timeout_null_fd){
         FD_SET(in_fd,&readfds);
     }
-	    
-    
+
+
     while (!dcc_job_lifetime || wait_timeout_sec-- >= 0) {
 
-	/* If we're called with a socket, break out of the loop if the socket disconnects.
-	 * To do that, we need to block in select, not in sys_wait4.
-	 * (Only waitpid uses WNOHANG to mean don't block ever, so I've modified
-	 *  sys_wait4 above to preferentially call waitpid.)
-	 */
-	int flags = (in_fd == timeout_null_fd) ? 0 : WNOHANG;
+    /* If we're called with a socket, break out of the loop if the socket disconnects.
+     * To do that, we need to block in select, not in sys_wait4.
+     * (Only waitpid uses WNOHANG to mean don't block ever, so I've modified
+     *  sys_wait4 above to preferentially call waitpid.)
+     */
+    int flags = (in_fd == timeout_null_fd) ? 0 : WNOHANG;
         ret_pid = sys_wait4(pid, wait_status, flags, &ru);
 
-	if (ret_pid == -1) {
-	    if (errno == EINTR) {
-		rs_trace("wait4 was interrupted; retrying");
-	    } else {
-		rs_log_error("sys_wait4(pid=%d) borked: %s", (int) pid, strerror(errno));
-		return EXIT_DISTCC_FAILED;
-	    }
-        } else if (ret_pid != 0) {
-            /* This is not the main user-visible message; that comes from
-              * critique_status(). */
-            rs_trace("%s child %ld terminated with status %#x",
-                     what, (long) ret_pid, *wait_status);
-            rs_log_info("%s times: user %ld.%06lds, system %ld.%06lds, "
-                        "%ld minflt, %ld majflt",
-                        what,
-                        ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
-                        ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
-                        ru.ru_minflt, ru.ru_majflt);
+    if (ret_pid == -1) {
+        if (errno == EINTR) {
+            rs_trace("wait4 was interrupted; retrying");
+        } else {
+            rs_log_error("sys_wait4(pid=%d) borked: %s", (int) pid, strerror(errno));
+            return EXIT_DISTCC_FAILED;
+        }
+    } else if (ret_pid != 0) {
+        /* This is not the main user-visible message; that comes from
+         * critique_status(). */
+        rs_trace("%s child %ld terminated with status %#x",
+                 what, (long) ret_pid, *wait_status);
+        rs_log_info("%s times: user %ld.%06lds, system %ld.%06lds, "
+                    "%ld minflt, %ld majflt",
+                    what,
+                    ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
+                    ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
+                    ru.ru_minflt, ru.ru_majflt);
 
-            return 0;
-	}
+        return 0;
+    }
 
-	/* check timeout */
-	if (in_fd != timeout_null_fd){
+    /* check timeout */
+    if (in_fd != timeout_null_fd){
             struct timeval timeout;
 
-	    /* If client disconnects, the socket will become readable,
-	     * and a read should return -1 and set errno to EPIPE. 
-	     */
-	    fds = readfds;
+        /* If client disconnects, the socket will become readable,
+         * and a read should return -1 and set errno to EPIPE.
+         */
+        fds = readfds;
             timeout.tv_sec = 1;
             timeout.tv_usec = 0;
-	    ret = select(in_fd+1,&fds,NULL,NULL,&timeout);
-	    if (ret == 1) {
-		char buf;
-		int nread = read(in_fd, &buf, 1);
-		if ((nread == -1) && (errno == EWOULDBLOCK)) {
-		    /* spurious wakeup, ignore */
-		    ;
-		} else if (nread == 0) {
-		    rs_log_error("Client fd disconnected, killing job");
-		    /* If killpg fails, it might means the child process is not 
-		     * in a new group, so, just kill the child process */
-		    if (killpg(pid,SIGTERM)!=0)
-			kill(pid, SIGTERM);
-		    return EXIT_IO_ERROR;
-		} else if (nread == 1) {
-		    rs_log_error("Bug!  Read from fd succeeded when checking whether client disconnected!");
-		} else 
-		    rs_log_error("Bug!  nread %d, errno %d checking whether client disconnected!", nread, errno);
-	    }	
-	} else
-	    poll(NULL, 0, 1000);
+        ret = select(in_fd+1,&fds,NULL,NULL,&timeout);
+        if (ret == 1) {
+            char buf;
+            int nread = read(in_fd, &buf, 1);
+            if ((nread == -1) && (errno == EWOULDBLOCK)) {
+                /* spurious wakeup, ignore */
+                ;
+            } else if (nread == 0) {
+                rs_log_error("Client fd disconnected, killing job");
+                /* If killpg fails, it might means the child process is not
+                 * in a new group, so, just kill the child process */
+                if (killpg(pid,SIGTERM)!=0)
+                    kill(pid, SIGTERM);
+                return EXIT_IO_ERROR;
+            } else if (nread == 1) {
+                rs_log_error("Bug!  Read from fd succeeded when checking whether client disconnected!");
+            } else
+                rs_log_error("Bug!  nread %d, errno %d checking whether client disconnected!", nread, errno);
+        }
+    } else
+        poll(NULL, 0, 1000);
     }
     /* If timeout, also kill the child process */
     if (killpg(pid,SIGTERM) !=0 )
@@ -540,7 +540,7 @@ int dcc_collect_child(const char *what, pid_t pid,
 
 
 /**
- * Analyze and report to the user on a command's exit code.  
+ * Analyze and report to the user on a command's exit code.
  *
  * @param command short human-readable description of the command (perhaps
  * argv[0])

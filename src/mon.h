@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4 fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2003, 2004 by Martin Pool <mbp@samba.org>
@@ -14,7 +14,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -31,7 +31,7 @@ extern "C" {
 
 
 /*
-    
+
    Writing Monitors for distcc
    ---------------------------
 
@@ -67,9 +67,9 @@ extern "C" {
    distcc does not maintain a history of tasks that have completed.
    Your monitor program must do that if you want to present that
    information.  mon-gnome.c has a simple implementation of this.
-   
 
-   
+
+
    Possible Approaches
    -------------------
 
@@ -141,7 +141,7 @@ extern "C" {
       acquired by calling dcc_mon_poll in order to free the resources
       allocated by the list.
 
-   
+
    So generally, the algorithm you will employ is:
 
     - Acquire a list of jobs by calling dcc_mon_poll.
@@ -150,7 +150,7 @@ extern "C" {
 
     - Free the resources allocated by the list of jobs by calling
       dcc_task_state_free.
-      
+
    For being able to do the second of the three steps listed above, you
    will need to know what information the dcc_task_state struct (which
    represents a job) provides. For a full list of properties, refer to
@@ -194,7 +194,7 @@ extern "C" {
 
 
 
-    
+
 /**
  * Read the list of running processes for this user.
  *
@@ -238,7 +238,7 @@ struct dcc_history* dcc_history_new(void);
  * very desirable thing: the state can change many times per second
  * frequently when several clients are running, and waking up the
  * monitor each time is expensive. */
-    
+
 /**
  * Set up to notify the monitor when the compiler state changes.
  *
