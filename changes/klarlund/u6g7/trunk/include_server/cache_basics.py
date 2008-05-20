@@ -514,8 +514,10 @@ class RelpathMapToIndex(MapToIndex):
               "absolute filepath '%s' was IGNORED"
               " (correctness of build may be affected)", relpath)
       else:
-          raise NotCoveredError("Filepath must be relative but isn't: '%s'." %
-                                relpath,
+          raise NotCoveredError("Filepath must be relative but isn't: '%s'."
+                                " Consider setting INCLUDE_SERVER_ARGS='--"
+                                "unsafe_absolute_includes'."
+                                % relpath,
                                 send_email=False)
     # Now, remove leading "./" so as not to start an infinite regression when
     # say foo.c contains:
