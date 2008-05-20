@@ -88,7 +88,7 @@ void dcc_maybe_send_email(void) {
   int child_pid = 0;
   const char *whom_to_blame;
   if ((whom_to_blame = getenv("DISTCC_EMAILLOG_WHOM_TO_BLAME")) 
-      != NULL) {
+      == NULL) {
     whom_to_blame = dcc_emaillog_whom_to_blame;
   }
   char *will_send_message_to;
