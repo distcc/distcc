@@ -78,6 +78,7 @@ class Build:
 
         rm_files((configure_log, distcc_log))
 
+        make_dir(self.build_dir)
         print "** Configuring..."
         run_cmd("cd %s && \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' \\\n%s \\\n>%s 2>&1" %
                 (self.build_dir, distcc_log, self.compiler.cc,
@@ -95,6 +96,7 @@ class Build:
 
         rm_files((build_log, distcc_log))
 
+        make_dir(self.build_dir)
         print "** Building..."
         if self.project.pre_build_cmd:
             cmd = ("cd %s && %s > %s 2>&1" % (self.build_dir,
@@ -125,6 +127,7 @@ class Build:
 
     def clean(self):
         clean_log = os.path.join(self.log_dir, "bench-clean.log")
+        make_dir(self.build_dir)
         print "** Cleaning build directory"
         cmd = "cd %s && make clean >%s 2>&1" % (self.build_dir, clean_log)
         run_cmd(cmd)
