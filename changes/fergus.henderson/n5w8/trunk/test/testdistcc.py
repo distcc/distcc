@@ -1083,10 +1083,10 @@ class Gdb_Case(CompileHello_Case):
         self.runcmd("cp ../link/%s ./%s" % (testtmp_exe, testtmp_exe))
         pump_mode = _server_options.find('cpp') != -1
         error_rc, _, _ = self.runcmd_unchecked(self.compiler() +
-            " -g -E -I. -c %s | grep -q `pwd`" % self.sourceFilename())
+            " -g -E -I. -c %s | grep `pwd` >/dev/null" % self.sourceFilename())
         gcc_preprocessing_preserves_pwd = (error_rc == 0);
-        if (pump_mode and _IsElf('./%s' % testtmp_exe)) \
-          or ((not pump_mode) and gcc_preprocessing_preserves_pwd):
+        if ((pump_mode and _IsElf('./%s' % testtmp_exe))
+          or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
             if errs:
