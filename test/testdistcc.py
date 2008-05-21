@@ -1093,12 +1093,21 @@ class Gdb_Case(CompileHello_Case):
 
         # Now do the same, but in a subdirectory.  This tests that the
         # "compilation directory" field of the object file is set
-        # correctly.  Note this test should only be run on ELF
+        # correctly.
+        # If we're in pump mode, this test should only be run on ELF
         # binaries, which are the only ones we rewrite at this time.
+        # If we're not in pump mode, this test should only be run
+        # if gcc's preprocessing output stores the pwd (this is true
+        # for gcc 4.0, but false for gcc 3.3).
         os.mkdir('run')
         os.chdir('run')
         self.runcmd("cp ../link/%s ./%s" % (testtmp_exe, testtmp_exe))
-        if _IsElf('./%s' % testtmp_exe):
+        pump_mode = _server_options.find('cpp') != -1
+        error_rc, _, _ = self.runcmd_unchecked(self.compiler() +
+            " -g -E -I. -c %s | grep `pwd` >/dev/null" % self.sourceFilename())
+        gcc_preprocessing_preserves_pwd = (error_rc == 0);
+        if ((pump_mode and _IsElf('./%s' % testtmp_exe))
+          or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
             if errs:
