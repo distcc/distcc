@@ -22,8 +22,11 @@ __doc__ = """distcc benchmark project definitions"""
 
 from Project import Project
 
+# See Project.py:Project.__init__.doc() for documentation of the
+# named arguments that are allowed for Project.
+
 # Would like to test glibc, but it needs a separate source and build
-# directory, and this tool doesn't support that yet.  
+# directory.  TODO(csilvers): add build_subdir/configure_cmd to do this.
 
 # disable-sanity-checks is needed to stop it wanting linuxthreads --
 # the resulting library is useless, but this is only a test.
@@ -118,4 +121,18 @@ Project(url='http://us1.samba.org/samba/ftp/old-versions/samba-3.0.20.tar.gz',
         # newer versions of popt can be incompatible
         configure_cmd='./configure --with-included-popt',
         pre_build_cmd = 'make proto', 
+        ).register()
+
+Project(url='http://download.dre.vanderbilt.edu/previous_versions/ACE+TAO+CIAO-5.6.5.tar.bz2',
+        name='ace-5.6.5',
+        unpacked_subdir='ACE_wrappers',
+        build_subdir = '_build',
+        configure_cmd='../configure',
+        md5='32157a0a4cc9bd8dc03d98b90b707759  ACE+TAO+CIAO-5.6.5.tar.bz2'
+        ).register()
+
+Project(url='http://yate.null.ro/tarballs/yate2/yate-2.0.0-alpha2.tar.gz',
+        name='yate',
+        configure_cmd='./configure --without-libpq --without-mysql --without-wphwec --without-libgsm --without-libspeex --without-spandsp --without-pwlib --without-openh323 --without-libgtk2 --without-gtkmozilla --without-libqt4 --without-coredumper --without-doxygen --without-kdoc',
+        md5='b9fd116bc5c8142de6e130931cd3bdf2  yate-2.0.0-alpha2.tar.gz'
         ).register()
