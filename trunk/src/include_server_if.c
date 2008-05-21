@@ -70,7 +70,8 @@ int dcc_talk_to_include_server(char **argv, char ***files)
 
     include_server_port = getenv("INCLUDE_SERVER_PORT");
     if (include_server_port == NULL) {
-        rs_log_warning("INCLUDE_SERVER_PORT not set");
+        rs_log_warning("INCLUDE_SERVER_PORT not set - "
+                       "did you forget to run under 'pump'?");
         return 1;
     }
 
