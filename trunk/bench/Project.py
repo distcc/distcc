@@ -36,15 +36,43 @@ class Project:
     'subdir' variables give just a single component of a name; 'dir' variables
     give a full path."""
     
-    def __init__(self, url, package_file=None,
-                 md5=None,
+    def __init__(self, url,
+                 package_file=None,
                  name=None,
-                 configure_cmd=None,
-                 pre_build_cmd = None,
-                 build_cmd=None,
+                 md5=None,
                  unpacked_subdir=None,
                  build_subdir=None,
-                 source_name=None):
+                 configure_cmd=None,
+                 pre_build_cmd = None,
+                 build_cmd=None):
+        """Specification of a project to build.
+
+        url: the url to download the file.
+        package_file: the filename of the downloaded url.  If not
+           specified, taken to be basename(url).  This should rarely
+           need to be specified.
+           specified on the commandline to just benchmark a single project.
+        name: the name used to identify the project when listing projects
+           on the benchmark commandline.  If not specified, taken to be
+           package_file, but with the .tar.* extension removed.
+        md5: the output of 'md5sum package_file'; used to verify a download.
+        unpacked_subdir: The top-level directory created when we untar the
+           package_file.  If not specified, taken to be self.name, which is
+           typically right (at least for projects make using autotools).
+        build_subdir: the subdirectory of unpacked_subdir where building
+           should be done; we create it if needed.  Defaults to '.'.
+           You should only need to change this if your project does not
+           have its configure script in the top-level directory.
+        configure_cmd: the command to generate the project's Makefile.
+           It is run in build_subdir.  Defaults to './configure'.
+        pre_build_cmd: a command to run before running the build command.
+           It is run in build_subdir.  Defaults to running nothing.
+        build_cmd: The command to build the project from the Makefile.
+           We add VAR=val arguments, so build_cmd must be a single command
+           that is either a form of 'make', or takes the same style
+           arguments.  Defaults to 'make'.
+        """
+
         self.url = url
         if not package_file:
             package_file = url.split('/')[-1]
@@ -58,7 +86,6 @@ class Project:
         
         self.configure_cmd = configure_cmd or "./configure"
         self.build_cmd = build_cmd or "make"
-        self.source_name = source_name or name
         self.pre_build_cmd = pre_build_cmd
 
         self.package_dir = "packages"
@@ -68,7 +95,8 @@ class Project:
         # directory whose name is the same as the tarball.  For
         # example, Wine's tarball is "Wine-xxxxxxx", but it unpacks to
         # "wine-xxxxxxxx".
-        self.unpacked_subdir = unpacked_subdir or self.source_name
+        # TODO(csilvers): figure out automatically if only one TLD.
+        self.unpacked_subdir = unpacked_subdir or self.name
         self.build_subdir = build_subdir
 
 
@@ -80,8 +108,11 @@ class Project:
         return "Project(name=%s)" % `self.name`
 
 
-    def download(self):
-        """Download package from vendor site"""
+    def download(self, force=0):
+        """Download package from vendor site.
+
+        If force is 1, download even if the file already exists.
+        """
 
         make_dir(self.package_dir)
         make_dir(self.download_dir)
