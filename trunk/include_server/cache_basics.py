@@ -218,6 +218,7 @@ Debug = basics.Debug
 DEBUG_TRACE = basics.DEBUG_TRACE
 DEBUG_TRACE1 = basics.DEBUG_TRACE1
 DEBUG_TRACE2 = basics.DEBUG_TRACE2
+DEBUG_WARNING = basics.DEBUG_WARNING
 NotCoveredError = basics.NotCoveredError
 
 
@@ -496,6 +497,10 @@ class RelpathMapToIndex(MapToIndex):
   This is useful for "cheap" normalization: this invariant ensures that
   os.path.join(some-directorymap-string, some-relpathmap-string) can
   be implemented using +.
+
+  We actually do allow storing absolute paths if option
+  --unsafe_absolute_includes is in use.  But, then, we're careful in Resolve
+  (below) to bail out.
   """
 
   def Index(self, relpath):
@@ -504,9 +509,16 @@ class RelpathMapToIndex(MapToIndex):
       directory: a string not starting with /.
     """
     if os.path.isabs(relpath):
-      raise NotCoveredError("Filepath must be relative but isn't: '%s'." %
-                            relpath,
-                            send_email=False)
+      if basics.opt_unsafe_absolute_includes:
+        Debug(DEBUG_WARNING,
+              "absolute filepath '%s' was IGNORED"
+              " (correctness of build may be affected)", relpath)
+      else:
+          raise NotCoveredError("Filepath must be relative but isn't: '%s'."
+                                " Consider setting INCLUDE_SERVER_ARGS='--"
+                                "unsafe_absolute_includes'."
+                                % relpath,
+                                send_email=False)
     # Now, remove leading "./" so as not to start an infinite regression when
     # say foo.c contains:
     #
@@ -693,6 +705,11 @@ class BuildStatCache(object):
        os.getcwd() + '/' == self.directory_map.string[currdir_idx]
     """
     includepath = self.includepath_map.string[includepath_idx]
+    if includepath.startswith('/'):
+      # We really don't want to start exploring absolute includepaths; what's
+      # the sl_idx to return for example? And what about the use of '+'
+      # (as an optimization) below instead of os.path.join.
+      return (None, None)
     dir_map_string = self.directory_map.string   # memoize the fn pointer
     build_stat = self.build_stat
     real_stat = self.real_stat

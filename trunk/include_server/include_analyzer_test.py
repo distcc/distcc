@@ -24,6 +24,8 @@ __author__ = "Nils Klarlund"
 import os
 import re
 import glob
+import shutil
+import tempfile
 import unittest
 
 import basics
@@ -142,12 +144,12 @@ class IncludeAnalyzerTest(unittest.TestCase):
                                       'test_computed_includes/inclA.h',
                                       'dfoo/foo2.h']))
 
-
+              
     # Test: functional macros can be passed on the command line.
     includes = self.RetrieveCanonicalPaths(
       self.ProcessCompilationCommandLine(
         """gcc  -D"STR(X)=# X" """
-        + """-D"FINCLUDE(P)=STR(../MY_TEST_DATA/dfoo/P)" """
+        + """-D"FINCLUDE(P)=STR(../MY_TEST_DATA/dfoo/P)" """           
         + """-DMY_TEST_DATA=test_data """
         + "test_data/func_macro.c",
         os.getcwd()))
@@ -162,7 +164,49 @@ class IncludeAnalyzerTest(unittest.TestCase):
          ]))
 
 
+  def test_AbsoluteIncludes(self):
 
+    try:
+      opt_unsafe_absolute_includes = basics.opt_unsafe_absolute_includes
+      basics.opt_unsafe_absolute_includes = True
+
+      tmp_dir = tempfile.mkdtemp()
+
+      def WriteProgram(name, text):
+        base = os.path.dirname(os.path.join(tmp_dir, name))
+        if not os.path.isdir(base):
+          os.makedirs(base)
+        fd = open(os.path.join(tmp_dir, name), 'w')
+        fd.write(text)
+        fd.close()
+
+      WriteProgram('foo.c',
+                   """#include "%s/bar/baz.h"
+                      blah blah.
+                   """ % tmp_dir)
+
+      # We don't want to get entangled in absolute includes.
+      # The baz.h program is not supposed to be found (although
+      # real preprocessing will).
+
+      WriteProgram('baz.h',
+                   """#include "../foobar.h"
+                      blah blah.
+                   """)
+
+      includes = self.RetrieveCanonicalPaths(
+          self.ProcessCompilationCommandLine(
+          "gcc %s" % os.path.join(tmp_dir, 'foo.c'),
+          os.getcwd()))
+
+      self.assertEqual(
+          includes,
+          set(['%s/foo.c' % tmp_dir]))
+
+    finally:
+      basics.opt_unsafe_absolute_includes = opt_unsafe_absolute_includes
+      shutil.rmtree(tmp_dir)
+      
   def test_StatResetTriggers(self):
     
     """Check that the include analysis of a file is done from scratch after a

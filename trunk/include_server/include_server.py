@@ -72,19 +72,25 @@ server has been spawned.
 Options:
  --pid_file FILEPATH         The pid of the include server is written to file
                              FILEPATH.
+                             
  -dPAT, --debug_pattern=PAT  Bit vector for turning on warnings and debugging
                                1 = warnings
                                2 = trace some functions
                              other powers of two: see basics.py.
+                             
  -e, --email                 Send email to discc-pump developers when include
                              server gets in trouble.
+
  --no-email                  Do not send email.
+ 
  --email_bound NUMBER        Maximal number of emails to send (in addition to
                              a final email). Default: 3.
+                             
  --realpath_warning_re=RE    Write a warning to stderr whenever a filename is
                              resolved to a realpath that is matched by RE,
                              which is a regular expression in Python syntax.
                              (Warnings must be enabled with at least -d1.)
+                             
  --stat_reset_triggers=LIST  Flush stat caches when the timestamp of any
                              filepath in LIST changes or the filepath comes in
                              or out of existence.  LIST is a colon separated
@@ -94,11 +100,23 @@ Options:
                              warnings are enabled). This option allows limited
                              exceptions to distcc_pump's normal assumption that
                              source files are not modified during the build.
+
+ --unsafe_absolute_includes  Do preprocessing on the compilation server even if 
+                             includes of absolute filepaths are encountered.
+                             Such includes are then ignored for the purposes of
+                             gathering the include closure. See the
+                             include_server(1) man page for futher information.
+                             Using this option may lead to incorrect results.
+
  -x, --exact_analysis        Use CPP instead, do not omit system headers files.
+ 
  -v, --verify                Verify that files in CPP closure are contained in
                              closure calculated by include processor.
+                             
  -s, --statistics            Print information to stdout about include analysis.
+ 
  -t, --time                  Print elapsed, user, and system time to stderr.
+ 
  -w, --write_include_closure Write a .d_approx file which lists all the
                              included files calculated by the include server;
                              with -x, additionally write the included files
@@ -455,6 +473,7 @@ def _ParseCommandLineOptions():
                                 "realpath_warning_re=",
                                 "statistics",
                                 "time",
+                                "unsafe_absolute_includes",
                                 "verify",
                                 "write_include_closure"])
   except getopt.GetoptError:
@@ -488,6 +507,8 @@ def _ParseCommandLineOptions():
       if opt in ("--simple_algorithm",):
         basics.opt_simple_algorithm = True
         sys.exit("Not implemented")
+      if opt in ("--unsafe_absolute_includes",):
+        basics.opt_unsafe_absolute_includes = True
       if opt in ("-s", "--statistics"):
         basics.opt_statistics = True
       if opt in ("-t", "--time"):
