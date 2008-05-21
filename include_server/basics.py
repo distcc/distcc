@@ -197,20 +197,20 @@ GC_THRESHOLD = 10000
 
 # FLAGS FOR COMMAND LINE OPTIONS
 
+opt_algorithm = MEMOIZING  # currently, only choice
 opt_debug_pattern = 1  # see DEBUG below
+opt_email_bound = MAX_EMAILS_TO_SEND
+opt_exact_analysis = False         # use CPP instead of include analyzer
+opt_print_times = False
+opt_realpath_warning_re = None
+opt_send_email = False
+opt_simple_algorithm = False
+opt_stat_reset_triggers = {}
+opt_statistics = False
+opt_unsafe_absolute_includes = False
 opt_verify = False     # whether to compare calculated include closure to that
                        # produced by compiler
-opt_exact_analysis = False         # use CPP instead of include analyzer
 opt_write_include_closure = False  # write include closures to file
-opt_statistics = False
-opt_algorithm = MEMOIZING
-opt_stat_reset_triggers = {}
-opt_simple_algorithm = False
-opt_print_times = False
-opt_send_email = False
-opt_email_bound = MAX_EMAILS_TO_SEND
-opt_realpath_warning_re = None
-
 
 # HELPER FUNCTION FOR STAT_RESET_TRIGGERS
 
