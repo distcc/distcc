@@ -565,8 +565,6 @@ class DotD_Case(SimpleDistCC_Case):
           ("foo.c -o hello.. -MD", "*.d", 1, None),
           ("foo.c -o hello.bar.foo -MD", "*.d", 1, None),
           ("foo.c -o hello.o", "*.d", 0, None),
-          ("foo.cpp -o hello.o", "*.d", 0, None),
-          ("foo.cpp -o hello", "*.d", 0, None),
           ("foo.c -o hello.bar.foo -MD", "*.d", 1, None),
           ("foo.c -MD", "*.d", 1, None),
           ("foo.c -o hello. -MD", "*.d", 1, None),
@@ -578,6 +576,13 @@ class DotD_Case(SimpleDistCC_Case):
           ("foo.c -o hello.o -MD -MT tootoo", "hello.*d", 1, "tootoo"),
           ("foo.c -o hello.o -MD -MF foobar", "foobar", 1, None),
            ]
+
+        # These C++ cases fail if your gcc installation doesn't support C++.
+        error_rc, _, _ = self.runcmd_unchecked("touch testtmp.cpp; " +
+            _gcc + " -c testtmp.cpp -o /dev/null")
+        if error_rc == 0:
+          cases.extend([("foo.cpp -o hello.o", "*.d", 0, None),
+                        ("foo.cpp -o hello", "*.d", 0, None)])
 
         def _eval(out):
             map_out = eval(out)
@@ -603,8 +608,18 @@ int main(char **argv) {};
                     self.compile()
                     glob_result = glob.glob(dep_glob)
                     dotd_result.extend(glob_result)
-                    
-            comfychair.runtests([TempCompile_Case])
+
+            # We explicit call setup(), runtest(), and teardown() to run the
+            # test, rather than just comfychair.runtests([TempCompile_Case]),
+            # because we don't want to see 10 test results for
+            # 'TempCompile_Case' in the output; we just want a single
+            # output line for 'DotD_Case'.
+            case = TempCompile_Case()
+            case.setup()
+            try:
+              case.runtest()
+            finally:
+              case.teardown()
 
             self.assert_equal(len(dotd_result), how_many)
             if how_many == 1:
@@ -940,8 +955,11 @@ class ObjectiveC_Case(Compilation_Case):
 
     def runtest(self):
         # Don't try to run the test if GNU Objective C is not installed
-        error_rc, _, _ = self.runcmd_unchecked("touch testtmp.m; " +
-            _gcc + " -c testtmp.m -o /dev/null")
+        error_rc, _, _ = self.runcmd_unchecked(
+            "touch testtmp.m; " +
+            "rm -f testtmp.o; " +
+            _gcc + " -x objective-c -c testtmp.m -o /dev/null && " +
+            "test -f testtmp.o" )
         if error_rc != 0:
             raise comfychair.NotRunError ('GNU Objective C not installed')
         else:
@@ -971,8 +989,11 @@ class ObjectiveCPlusPlus_Case(Compilation_Case):
 
     def runtest(self):
         # Don't try to run the test if GNU Objective C++ is not installed
-        error_rc, _, _ = self.runcmd_unchecked("touch testtmp.mm; " +
-            _gcc + " -c testtmp.mm -o /dev/null")
+        error_rc, _, _ = self.runcmd_unchecked(
+            "touch testtmp.mm; " +
+            "rm -f testtmp.o; " +
+            _gcc + " -x objective-c++ -c testtmp.mm -o /dev/null && " +
+            "test -f testtmp.o" )
         if error_rc != 0:
             raise comfychair.NotRunError ('GNU Objective C++ not installed')
         else:
