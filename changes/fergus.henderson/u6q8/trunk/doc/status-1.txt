@@ -1,0 +1,64 @@
+description of distcc status indicators, version 1
+Copyright (C) 2003 by Martin Pool
+
+purpose
+-------
+
+This file describes a mooted design for a mechanism for distcc to
+indicate its status for the benefit of a separate display program.
+This is an external protocol so that there can be different
+implementations of status monitors to suit different purposes.  
+
+The protocol is supposed to stay stable for some time to allow people
+to write their own monitors.
+
+
+interface
+---------
+
+The programming interface to this is through the functions in
+mon.c/mon.h.  Monitor applications should not access the files
+directly.
+
+
+state
+-----
+
+The state of a compiler process is described in a few variables
+
+  cpid     Process ID of the client
+
+  state    String describing its progress in compilation
+
+  file     Short source filename
+
+  host     Host definition being used
+
+File or host may be empty strings if they are not yet known.
+
+
+states
+------
+
+The following states are defined.  The list may change in later
+releases.
+
+In 2.6 the client progresses through these states in order, although
+not all states may be reached by any particular process.
+
+   Startup       Examining command line, host definition and other
+                 settings, and finding a host to use. 
+
+   Starved       Waiting because all defined hosts are completely busy. 
+
+   Connect       Opening a TCP or SSH connection to the host and sending 
+                 the first part of the request.
+               
+   Preprocessor  Waiting for the preprocessor to complete.
+
+   Send          Sending the preprocessed source.
+
+   Compile       Waiting for a local or remote compiler to complete.
+
+   Receive       Receiving compilation results.
+
