@@ -1,0 +1,3 @@
+# A line like this should be appended to /etc/hosts.allow.
+# You'll need to edit this to allow access from other hosts.
+distcc:	127.0.0.1
