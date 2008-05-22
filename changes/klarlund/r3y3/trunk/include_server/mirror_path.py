@@ -35,7 +35,7 @@ class MirrorPath(object):
 
   Also, remember all directories that had to be followed to find out what paths
   mean.  This is of particular importance to the '..' operator, which may
-  involve temporary excursions into directories that otherwise contain not files
+  involve temporary excursions into directories that otherwise contain no files
   of relevance to the build. But the directories must still be replicated on the
   server for the semantics of '..' to work.  These are called must_exist_dirs.
   """

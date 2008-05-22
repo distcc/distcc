@@ -440,7 +440,6 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
        # check; many files will have been visited before (for other
        # include directories).
        (d_, fp_) = fp_resolved_pair
-
        if (fp_resolved_pair, currdir_idx) not in self.mirrored:
          self.mirrored.add((fp_resolved_pair, currdir_idx))
          self.mirror_path.DoPath(
@@ -621,7 +620,7 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
       #
       #   (fp_real_idx, fp_resolved_pair, children) = node
       #
-      # so tht the common case (that fp_real_idx is known to compiler)
+      # so that the common case (that fp_real_idx is known to compiler)
       # is dispatched away with quickly:
       if node[0]:      # fp_real_idx
         if __debug__: statistics.len_calculated_closure_nonsys += 1
