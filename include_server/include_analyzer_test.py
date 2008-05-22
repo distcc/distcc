@@ -201,7 +201,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
       self.assertEqual(
           includes,
-          set(['%s/foo.c' % tmp_dir]))
+          set([os.path.realpath('%s/foo.c' % tmp_dir)]))
 
     finally:
       basics.opt_unsafe_absolute_includes = opt_unsafe_absolute_includes
