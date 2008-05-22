@@ -9,40 +9,36 @@ for details see the licence.
 Please report any problems to distcc@googlegroups.com.
 
 
-To build: the simple way is to just do
+QUICK SUMMARY
+=============
 
-  ./autogen.sh    # if "configure" does not already exist in this directory
-  ./configure && make
+1. Build and install
 
-but the recommended way is to build in a different directory tree
-than the source tree:
+      ./autogen.sh       # If "configure" does not already exist.
+      ./configure
+      make
+      make check         # Optional! Should have python >= 2.4 installed.
+      make install       # You may need to use "sudo" for this command.
+      make installcheck  # Optional! Should have python >= 2.4 installed.
 
-  ./autogen.sh    # if "configure" does not already exist in this directory
-  mkdir obj
-  cd obj
-  ../configure && make
+   Repeat installation for each server machine.
 
-Either of these methods will:
+2. Run distccd on each server machine,
+   with --allow options to limit access.
 
- - compile distcc
- - compile Python C extensions
+3. On your client machine, set DISTCC_POTENTIAL_HOSTS to the list
+   of distcc server machines:
 
-To test (must have python >=2.4 installed):
+      export DISTCC_POTENTIAL_HOSTS='localhost red green blue'
 
-   make check
+4. Build your software using distcc:
 
-To test installation using your own machine as a distcc compilation server:
+      cd ~/my_sources/my_project
+      pump make -j40 CC="distcc gcc" <your target>
 
- - start daemon (in one window):
 
-    ./distccd --wizard --allow 127.0.0.1
-
- - compile (in another):
-
-    DISTCC_POTENTIAL_HOSTS=127.0.0.1 pump BUILDCOMMAND
-
-See the shell script pump in this directory.
-
+DETAILED INSTRUCTIONS
+=====================
 
 Prerequisites
 -------------
@@ -52,16 +48,24 @@ To build distcc you need
    GNU Make
    A C compiler
 
-You can optionally have
-
-   libpopt
-
-     If this is not found on your system, it will be statically linked in.
+It is also highly desireable to have
 
    Python >=2.4
 
-     To use the "pump" include server, or to run the test suite with
-     "make maintainer-check", or to run the benchmarks.
+     To use "pump" mode, or to run the full test suite with "make check",
+     or to run the benchmarks.
+
+You can optionally have
+
+   Python >=2.2
+
+      To run a partial test suite with "make check" (it leaves out
+      the pump-mode functionality, which requires Python 2.4).
+
+   libpopt
+
+     If this is not found on your system, the popt version that is part of
+     the distcc distribution will be statically linked in.
 
    linuxdoc SGML tools
 
@@ -94,8 +98,8 @@ distcc can be installed and used without requiring root access.
 Adjust directories appropriately when installing.
 
 
-Compiling distcc
-----------------
+Configuring distcc
+------------------
 
 Note that the default GNU "sysconfdir" is /usr/local/etc.  You may
 want to change this to /etc.
@@ -116,6 +120,42 @@ If you would like to try running distcc over IPv6, use
 or this is likely to fail in complex ways.
 
 
+Building distcc
+---------------
+
+The simple way to build distcc is to just do
+
+  ./autogen.sh    # if "configure" does not already exist in this directory
+  ./configure && make
+
+but the recommended way is to build in a different directory tree
+than the source tree:
+
+  mkdir obj
+  cd obj
+  ../autogen.sh
+  ../configure && make
+
+You can optionally run "make check" afterwards to verify that everything
+built OK.
+
+Installing distcc
+-----------------
+
+If your system supports RPM packages, you can build RPMs with "make rpm"
+and then install them with "rpm -i packaging/*.rpm".
+
+If your system supports Debian packages, you can build them with "make deb"
+and then install them with "make install-deb".
+
+Otherwise, you can use the regular "make install".  But it is preferable
+to install via an RPM or Debian package if possible, because those
+methods will do a bit more of the setup work.
+
+You can optionally run "make installcheck" afterwards to verify that
+was installed OK.  This works regardless of which installation method
+you used.
+
 Starting the daemon
 -------------------
 
@@ -125,6 +165,12 @@ and should only be used on trusted networks.
 
 In TCP mode distccd can run either from inetd or as a standalone
 daemon.  Running standalone is recommended.
+
+If you installed via the debian or RPM package, then the daemon will be
+installed as a service, running as a standalone daemon, and it should get
+started up automatically, so you can skip the rest of this section
+"Starting the daemon.  The rest of this section only applies if you
+installed via "make install".
 
 To run standalone, run a command like this, either from the command
 line or from the system startup scripts.
@@ -154,11 +200,42 @@ clients.
 See the manual for more information.
 
 
+Editing the daemon configuration files
+--------------------------------------
+
+If you installed via the RPM or Debian package, then you
+will have an /etc/init.d/distcc script which reads several
+configuration files to decide if and how to invoke distccd.
+These configuration files are
+
+   /etc/default/distcc
+   /etc/distcc/clients.allow
+   /etc/distcc/commands.allow.sh
+
+If you installed via the RPM or Debian package, then you
+should edit those configuration files, especially the
+clients.allow file.
+
+If you installed via "make install", then those configuration
+files will be installed, but they will NOT be used, unless
+you manually install the init.d/distcc script from
+packaging/RedHat/init.d/distcc and tailor it for your system.
+
+If you start distccd manually, rather than via the init.d/distcc script,
+then distccd won't use any configuration files; the allowed client IP
+addresses will be determined by the --allow options that you pass to
+distccd and the allowed commands will be determined by the DISTCC_CMDLIST
+environment variable; see the distccd(1) man page for details.
+
+
 Set up the host list
 --------------------
 
 On the client machines, store a list of servers names in
-~/.distcc/hosts.  If you're using TCP connections, it should look like
+~/.distcc/hosts or /etc/hosts, or in the DISTCC_HOSTS
+environment variable.
+
+If you're using TCP connections, it should look like
 this:
 
   localhost red green blue
@@ -169,31 +246,72 @@ For SSH connections
 
 The hosts should be listed in descending order of speed.  localhost
 should normally be first, unless it is signficantly slower than
-another machine.
+another machine.  If you many hosts (say ten or more), it's probably
+better to leave localhost out of the list.
 
 The host list also needs ",cpp,lzo" after each host if you're using
-pump mode - see README.pump for details.
+pump mode - see README.pump for details.  Another alternative if you're
+using pump mode is to set the DISTCC_POTENTIAL_HOSTS environment
+variable; in that case, the pump script will use "lsdistcc" to
+set DISTCC_HOSTS, automatically eliminating hosts that are down
+or inaccessible or that don't have distccd running.
 
-See the manual for more information.
+See the distcc(1) manual and the pump(1) manual for more information.
 
+
+Using distcc
+------------
+
+Distcc will only improve performance if your build is parallelized.
+So you need to use the "-j" option to make, or its equivalent with
+your build tools.  If your build contains too many sequential steps,
+e.g. if your Makefile contains
+
+   all:
+            for subdir in $(SUBDIRS); do make -C $$subdir all; done
+
+then you may need to rewrite your Makefile to get better parallelism.
+This is especially important if you're using pump mode.
+
+
+Using pump mode
+---------------
+
+To use pump mode, invoke your build command via the "pump" script, e.g.
+
+      export DISTCC_POTENTIAL_HOSTS="localhost red blue green"
+      cd ~/my_sources/my_project
+      pump make -j40 CC="distcc gcc" my_target
+
+Pump mode assumes that source files are not modified during the build.
+If this assumption does not hold, you should not use pump mode.
+You can disable pump mode by not using the pump script.
+In that case, you need to set DISTCC_HOSTS rather than
+DISTCC_POTENTIAL_HOSTS.
+
+      export DISTCC_HOSTS="localhost red blue green"
+      cd ~/my_sources/my_project
+      make -j40 CC="distcc gcc" my_target
 
 Create the masquerade directories
 ---------------------------------
 
 The easiest way to use distcc is in "masquerade" mode, where it is
-installed on the path to "catch" calls to the compiler and redirect
+installed on the PATH to "catch" calls to the compiler and redirect
 them over the network.  Other options are discussed in the manual.
 
-For instance, you could create the directory named /usr/lib/distcc/bin
+For instance, you could create the directory named /usr/lib/distcc
 and populate it with links.
 
-# mkdir /usr/lib/distcc/bin
-# cd /usr/lib/distcc/bin
-# ln -s ../../../bin/distcc gcc
-# ln -s ../../../bin/distcc cc
-# ln -s ../../../bin/distcc g++
-# ln -s ../../../bin/distcc c++
+# mkdir /usr/lib/distcc
+# cd /usr/lib/distcc
+# ln -s /usr/bin/distcc gcc
+# ln -s /usr/bin/distcc cc
+# ln -s /usr/bin/distcc g++
+# ln -s /usr/bin/distcc c++
 
+If you installed via the RedHat or Debian package, then this masquerade
+directory is already set up automatically in /usr/lib/distcc.
 Do this for all compiler names that you use.
 
 Then, to use distcc, a user just needs to put the directory
@@ -206,13 +324,16 @@ Use with ccache
 ---------------
 
 The best way to use is to set up a similar masquerade directory for
-ccache, and put it on the path before distcc.
+ccache and put it on the PATH before distcc.
 
-NOTE: Use of ccache is incompatible with use of distcc's "pump" mode.
+NOTE: This use of ccache is incompatible with use of distcc's "pump" mode.
+
+(If you're using "pump" mode, it might be possible to use ccache on
+the distcc server machines. But we haven't tried that setup.)
 
 
 Complete the survey
 -------------------
 
 Once you have distcc working for your own application, please complete
-and mail in the survey in survyey.txt.
+and mail in the survey in survey.txt.
