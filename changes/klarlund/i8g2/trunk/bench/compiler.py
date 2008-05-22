@@ -144,7 +144,7 @@ def prepare_shell_script_farm(compiler, farm_dir, masquerade):
     def make_shell_script(name, compiler_path, where):
         fd = open(os.path.join(farm_dir, name), 'w')
         sh = commands.getoutput('which sh')
-        fd.write('#!%s\n%s%s "$@"\necho Masquerading:"$@"'
+        fd.write('#!%s\n%s%s "$@"'
                  % (sh,
                     where != 'local' and 'distcc ' or '',
                     compiler_path))
@@ -169,4 +169,3 @@ PATH=%s:$PATH "$@"\n"""
     fd.close()
     os.chmod(masquerade,
              stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
-
