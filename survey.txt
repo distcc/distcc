@@ -1,5 +1,5 @@
 If you find distcc useful, please take a little time to fill out this
-survey and mail it to {mbp at samba org}.  
+survey and mail it to {distcc-survey at google.com}.
 
 Don't stress too much about getting scientifically rigorous numbers:
 rough numbers are more useful than none at all.  Ideally, complete the
@@ -8,7 +8,7 @@ is important.
 
 If after installing distcc you find that it makes your compile slower,
 or not as much faster as you would be expect, then please write to
-{distcc at lists.samba.org} instead of filling in the survery, and
+{distcc at lists.samba.org} instead of filling in the survey, and
 we'll try to resolve the problem.
 
 
@@ -32,4 +32,4 @@ we'll try to resolve the problem.
 
 
 Thanks!
-Martin
+The distcc maintainers.
