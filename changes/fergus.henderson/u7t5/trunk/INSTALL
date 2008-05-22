@@ -17,9 +17,9 @@ QUICK SUMMARY
       ./autogen.sh       # If "configure" does not already exist.
       ./configure
       make
-      make check         # Optional! Must have python >= 2.4 installed.
+      make check         # Optional! Should have python >= 2.4 installed.
       make install       # You may need to use "sudo" for this command.
-      make installcheck  # Optional! Must have python >= 2.4 installed.
+      make installcheck  # Optional! Should have python >= 2.4 installed.
 
    Repeat installation for each server machine.
 
@@ -52,14 +52,20 @@ It is also highly desireable to have
 
    Python >=2.4
 
-     To use the "pump" include server, or to run the test suite with
-     "make maintainer-check", or to run the benchmarks.
+     To use "pump" mode, or to run the full test suite with "make check",
+     or to run the benchmarks.
 
 You can optionally have
 
+   Python >=2.2
+
+      To run a partial test suite with "make check" (it leaves out
+      the pump-mode functionality, which requires Python 2.4).
+
    libpopt
 
-     If this is not found on your system, it will be statically linked in.
+     If this is not found on your system, the popt version that is part of
+     the distcc distribution will be statically linked in.
 
    linuxdoc SGML tools
 
@@ -136,13 +142,15 @@ built OK.
 Installing distcc
 -----------------
 
-You can use the regular "make install".
-
 If your system supports RPM packages, you can build RPMs with "make rpm"
 and then install them with "rpm -i packaging/*.rpm".
 
 If your system supports Debian packages, you can build them with "make deb"
 and then install them with "make install-deb".
+
+Otherwise, you can use the regular "make install".  But it is preferable
+to install via an RPM or Debian package if possible, because those
+methods will do a bit more of the setup work.
 
 You can optionally run "make installcheck" afterwards to verify that
 was installed OK.  This works regardless of which installation method
