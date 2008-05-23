@@ -31,7 +31,14 @@ class MirrorPath(object):
   method DoPath is called with. This includes replication of symbolic
   links.  But the targets of symbolic links are absolutized: they are
   replaced by the realpath of the original target, whether this target
-  was relative or absolute."""
+  was relative or absolute.
+
+  Also, remember all directories that had to be followed to find out what paths
+  mean.  This is of particular importance to the '..' operator, which may
+  involve temporary excursions into directories that otherwise contain no files
+  of relevance to the build. But the directories must still be replicated on the
+  server for the semantics of '..' to work.  These are called must_exist_dirs.
+  """
 
   def __init__(self,
 	       simple_build_stat,
@@ -52,10 +59,14 @@ class MirrorPath(object):
     # Usual abbreviations.
     self.simple_build_stat = simple_build_stat
     self.canonical_path = canonical_path
+    self.must_exist_dirs = []
 
   def Links(self):
     """Return the list of symbolic links created."""
     return self.links
+
+  def MustExistDirs(self):
+    return self.must_exist_dirs
 
   def DoPath(self, filepath, current_dir_idx, root):
     """Mirror the parts of filepath not yet created under root.
@@ -100,6 +111,7 @@ class MirrorPath(object):
       # Make sure that root_prefix_real is there
       if not lookup(root_prefix_real):
 	if not os.path.isdir(root_prefix_real):
+          self.must_exist_dirs.append(root_prefix_real)
 	  os.makedirs(root_prefix_real)
 	self.simple_build_stat.cache[root_prefix_real] = True
 
