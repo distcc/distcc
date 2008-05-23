@@ -51,8 +51,9 @@ make RPM_OPT_FLAGS="$RPM_OPT_FLAGS" \
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=${RPM_BUILD_ROOT} PYTHON_INSTALL_RECORD=python_install_record install
-# The remaining configuration files are installed here rather than by 'make install'
-# because their nature and their locations are too system-specific.
+# The remaining configuration files are installed here rather than by
+# 'make install' because their nature and their locations are too
+# system-specific.
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
 install -m 644 packaging/RedHat/logrotate.d/distcc $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/distcc
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/xinetd.d
@@ -162,13 +163,22 @@ if [ -s /etc/redhat-release ]; then
   /etc/init.d/distcc start || exit 0
 else
   if [ -x "/etc/init.d/distcc" ]; then
-    update-rc.d -f distcc remove
+    update-rc.d -f distcc remove >/dev/null
     update-rc.d distcc defaults 95 05 >/dev/null
     if [ -x /usr/sbin/invoke-rc.d ]; then
-      invoke-rc.d distcc start || exit 0
+      start_command="invoke-rc.d distcc start"
     else
-      /etc/init.d/distcc start || exit 0
+      start_command="/etc/init.d/distcc start"
     fi
+    $start_command || {
+        echo "To enable distcc's TCP mode, you should edit these files"
+        echo "        %{_sysconfdir}/distcc/clients.allow"
+        echo "        %{_sysconfdir}/distcc/commands.allow.sh"
+        echo "and then run (as root)"
+        echo "        $start_command"
+        echo "For more info, see %{_docdir}/INSTALL "
+        echo "and %{_docdir}/examples/README."
+    }
   fi
 fi
 
