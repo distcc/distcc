@@ -54,8 +54,11 @@
 # TODO: Add option to run tests on different sets or orderings of
 # machines.
 
+import os
+import re
+import sys
+import time
 
-import re, os, sys, time
 from getopt import getopt
 
 from Summary import Summary

@@ -19,7 +19,7 @@
 # USA
 
 from Project import Project
-from compiler import CompilerSpec
+from compiler import CompilerSpec, prepare_shell_script_farm
 import buildutil
 from buildutil import make_dir, run_cmd, rm_files
 import re, os, sys, time
@@ -29,31 +29,63 @@ import re, os, sys, time
 class Build:
     """A Build is a combination of a Project and CompilerSpec.
 
+    Note: when done with an object of this type, call its restore function;
+    otherwise PATH will remain changed to an inappropriate value.
     """
+    
     def __init__(self, project, compiler, n_repeats):
         self.project = project
         self.compiler = compiler
         self.n_repeats = n_repeats
 
-        self.base_dir = os.path.join(os.getcwd(), "build", self.project.name, self.compiler.name)
-        self.unpacked_dir = os.path.join(self.base_dir, self.project.unpacked_subdir)
+        self.base_dir = os.path.join(os.getcwd(), "build", self.project.name,
+                                     self.compiler.name)
+        self.unpacked_dir = os.path.join(self.base_dir,
+                                         self.project.unpacked_subdir)
 
         # Some packages need to be started from a subdirectory of their
         # unpacked form.  For example, Samba is compiled from the "source/"
         # subdirectory of the unpacked source.
         if self.project.build_subdir:
-            self.build_dir = os.path.join(self.unpacked_dir, project.build_subdir)
+            self.build_dir = os.path.join(self.unpacked_dir,
+                                          project.build_subdir)
         else:
             self.build_dir = self.unpacked_dir
 
         self.log_dir = self.build_dir
+        self.old_path = None
 
     def __repr__(self):
         return "Build(%s, %s)" % (`self.project`, `self.compiler`)
 
+    def make_script_farm_augment_path(self):
+        """Initialize shell script farm and augment PATH.
+
+        A shell script farm is a set of scripts for dispatching a chosen
+        compiler using distcc. For example, the 'cc' script may contain the one
+        line:
+
+          dist /usr/mine/gcc "$@"
+
+        """
+        self.farm_dir = os.path.join(self.build_dir, 'build-cc-script-farm')
+        make_dir(self.farm_dir)
+        print ("""** Creating masquerading shell scripts in '%s'""" %
+               self.farm_dir)
+        masquerade = os.path.join(self.build_dir, 'masquerade')
+        prepare_shell_script_farm(self.compiler, self.farm_dir, masquerade)
+        self.old_path = os.environ['PATH'] 
+        os.environ['PATH'] = self.farm_dir + ":" + self.old_path
+
+    def restore_path(self):
+        """Restore effect of constructor: reset PATH."""
+        if self.old_path:
+            os.environ['PATH'] = self.old_path
+            self.old_path = None
 
     def unpack(self):
         """Unpack from source tarball into build directory"""
+
         if re.search(r"\.tar\.bz2$", self.project.package_file):
             tar_fmt = "tar xf %s --bzip2"
         else:
@@ -80,11 +112,14 @@ class Build:
 
         make_dir(self.build_dir)
         print "** Configuring..."
-        run_cmd("cd %s && \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' \\\n%s \\\n>%s 2>&1" %
-                (self.build_dir, distcc_log, self.compiler.cc,
-                 self.compiler.cxx,
-                 self.project.configure_cmd, configure_log))
-
+        try:
+            self.make_script_farm_augment_path()
+            run_cmd("cd %s && \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' \\\n%s \\\n>%s 2>&1" %
+                    (self.build_dir, distcc_log, self.compiler.cc,
+                     self.compiler.cxx,
+                     self.project.configure_cmd, configure_log))
+        finally:
+            self.restore_path()
 
     def build(self, sum):
         """Actually build the package."""
@@ -99,15 +134,19 @@ class Build:
         make_dir(self.build_dir)
         print "** Building..."
         if self.project.pre_build_cmd:
-            cmd = ("cd %s && %s > %s 2>&1" % (self.build_dir,
-                                              self.project.pre_build_cmd,
-                                              prebuild_log))
-            run_cmd(cmd)
+            try:
+                self.make_script_farm_augment_path()
+
+                cmd = ("cd %s && %s > %s 2>&1" % (self.build_dir,
+                                                  self.project.pre_build_cmd,
+                                                  prebuild_log))
+                run_cmd(cmd)
+            finally:
+                self.restore_path()
 
         distcc_hosts = buildutil.tweak_hosts(os.getenv("DISTCC_HOSTS"),
                                              self.compiler.num_hosts,
                                              self.compiler.host_opts)
-
         cmd = ("cd %s && \\\n"
                "DISTCC_HOSTS='%s' \\\n"
                "%s%s \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' "
@@ -121,7 +160,11 @@ class Build:
                 self.compiler.cxx,
                 self.compiler.make_opts,
                 build_log))
-        result, elapsed = run_cmd(cmd)
+        try:
+            self.make_script_farm_augment_path()
+            result, elapsed = run_cmd(cmd)
+        finally:
+            self.restore_path()
         return elapsed
 
 
@@ -130,8 +173,11 @@ class Build:
         make_dir(self.build_dir)
         print "** Cleaning build directory"
         cmd = "cd %s && make clean >%s 2>&1" % (self.build_dir, clean_log)
-        run_cmd(cmd)
-        
+        try:
+            self.make_script_farm_augment_path()
+            run_cmd(cmd)
+        finally:
+            self.restore_path()
 
     def scrub(self):
         print "** Removing build directory"
