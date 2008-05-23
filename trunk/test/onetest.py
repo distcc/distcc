@@ -1,6 +1,21 @@
 #!/usr/bin/python2.4
 #
-# Copyright 2007 Google Inc. All Rights Reserved.
+# Copyright 2007 Google Inc.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
 
 """Usage: onetest.py [--valgrind[=command]] [--lzo] [--pump] TESTNAME
 
@@ -8,7 +23,7 @@ This command runs a single test case.
 TESTNAME should be the name of one of the test cases from testdistcc.py.
 """
 
-__author__ = 'fergus@google.com (Fergus Henderson)'
+__author__ = 'Fergus Henderson'
 
 import testdistcc
 import comfychair
