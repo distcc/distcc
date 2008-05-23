@@ -50,15 +50,15 @@ NFIL <nfiles>
     How many files or links will be sent. Similar to ARGC.
 
 NAME <len> <bytes>
-    The (absolute, crossing-no-symlinks) name of the next file/link to be 
+    The (absolute, crossing-no-symlinks) name of the next file or link to be
     sent.  Similar to any ARGV.
 
 FILE <len> <bytes>
     The contents of the file. Similar to DOTI in protocol version 2.
 
 LINK <len> <bytes>
-    The contents of (the file name pointed to by) a link. Similar to any 
-    ARGV. 
+    The contents of the link (i.e., the filename pointed to by the link).
+    Similar to any ARGV. 
 
 response
 --------
@@ -75,7 +75,7 @@ Notes
 This protocol is most useful in conjuction with an "include server" that
 discovers, for each compilation unit, the list of needed files without
 actually preprocessing. The protocol for talking to the include server
-is simple: distcc sends a CWD packet, and an ARGC/ARGV sequence with the 
+is simple: distcc sends a CDIR packet, and an ARGC/ARGV sequence with the 
 command line, and receives an ARGC/ARGV sequence with the needed files. 
 
 Ideally, compression of files should be independent of whether preprocessing

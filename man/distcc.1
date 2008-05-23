@@ -172,7 +172,7 @@ implements this algorithm.
 
 The include server uses static analysis of the macro language to deal with
 conditional compilation and computed includes.  It uses the property that when a
-given header file has already been analyzed for includes, it may not be
+given header file has already been analyzed for includes, it is not 
 necessary to do so again if all the include directives are unchanged (along with
 other conditions).
 
@@ -180,17 +180,17 @@ For large builds, header files are included, on average, hundreds of times. With
 distcc-pump mode each such file is analyzed only a few times, perhaps just once,
 instead of being preprocessed hundreds of times.  Also, each source or header
 file is now compressed only once, because the include server memoizes the
-compressed files.  As a result, the time used for compilation on the server may
+compressed files.  As a result, the time used for compilation on the server can
 drop by close to an order of magnitude over plain distcc.  Additionally,
-compression time may drop by an order or two of magnitude over plain distcc's
-scheme of compressing the preprocessed files.
+compression time can drop by a factor of ten to one-hundred over plain distcc's
+time for compressing the preprocessed files.
 
 As a result, distcc-pump mode is able to push out files up to about ten times
 faster than distcc.  The total build time may drop 30-70% for large builds
 compared to plain distcc mode.
 
 Using pump mode requires both client and servers to use release 3.0
-or later of distcc/distccd (respectively).
+or later of distcc and distccd (respectively).
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
 The following options are understood by distcc itself:
@@ -489,6 +489,8 @@ compression ratio is typically 4:1 for source and 2:1 for object code.
 Using compression requires both client and server to use at least
 release 2.9 of distcc.  No server configuration is required: the
 server always responds with compressed replies to compressed requests.
+.PP
+Pump mode requires the servers to have the lzo host option on.
 .SH "SEARCH PATHS"
 .PP
 If the compiler name is an absolute path, it is passed verbatim to the
