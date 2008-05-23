@@ -268,6 +268,7 @@ int distccd_parse_options(int argc, const char **argv)
             opt_no_fork = 1;
             opt_no_fifo = 1;
             rs_trace_set_level(RS_LOG_DEBUG);
+            opt_log_level_num = RS_LOG_DEBUG;
             break;
 
         default:                /* bad? */
