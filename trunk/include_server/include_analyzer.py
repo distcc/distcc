@@ -100,12 +100,13 @@ class IncludeAnalyzer(object):
     self.include_server_cwd = os.getcwd()
     self._InitializeAllCaches()
 
-  def _ProcessFileFromCommandLine(self, fpath, kind, search_list):
+  def _ProcessFileFromCommandLine(self, fpath, currdir, kind, search_list):
     """Return closure of fpath whose kind is "translation unit" or "include".
        Such files come from the command line, either as the file to compile,
        or from a "-include" command line option.
     Arguments:
       fpath: a filepath (as a string)
+      currdir: a string
       kind: a string used for an error message if fpath is not found
       search_list: a tuple of directory indices (for "include" kind files)
     Returns:
@@ -128,6 +129,12 @@ class IncludeAnalyzer(object):
     if fpath_resolved_pair == None:
       raise NotCoveredError("Could not find %s '%s'." % (kind, fpath),
                             send_email=False)
+    # We must inspect the path to replicate directories and symlinks.
+    self.mirror_path.DoPath(
+        os.path.join(currdir, fpath),
+        self.currdir_idx,
+        self.client_root_keeper.client_root)
+    
     closure = self.RunAlgorithm(fpath_resolved_pair, fpath_real)
     return closure
 
@@ -171,9 +178,11 @@ class IncludeAnalyzer(object):
       total_closure.update(
         self._ProcessFileFromCommandLine(
           self.includepath_map.string[include_file],
+          currdir,
           "include file",
           self.quote_dirs))
     total_closure.update(self._ProcessFileFromCommandLine(translation_unit,
+                                                          currdir,
                                                           "translation unit",
                                                           ()))
     return total_closure
@@ -255,9 +264,19 @@ class IncludeAnalyzer(object):
     # handful.
     links = self.mirror_path.Links()
     files = self.compress_files.Compress(include_closure, client_root_keeper)
-    realpath_map = self.realpath_map
 
-    files_and_links = files + links
+    must_exist_dirs = self.mirror_path.MustExistDirs()
+    random_name = 'forcing_technique_271828'
+    forcing_files = [d + '/' + random_name
+                     for d in must_exist_dirs]
+    for forcing_file in forcing_files:
+      # If for extremly obscure reasons the file already exists and is useful,
+      # then don't change it.
+      open(forcing_file, "a").close()
+
+    files_and_links = files + links + forcing_files
+
+    realpath_map = self.realpath_map
 
     if basics.opt_verify:
       # Invoke the real preprocessor.
