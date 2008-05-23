@@ -131,8 +131,6 @@ static int dcc_read_number_discrepancies(const char *discrepancy_filename)
 static int dcc_note_discrepancy(const char *discrepancy_filename)
 {
     FILE *discrepancy_file;
-    struct stat stat_record;
-
     if (!discrepancy_filename) return 0;
     if (!(discrepancy_file = fopen(discrepancy_filename, "a"))) {
         rs_log_error("failed to open discrepancy_filename file: %s: %s",
@@ -146,14 +144,12 @@ static int dcc_note_discrepancy(const char *discrepancy_filename)
         fclose(discrepancy_file);
         return EXIT_IO_ERROR;
     }
-    if (fstat(fileno(discrepancy_file), &stat_record) == 0) {
-        size_t size = stat_record.st_size;
-        if ((((size_t) (int) size) == size)
-            && ((int) size) == max_discrepancies_before_demotion) {
-            rs_log_warning("now using plain distcc, possibly due to "
-                           "inconsistent file system changes during build");
-        }
-    };
+    if (dcc_read_number_discrepancies(discrepancy_filename) ==
+        max_discrepancies_before_demotion) {
+        /* Give up on using distcc-pump. Print this warning just once. */
+        rs_log_warning("now using plain distcc, possibly due to "
+                       "inconsistent file system changes during build");
+    }
     fclose(discrepancy_file);
     return 0;
 }

@@ -52,8 +52,7 @@ struct rs_logger_list {
 static struct rs_logger_list *logger_list = NULL;
 
 
-// int rs_trace_level = RS_LOG_NOTICE;
-int rs_trace_level = RS_LOG_DEBUG;
+int rs_trace_level = RS_LOG_NOTICE;
 
 #ifdef UNUSED
 /* nothing */
