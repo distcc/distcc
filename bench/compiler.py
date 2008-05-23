@@ -18,8 +18,16 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 
-import buildutil
+import commands
 import os
+import shutil
+import stat
+import tempfile
+
+import buildutil
+
+STANDARD_CC_NAMES = ['cc', 'gcc']
+STANDARD_CXX_NAMES = ['cxx', 'c++', 'g++' ]
 
 class CompilerSpec:
     """Describes a compiler/make setup.
@@ -27,11 +35,26 @@ class CompilerSpec:
     Used to define different situations such as local compilation, and
     various degrees of parallelism."""
 
-    def __init__(self, cc, cxx, make_opts='',
+    def __init__(self, where, cc, cxx, prefix='', make_opts='',
                  pump_cmd='', num_hosts=1, host_opts='',
                  name=None):
-        self.cc = cc
-        self.cxx = cxx
+        """Constructor:
+
+        Args:
+          where: 'local', 'dist', 'lzo', or 'pump'
+          cc: location of the C compiler
+          cxx: location of the C++
+          prefix: a string, either 'distcc ' or ''
+          make_opts: options to make, such as '-j120'
+          host_opts: for appending to hosts in DISTCC_HOSTS
+                     such as ',lzo,cpp'
+          name: a string
+        """
+        self.where = where
+        self.real_cc = cc
+        self.real_cxx = cxx
+        self.cc = prefix + cc
+        self.cxx = prefix + cxx
         self.make_opts = make_opts
         self.host_opts = host_opts
         self.pump_cmd = pump_cmd
@@ -78,28 +101,35 @@ def parse_compiler_opt(optarg, cc, cxx):
                          "expecting '...,j<NUMBER OF JOBS>', found %s"
                          % `jobs`)
     if where == 'local':
-        return CompilerSpec(name='local_%02d' % jobs,
+        return CompilerSpec(where=where,
+                            name='local_%02d' % jobs,
                             cc=cc,
                             cxx=cxx,
                             num_hosts=1,
                             make_opts='-j%d' % jobs)
     elif where == 'dist':
-        return CompilerSpec(name='dist_h%02d_j%02d' % (hosts, jobs),
-                            cc='distcc ' + cc,
-                            cxx='distcc ' + cxx,
+        return CompilerSpec(where=where,
+                            name='dist_h%02d_j%02d' % (hosts, jobs),
+                            cc=cc,
+                            cxx=cxx,
+                            prefix='distcc ',
                             num_hosts=hosts,
                             make_opts='-j%d' % jobs)
     elif where == 'lzo':
-        return CompilerSpec(name='lzo_h%02d_j%02d' % (hosts, jobs),
-                            cc='distcc ' + cc,
-                            cxx='distcc ' + cxx,
+        return CompilerSpec(where=where,
+                            name='lzo_h%02d_j%02d' % (hosts, jobs),
+                            cc=cc,
+                            cxx=cxx,
+                            prefix='distcc ',
                             num_hosts=hosts,
                             host_opts=",lzo",
                             make_opts='-j%d' % jobs)
     elif where == 'pump':
-        return CompilerSpec(name='pump_h%02d_j%02d' % (hosts, jobs),
-                            cc='distcc ' + cc,
-                            cxx='distcc ' + cxx,
+        return CompilerSpec(where=where,
+                            name='pump_h%02d_j%02d' % (hosts, jobs),
+                            cc=cc,
+                            cxx=cxx,
+                            prefix='distcc ',
                             pump_cmd='pump ',
                             num_hosts=hosts,
                             host_opts=",cpp,lzo",
@@ -107,3 +137,45 @@ def parse_compiler_opt(optarg, cc, cxx):
     else:
       raise ValueError, ("invalid compiler option: don't understand %s"
                          % `where`)
+
+
+def prepare_shell_script_farm(compiler, farm_dir, masquerade):
+    """Prepare farm directory for masquerading.
+
+    Assume the compiler is not local. Each standard name, such as 'cc', is
+    used for form a shell script, named 'cc', that contains the line 'distcc
+    /my/path/gcc "$@"', where '/my/path/gcc' is the value of the compiler.gcc
+    field.
+
+    If the compiler is local, then the same procedure is followed except that
+    'distcc' is omitted from the command line.
+    """
+    assert os.path.isdir(farm_dir)
+    assert os.path.isabs(farm_dir)
+
+    def make_shell_script(name, compiler_path, where):
+        fd = open(os.path.join(farm_dir, name), 'w')
+        fd.write('#!/bin/sh\n%s%s "$@"'
+                 % (where != 'local' and 'distcc ' or '',
+                    compiler_path))
+        fd.close()
+        os.chmod(os.path.join(farm_dir, name),
+                 stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
+
+    for generic_name in STANDARD_CC_NAMES:
+        make_shell_script(generic_name, compiler.real_cc, compiler.where)
+
+    for generic_name in STANDARD_CXX_NAMES:
+        make_shell_script(generic_name, compiler.real_cxx, compiler.where)
+
+    # Make shell wrapper to help manual debugging.
+    fd = open(masquerade, 'w')
+    fd.write("""#!/bin/sh
+# Execute $@, but force 'cc' and 'cxx'" to be those in the farm of
+# masquerading scripts.  Each script in turn executes 'distcc' with the actual
+# compiler specified with the benchmark.py command.
+PATH=%s:"$PATH" "$@"\n"""
+             % farm_dir)
+    fd.close()
+    os.chmod(masquerade,
+             stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
