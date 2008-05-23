@@ -3,6 +3,7 @@
  * ecolog - Reusable application logging library.
  *
  * Copyright (C) 2000 - 2003 by Martin Pool <mbp@samba.org>
+ * Copyright 2007 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
