@@ -334,7 +334,7 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
                resolution_mode,
                file_dir_idx=None,
                fp_real_idx=None):
-    """Find a previosly constructed node or create a new node.
+    """Find a previously constructed node or create a new node.
 
     Arguments:
       nodes_for_incl_config: a dictionary (see class documentation).
