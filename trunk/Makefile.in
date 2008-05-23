@@ -1021,7 +1021,7 @@ install-include-server: include-server pump
 	  fi; \
 	  $(mkinstalldirs) "$(DESTDIR)$(bindir)" && \
 	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
-	  sed "s,^include_server='',include_server='$$DESTDIR$$INCLUDE_SERVER'," \
+	  sed "s,^include_server='',include_server='$$INCLUDE_SERVER'," \
 	    pump > "$(include_server_builddir)/pump" && \
 	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
 	fi
