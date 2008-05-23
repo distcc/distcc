@@ -176,8 +176,8 @@ else
         echo "        %{_sysconfdir}/distcc/commands.allow.sh"
         echo "and then run (as root)"
         echo "        $start_command"
-        echo "For more info, see %{_docdir}/INSTALL "
-        echo "and %{_docdir}/examples/README."
+        echo "For more info, including alternatives to TCP mode, see"
+        echo "%{_docdir}/INSTALL and %{_docdir}/examples/README."
     }
   fi
 fi
