@@ -139,6 +139,7 @@ than the source tree:
 You can optionally run "make check" afterwards to verify that everything
 built OK.
 
+
 Installing distcc
 -----------------
 
@@ -156,6 +157,7 @@ You can optionally run "make installcheck" afterwards to verify that
 was installed OK.  This works regardless of which installation method
 you used.
 
+
 Starting the daemon
 -------------------
 
@@ -169,7 +171,7 @@ daemon.  Running standalone is recommended.
 If you installed via the debian or RPM package, then the daemon will be
 installed as a service, running as a standalone daemon, and it should get
 started up automatically, so you can skip the rest of this section
-"Starting the daemon.  The rest of this section only applies if you
+"Starting the daemon".  The rest of this section only applies if you
 installed via "make install".
 
 To run standalone, run a command like this, either from the command
@@ -227,9 +229,12 @@ addresses will be determined by the --allow options that you pass to
 distccd and the allowed commands will be determined by the DISTCC_CMDLIST
 environment variable; see the distccd(1) man page for details.
 
+See also the doc/example directory and its README file, which
+has examples of the configuration files that you need.
 
-Set up the host list
---------------------
+
+Setting up the host list
+------------------------
 
 On the client machines, store a list of servers names in
 ~/.distcc/hosts or /etc/hosts, or in the DISTCC_HOSTS
@@ -293,8 +298,9 @@ DISTCC_POTENTIAL_HOSTS.
       cd ~/my_sources/my_project
       make -j40 CC="distcc gcc" my_target
 
-Create the masquerade directories
----------------------------------
+
+Creating the masquerade directories
+-----------------------------------
 
 The easiest way to use distcc is in "masquerade" mode, where it is
 installed on the PATH to "catch" calls to the compiler and redirect
