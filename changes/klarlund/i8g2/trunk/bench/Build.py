@@ -59,7 +59,15 @@ class Build:
         return "Build(%s, %s)" % (`self.project`, `self.compiler`)
 
     def make_script_farm_augment_path(self):
-        """Initialize shell script farm and augment PATH."""
+        """Initialize shell script farm and augment PATH.
+
+        A shell script farm is a set of scripts for dispatching a chosen
+        compiler using distcc. For example, the 'cc' script may contain the one
+        line:
+
+          dist /usr/mine/gcc "$@"
+
+        """
         self.farm_dir = os.path.join(self.build_dir, 'build-cc-script-farm')
         make_dir(self.farm_dir)
         print ("""** Creating masquerading shell scripts in '%s'""" %
@@ -77,7 +85,7 @@ class Build:
 
     def unpack(self):
         """Unpack from source tarball into build directory"""
-        make_dir(self.base_dir)
+
         if re.search(r"\.tar\.bz2$", self.project.package_file):
             tar_fmt = "tar xf %s --bzip2"
         else:

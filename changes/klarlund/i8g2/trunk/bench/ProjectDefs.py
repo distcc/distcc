@@ -45,9 +45,6 @@ Project(url='http://archive.apache.org/dist/httpd/httpd-2.0.43.tar.gz',
 Project(url='ftp://ftp.gtk.org/pub/gtk/v2.0/glib-2.0.7.tar.bz2',
         md5='5882b1e729f57cb18af653a2f504197b  glib-2.0.7.tar.bz2').register()
 
-Project(url='http://download.gnome.org/sources/glib/2.16/glib-2.16.1.tar.gz',
-        md5='d89f49d8a82a62f08de1dc2c5af0adf7  glib-2.16.1.tar.gz').register()
-
 Project(url='http://us1.samba.org/samba/ftp/old-versions/samba-2.2.7.tar.gz',
         build_subdir='source',
         md5='824cd4e305f9b744f3eec702a7b96f7f  samba-2.2.7.tar.gz',

@@ -38,6 +38,18 @@ class CompilerSpec:
     def __init__(self, where, cc, cxx, prefix='', make_opts='',
                  pump_cmd='', num_hosts=1, host_opts='',
                  name=None):
+        """Constructor:
+
+        Args:
+          where: 'local', 'dist', 'lzo', or 'pump'
+          cc: location of the C compiler
+          cxx: location of the C++
+          prefix: a string, either 'distcc ' or ''
+          make_opts: options to make, such as '-j120'
+          host_opts: for appending to hosts in DISTCC_HOSTS
+                     such as ',lzo,cpp'
+          name: a string
+        """
         self.where = where
         self.real_cc = cc
         self.real_cxx = cxx
@@ -143,10 +155,8 @@ def prepare_shell_script_farm(compiler, farm_dir, masquerade):
 
     def make_shell_script(name, compiler_path, where):
         fd = open(os.path.join(farm_dir, name), 'w')
-        sh = commands.getoutput('which sh')
-        fd.write('#!%s\n%s%s "$@"'
-                 % (sh,
-                    where != 'local' and 'distcc ' or '',
+        fd.write('#!/bin/sh\n%s%s "$@"'
+                 % (where != 'local' and 'distcc ' or '',
                     compiler_path))
         fd.close()
         os.chmod(os.path.join(farm_dir, name),
@@ -164,7 +174,7 @@ def prepare_shell_script_farm(compiler, farm_dir, masquerade):
 # Execute $@, but force 'cc' and 'cxx'" to be those in the farm of
 # masquerading scripts.  Each script in turn executes 'distcc' with the actual
 # compiler specified with the benchmark.py command.
-PATH=%s:$PATH "$@"\n"""
+PATH=%s:"$PATH" "$@"\n"""
              % farm_dir)
     fd.close()
     os.chmod(masquerade,
