@@ -337,6 +337,13 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
       send_systemdirs: a boolean, true only in exceptional cases
   Modifies:
     compiler_defaults
+
+  The send_systemdirs boolean is normally false.  It is true if there is a
+  -isystem option with a default system directory (one known to the compiler).
+  With send_systemdirs true, the compiler headers of system headers are sent to
+  the servers and mounted under the server root.  The isystem option is as usual
+  rewritten to be relative to the root.  Without this flag setting, distcc
+  quickly decides that pump mode is not viable because remote compilations fail.
   """
   if __debug__: Debug(DEBUG_TRACE, "ParseCommand %s" % args)
 
@@ -485,7 +492,5 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
                                      source_file, source_file_prefix,
                                      parse_state.Dopts)))
 
-
-  
   return (quote_dirs, angle_dirs, include_files, source_file, 
           source_file_prefix, parse_state.Dopts, parse_state.send_systemdirs)
