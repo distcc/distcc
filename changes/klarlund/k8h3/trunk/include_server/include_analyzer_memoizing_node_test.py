@@ -165,7 +165,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
             " -c src/%s.c") % (extra_arg, src_stem, src_stem)
 
   def _CheckIncludeClosureOnDistcc(self, expected_suffixes,
-                                   extra_arg=""):
+                                   extra_arg="", system_dirs=[]):
 
     includepath_map = self.includepath_map
     canonical_path = self.canonical_path
@@ -202,22 +202,29 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
 
       self.assertEqual(translation_unit, "src/%s.c" % src_stem)
 
-      self.assertFalse(include_analyzer.send_systemdirs)
-
       include_closure = (
        include_analyzer.ProcessCompilationCommand(current_dir,
                                                   parsed_command))
 
       expected_prefix = os.getcwd() + '/'
 
-      expected = set([ expected_prefix + expected_suffix
-                       for expected_suffix in expected_suffixes ])
-      self.assertEqual(set([realpath_map.string[key]
-                            for key in include_closure.keys()]),
-                       expected)
+      expected = set([os.path.join(expected_prefix, expected_suffix)
+                      for expected_suffix in expected_suffixes])
 
-      for rp_idx in include_closure:
-        self.assertEqual(len(include_closure[rp_idx]), 0)
+      found = set(realpath_map.string[key] for key in include_closure)
+
+      self.failUnless(expected <= found)
+
+      residue = found - expected
+
+      for header in residue:
+        self.failUnless(
+            include_analyzer.systemdir_prefix_cache.StartsWithSystemdir(
+                realpath_map.Index(header), realpath_map))
+
+      if not system_dirs:
+        for rp_idx in include_closure:
+          self.assertEqual(len(include_closure[rp_idx]), 0)
 
       # TODO(klarlund): massage command so as to test that with a
       # different search path files are reported as absolute. That is,
@@ -264,7 +271,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
         "src/bulk.h",
         "src/emaillog.h"]
     self._CheckIncludeClosureOnDistcc(
-        expected_suffixes, "-isystem " + systemdirs[0])
+        expected_suffixes, "-isystem " + systemdirs[0], systemdirs)
 
   def tearDown(self):
     pass

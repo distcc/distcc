@@ -63,6 +63,16 @@ class ParseState:
   def set_sysroot(self, x): self.sysroot = x
   def set_outputfile(self, x): self.output_file = x
   def set_iprefix(self, x): self.iprefix = x
+  
+  def _ProcessIsystem(self, arg):
+    """Investigate whether to turn send_systemdirs on."""
+    if arg.startswith('/'):
+      # Determine whether this is an include of a default system directory of the
+      # compiler (or a subdirectory thereof).
+      realpath_idx = self.realpath_map.Index(os.path.realpath(arg))
+      self.send_systemdirs |= self.systemdir_prefix_cache.StartsWithSystemdir(
+          realpath_idx, self.realpath_map)
+
 
 def _SplitMacroArg(arg):
   """Split an arg as found in -Darg
@@ -81,17 +91,6 @@ def _SplitMacroArg(arg):
 
 def _RaiseNotImplemented(name, comment=''):
   raise NotCoveredError('%s is not implemented.  %s' % (name, comment))
-
-def _ProcessIsystem(ps, arg):
-  """Append arg to before system dirs list, possibly turn send_systemdirs on."""
-  ps.before_system_dirs.append(arg)
-  print '_ProcessIsystem', arg
-  if arg.startswith('/'):
-    # Determine whether this is an include of default system directory of the
-    # compiler (or a subdirectory thereof).
-    realpath_idx = ps.realpath_map.Index(arg)
-    ps.send_systemdirs = ps.systemdir_prefix_cache.StartsWithSystemdir(
-        realpath_idx, ps.realpath_map)
 
 # These are the cpp options that a) are more than one letter long,
 # b) always take an argument, and c) may either have that argument
@@ -118,7 +117,7 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
 #  '-isysroot':      lambda ps, arg: ps.set_isysroot(arg),
   '-isysroot':      lambda ps, arg: _RaiseNotImplemented('-isysroot'),
   '-imultilib':     lambda ps, arg: _RaiseNotImplemented('-imultilib'),
-  '-isystem':       _ProcessIsystem,
+  '-isystem':       lambda ps, arg: ps.before_system_dirs.append(arg),
   '-iquote':        lambda ps, arg: ps.quote_dirs.append(arg),
 #  '--sysroot=':     lambda ps, arg: ps.set_sysroot(arg),
   '--sysroot=':     lambda ps, arg: None,
@@ -348,10 +347,12 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
   parse_state = ParseState()
   parse_state.realpath_map = realpath_map
   parse_state.systemdir_prefix_cache = systemdir_prefix_cache
-  
+
   if len(args) < 2:
     raise NotCoveredError("Command line: too few arguments.")
+
   compiler = args[0]
+
   i = 1 
   while i < len(args):
     # First, deal with everything that's not a flag-option
@@ -475,9 +476,16 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
   include_files = tuple([fp_map.Index(basics.SafeNormPath(f))
                          for f in parse_state.include_files])
 
+  # Send default system dirs?
+  for isystem_dir in parse_state.before_system_dirs:
+    parse_state._ProcessIsystem(isystem_dir)
+
   if __debug__: Debug(DEBUG_TRACE, ("ParseCommand result: %s %s %s %s %s %s" % 
                                     (quote_dirs, angle_dirs, include_files,
                                      source_file, source_file_prefix,
                                      parse_state.Dopts)))
+
+
+  
   return (quote_dirs, angle_dirs, include_files, source_file, 
           source_file_prefix, parse_state.Dopts, parse_state.send_systemdirs)
