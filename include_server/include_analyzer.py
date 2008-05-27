@@ -98,6 +98,7 @@ class IncludeAnalyzer(object):
     self.stat_reset_triggers = stat_reset_triggers
     self.translation_unit = "unknown translation unit"
     self.timer = None
+    self.send_systemdirs = False
     self.include_server_cwd = os.getcwd()
     self._InitializeAllCaches()
 
@@ -160,7 +161,8 @@ class IncludeAnalyzer(object):
     statistics.parse_file_counter_last = statistics.parse_file_counter
     (self.quote_dirs, self.angle_dirs,
      self.include_files, translation_unit,
-     self.result_file_prefix, self.d_opts) = parsed_command
+     self.result_file_prefix, self.d_opts,
+     self.send_systemdirs) = parsed_command
 
     statistics.translation_unit = translation_unit
     self.translation_unit = translation_unit
@@ -247,9 +249,11 @@ class IncludeAnalyzer(object):
                                        currdir,
                                        self.includepath_map,
                                        self.directory_map,
+                                       self.realpath_map,
+                                       self.systemdir_prefix_cache,
                                        self.compiler_defaults,
                                        self.timer))
-    (_, _, _, source_file, result_file_prefix, _) = parsed_command
+    (_, _, _, source_file, result_file_prefix, _, _) = parsed_command
 
     # Do the real work.
     include_closure = (

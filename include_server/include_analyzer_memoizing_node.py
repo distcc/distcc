@@ -609,6 +609,7 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
     starts_with_systemdir = self.systemdir_prefix_cache.cache
     dir_map_string = self.directory_map.string
     if not node: return
+    send_systemdirs = self.send_systemdirs
     stack = ([node])          # TODO(csilvers): consider using a deque
     if __debug__: statistics.len_calculated_closure_nonsys = 0
     while stack:
@@ -627,7 +628,7 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
         if __debug__: statistics.len_calculated_closure_nonsys += 1
         # We ignore "system" includes like /usr/include/stdio.h.
         # These files are not likely to change, so it's safe to skip them.
-        if not starts_with_systemdir[node[0]]:
+        if not starts_with_systemdir[node[0]] or send_systemdirs:
           # Add the resolved filepath to those found for realpath.
           if node[0] not in include_closure:
             include_closure[node[0]] = []
