@@ -26,6 +26,7 @@ import basics
 import parse_command
 import cache_basics
 import include_analyzer_memoizing_node
+import compiler_defaults
 import unittest
 
 NotCoveredError = basics.NotCoveredError
@@ -149,21 +150,23 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     self.assertEqual(len(stringified_include_closure), 4)
 
 
-  def _ConstructDistccCommandLine(self, src_stem):
+  def _ConstructDistccCommandLine(self, src_stem, extra_arg=""):
     # A command line, which is more or less the one found in the
     # generated Makefile for distcc. We don't need the exact form of
     # the command."
-    return ("gcc -DHAVE_CONFIG_H -D_GNU_SOURCE" +
-            " -I./src" +
-            ' -DSYSCONFDIR="/usr/local/etc"' +
-            ' -DPKGDATADIR="/usr/local/share/distcc"' +
-            " -Isrc" +
-            " -I./lzo" +
-            " -include include_me.h " +
-            " -o src/%s.o" + 
-            " -c src/%s.c") % (src_stem, src_stem)
+    return ("gcc -DHAVE_CONFIG_H -D_GNU_SOURCE"
+            " %s"
+            " -I./src"
+            ' -DSYSCONFDIR="/usr/local/etc"'
+            ' -DPKGDATADIR="/usr/local/share/distcc"'
+            " -Isrc"
+            " -I./lzo"
+            " -include include_me.h "
+            " -o src/%s.o"
+            " -c src/%s.c") % (extra_arg, src_stem, src_stem)
 
-  def test__CalculateIncludeClosureExceptSystem_on_distcc(self):
+  def _CheckIncludeClosureOnDistcc(self, expected_suffixes,
+                                   extra_arg="", system_dirs=[]):
 
     includepath_map = self.includepath_map
     canonical_path = self.canonical_path
@@ -171,64 +174,106 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     realpath_map = self.realpath_map
     include_analyzer = self.include_analyzer
 
+    current_dir_original = os.getcwd()
     current_dir = os.path.realpath("test_data/distcc")
-    os.chdir(current_dir)
 
-    src_stem = "distcc"
-    cmd = self._ConstructDistccCommandLine(src_stem)
+    try:
+      os.chdir(current_dir)
 
-    parsed_command = (
-        parse_command.ParseCommandArgs(
-          parse_command.ParseCommandLine(cmd),
-          current_dir, 
-          include_analyzer.includepath_map, 
-          include_analyzer.directory_map,
-          include_analyzer.compiler_defaults))
+      src_stem = "distcc"
+      cmd = self._ConstructDistccCommandLine(src_stem, extra_arg)
+      print 'cmd', cmd
+      parsed_command = (
+          parse_command.ParseCommandArgs(
+            parse_command.ParseCommandLine(cmd),
+            current_dir, 
+            include_analyzer.includepath_map, 
+            include_analyzer.directory_map,
+            include_analyzer.realpath_map,
+            include_analyzer.systemdir_prefix_cache,
+            include_analyzer.compiler_defaults))
 
-    (include_analyzer.quote_dirs, 
-     include_analyzer.angle_dirs,
-     include_analyzer.include_files,
-     translation_unit,
-     include_analyzer.result_file_prefix,
-     _) = parsed_command
+      (include_analyzer.quote_dirs, 
+       include_analyzer.angle_dirs,
+       include_analyzer.include_files,
+       translation_unit,
+       include_analyzer.result_file_prefix,
+       _,
+       include_analyzer.send_systemdirs) = parsed_command
 
-    self.assertEqual(translation_unit, "src/%s.c" % src_stem)
+      self.assertEqual(translation_unit, "src/%s.c" % src_stem)
 
+      include_closure = (
+       include_analyzer.ProcessCompilationCommand(current_dir,
+                                                  parsed_command))
+
+      expected_prefix = os.getcwd() + '/'
+
+      expected = set([os.path.join(expected_prefix, expected_suffix)
+                      for expected_suffix in expected_suffixes])
+
+      found = set(realpath_map.string[key] for key in include_closure)
+
+      self.failUnless(expected <= found)
+
+      residue = found - expected
+
+      for header in residue:
+        self.failUnless(
+            include_analyzer.systemdir_prefix_cache.StartsWithSystemdir(
+                realpath_map.Index(header), realpath_map))
+
+      if not system_dirs:
+        for rp_idx in include_closure:
+          self.assertEqual(len(include_closure[rp_idx]), 0)
+
+      # TODO(klarlund): massage command so as to test that with a
+      # different search path files are reported as absolute. That is,
+      # provoke pairs (directory_idx, includepath_idx) to exist in
+      # include_closure[rp_idx].
+
+    finally:
+      os.chdir(current_dir_original)
+
+  def test_CalculateIncludeClosureOnDistccWithoutSysdir(self):
     expected_suffixes = [
-      "src/include_me.h",
-      "src/implicit.h",
-      "src/distcc.c",
-      "src/config.h",
-      "src/distcc.h",
-      "src/state.h",
-      "src/compile.h",
-      "src/trace.h",
-      "src/exitcode.h",
-      "src/util.h",
-      "src/hosts.h",
-      "src/bulk.h",
-      "src/emaillog.h"]
-    
-    include_closure = (
-     include_analyzer.ProcessCompilationCommand(current_dir,
-                                                parsed_command))
+        "src/include_me.h",
+        "src/implicit.h",
+        "src/distcc.c",
+        "src/config.h",
+        "src/distcc.h",
+        "src/state.h",
+        "src/compile.h",
+        "src/trace.h",
+        "src/exitcode.h",
+        "src/util.h",
+        "src/hosts.h",
+        "src/bulk.h",
+        "src/emaillog.h"]
+    self._CheckIncludeClosureOnDistcc(expected_suffixes)
 
-    expected_prefix = os.getcwd() + '/'
+  def test_CalculateIncludeClosureOnDistccWithSysdir(self):
+    systemdirs = compiler_defaults._SystemSearchdirsGCC(
+        'gcc', 'c', lambda x:x)
+    assert systemdirs
+    assert os.path.isdir(systemdirs[0]), systemdirs
+    expected_suffixes = [
+        "src/include_me.h",
+        "src/implicit.h",
+        "src/distcc.c",
+        "src/config.h",
+        "src/distcc.h",
+        "src/state.h",
+        "src/compile.h",
+        "src/trace.h",
+        "src/exitcode.h",
+        "src/util.h",
+        "src/hosts.h",
+        "src/bulk.h",
+        "src/emaillog.h"]
+    self._CheckIncludeClosureOnDistcc(
+        expected_suffixes, "-isystem " + systemdirs[0], systemdirs)
 
-    expected = set([ expected_prefix + expected_suffix
-                     for expected_suffix in expected_suffixes ])
-    self.assertEqual(set([realpath_map.string[key]
-                          for key in include_closure.keys()]),
-                     expected)
-
-    for rp_idx in include_closure:
-      self.assertEqual(len(include_closure[rp_idx]), 0)
-
-    # TODO(klarlund): massage command so as to test that with a
-    # different search path files are reported as absolute. That is,
-    # provoke pairs (directory_idx, includepath_idx) to exist in
-    # include_closure[rp_idx].
-    
   def tearDown(self):
     pass
 
