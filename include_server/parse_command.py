@@ -314,14 +314,14 @@ TRANSLATION_UNIT_FILEPATH_RE = (
                        for ext in basics.TRANSLATION_UNIT_MAP.keys()])))
 
 
-def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
+def ParseCommandArgs(args, current_dir, includepath_map, dir_map, realpath_map,
                      systemdir_prefix_cache, compiler_defaults, timer=None):
   """Parse arguments like -I to make include directory lists.
 
   Arguments:
     args: list of arguments (strings)
     current_dir: string
-    fp_map: a MapToIndex object
+    includepath_map: a MapToIndex object
     dir_map: a DirectoryMapToIndex object
     realpath_map:  a CanonicalMapToIndex cache
     systemdir_prefix_cache: a SystemdirPrefixCache
@@ -332,7 +332,7 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
     where:
       quote_dirs: a list of dir_map-indexed directories
       angle_dirs: a list of dir_map-indexed directories
-      files: a list of fp_map-indexed files
+      files: a list of includepath_map-indexed files
       source_file_prefix: the source file name with extension stripped
       dopts: a list of items as returned by _SplitMacroArg
       send_systemdirs: a boolean, true only in exceptional cases
@@ -349,7 +349,7 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
   if __debug__: Debug(DEBUG_TRACE, "ParseCommand %s" % args)
 
   assert isinstance(dir_map, cache_basics.DirectoryMapToIndex)
-  assert isinstance(fp_map, cache_basics.MapToIndex)
+  assert isinstance(includepath_map, cache_basics.MapToIndex)
   assert isinstance(realpath_map, cache_basics.CanonicalMapToIndex)
 
   parse_state = ParseState()
@@ -481,8 +481,12 @@ def ParseCommandArgs(args, current_dir, fp_map, dir_map, realpath_map,
   quote_dirs.extend(angle_dirs)
   angle_dirs = tuple(angle_dirs)
   quote_dirs = tuple(quote_dirs)
-  include_files = tuple([fp_map.Index(basics.SafeNormPath(f))
-                         for f in parse_state.include_files])
+  # Include files are meant to be sent to the server.  They do not pose the
+  # danger of absolute includes, which includepath_map is designed to avoid.
+  include_files = tuple(
+      [includepath_map.Index(basics.SafeNormPath(f),
+                             ignore_absolute_path_warning=True)
+       for f in parse_state.include_files])
 
   # Send default system dirs?
   for isystem_dir in parse_state.before_system_dirs:
