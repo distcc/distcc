@@ -504,19 +504,12 @@ class RelpathMapToIndex(MapToIndex):
   (below) to bail out.
   """
 
-  def Index(self, relpath, ignore_absolute_path_warning=False):
+  def Index(self, relpath):
     """Return index d > 0 of relative path.
-    Args:
+    Argument:
       directory: a string not starting with /.
-      ignore_absolute_path_warning: a Boolean
-
-    The variable ignore_absolute_path_warning is set to True in order to
-    override the requirement that filepaths are relative. This is useful for the
-    compilation unit filepath and filepaths of -include's: they are permitted to
-    be absolute because the command line can still be rewritten on the server.
-    The server tweaks their location to become relative to the server root.
     """
-    if os.path.isabs(relpath) and not ignore_absolute_path_warning:
+    if os.path.isabs(relpath):
       if basics.opt_unsafe_absolute_includes:
         Debug(DEBUG_WARNING,
               "absolute filepath '%s' was IGNORED"

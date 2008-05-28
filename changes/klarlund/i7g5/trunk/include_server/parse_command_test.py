@@ -116,8 +116,7 @@ class ParseCommandUnitTest(unittest.TestCase):
 
   def test_ParseCommandArgs(self):
 
-    (quote_dirs, angle_dirs, include_files, filepath, _incl_clos_f, _d_opts,
-     send_systemdirs) = (
+    quote_dirs, angle_dirs, include_files, filepath, _incl_clos_f, _d_opts = (
       parse_command.ParseCommandArgs(
         parse_command.ParseCommandLine(
           self.mock_compiler + " -isystem system -Imice -iquote/and -I/men a.c "
@@ -127,8 +126,6 @@ class ParseCommandUnitTest(unittest.TestCase):
           os.getcwd(),
           self.includepath_map,
           self.directory_map,
-          self.realpath_map,
-          self.systemdir_prefix_cache,
           self.compiler_defaults))
 
     self.assertEqual(
@@ -149,12 +146,9 @@ class ParseCommandUnitTest(unittest.TestCase):
                       os.getcwd(),
                       self.includepath_map,
                       self.directory_map,
-                      self.realpath_map,
-                      self.systemdir_prefix_cache,
                       self.compiler_defaults)
 
-    (quote_dirs, angle_dirs, include_files, filepath, _incl_cls_file, _d_opts,
-     send_systemdirs)  = (
+    quote_dirs, angle_dirs, include_files, filepath, _incl_cls_file, _d_opts = (
       parse_command.ParseCommandArgs(parse_command.ParseCommandLine(
         "/usr/crosstool/v8/gcc-4.1.0-glibc-2.2.2/blah/gcc"
         +  " -fno-exceptions -funsigned-char -D__STDC_FORMAT_MACROS -g0"
@@ -168,8 +162,6 @@ class ParseCommandUnitTest(unittest.TestCase):
                                      os.getcwd(),
                                      self.includepath_map,
                                      self.directory_map,
-                                     self.realpath_map,
-                                     self.systemdir_prefix_cache,
                                      self.compiler_defaults))
     self.assertEqual(
       (self._RetrieveDirectoriesExceptSys(quote_dirs), 
@@ -191,14 +183,12 @@ class ParseCommandUnitTest(unittest.TestCase):
     t = time.time()
     for unused_i in range(100):
       (quote_dirs, angle_dirs, include_files, filepath,
-       _include_closure_file, _d_opts, send_systemdirs) = (
+       _include_closure_file, _d_opts) = (
           parse_command.ParseCommandArgs(
             parse_command.ParseCommandLine(whopper),
                                            os.getcwd(),
                                            self.includepath_map,
                                            self.directory_map,
-                                           self.realpath_map,
-                                           self.systemdir_prefix_cache,
                                            self.compiler_defaults))
     print "100 iterations of ParseCommandArgs takes %3.1fs" % (time.time() - t)
     return True
