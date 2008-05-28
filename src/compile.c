@@ -145,9 +145,11 @@ static int dcc_note_discrepancy(const char *discrepancy_filename)
         fclose(discrepancy_file);
         return EXIT_IO_ERROR;
     }
-    if (dcc_read_number_discrepancies(discrepancy_filename) ==
-        max_discrepancies_before_demotion) {
-        /* Give up on using distcc-pump. Print this warning just once. */
+    /* The file position is a property of the stream, so we are
+    assured that exactly one process will take the 'if' branch when
+    max_discrepancies_before_demotion failures is reached. */
+    if (ftell(discrepancy_file) == 
+        (long int)max_discrepancies_before_demotion) {
         rs_log_warning("now using plain distcc, possibly due to "
                        "inconsistent file system changes during build");
     }
