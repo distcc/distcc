@@ -418,7 +418,7 @@ StartIncludeServerAndDetermineHosts() {
               1>&2
       exit 1
     else
-      hosts=`distcc --show-hosts`
+      hosts=`$distcc_location/distcc --show-hosts`
       num_hosts=`echo "$hosts" | wc -l`
       num_pump_hosts=`echo "$hosts" | grep ',cpp' | wc -l`
       if [ $num_hosts -eq 0 ]; then
@@ -430,11 +430,15 @@ StartIncludeServerAndDetermineHosts() {
         exit 1
       else
         if [ "$verbose" = 1 ]; then
+          server_word="servers"
+          if [ $num_hosts = 1 ]; then
+            server_word="server"
+          fi
           if [ $num_hosts -eq $num_pump_hosts ]; then
-            echo "__________Using $num_hosts distcc servers in pump mode"
+            echo "__________Using $num_hosts distcc $server_word in pump mode"
           else
-            echo "__________Using $num_hosts distcc servers, of which only" \
-                 "$num_pump_hosts support pump mode"
+            echo "__________Using $num_hosts distcc $server_word, of which" \
+                 "only $num_pump_hosts support(s) pump mode"
           fi
         fi
       fi
