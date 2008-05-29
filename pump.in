@@ -319,7 +319,20 @@ StartIncludeServer() {
   fi
 }
 
+Critique() {
+  # The discrepancy_counter file is created when a pump-mode distcc invocation
+  # failed remotely but succeeded locally.
+  if [ -f $socket_dir/discrepancy_counter ]; then
+    echo -n '__________Warning: ' 1>&2
+    echo -n `cat $socket_dir/discrepancy_counter | wc -c`' '  1>&2
+    echo -n 'pump-mode compilation(s) failed on server, '  1>&2
+    echo    'but succeeded locally.' 1>&2
+    echo    '__________See pump.1 manual page.' 1>&2
+  fi
+}
+
 ShutDown() {
+  Critique
   # Always -- at exit -- shut down include_server and remove $socket_dir
   if [ -n "$include_server_pid" ] && \
     ps -p "$include_server_pid" > /dev/null; then
