@@ -45,7 +45,8 @@ class Project:
                  build_subdir=None,
                  configure_cmd=None,
                  pre_build_cmd = None,
-                 build_cmd=None):
+                 build_cmd=None,
+                 include_server_args=""):
         """Specification of a project to build.
 
         url: the url to download the file.
@@ -72,6 +73,8 @@ class Project:
            We add VAR=val arguments, so build_cmd must be a single command
            that is either a form of 'make', or takes the same style
            arguments.  Defaults to 'make'.
+        include_server_args: include server tweaks such as stat reset triggers
+           for builds that modify source files.
         """
 
         self.url = url
@@ -99,7 +102,7 @@ class Project:
         # TODO(csilvers): figure out automatically if only one TLD.
         self.unpacked_subdir = unpacked_subdir or self.name
         self.build_subdir = build_subdir
-
+        self.include_server_args = include_server_args
 
     def register(self):
         trees[self.name] = self
