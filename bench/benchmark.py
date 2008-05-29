@@ -117,6 +117,11 @@ Options:
   -n N                       repeat compilation N times
   -a, --actions=ACTIONS      comma-separated list of action phases
                              to perform
+  -f N, --force=N            If set to 0, skip download, unpack, and
+                             configure actions if they've already been
+                             successfully performed; if set to 1 (the
+                             default), only skip the download action;
+                             if set to 2, do not skip any action
 
 The C and C++ compiler versions used can be set with the --cc and --cxx
 options.
@@ -145,15 +150,16 @@ The default is to measure a few reasonable scenarios.
 def main():
     """Run the benchmark per arguments"""
     sum = Summary()
-    options, args = getopt(sys.argv[1:], 'a:c:n:',
+    options, args = getopt(sys.argv[1:], 'a:c:n:f:',
                            ['list-projects', 'actions=', 'help', 'compiler=',
-                            'cc=', 'cxx=', 'output='])
+                            'cc=', 'cxx=', 'output=', 'force='])
     opt_actions = actions.default_actions
     opt_cc = 'cc'
     opt_cxx = 'cxx'
     opt_output = None
     opt_compilers = []
     opt_repeats = 1
+    opt_force = 1
 
     for opt, optarg in options:
         if opt == '--help':
@@ -174,6 +180,8 @@ def main():
             opt_compilers.append(optarg)
         elif opt == '-n':
             opt_repeats = int(optarg)
+        elif opt == '-f' or opt == '--force':
+            opt_force = int(optarg)
 
     if opt_compilers:
         set_compilers = [compiler.parse_compiler_opt(c, cc=opt_cc, cxx=opt_cxx)
@@ -188,10 +196,20 @@ def main():
         chosen_projects = trees.values()
 
     for proj in chosen_projects:
-        proj.pre_actions(opt_actions)
+        # Ignore actions we did in a previous benchmark run, absent -f.
+        # We only run the project's pre-actions if one of the builds
+        # needs it because it hasn't successfully run 'configure' yet.
+        project_actions, _ = actions.remove_unnecessary_actions(
+                opt_actions, opt_force, proj.did_download(), 0)
+        proj.pre_actions(project_actions)
+
         for comp in set_compilers:
             build = Build(proj, comp, opt_repeats)
-            build.build_actions(opt_actions, sum)
+            _, build_actions = actions.remove_unnecessary_actions(
+                opt_actions, opt_force,
+                proj.did_download(), build.did_configure())
+
+            build.build_actions(build_actions, sum)
 
     sum.print_table()
     # If --output was specified, print the table to the output-file too

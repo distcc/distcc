@@ -64,6 +64,48 @@ class CompilerSpec:
         self.name = name or (self.pump_cmd + self.cc + "__" +
                              self.make_opts).replace(' ', '_')
 
+    def prepare_shell_script_farm(self, farm_dir, masquerade):
+        """Prepare farm directory for masquerading.
+
+        Assume the compiler is not local. Each standard name, such as
+        'cc', is used for form a shell script, named 'cc', that
+        contains the line 'distcc /my/path/gcc "$@"', where
+        '/my/path/gcc' is the value of the compiler.gcc field.
+
+        If the compiler is local, then the same procedure is followed
+        except that 'distcc' is omitted from the command line.
+        """
+        assert os.path.isdir(farm_dir)
+        assert os.path.isabs(farm_dir)
+
+        def make_shell_script(name, compiler_path, where):
+            fd = open(os.path.join(farm_dir, name), 'w')
+            fd.write('#!/bin/sh\n%s%s "$@"'
+                     % (where != 'local' and 'distcc ' or '',
+                        compiler_path))
+            fd.close()
+            os.chmod(os.path.join(farm_dir, name),
+                     stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
+
+        for generic_name in STANDARD_CC_NAMES:
+            make_shell_script(generic_name, self.real_cc, self.where)
+
+        for generic_name in STANDARD_CXX_NAMES:
+            make_shell_script(generic_name, self.real_cxx, self.where)
+
+        # Make shell wrapper to help manual debugging.
+        fd = open(masquerade, 'w')
+        fd.write("""\
+#!/bin/sh
+# Execute $@, but force 'cc' and 'cxx'" to be those in the farm of
+# masquerading scripts.  Each script in turn executes 'distcc' with the actual
+# compiler specified with the benchmark.py command.
+PATH=%s:"$PATH" "$@"
+""" % farm_dir)
+        fd.close()
+        os.chmod(masquerade,
+                 stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
+
 
 def default_compilers(cc, cxx):
     return [parse_compiler_opt('local,h1,j1', cc, cxx),
@@ -141,42 +183,4 @@ def parse_compiler_opt(optarg, cc, cxx):
 
 
 def prepare_shell_script_farm(compiler, farm_dir, masquerade):
-    """Prepare farm directory for masquerading.
-
-    Assume the compiler is not local. Each standard name, such as 'cc', is
-    used for form a shell script, named 'cc', that contains the line 'distcc
-    /my/path/gcc "$@"', where '/my/path/gcc' is the value of the compiler.gcc
-    field.
-
-    If the compiler is local, then the same procedure is followed except that
-    'distcc' is omitted from the command line.
-    """
-    assert os.path.isdir(farm_dir)
-    assert os.path.isabs(farm_dir)
-
-    def make_shell_script(name, compiler_path, where):
-        fd = open(os.path.join(farm_dir, name), 'w')
-        fd.write('#!/bin/sh\n%s%s "$@"'
-                 % (where != 'local' and 'distcc ' or '',
-                    compiler_path))
-        fd.close()
-        os.chmod(os.path.join(farm_dir, name),
-                 stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
-
-    for generic_name in STANDARD_CC_NAMES:
-        make_shell_script(generic_name, compiler.real_cc, compiler.where)
-
-    for generic_name in STANDARD_CXX_NAMES:
-        make_shell_script(generic_name, compiler.real_cxx, compiler.where)
-
-    # Make shell wrapper to help manual debugging.
-    fd = open(masquerade, 'w')
-    fd.write("""#!/bin/sh
-# Execute $@, but force 'cc' and 'cxx'" to be those in the farm of
-# masquerading scripts.  Each script in turn executes 'distcc' with the actual
-# compiler specified with the benchmark.py command.
-PATH=%s:"$PATH" "$@"\n"""
-             % farm_dir)
-    fd.close()
-    os.chmod(masquerade,
-             stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
+    compiler.prepare_shell_script_farm(farm_dir, masquerade)

@@ -29,6 +29,10 @@ all_actions = [('download', True, ''),
                ('clean', True, 'run "make clean" or equivalent'),
                ('scrub', False, 'remove build directory')]
 
+# Actions done on a per-project (rather than a per-build) basis
+project_actions = ('download', 'md5check')
+
+
 
 def action_help():
     print "Actions:"
@@ -43,10 +47,35 @@ default_actions = [a[0] for a in all_actions if a[1]]
 
 
 def parse_opt_actions(optarg):
-    import sys
     opt_actions = optarg.split(',')
     action_names = [a[0] for a in all_actions]
     for oa in opt_actions:
         if oa not in action_names:
             raise ValueError, ("no such action: %s" % `oa`)
     return opt_actions
+
+
+def remove_unnecessary_actions(opt_actions, force, did_download, did_configure):
+    """Given a list of actions (as a string), and a force value
+    (as described in the help text for benchmark.py), and a
+    bool indicating whether 'configure' was successfully run
+    for this build or not, return a new list which is the actions
+    to actually perform for this build.
+
+    Returns two lists: one that can be done on a per-project basis,
+    and one that has to be done on a per-build basis (as we build the
+    project with various different flags).
+    """
+
+    if force == 0 and did_configure and did_download:
+        remove = ('download', 'md5check', 'sweep', 'unpack', 'configure')
+    elif force <= 1 and did_download:
+        remove = ('download', )
+    else:
+        remove = ()
+
+    new_project_actions = [oa for oa in opt_actions
+                           if oa in project_actions and oa not in remove]
+    new_build_actions = [oa for oa in opt_actions
+                         if oa not in project_actions and oa not in remove]
+    return new_project_actions, new_build_actions

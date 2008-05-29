@@ -54,35 +54,31 @@ class Build:
             self.build_dir = self.unpacked_dir
 
         self.log_dir = self.build_dir
-        self.old_path = None
+        self.configure_done = os.path.join(self.log_dir, "bench-configure.done")
 
     def __repr__(self):
         return "Build(%s, %s)" % (`self.project`, `self.compiler`)
 
-    def make_script_farm_augment_path(self):
-        """Initialize shell script farm and augment PATH.
+    def _run_cmd_with_redirect_farm(self, cmd):
+        """Initialize shell script farm for given compiler,
+        augment PATH, and run cmd.
 
-        A shell script farm is a set of scripts for dispatching a chosen
-        compiler using distcc. For example, the 'cc' script may contain the one
-        line:
-
+        A shell script farm is a set of scripts for dispatching a
+        chosen compiler using distcc. For example, the 'cc' script may
+        contain the one line:
           dist /usr/mine/gcc "$@"
-
         """
-        self.farm_dir = os.path.join(self.build_dir, 'build-cc-script-farm')
-        make_dir(self.farm_dir)
-        print ("""** Creating masquerading shell scripts in '%s'""" %
-               self.farm_dir)
+        farm_dir = os.path.join(self.build_dir, 'build-cc-script-farm')
+        make_dir(farm_dir)
+        print ("** Creating masquerading shell scripts in '%s'" % farm_dir)
         masquerade = os.path.join(self.build_dir, 'masquerade')
-        prepare_shell_script_farm(self.compiler, self.farm_dir, masquerade)
-        self.old_path = os.environ['PATH'] 
-        os.environ['PATH'] = self.farm_dir + ":" + self.old_path
-
-    def restore_path(self):
-        """Restore effect of constructor: reset PATH."""
-        if self.old_path:
-            os.environ['PATH'] = self.old_path
-            self.old_path = None
+        prepare_shell_script_farm(self.compiler, farm_dir, masquerade)
+        old_path = os.environ['PATH'] 
+        try:
+            os.environ['PATH'] = farm_dir + ":" + old_path
+            return run_cmd(cmd)
+        finally:
+            os.environ['PATH'] = old_path
 
     def unpack(self):
         """Unpack from source tarball into build directory"""
@@ -100,29 +96,35 @@ class Build:
         run_cmd("cd %s && %s" % (self.base_dir, tar_cmd))
 
 
-    def configure(self, compiler):
+    def configure(self):
         """Run configuration command for this tree, if any."""
-        self.compiler = compiler
-
         make_dir(self.log_dir)
 
         configure_log = os.path.join(self.log_dir, "bench-configure.log")
         distcc_log = os.path.join(self.log_dir, "bench-configure-distcc.log")
 
-        rm_files((configure_log, distcc_log))
+        rm_files((configure_log, distcc_log, self.configure_done))
 
         make_dir(self.build_dir)
         print "** Configuring..."
-        try:
-            self.make_script_farm_augment_path()
-            run_cmd("cd %s && \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' \\\n%s \\\n>%s 2>&1" %
-                    (self.build_dir, distcc_log, self.compiler.cc,
-                     self.compiler.cxx,
-                     self.project.configure_cmd, configure_log))
-        finally:
-            self.restore_path()
+        cmd = ("cd %s && \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' \\\n%s \\\n>%s 2>&1"
+               % (self.build_dir, distcc_log,
+                  self.compiler.cc, self.compiler.cxx,
+                  self.project.configure_cmd, configure_log))
+        self._run_cmd_with_redirect_farm(cmd)
 
-    def build(self, sum):
+        # Touch a file if the configure was successfully done, so we know.
+        open(self.configure_done, 'w').close()
+
+
+    def did_configure(self):
+        """Returns true if configure was successfully run for this
+        build in the past.
+        """
+        return os.path.isfile(self.configure_done)
+
+
+    def build(self):
         """Actually build the package."""
 
         build_log = os.path.join(self.log_dir, "bench-build.log")
@@ -135,15 +137,10 @@ class Build:
         make_dir(self.build_dir)
         print "** Building..."
         if self.project.pre_build_cmd:
-            try:
-                self.make_script_farm_augment_path()
-
-                cmd = ("cd %s && %s > %s 2>&1" % (self.build_dir,
-                                                  self.project.pre_build_cmd,
-                                                  prebuild_log))
-                run_cmd(cmd)
-            finally:
-                self.restore_path()
+            cmd = ("cd %s && %s > %s 2>&1" % (self.build_dir,
+                                              self.project.pre_build_cmd,
+                                              prebuild_log))
+            self._run_cmd_with_redirect_farm(cmd)
 
         distcc_hosts = buildutil.tweak_hosts(os.getenv("DISTCC_HOSTS"),
                                              self.compiler.num_hosts,
@@ -163,11 +160,7 @@ class Build:
                 self.compiler.cxx,
                 self.compiler.make_opts,
                 build_log))
-        try:
-            self.make_script_farm_augment_path()
-            result, elapsed = run_cmd(cmd)
-        finally:
-            self.restore_path()
+        _, elapsed = self._run_cmd_with_redirect_farm(cmd)
         return elapsed
 
 
@@ -176,14 +169,11 @@ class Build:
         make_dir(self.build_dir)
         print "** Cleaning build directory"
         cmd = "cd %s && make clean >%s 2>&1" % (self.build_dir, clean_log)
-        try:
-            self.make_script_farm_augment_path()
-            run_cmd(cmd)
-        finally:
-            self.restore_path()
+        self._run_cmd_with_redirect_farm(cmd)
 
     def scrub(self):
         print "** Removing build directory"
+        rm_files((self.configure_done, ))
         run_cmd("rm -rf %s" % self.unpacked_dir)
 
 
@@ -198,10 +188,14 @@ class Build:
             if 'unpack' in actions:
                 self.unpack()
             if 'configure' in actions:
-                self.configure(self.compiler)
+                self.configure()
+            # This is a safety measure, in case a previous benchmark
+            # run left the build in an incomplete state.
+            if 'clean' in actions:
+                self.clean()
             for i in range(self.n_repeats):
                 if 'build' in actions:
-                    times.append(self.build(summary))
+                    times.append(self.build())
                 if 'clean' in actions:
                     self.clean()
             if 'scrub' in actions:

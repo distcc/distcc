@@ -112,11 +112,8 @@ class Project:
         return "Project(name=%s)" % `self.name`
 
 
-    def download(self, force=0):
-        """Download package from vendor site.
-
-        If force is 1, download even if the file already exists.
-        """
+    def download(self):
+        """Download package from vendor site."""
 
         make_dir(self.package_dir)
         make_dir(self.download_dir)
@@ -131,6 +128,9 @@ class Project:
             run_cmd("mv %s %s" %
                     (os.path.join(self.download_dir, self.package_file),
                      self.package_dir))
+
+    def did_download(self):
+        return os.path.exists(os.path.join(self.package_dir, self.package_file))
 
     def md5check(self):
         if self.md5:
