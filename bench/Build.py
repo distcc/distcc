@@ -186,7 +186,7 @@ class Build:
         cmd = ("cd %s && \\\n"
                "(time -p \\\n"
                "DISTCC_HOSTS='%s' \\\n"
-               "INCLUDE_SERVER_ARGS='-t %s' \\\n"
+               "INCLUDE_SERVER_ARGS='-t --unsafe_absolute_includes %s' \\\n"
                "%s%s \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' "
                "\\\n%s)"
                "\\\n>%s 2>&1; wait"
