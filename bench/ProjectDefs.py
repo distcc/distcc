@@ -73,6 +73,7 @@ Project(url='http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2',
         md5='db95a49a656a3247d4995a797d333153 *linux-2.6.25.tar.bz2',
         configure_cmd="make V=1 HOSTCC='$(CC)' defconfig",
         build_cmd="make V=1 HOSTCC='$(CC)' bzImage",
+        include_server_args='--stat_reset_triggers=include/linux/compile.h:include/asm/asm-offsets.h'
         ).register()
 
 Project(url='http://sources-redhat.oc1.mirrors.redwire.net/gdb/old-releases/gdb-5.3.tar.gz',

@@ -150,10 +150,12 @@ class Build:
                                              self.compiler.host_opts)
         cmd = ("cd %s && \\\n"
                "DISTCC_HOSTS='%s' \\\n"
+               "INCLUDE_SERVER_ARGS='-t %s' \\\n"
                "%s%s \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' "
                "\\\n%s \\\n>%s 2>&1" %
                (self.build_dir,
                 distcc_hosts,
+                self.project.include_server_args,
                 self.compiler.pump_cmd,
                 self.project.build_cmd,
                 distcc_log,
