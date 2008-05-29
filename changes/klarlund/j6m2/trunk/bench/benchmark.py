@@ -150,7 +150,7 @@ def main():
                             'cc=', 'cxx=', 'output='])
     opt_actions = actions.default_actions
     opt_cc = 'cc'
-    opt_cxx = 'c++'
+    opt_cxx = 'cxx'
     opt_output = None
     opt_compilers = []
     opt_repeats = 1
