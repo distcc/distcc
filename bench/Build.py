@@ -25,6 +25,19 @@ import buildutil
 from buildutil import make_dir, run_cmd, rm_files
 import re, os, sys, time
 
+# For parsing output of 'time -p'.
+RE_TIME = re.compile(r"""^real \s* (\d*\.\d*)\n
+                          user \s* (\d*\.\d*)\n
+                          sys  \s* (\d*\.\d*)""",
+                     re.VERBOSE | re.MULTILINE)
+
+class TimeInfo:
+   """A record of real, system, and user time."""
+   def __init__(self, real=None, system=None, user=None, include_server=None):
+      self.real = real
+      self.system = system
+      self.user = user
+      self.include_server = include_server
 
 
 class Build:
@@ -112,17 +125,39 @@ class Build:
                   self.compiler.cc, self.compiler.cxx,
                   self.project.configure_cmd, configure_log))
         self._run_cmd_with_redirect_farm(cmd)
-
         # Touch a file if the configure was successfully done, so we know.
         open(self.configure_done, 'w').close()
 
+    @staticmethod
+    def _extract_time_info(log_file_name):
+	"""Open log file and look for output of 'time -p' and include server 
+	time."""
+	log_file = open(log_file_name, 'r')
+	text = log_file.read()
+	log_file.close()
+
+	match = RE_TIME.search(text)
+	if not match:
+	    sys.exit('Could not locate time information in log %s.'
+		     % log_file_name)
+	time_info = TimeInfo(float(match.group(1)),
+			     float(match.group(2)),
+			     float(match.group(3)))
+	# Now locate include server cpu time if present.
+	lines = text.splitlines()
+	for line in lines:
+	   if line.startswith('Include server timing.  '):
+	      is_time = float(
+		 line[len('Include server timing.  '):].split()[9][:-1])
+	      time_info.include_server = is_time
+	      break
+	return time_info
 
     def did_configure(self):
         """Returns true if configure was successfully run for this
         build in the past.
         """
         return os.path.isfile(self.configure_done)
-
 
     def build(self):
         """Actually build the package."""
@@ -141,15 +176,21 @@ class Build:
                                               self.project.pre_build_cmd,
                                               prebuild_log))
             self._run_cmd_with_redirect_farm(cmd)
-
         distcc_hosts = buildutil.tweak_hosts(os.getenv("DISTCC_HOSTS"),
                                              self.compiler.num_hosts,
                                              self.compiler.host_opts)
+        # We use built-in 'time' to measure real, system, and user time.  To
+        # allow its stderr to be grabbed, the time command is executed in a
+        # subshell.  The wait statement is necessary for the include server
+        # to report its timing info.
         cmd = ("cd %s && \\\n"
+               "(time -p \\\n"
                "DISTCC_HOSTS='%s' \\\n"
                "INCLUDE_SERVER_ARGS='-t %s' \\\n"
                "%s%s \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' "
-               "\\\n%s \\\n>%s 2>&1" %
+               "\\\n%s)"
+               "\\\n>%s 2>&1; wait"
+               %
                (self.build_dir,
                 distcc_hosts,
                 self.project.include_server_args,
@@ -160,9 +201,8 @@ class Build:
                 self.compiler.cxx,
                 self.compiler.make_opts,
                 build_log))
-        _, elapsed = self._run_cmd_with_redirect_farm(cmd)
-        return elapsed
-
+        result, unused_elapsed = self._run_cmd_with_redirect_farm(cmd)
+        return (result, Build._extract_time_info(build_log))
 
     def clean(self):
         clean_log = os.path.join(self.log_dir, "bench-clean.log")
@@ -182,7 +222,9 @@ class Build:
 
         Catch exceptions and handle."""
         try:
-            times = []
+            # The time_info_accumulator is normally a list.  But if something
+            # goes wrong, it will contain a short string indicating the problem.
+            time_info_accumulator = []
             if 'sweep' in actions:
                 self.scrub()
             if 'unpack' in actions:
@@ -195,14 +237,18 @@ class Build:
                 self.clean()
             for i in range(self.n_repeats):
                 if 'build' in actions:
-                    times.append(self.build())
+                    (result, time_info) = self.build()
+                    if result:  # that is, if result is bad!
+                       time_info_accumulator = 'NON-ZERO STATUS'
+                    elif isinstance(time_info_accumulator, list):
+                       time_info_accumulator.append(time_info)
                 if 'clean' in actions:
                     self.clean()
             if 'scrub' in actions:
                 self.scrub()
-            summary.store(self.project, self.compiler, times)
+            summary.store(self.project, self.compiler, time_info_accumulator)
         except KeyboardInterrupt:
             raise
         except:
             apply(sys.excepthook, sys.exc_info()) # print traceback
-            summary.store(self.project, self.compiler, 'FAIL')
+            summary.store(self.project, self.compiler, 'FAIL WITH EXCEPTION')
