@@ -610,7 +610,7 @@ int main(char **argv) {};
                     glob_result = glob.glob(dep_glob)
                     dotd_result.extend(glob_result)
 
-            ret = comfychair.runtest(TempCompile_Case, 0, subtest=True)
+            ret = comfychair.runtest(TempCompile_Case, 0, subtest=1)
             if ret:
                 raise AssertionError(
                     "Case (args:%s, dep_glob:%s, how_many:%s, target:%s)"

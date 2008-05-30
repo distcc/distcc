@@ -97,21 +97,21 @@ class TestCase:
         """Queue a cleanup to be run when the test is complete."""
         self._cleanups.append(c)
         
-    def cleanups(self, ret, debugger):
+    def apply_cleanups(self, debugger):
         """Apply cleanup functions and return error code.
 
-        Normally return ret, but if a KeyboardInterrupt or
+        Normally return 0, but if a KeyboardInterrupt or
         and exception occur, then return 2 or 1, respectively.
         """
         while self._cleanups:
             try:
                 apply(self._cleanups.pop())
             except KeyboardInterrupt:
-                print "interrupted during teardown"
+                print "interrupted during cleanups"
                 _report_error(self, debugger)
                 return 2
             except:
-                print "error during teardown"
+                print "error during cleanups"
                 _report_error(self, debugger)
                 return 1
         return ret
@@ -317,8 +317,8 @@ def _report_error(case, debugger):
         debugger(tb)
 
 
-def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=False):
-    """Instantiate test class and run it.
+def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
+    """Instantiate test class, run it, and catch and report exceptions.
 
     Inputs:
        testcase_class  a class derived from TestCase
@@ -331,8 +331,8 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=False):
     Raises:
       KeyboardInterrupt
 
-    If subtest is True, then the ordinarily no information about the
-    test is printed.  
+    If subtest is true, then the ordinary information about the
+    test progress is not printed.  
     """
     if not subtest:
         print "%-30s" % _test_name(testcase_class),
@@ -368,7 +368,7 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=False):
             return 1
     finally:
         if obj:
-            ret = obj.cleanups(ret, debugger)
+            obj.apply_cleanups(ret, debugger) or ret
     # Display log file if we're verbose
     if ret == 0 and verbose:
         obj.explain_failure()
