@@ -114,7 +114,7 @@ class TestCase:
                 print "error during cleanups"
                 _report_error(self, debugger)
                 return 1
-        return ret
+        return 0
 
     def fail(self, reason = ""):
         """Say the test failed."""
