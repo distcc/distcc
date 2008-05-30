@@ -368,7 +368,7 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
             return 1
     finally:
         if obj:
-            obj.apply_cleanups(ret, debugger) or ret
+            obj.apply_cleanups(debugger) or ret
     # Display log file if we're verbose
     if ret == 0 and verbose:
         obj.explain_failure()
