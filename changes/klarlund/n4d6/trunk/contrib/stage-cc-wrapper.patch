@@ -1,0 +1,81 @@
+Index: Makefile.in
+===================================================================
+RCS file: /cvs/gcc/egcs/Makefile.in,v
+retrieving revision 1.110
+diff -u -p -r1.110 Makefile.in
+--- Makefile.in 8 Jul 2002 21:40:41 -0000 1.110
++++ Makefile.in 14 Aug 2002 02:49:35 -0000
+@@ -251,7 +251,7 @@ GCJ_FOR_TARGET =
+ # variable is passed down to the gcc Makefile, where it is used to
+ # build libgcc2.a.  We define it here so that it can itself be
+ # overridden on the command line.
+-GCC_FOR_TARGET = $$r/gcc/xgcc -B$$r/gcc/ $(FLAGS_FOR_TARGET)
++GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) $$r/gcc/xgcc -B$$r/gcc/ $(FLAGS_FOR_TARGET)
+ 
+ AS_FOR_TARGET = ` \
+   if [ -f $$r/gas/as-new ] ; then \
+Index: configure.in
+===================================================================
+RCS file: /cvs/gcc/egcs/configure.in,v
+retrieving revision 1.176
+diff -u -p -r1.176 configure.in
+--- configure.in 6 Aug 2002 09:26:29 -0000 1.176
++++ configure.in 14 Aug 2002 02:49:38 -0000
+@@ -1554,10 +1554,10 @@ cat >$sedtemp <<EOF
+ s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:
+ s%^TARGET_CONFIGARGS[ 	]*=.*$%TARGET_CONFIGARGS = ${targargs}%
+ s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%
+-s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = ${CC_FOR_TARGET}%
+-s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = ${GCJ_FOR_TARGET}%
+-s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${qCXX_FOR_TARGET}%
+-s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = ${qqCXX_FOR_TARGET}%
++s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = \$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}%
++s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = \$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}%
++s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = \$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}%
++s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = \$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}%
+ s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%
+ s%^BUILD_SUBDIR[ 	]*=.*$%BUILD_SUBDIR = ${build_subdir}%
+ s%^BUILD_CONFIGARGS[ 	]*=.*$%BUILD_CONFIGARGS = ${buildargs}%
+Index: gcc/Makefile.in
+===================================================================
+RCS file: /cvs/gcc/egcs/gcc/Makefile.in,v
+retrieving revision 1.933
+diff -u -p -r1.933 Makefile.in
+--- gcc/Makefile.in 13 Aug 2002 23:11:37 -0000 1.933
++++ gcc/Makefile.in 14 Aug 2002 02:49:43 -0000
+@@ -175,7 +175,7 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(s
+ # The GCC to use for compiling libgcc.a and crt*.o.
+ # Usually the one we just built.
+ # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
+-GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include
++GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include
+ 
+ # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
+ # It omits XCFLAGS, and specifies -B./.
+@@ -3330,7 +3330,7 @@ stage1_copy: stage1_build
+ 	echo stage2_build > stage_last
+ 
+ stage2_build: stage1_copy
+-	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
++	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
+ 		 STAGE_PREFIX=stage1/ \
+ 		 $(STAGE2_FLAGS_TO_PASS)
+ 	$(STAMP) stage2_build
+@@ -3342,7 +3342,7 @@ stage2_copy: stage2_build
+ 	echo stage3_build > stage_last
+ 
+ stage3_build: stage2_copy
+-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
++	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
+ 		 STAGE_PREFIX=stage2/ \
+ 		 $(STAGE2_FLAGS_TO_PASS)
+ 	$(STAMP) stage3_build
+@@ -3355,7 +3355,7 @@ stage3_copy: stage3_build
+ 	echo stage4_build > stage_last
+ 
+ stage4_build: stage3_copy
+-	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" \
++	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" \
+ 		 STAGE_PREFIX=stage3/ \
+ 		 $(STAGE2_FLAGS_TO_PASS)
+ 	$(STAMP) stage4_build
