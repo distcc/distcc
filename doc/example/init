@@ -2,7 +2,7 @@
 #
 # chkconfig: - 60 20
 # description: The distcc deamon
-#              http://distcc.samba.org
+#              http://code.google.com/p/distcc/
 #
 # processname: distccd
 

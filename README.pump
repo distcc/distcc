@@ -38,7 +38,7 @@ server. The distcc server unpacks these files in the
 The server also rewrites include options, such as -I's, to reflect the
 new locations of the files on the server. The .d and the .o files are
 both rewritten as necessary to refer to client-side filenames and 
-returned to the distcc-pump client.
+returned to the pump-mode client.
 
 Pump mode is able to distribute compilations up to 10X faster than
 plain distcc. But because building also involves linking and perhaps
@@ -47,6 +47,6 @@ variable.
 
 The pump mode was developed to be used with large clusters of distcc
 servers, providing hundreds of CPUs. With versions of gcc >= 4.1.1,
-the distcc-pump will probably not show major performance gains using
+pump mode will probably not show major performance gains using
 clusters of less than ten CPUs. The preprocessor running on the
 workstation is fast enough to keep that many machines busy.
