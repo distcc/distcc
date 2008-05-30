@@ -374,6 +374,7 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
         obj.explain_failure()
     return ret
 
+
 def runtests(test_list, verbose = 0, debugger = None):
     """Run a series of tests.
 
