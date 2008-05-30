@@ -81,6 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 %config %{_sysconfdir}/distcc/hosts
 %doc %{_mandir}/man1/distcc.1.gz
 %doc %{_mandir}/man1/distccmon-text.1.gz
+%doc %{_mandir}/man1/pump.1.gz
 %doc %{_docdir}
 
 
