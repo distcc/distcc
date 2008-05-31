@@ -610,18 +610,11 @@ int main(char **argv) {};
                     glob_result = glob.glob(dep_glob)
                     dotd_result.extend(glob_result)
 
-            # We explicit call setup(), runtest(), and teardown() to run the
-            # test, rather than just comfychair.runtests([TempCompile_Case]),
-            # because we don't want to see 10 test results for
-            # 'TempCompile_Case' in the output; we just want a single
-            # output line for 'DotD_Case'.
-            case = TempCompile_Case()
-            case.setup()
-            try:
-              case.runtest()
-            finally:
-              case.teardown()
-
+            ret = comfychair.runtest(TempCompile_Case, 0, subtest=1)
+            if ret:
+                raise AssertionError(
+                    "Case (args:%s, dep_glob:%s, how_many:%s, target:%s)"
+                    %  (args, dep_glob, how_many, target))
             self.assert_equal(len(dotd_result), how_many)
             if how_many == 1:
                 expected_dep_file = dotd_result[0]
