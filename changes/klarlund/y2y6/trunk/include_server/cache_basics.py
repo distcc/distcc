@@ -670,7 +670,7 @@ class BuildStatCache(object):
         cache_exists and "existed" or "did not exist"))
 
   def WarnAboutPathObservations(self, translation_unit):
-    """Warn about new path observations.
+    """Print new paths found according to path observation expression option.
 
     Args:
       translation_unit: a string embedded in warning
