@@ -30,7 +30,6 @@ import getopt
 import glob
 import os
 import re
-import shlex
 import shutil
 import signal
 import SocketServer
@@ -505,8 +504,7 @@ def _ParseCommandLineOptions():
       if opt in ("--email_bound",):
         basics.opt_email_bound = int(arg)
       if opt in ("--path_observation_re",):
-        quote_massaged_arg = shlex.split(arg)[0]
-        basics.opt_path_observation_re = re.compile(quote_massaged_arg)
+        basics.opt_path_observation_re = re.compile(arg)
       if opt in ("--stat_reset_triggers",):
         basics.opt_stat_reset_triggers = (
           dict([ (glob_expr,
