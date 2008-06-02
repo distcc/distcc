@@ -1,0 +1,17 @@
+# default: off
+# description: Distccd - distributed compilation front-end (xinetd)	\
+#		Please disable the daemon if you enable this.		\
+#		WARNING: Don't enable on untrusted networks
+service distccd
+{
+	disable         = yes
+	socket_type     = stream        
+	protocol        = tcp
+	port            = 3632
+	type		= UNLISTED
+	wait            = no
+	user            = distcc
+	server          = /usr/bin/distccd
+	server_args     = --inetd --log-file="/var/log/distccd.log"
+	only_from	= 127.0.0.1
+}
