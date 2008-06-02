@@ -639,7 +639,7 @@ class BuildStatCache(object):
     self.includepath_map = includepath_map
     self.directory_map = directory_map
     self.realpath_map = realpath_map
-    self.bad_realpath_tuples = []
+    self.path_observations = []
 
   def _Verify(self, currdir_idx, searchdir_idx, includepath_idx):
     """Verify that the cached result is the same as obtained by stat call.
@@ -669,21 +669,18 @@ class BuildStatCache(object):
         really_exists and "exists" or "does not exist",
         cache_exists and "existed" or "did not exist"))
 
-  def GetAndClearBadResolutions(self):
-    """Return descriptions of resolutions matching realpath warning regexp.
-    Returns:
-      a list of tuples of the form
-        (include_path, resolved_path, real_path)
-      where include_path is the argument of an #include (or an initial file),
-      resolved_path is the concatenation of the searchdir where the
-      include_path is found with this include_path, and real_path is the 
-      realpath of this location (relative to the current directory).
-    The list is reset to [] with this operation. Thus the items returned are
-    those that occcurred since the last time this method was invoked.
+  def WarnAboutPathObservations(self, translation_unit):
+    """Print new paths found according to path observation expression option.
+
+    Args:
+      translation_unit: a string embedded in warning
     """
-    bad_realpath_tuples = self.bad_realpath_tuples
-    self.bad_realpath_tuples = []
-    return bad_realpath_tuples
+    for (includepath, relpath, realpath) in self.path_observations:
+      Debug(DEBUG_WARNING,
+            "For translation unit '%s',"
+            " lookup of file '%s' resolved to '%s' whose realpath is '%s'.",
+             translation_unit, includepath, relpath, realpath)
+    self.path_observations = []
 
   def Resolve(self, includepath_idx, currdir_idx, searchdir_idx,
               searchlist_idxs):
@@ -786,12 +783,11 @@ class BuildStatCache(object):
           realpath_idx = searchdir_realpaths[sl_idx] = (
             self.realpath_map.Index(rpath))
           # This is the place to catch errant files according to user defined
-          # abspath_warning option. See documentation for method
-          # GetAndClearBadResolutions.
-          if basics.opt_realpath_warning_re:
+          # regular expression path_observation_re.
+          if basics.opt_path_observation_re:
             realpath = self.realpath_map.string[realpath_idx]
-            if basics.opt_realpath_warning_re.search(realpath):
-              self.bad_realpath_tuples.append((includepath, relpath, realpath))
+            if basics.opt_path_observation_re.search(realpath):
+              self.path_observations.append((includepath, relpath, realpath))
           return ((sl_idx, includepath_idx), realpath_idx)
         else:
           searchdir_stats[sl_idx] = False

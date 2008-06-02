@@ -275,15 +275,22 @@ StartIncludeServer() {
     esac
 
     if [ -z "$PYTHONOPTIMIZE" ]; then PYTHONOPTIMIZE=1; fi
+    # We use 'eval' so that INCLUDE_SERVER_ARGS can use shell quoting such 
+    # as in:
+    #
+    #   INCLUDE_SERVER_ARGS='--stat_reset_triggers="*"'
+    #
+    # which will pass '*' to the include server (that is, the string consisting
+    # of one asterisk) without filename expansion.
     PYTHONOPTIMIZE=$PYTHONOPTIMIZE \
     PYTHONPATH="$pythonpath::$PYTHONPATH" \
-    $PYTHON                          \
-        "$include_server"            \
-        --port "$socket"             \
-        --pid_file "$tmp_pid_file"   \
-        --email                      \
-        --email_bound=5              \
-        -d1                          \
+    eval "'$PYTHON'"                   \
+        "'$include_server'"            \
+        --port "'$socket'"             \
+        --pid_file "'$tmp_pid_file'"   \
+        --email                        \
+        --email_bound=5                \
+        -d1                            \
         $INCLUDE_SERVER_ARGS
   )
 

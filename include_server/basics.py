@@ -203,7 +203,7 @@ opt_debug_pattern = 1  # see DEBUG below
 opt_email_bound = MAX_EMAILS_TO_SEND
 opt_exact_analysis = False         # use CPP instead of include analyzer
 opt_print_times = False
-opt_realpath_warning_re = None
+opt_path_observation_re = None
 opt_send_email = False
 opt_simple_algorithm = False
 opt_stat_reset_triggers = {}
@@ -224,13 +224,6 @@ def Stamp(path):
     return (st_inf.st_mtime, st_inf.st_ino, st_inf.st_dev)
   except OSError:
     return None
-
-
-# REALPATH WARNINGS
-
-BAD_REALPATH_WARNING_MSG = (
-    """For translation unit '%s' while processing '%s': lookup of file '%s' """
-    """resolved to '%s' whose realpath is '%s'.""")
 
 
 # LANGUAGES AND FILE EXTENSIONS
