@@ -63,7 +63,7 @@ NotCoveredTimeOutError = basics.NotCoveredTimeOutError
 def Usage():
   print """Usage:
 
-include_server --port INCLUDE_SERVER_PORT [options]
+include_server --port INCLUDE_SERVER_PORT [OPTIONS]
 
 where INCLUDE_SERVER_PORT is a socket name. Fork the include server
 for incremental include analysis. The include server answers queries
@@ -71,7 +71,7 @@ from the distcc client about which files to include in a C/C++
 compilation. This command itself terminates as soon as the include
 server has been spawned.
 
-Options:
+OPTIONS:
  --pid_file FILEPATH         The pid of the include server is written to file
                              FILEPATH.
                              

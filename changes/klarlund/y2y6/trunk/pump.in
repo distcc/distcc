@@ -284,13 +284,13 @@ StartIncludeServer() {
     # of one asterisk) without filename expansion.
     PYTHONOPTIMIZE=$PYTHONOPTIMIZE \
     PYTHONPATH="$pythonpath::$PYTHONPATH" \
-    eval $PYTHON                        \
-        "\"$include_server\""           \
-        --port "\"$socket\""            \
-        --pid_file "\"$tmp_pid_file\""  \
-        --email                         \
-        --email_bound=5                 \
-        -d1                             \
+    eval "'$PYTHON'"                   \
+        "'$include_server'"            \
+        --port "'$socket'"             \
+        --pid_file "'$tmp_pid_file'"   \
+        --email                        \
+        --email_bound=5                \
+        -d1                            \
         $INCLUDE_SERVER_ARGS
   )
 
