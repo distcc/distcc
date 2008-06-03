@@ -3,12 +3,13 @@
 include_server.py \- conservative approximation of include dependencies for C/C++
 .SH "SYNOPSIS"
 .B include_server
-.I  --port INCLUDE_SERVER_PORT [OPTIONS]
+--port
+.I INCLUDE_SERVER_PORT [OPTIONS]
 .SH "DESCRIPTION"
 .P 
 include_server.py starts an include server process.  This process answers
 queries from 
-.distcc(1)
+\fBdistcc\fR(1)
 clients about what files to include in C/C++ compilations. The include_server.py
 command itself terminates as soon as the include server has been spawned.
 .PP
@@ -150,7 +151,7 @@ changed, the include server clears its caches; the new version of the file (or
 the lack of it) renders the include analysis invalid.
 
 .TP
-.B Warning: For translation unit ..., lookup of file ... resolved to ... whose realpathis ...
+.B Warning: For translation unit ..., lookup of file ... resolved to ... whose realpath is ...
 This warning occurs with --path_observation_re when a new realpath matching
 a source or header file is observed.
  
@@ -186,14 +187,14 @@ trick.h file has not yet been generated and the inclusion is actually ignored
 because of preprocessing directives. The include server will probe for the
 existence of trick.h, because it overapproximates all possible ways directives
 actually evaluate. The file trick.h is determined not to exist. If it is later
-generated, and then really included, then the include server will false believe
+generated, and then really included, then the include server will falsely believe
 that the file still does not exist.
 
 .TP
-The include server was started with '--unsafe_absolute_includes'.  
-This is a problem if there are
-header files locally that do no exist remotely and that are actually used (which
-means that conditional directives evaluate to actually include the files).
+The include server was started with '--unsafe_absolute_includes'.  This is a
+problem if there are header files locally that do not exist remotely and that
+are actually used (which means that conditional directives evaluate to actually
+include the files).
 
 .TP
 The include server has calculated the wrong includes. 
@@ -220,7 +221,7 @@ in the documentation directory for information on how to report it.
 
 .PP
 In distcc-pump mode, the include server is unable to handle certain very
-complicated computed includes as found in parts of the boost library. The
+complicated computed includes as found in parts of the Boost library. The
 include server will time out and distcc will revert to plain mode.
 .PP
 Other known bugs may be documented on 
