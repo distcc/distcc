@@ -295,11 +295,14 @@ For example, in /usr/lib/distcc/bin create a file cc which contains:
 .PP
 .RS
 .nf
-#! /bin sh 
+#!/bin/sh 
 distcc /usr/bin/gcc "$@"
 .fi
 .RE
 .PP
+In this way, we are not dependent on distcc having to locate the real gcc by
+investigating the PATH variable. Instead, the compiler location is explicitly
+provided.
 
 .SH "USING DISTCC WITH CCACHE"
 ccache is a program that speeds software builds by caching the results
