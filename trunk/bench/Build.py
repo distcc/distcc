@@ -181,15 +181,14 @@ class Build:
                                              self.compiler.host_opts)
         # We use built-in 'time' to measure real, system, and user time.  To
         # allow its stderr to be grabbed, the time command is executed in a
-        # subshell.  The wait statement is necessary for the include server
-        # to report its timing info.
+        # subshell.
         cmd = ("cd %s && \\\n"
                "(time -p \\\n"
                "DISTCC_HOSTS='%s' \\\n"
                "INCLUDE_SERVER_ARGS='-t --unsafe_absolute_includes %s' \\\n"
                "%s%s \\\nDISTCC_LOG='%s' \\\nCC='%s' \\\nCXX='%s' "
                "\\\n%s)"
-               "\\\n>%s 2>&1; wait"
+               "\\\n>%s 2>&1"
                %
                (self.build_dir,
                 distcc_hosts,
