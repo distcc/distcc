@@ -234,7 +234,8 @@ common_obj = src/arg.o src/argutil.o					\
 	src/dotd.o 							\
 	src/hosts.o src/hostfile.o					\
 	src/implicit.o src/loadfile.o					\
-	lzo/minilzo.o
+	lzo/minilzo.o                                                   \
+	@ZEROCONF_COMMON_OBJS@
 
 distcc_obj = src/backoff.o						\
 	src/climasq.o src/clinet.o src/clirpc.o				\
@@ -859,7 +860,7 @@ daemon-installcheck:
 
 benchmark: 
 	@echo "The distcc macro-benchmark uses your existing distcc installation"
-	@if [ "$$DISTCC_HOSTS" ]; \
+	@if [ -n "$$DISTCC_HOSTS" ]; \
 	then echo "DISTCC_HOSTS=\"$$DISTCC_HOSTS\""; \
 	else echo "You must set up servers and set DISTCC_HOSTS before running the benchmark"; \
 	exit 1; \
