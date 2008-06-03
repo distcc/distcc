@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+                      "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head><title>benchmark results for distcc</title>
+    <link rel="SHORTCUT ICON" href="favicon.ico">
+    <link type="text/css" rel="stylesheet" href="distcc-green.css">
+    <link type="text/html" rel="top" href="index.html">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
+   <body vlink="#003300" text="#000000" link="#003300" bgcolor="#ffffff" alink="#336633"><p><table width="100%"><tr><td valign="top"><div class="navbar"><ul>
+          <li><a href="index.html">distcc</a></li>
+          <li><a href="http://code.google.com/p/distcc/source/browse/trunk">source</a>
+          <li><a href="http://code.google.com/p/distcc/downloads/list">binaries</a></li>
+          <li><a href="http://distcc.googlecode.com/svn/trunk/NEWS">news</a></li>
+          <li><a href="scenarios.html">scenarios</a></li>
+	  <li><a href="results.html">testimonials</a></li>
+	  <li><a href="benchmark.html"><b>benchmarks</b></a></li>
+	  <li><a href="security.html">security</a></li>
+	  <li><a href="distcc-lca-2004.html">whitepaper</a></li>
+	  <li><a href="faq.html">FAQ</a></li>
+
+	  <p>
+	  <li><a href="http://code.google.com/p/distcc/issues/list">report a bug</a></li>
+	  <li><a href="https://lists.samba.org/mailman/listinfo/distcc">mailing list</a>
+           <ul><li><a href="mailto:distcc@lists.samba.org">post</a></li>
+            <li><a href="http://lists.samba.org/archive/distcc/">archive</a></li>
+            <li><a href="news://news.gmane.org/gmane.comp.compilers.distcc">newsgroup</a></li></ul>
+	  </li>
+          <li><a href="http://freshmeat.net/projects/distcc">Freshmeat</a>
+            <ul><li><a href="http://freshmeat.net/subscribe/28140">be notified</a></li></ul>
+	  </li>
+
+	  <p>
+	  <li>related:</li>
+	  <ul>
+	      <li><a title="How to use distcc and Gentoo" href="http://www.gentoo.org/doc/en/distcc.xml">Gentoo</a></li>
+	      <li><a title="Script to ease building cross-compilers and toolchains" href="http://kegel.com/crosstool/">crosstool</a></li>
+	      <li><a title="Cache compiler results" href="http://ccache.samba.org/">ccache</a></li>
+	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
+	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
+	  </ul>
+       <p><p></td><td valign="top">
+
+<div class="body"><h1 class="title">benchmark results for distcc</h1>
+
+<p>The following table shows the effect of distcc on several
+real-world compilation tasks; in this case, compiling various
+open-source projects.  In each case, we compiled in four modes:</p>
+<ol>
+  <li> <b>local_01</b>: all compilation done locally
+  <li> <b>dist_h38_j40</b>: using distcc with 38 server machines (152
+       CPUs), and <code>make -j40</code>, which gives 40 parallel
+       compilations.
+  <li> <b>pump_h38_j40</b>: like <code>dist_h38_j40</code>, but using
+       distcc in pump (remote preprocessing) mode.
+  <li> <b>pump_h38_j80</b>: like <code>pump_h38_j40</code>, but using
+       <code>make -j80</code> instead of <code>make -j40</code>.
+</ol>
+
+<p>The client machine is an 2.8GHz Intel Pentium 4 machine, with 2G of
+memory, running Linux 2.6.18.5 (modified Ubuntu 6.06).  The server
+machines were all 4 CPU 2GHz AMD Dual Core Processor 270 machines,
+with 2G of memory, running Linux 2.6.18.5 (modified Ubuntu 6.06).</p>
+
+<p>Each test was run 5 times.  We report the average time over the 5
+runs, as well as the standard deviation.  In order to minimize disk
+caching effects on walltime results, we read all the files in each
+project's tarball before building.</p>
+
+
+<table width=100%>
+<tr valign=bottom align=right><th align=left>Project</th><th align=left>mode</th>
+<th>wall<br>time</th><th>std<br>dev</th><th>cpu<br>time</th><th>cpu<br>%</th>
+<tr><td colspan=6><hr></td></tr>
+
+<tr align=right><td align=left>binutils-2.18</td><td align=left>local_01    </td>
+    <td>125.8s</td> <td>4.0s</td> <td>102.9s</td> <td>81.9%</td></tr>
+<tr align=right><td align=left>binutils-2.18</td><td align=left>dist_h38_j40</td>
+    <td>35.4s</td> <td>1.0s</td> <td>25.6s</td> <td>72.2%</td></tr>
+<tr align=right><td align=left>binutils-2.18</td><td align=left>pump_h38_j40</td>
+    <td>28.7s</td> <td>1.5s</td> <td>16.6s</td> <td>57.7%</td></tr>
+<tr align=right><td align=left>binutils-2.18</td><td align=left>pump_h38_j80</td>
+    <td>29.8s</td> <td>1.5s</td> <td>16.6s</td> <td>55.9%</td></tr>
+<tr><td colspan=6><hr></td></tr>
+
+<tr align=right><td align=left>glibc-2.6   </td><td align=left>local_01    </td>
+    <td>946.4s</td> <td>5.1s</td> <td>568.7s</td> <td>60.1%</td></tr>
+<tr align=right><td align=left>glibc-2.6   </td><td align=left>dist_h38_j40</td>
+    <td>534.0s</td> <td>7.0s</td> <td>390.5s</td> <td>74.7%</td></tr>
+<tr align=right><td align=left>glibc-2.6   </td><td align=left>pump_h38_j40</td>
+    <td>357.8s</td> <td>6.5s</td> <td>241.6s</td> <td>67.5%</td></tr>
+<tr align=right><td align=left>glibc-2.6   </td><td align=left>pump_h38_j80</td>
+    <td>365.4s</td> <td>4.2s</td> <td>243.0s</td> <td>66.6%</td></tr>
+<tr><td colspan=6><hr></td></tr>
+
+<tr align=right><td align=left>hello-2.1.1 </td><td align=left>local_01    </td>
+    <td>0.7s</td> <td>0.1s</td> <td>0.4s</td> <td>62.8%</td></tr>
+<tr align=right><td align=left>hello-2.1.1 </td><td align=left>dist_h38_j40</td>
+    <td>0.9s</td> <td>0.2s</td> <td>0.3s</td> <td>40.3%</td></tr>
+<tr align=right><td align=left>hello-2.1.1 </td><td align=left>pump_h38_j40</td>
+    <td>1.1s</td> <td>0.1s</td> <td>0.4s</td> <td>31.3%</td></tr>
+<tr align=right><td align=left>hello-2.1.1 </td><td align=left>pump_h38_j80</td>
+    <td>1.1s</td> <td>0.0s</td> <td>0.4s</td> <td>31.6%</td></tr>
+<tr><td colspan=6><hr></td></tr>
+
+<tr align=right><td align=left>httpd-2.0.43</td><td align=left>local_01    </td>
+    <td>139.8s</td> <td>1.4s</td> <td>117.2s</td> <td>83.9%</td></tr>
+<tr align=right><td align=left>httpd-2.0.43</td><td align=left>dist_h38_j40</td>
+    <td>85.1s</td> <td>2.1s</td> <td>51.3s</td> <td>60.4%</td></tr>
+<tr align=right><td align=left>httpd-2.0.43</td><td align=left>pump_h38_j40</td>
+    <td>80.1s</td> <td>2.0s</td> <td>33.7s</td> <td>42.1%</td></tr>
+<tr align=right><td align=left>httpd-2.0.43</td><td align=left>pump_h38_j80</td>
+    <td>81.7s</td> <td>4.1s</td> <td>33.7s</td> <td>41.4%</td></tr>
+<tr><td colspan=6><hr></td></tr>
+
+<tr align=right><td align=left>linux-2.6.25</td><td align=left>local_01    </td>
+    <td>818.3s</td> <td>7.9s</td> <td>543.9s</td> <td>66.5%</td></tr>
+<tr align=right><td align=left>linux-2.6.25</td><td align=left>dist_h38_j40</td>
+    <td>203.2s</td> <td>1.7s</td> <td>185.3s</td> <td>91.2%</td></tr>
+<tr align=right><td align=left>linux-2.6.25</td><td align=left>pump_h38_j40</td>
+    <td>134.9s</td> <td>5.3s</td> <td>96.5s</td> <td>71.6%</td></tr>
+<tr align=right><td align=left>linux-2.6.25</td><td align=left>pump_h38_j80</td>
+    <td>135.6s</td> <td>4.3s</td> <td>97.7s</td> <td>72.1%</td></tr>
+<tr><td colspan=6><hr></td></tr>
+
+<tr align=right><td align=left>samba-3.0.20</td><td align=left>local_01    </td>
+    <td>314.0s</td> <td>2.4s</td> <td>258.8s</td> <td>82.4%</td></tr>
+<tr align=right><td align=left>samba-3.0.20</td><td align=left>dist_h38_j40</td>
+    <td>101.8s</td> <td>0.6s</td> <td>94.0s</td> <td>92.3%</td></tr>
+<tr align=right><td align=left>samba-3.0.20</td><td align=left>pump_h38_j40</td>
+    <td>31.4s</td> <td>2.4s</td> <td>21.1s</td> <td>67.4%</td></tr>
+<tr align=right><td align=left>samba-3.0.20</td><td align=left>pump_h38_j80</td>
+    <td>31.8s</td> <td>1.7s</td> <td>21.2s</td> <td>66.9%</td></tr>
+<tr><td colspan=6><hr></td></tr>
+
+</table>
+
+<h2><a name="discussion" href="#discussion">Discussion</a></h2>
+
+<ul>
+
+  <li> For all but the smallest projects, <code>distcc</code> results
+       in a significant speedup in compilation time over compiling
+       locally.  Partly this is because the distcc servers are beefier
+       machines than the desktop machine, but the main reason for this
+       is the ability to parallelize (this is why <code>hello</code>,
+       with only a few source files, is faster to compile locally).
+       <br><br></li>
+
+  <li> In almost all cases, distcc's pump mode results in a
+       significant speedup in compilation time over plain distcc.
+       Sometimes, as for Samba 3.0, the speedup is more than a factor
+       of three! <br><br></li>
+
+  <li> The parallelism of the various projects' Makefiles affects
+       distcc speedup a lot.  Makefiles that run <code>make</code>
+       sequentially in subdirectories benefit the least from distcc.
+       These projects may still see a benefit from distcc, especially
+       if the distcc servers are faster than the local
+       machine, but they will see less of a benefit from distcc's pump
+       mode, which gets its speedup from being able to parallelize
+       pre-processing. <br><br></li>
+
+  <li> All these opensource projects are built by running
+       <code>configure</code> plus <code>make</code>.  In each case,
+       we count only the <code>make</code> time, not the
+       <code>configure</code> time.  However, projects such as
+       bintuils run extra configuration during the <code>make</code>
+       step (for binutils, the initial <code>configure</code> run is
+       trivial, and the <code>make</code> command does more intensive
+       configuration in various subdirectories before building).  This
+       will affect times as described above -- especially reducing the
+       benefit of pump mode -- since the configuration
+       steps are not run in parallel. <br><br></li>
+
+  <li> Even when pump mode does not speed up the build much, as for
+       <code>httpd</code>, it still reduces the CPU burden on the
+       local machine, making it more usable during compiles.  Note,
+       however, that this is balanced by an increased CPU burden on
+       the server machines (about 10% in our tests), and may also
+       require more memory on the host machine than non-pump mode
+       does. <br><br></li>
+
+</ul> 
+
+</td>
+</tr></table>
+
+<div class="thanks">Copyright &copy; 2008 Google Inc.<br>
+distcc is a trademark of Martin Pool.
+
+<p>Send comments to <tt>distcc(at)lists.samba.org</tt>.
+
+</body>
+</html>

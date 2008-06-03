@@ -112,10 +112,10 @@ int dcc_r_result_header(int ifd,
     int ret;
 
     if ((ret = dcc_r_token_int(ifd, "DONE", &vers)))
-        rs_log_error("server provided no answer - "
-                     "is the server configured to allow acces from your IP"
-                     " address? does the server have the compiler installed?"
-                     " is the server configured to access the compiler?");
+        rs_log_error("server provided no answer. "
+                     "Is the server configured to allow access from your IP"
+                     " address? Does the server have the compiler installed?"
+                     " Is the server configured to access the compiler?");
         return ret;
 
     if (vers != expect_ver) {

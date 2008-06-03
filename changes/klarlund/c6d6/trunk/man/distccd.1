@@ -1,4 +1,4 @@
-.TH distccd 1 "27 March 2008"
+.TH distccd 1 "2 June 2008"
 .SH "NAME"
 distccd \- distributed C/C++ compiler server
 .SH "SYNOPSIS"
@@ -279,7 +279,8 @@ On Linux, turn on the TCP_DEFER_ACCEPT socket option.  Defaults to on.
 Directory for temporary files such as preprocessor output.  By default
 /tmp/ is used.
 .SH "SEE ALSO"
-distcc(1), ccache(1), gcc(1), make(1)
+\fBdistcc\fR(1), \fBpump\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1),
+\fBmake\fR(1), and  \fBccache\fR(1)
 .I http://code.google.com/p/distcc/
 .SH "BUGS"
 IP-based access control is not secure against attackers able to spoof
@@ -300,5 +301,6 @@ COPYING.
 .SH "AUTHOR"
 distcc was written by Martin Pool <mbp@sourcefrog.net>, with the
 co-operation of many scholars including Wayne Davison, Frerich Raabe,
-Dimitri Papadopoulos and others noted in the NEWS file.  Please report
-bugs to <distcc@lists.samba.org>.
+Dimitri Papadopoulos and others noted in the NEWS file. 
+See \fBpump\fR(1) for the authors of pump mode.
+Please report bugs to <distcc@lists.samba.org>.
