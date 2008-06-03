@@ -345,6 +345,12 @@ ShutDown() {
     ps -p "$include_server_pid" > /dev/null; then
     echo '__________Shutting down distcc-pump include server'
     kill $include_server_pid
+    # Wait until it's really dead.  We need to do this because the
+    # include server may produce output after receiving SIGTERM.
+    # Note that while 'sleep 0.01' is relying on a feature of GNU sleep,
+    # that's OK; on systems that don't support it, it's effectively the
+    # same as 'sleep 0', i.e. we'll just busy-wait rather than sleeping.
+    while kill -0 $include_server_pid; do sleep 0.01; done >/dev/null 2>&1
   fi
 
   if [ -f "$include_server_stdout" ]; then
