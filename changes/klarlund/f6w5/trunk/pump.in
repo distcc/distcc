@@ -336,7 +336,7 @@ Critique() {
     echo    'but succeeded locally.' 1>&2
     # See comment in compile.c for static constant
     # max_discrepancies_before_demotion, which is assumed to be 1.
-    echo -n '__________Distcc-pump was disabled.' 1>&2
+    echo -n '__________Distcc-pump was demoted to plain mode.' 1>&2
     echo    '  See include_server(1), section Distcc Discrepancy Symptoms.' 1>&2
   fi
 }
