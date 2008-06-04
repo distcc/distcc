@@ -1003,6 +1003,9 @@ install-programs: $(bin_PROGRAMS)
 # tell is to have setup.py install it, and then look what it says (via
 # the --record output).  So when installing pump, we look at the
 # --record output and modify the installed pump to have that location.
+# Note: --record output is inconsistent (buggy?) and sometimes leaves out
+# the leading slash in $prefix, even though we require prefix start with
+# a slash.  We add it back in at cp time.
 install-include-server: include-server pump
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
@@ -1018,9 +1021,10 @@ install-include-server: include-server pump
 	        --build-temp="$(include_server_builddir)" \
 	      install 					\
 	         --prefix="$(prefix)" 			\
-	         --record="$(include_server_builddir)/install.log" \
+	         --record="$(include_server_builddir)/install.log.pre" \
 	         --root="$$DESTDIR"                     \
 	    || exit 1; \
+	  sed '/^[^\/]/ s,^,/,' "$(include_server_builddir)/install.log.pre" > "$(include_server_builddir)/install.log"; \
 	  if test -n "$(PYTHON_INSTALL_RECORD)"; then \
 	    cp -f "$(include_server_builddir)/install.log" "$(PYTHON_INSTALL_RECORD)"; \
 	  fi; \
