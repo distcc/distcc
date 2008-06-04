@@ -171,20 +171,6 @@ Initialize() {
   # installation to the 'include_server' directory.
   include_server_relative="../$PYTHON_RELATIVE_LIB/include_server"
 
-  # We use a little heuristic to determine whether this pump script is part of
-  # an installation. Specifically, we check whether we're a bin directory, and
-  # more importantly, we look for the include_server.py script. If we're running
-  # out of the distcc_pump source directory, both conditions below will fail.
-  if [ "`basename $DISTCC_LOCATION`" = 'bin' ] \
-     && [ -f "$DISTCC_LOCATION/$include_server_relative/include_server.py" ]
-  then
-    # Running from installed directory.
-    is_in_installation=true
-  else
-    # Running from configured directory, usually the source directory.
-    is_in_installation=""
-  fi
-
   distcc_location="$DISTCC_LOCATION"
 
   # Check that we're getting exactly the distcc client we want: the
