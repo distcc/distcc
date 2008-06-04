@@ -326,10 +326,11 @@ SRC =	src/stats.c							\
 	src/tempfile.c src/timefile.c                     		\
 	src/timeval.c src/traceenv.c					\
 	src/trace.c src/util.c src/where.c				\
-	src/lsdistcc.c	src/rslave.c					\
+	src/lsdistcc.c src/rslave.c					\
 	src/dotd.c src/include_server_if.c				\
-	src/emaillog.c \
-	src/fix_debug_info.c
+	src/emaillog.c							\
+	src/fix_debug_info.c						\
+	src/zeroconf.c src/zeroconf-reg.c src/gcc-id.c
 
 
 HEADERS = src/stats.h							\
