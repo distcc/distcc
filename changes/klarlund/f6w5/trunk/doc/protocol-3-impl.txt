@@ -1,0 +1,63 @@
+A list of the important changes done to distcc to support protocol version 3.
+More or less in dataflow order.
+Does not include various little changes, such as a bug fix in argutil.c, and
+making functions from static into global, which happened all around the code.
+
+	- A new protocol version (3) is added. It
+	  supports preprocessing on the server. It also transmits 
+	  bulky data compressed, like protocol version 2.
+	  - distcc.h: Added the enum for where to do the cpp.
+	  - hosts.c: Map a set of features (currently a subset of
+		where to do cpp and whether to do compression) onto
+		a protocol number.
+	  - rpc.c: The client sometimes sends either a file or
+	    a link to the server. The server needs to be able to
+	    accept either, so dcc_r_sometoken_int introduces some
+	    alternation to the protocol.
+	- Talking to the include server:
+	  - compile.c: dcc_build_somewhere tries to talk to the
+		include server, and pushes the information about
+		the .d file to dcc_compile_remote. This is where
+		the fallback-to-the-original-protocol code lives.
+	  - include_server_if.c: Talk to the include server.
+	- The communication from client to server. The client needs to
+	  send multiple files, and perhaps links, to the server; the
+	  client also needs to send its current working directory,
+	  - remote.c: Entry points for sending multiple files to
+	        the server.
+	  - rpc.c: The server needs to handle not only files, but also
+		links (directories are handled implicitly).
+	  - clirpc.c: Added a function to send the current working
+		directory.  Added a function, dcc_x_many_files. It sends
+		multiple files to the server.  In addition, it changes
+		the filenames to chop off the additions of the include
+		server.
+	  - serve.c: Added a function to receive the current working
+		directory.
+	- On the server side: the server receives multiple files
+	  and the working directory, and builds a directory structure
+	  (which it keeps a manifest of, to clean it up at the end).
+	  - srvrpc.c:
+	        Added a function, dcc_r_many_files, to receive multiple
+		files.  In addition, it changes the filenames to put all
+		the files under a "fake root" directory.
+	  - serve.c: lots of work to set up "fake root" directories,
+		chdir to the right place, produce a .d file, and
+		absolutize include directives.
+	  - tempfile.c: Creation of whole temp directories,
+	        not just files.
+	  - cleanup.c: Since we are receiving multiple files,
+		we need to keep a dynamic list of what temporary
+		files we create. Cleanup can now handle directories.
+	- ".d" files: the client needs to find out where the dotd file
+	        should go; the server needs to produce it, remove all
+		references to its (the server's) local filesystem (there are no
+		gcc options to do this) and send it back to the client.
+	  - dotd.c: Most of the code that handles the dotd: figuring
+		out if we need it, and where it should go; also,
+		cleaning it up after it gets created on the server.
+          - fix_debug_info.c: Rewrite an ELF .o file to refer to the 
+                client-side filenames.
+	  - clirpc.c Changed dcc_retrieve_results to retrieve
+		the dotd file.
+
