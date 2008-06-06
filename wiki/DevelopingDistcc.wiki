@@ -27,4 +27,4 @@ make install
 
 = Submitting changes =
 
-Mail your patches to distcc-pump@google.com.
+Mail your patches to distcc@lists.samba.org.
