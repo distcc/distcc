@@ -933,11 +933,15 @@ distclean: distclean-autoconf clean
 .PHONY: upload-man upload-dist rpm deb install-deb
 
 upload-man: $(man_HTML)
-	rsync -avz $(man_HTML) \
-		--exclude CVS --exclude '*~' --exclude '*.latte' \
-		samba.org:/home/httpd/distcc/man/
+	mkdir -p doc/web/man
+	cp -f $(man_HTML) doc/web/man
+	svn commit doc/web/man
 
+# When uploading the package, we try to update the website as well.
+# However, that's just best-effort, and if we can't (because, say, we
+# don't have troff2html installed), we just upload the tarballs.
 upload-dist: alldist
+	-$(MAKE) upload-man
 	"$(srcdir)/packaging/googlecode_upload.py" \
 	  `find . -name '*.tar.gz' -o -name '*.tar.bz2' \
 	          -o -name '*.rpm' -o -name '*.deb'`
