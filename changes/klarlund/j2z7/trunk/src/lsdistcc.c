@@ -621,6 +621,9 @@ void server_handle_event(state_t *sp)
                 else
                     printf("%s", sp->req.hname);
 
+                if (opt_port != DEFAULT_PORT)
+                    printf(":%d", opt_port);
+
                 printf("%s", protocol_suffix[opt_protocol]);
 
                 if (opt_bang_down && !sp->up)
