@@ -185,6 +185,8 @@ EXIT_BAD_HOSTSPEC            = 106
 EXIT_COMPILER_MISSING        = 110
 EXIT_ACCESS_DENIED           = 113
 
+DISTCC_TEST_PORT             = 42000
+
 _gcc                         = None     # full path to gcc
 _valgrind_command            = "" # Command to invoke valgrind (or other
                                   # similar debugging tool).
@@ -282,7 +284,7 @@ as soon as that happens we can go ahead and start the client."""
         SimpleDistCC_Case.setup(self)
         self.daemon_pidfile = os.path.join(os.getcwd(), "daemonpid.tmp")
         self.daemon_logfile = os.path.join(os.getcwd(), "distccd.log")
-        self.server_port = 42000 # random.randint(42000, 43000)
+        self.server_port = DISTCC_TEST_PORT # random.randint(42000, 43000)
         self.startDaemon()
         self.setupEnv()
 
@@ -1815,25 +1817,28 @@ class Lsdistcc_Case(WithDaemon_Case):
             + " anInvalidHostname")
         out_list = out.split()
         out_list.sort()
+        expected = ["%s:%d" % (host, DISTCC_TEST_PORT) for host in
+                    ["127.0.0.1", "127.0.0.2", "localhost"]]
         if multiple_loopback_addrs:
-          self.assert_equal(out_list, ["127.0.0.1", "127.0.0.2", "localhost"])
+          self.assert_equal(out_list, expected)
         else:
             # It may be that 127.0.0.2 isn't a loopback address, or it
             # may be that it is, but ping doesn't support -c or -i or
             # -w.  So be happy if 127.0.0.2 is there, or if it's not.
-            if out_list != ["127.0.0.1", "127.0.0.2", "localhost"]:
-                self.assert_equal(out_list, ["127.0.0.1", "localhost"])
+            if out_list != expected:
+                del expected[1] # remove 127.0.0.2
+                self.assert_equal(out_list, expected)
         self.assert_equal(err, "")
 
         # Test "lsdistcc host%d".
         out, err = self.runcmd(lsdistcc + " 127.0.0.%d")
         self.assert_equal(err, "")
-        self.assert_re_search("127.0.0.1\n", out)
+        self.assert_re_search("127.0.0.1:%d\n" % DISTCC_TEST_PORT, out)
         if multiple_loopback_addrs:
-          self.assert_re_search("127.0.0.2\n", out)
-          self.assert_re_search("127.0.0.3\n", out)
-          self.assert_re_search("127.0.0.4\n", out)
-          self.assert_re_search("127.0.0.5\n", out)
+          self.assert_re_search("127.0.0.2:%d\n" % DISTCC_TEST_PORT, out)
+          self.assert_re_search("127.0.0.3:%d\n" % DISTCC_TEST_PORT, out)
+          self.assert_re_search("127.0.0.4:%d\n" % DISTCC_TEST_PORT, out)
+          self.assert_re_search("127.0.0.5:%d\n" % DISTCC_TEST_PORT, out)
 
 # When invoking compiler, use absolute path so distccd can find it
 for path in os.environ['PATH'].split (':'):
