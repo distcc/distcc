@@ -39,7 +39,7 @@ empty list to the distcc client.
 .P
 There are two kinds of failures that relate to the include server. The include
 server may fail to compute the includes or fail in other ways, see section
-\fBINCLUDE SERVER SYMPTOMS\fR.  And, the compilation on the remove server may
+\fBINCLUDE SERVER SYMPTOMS\fR.  Also, the compilation on the remove server may
 fail due to inadequacy of the calculated include closure, but then succeed when
 locally retried, see section \fBDISTCC DISCREPANCY SYMPTOMS\fR.
 
@@ -61,7 +61,7 @@ The default is to not send email.
 Maximal number of emails to send (in addition to a final email). Default: 3.
 .TP
 .B --no-email
-Do not send email.
+Do not send email. This is the default.
 .TP
 .B --path_observation_re=RE 
 Issue warning message whenever a filename is resolved to a realpath that is
@@ -234,7 +234,9 @@ because of preprocessing directives. The include server will probe for the
 existence of trick.h, because it overapproximates all possible ways directives
 actually evaluate. The file trick.h is determined not to exist. If it is later
 generated, and then really included, then the include server will falsely
-believe that the file still does not exist.
+believe that the file still does not exist.  The solution to this problem is to
+make the build system generate trick.h before the first time any header file 
+is included that makes a syntactic reference to trick.h
 
 .TP
 .B The include server was started with \fB--unsafe_absolute_includes\fR.

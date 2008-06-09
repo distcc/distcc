@@ -202,7 +202,7 @@ filepaths in includes, see the include_server(1) man page.
 
 Another important assumption is that the include configuration of all machines
 must be identical.  Thus the headers under the default system path must be the
-same on all servers or and all clients.  If a standard GNU compiler installation
+same on all servers and all clients.  If a standard GNU compiler installation
 is used, then this requirement applies to all libraries whose header files are
 installed under /usr/include or /usr/local/include/.  Note that installing
 software packages often lead to additional headers files being placed in
@@ -210,11 +210,14 @@ subdirectories of either.
 
 If this assumption does not hold, then it is possible to break builds with
 distcc-pump mode, or worse, to get wrong results without warning.  Presently
-this condition is not verified, but is on our todo list.
+this condition is not verified, and it is on our TODO list to address this
+issue. Also, currently explit include specifications that resolve to something
+under the default system search path such as -I/usr/include/foolib do not work
+except if this directory is specified with -isystem.
 
 An easy way to guarantee that the include configurations are identical is to use
 a crosscompiler that defines a default system search path restricted to
-directories of the compiler installation instead.
+directories of the compiler installation.
 
 See the \fBinclude_server\fR(1) manual for more information on symptoms and
 causes of violations of distcc-pump mode assumptions.
@@ -784,6 +787,12 @@ In distcc-pump mode, the include server is unable to handle certain very complic
 includes as found in parts of the boost library. The include server will time
 out and distcc will revert to plain mode.
 .PP
+In distcc-pump mode, includes of the form -I/usr/include/foolib do not usually
+work, see discussion in section HOW DISTCC-PUMP MODE WORKS above.
+.PP
+In distcc-pump mode, certain assumptions are made that source and header files
+do not change during the build.  See discussion in section DISTCC DISCREPANCY
+SYMPTOMS of \fBinclude_server\fR(1().
 
 Other known bugs may be documented on 
 .I http://code.google.com/p/distcc/
