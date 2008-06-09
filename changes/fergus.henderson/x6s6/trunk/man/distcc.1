@@ -1,4 +1,4 @@
-.TH distcc 1 "27 March 2008"
+.TH distcc 1 "2 June 2008"
 .SH "NAME"
 distcc \- distributed C/C++/ObjC compiler with distcc-pump extensions
 .SH "SYNOPSIS"
@@ -21,7 +21,7 @@ compile, it is simple to install and use, and it is often much faster than a
 local compile.
 .PP
 This version incorporates plain distcc as well as an enhancement called
-pump mode, or distcc-pump.
+pump mode or distcc-pump.
 .PP
 For each job, distcc in plain mode sends the complete preprocessed source code
 and compiler arguments across the network from the client to a compilation
@@ -32,7 +32,7 @@ order of magnitude over plain distcc.
 .PP
 Compilation is driven by a client machine, which is typically the developer's
 workstation or laptop.  The distcc client runs on this machine, as does make,
-the preprocessor (if distcc-pump mode is not used), the linker, and other
+the preprocessor (if distcc's pump mode is not used), the linker, and other
 stages of the build process.  Any number of volunteer machines act as
 compilation servers and help the client to build the program, by running the
 .B distccd(1) 
@@ -84,7 +84,7 @@ client due to preprocessing.  Such large values may speed up parts of the build
 that do not involve C compilations, but they may not be useful to distcc
 efficiency in plain mode.
 
-In contrast, with distcc-pump and say 40 servers, a setting of
+In contrast, using pump mode and say 40 servers, a setting of
 .B -j80
 or larger may be appropriate even for single-CPU clients.
 .PP
@@ -125,9 +125,10 @@ $ export DISTCC_HOSTS='--randomize localhost red,cpp,lzo green,cpp,lzo blue,cpp,
 
 The 
 .B --randomize
-option enforces a uniform usage of compile servers.  To enjoy distcc-pump, you
-will really need 10 or more server CPUs.  Wrap your build inside the pump
-command, here assuming 10 servers:
+option enforces a uniform usage of compile servers.  While you will
+get some benefit from distcc's pump mode with only a few servers, you
+get increasing benefit with more server CPUs (up to the hundreds!).
+Wrap your build inside the pump command, here assuming 10 servers:
 
 .RS
 $ pump make -j20 CC=distcc
@@ -153,44 +154,74 @@ phases are being invoked, and whether the job can be
 distributed.
 
 .SH "HOW DISTCC-PUMP MODE WORKS"
-distcc-pump runs the prepreprocessor remotely too.  To do so, the preprocessor
-must have access to all the files that it would have accessed if had been running
-locally.  distcc-pump therefore gathers all of the recursively included headers,
-except the ones that are part of the compiler installation, and sends them along
-with the source file to the compilation server. 
+In pump mode, distcc runs the preprocessor remotely too.  To do so, the
+preprocessor must have access to all the files that it would have accessed if
+had been running locally.  In pump mode, therefore, distcc gathers all of the
+recursively included headers, except the ones that are default system headers,
+and sends them along with the source file to the compilation server.
 
 In distcc-pump mode, the server unpacks the set of all source files in a
 temporary directory, which contains a directory tree that mirrors the part of
 the file system that is relevant to preprocessing, including symbolic links.
 
 The compiler is then run from the path in the temporary directory that
-corresponds to the current working directory on the client.
-To find and transmit the many hundreds of files that are often part of a single
-compilation, distcc-pump uses an incremental include analysis algorithm.  The
-include server, which is a Python program started by the pump script wrapper,
-implements this algorithm.
+corresponds to the current working directory on the client.  To find and
+transmit the many hundreds of files that are often part of a single compilation,
+pump mode uses an incremental include analysis algorithm.  The include server is
+a Python program that implements this algorithm.  The pump command starts the
+include server so that throughout the build it can answer include queries by
+distcc commands.
 
-The include server uses static analysis of the macro language to deal with
-conditional compilation and computed includes.  It uses the property that when a
-given header file has already been analyzed for includes, it is not 
-necessary to do so again if all the include directives are unchanged (along with
-other conditions).
+The include server uses static analysis of the macro language to deal
+with conditional compilation and computed includes.  It uses the
+property that when a given header file has already been analyzed for
+includes, it is not necessary to do so again if all the include
+options (-I's) are unchanged (along with other conditions).
 
-For large builds, header files are included, on average, hundreds of times. With
-distcc-pump mode each such file is analyzed only a few times, perhaps just once,
-instead of being preprocessed hundreds of times.  Also, each source or header
-file is now compressed only once, because the include server memoizes the
-compressed files.  As a result, the time used for compilation on the server can
-drop by close to an order of magnitude over plain distcc.  Additionally,
-compression time can drop by a factor of ten to one-hundred over plain distcc's
-time for compressing the preprocessed files.
+For large builds, header files are included, on average, hundreds of
+times each. With distcc-pump mode each such file is analyzed only a
+few times, perhaps just once, instead of being preprocessed hundreds
+of times.  Also, each source or header file is now compressed only
+once, because the include server memoizes the compressed files.  As a
+result, the time used for preparing compilations may drop by up to an
+order of magnitude over the preprocessing of plain distcc.
 
-As a result, distcc-pump mode is able to push out files up to about ten times
-faster than distcc.  The total build time may drop 30-70% for large builds
+Because distcc in pump mode is able to push out files up to about ten
+times faster, build speed may increase 3X or more for large builds
 compared to plain distcc mode.
 
-Using pump mode requires both client and servers to use release 3.0
-or later of distcc and distccd (respectively).
+Using pump mode requires both client and servers to use release 3.0 or
+later of distcc and distccd (respectively).  
+
+Note that the incremental include analysis of distc-pump mode rests on
+the fundamental assumption that source and header files do not change
+during the build process.  A few complex build systems, such as that
+for Linux kernel 2.6, do not quite satisfy this requirement.  To
+overcome such issues, and other corner cases such as absolute
+filepaths in includes, see the include_server(1) man page.
+
+Another important assumption is that the include configuration of all machines
+must be identical.  Thus the headers under the default system path must be the
+same on all servers and all clients.  If a standard GNU compiler installation
+is used, then this requirement applies to all libraries whose header files are
+installed under /usr/include or /usr/local/include/.  Note that installing
+software packages often lead to additional headers files being placed in
+subdirectories of either.
+
+If this assumption does not hold, then it is possible to break builds with
+distcc-pump mode, or worse, to get wrong results without warning.  Presently
+this condition is not verified, and it is on our TODO list to address this
+issue. Also, currently, explicit include specifications that resolve to something
+under the default system search path such as -I/usr/include/foolib do not work
+except if this directory is specified with -isystem.
+
+An easy way to guarantee that the include configurations are identical is to use
+a crosscompiler that defines a default system search path restricted to
+directories of the compiler installation.
+
+See the \fBinclude_server\fR(1) manual for more information on symptoms and
+causes of violations of distcc-pump mode assumptions.
+
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
 The following options are understood by distcc itself:
@@ -207,7 +238,8 @@ See the Host Specifications section.
 .TP
 .B -j
 Displays distcc's concurrency level, as calculated from the host list;
-it is the maximum number of outstanding jobs on all servers
+it is the maximum number of outstanding jobs issued by this client 
+to all servers
 By default this will be four times the number of hosts in the host list,
 unless the /LIMIT option was used in the host list.
 See the Host Specifications section.
@@ -277,6 +309,21 @@ compiler.  This can indicate that you have two masquerade directories
 on the PATH, possibly because of having two distcc installations in
 different locations.  It can also indicate that you're trying to mix
 "masqueraded" and "explicit" operation.
+.PP
+Recursion errors can be avoided by using shell scripts instead of links.
+For example, in /usr/lib/distcc/bin create a file cc which contains:
+.PP
+.RS
+.nf
+#!/bin/sh 
+distcc /usr/bin/gcc "$@"
+.fi
+.RE
+.PP
+In this way, we are not dependent on distcc having to locate the real gcc by
+investigating the PATH variable. Instead, the compiler location is explicitly
+provided.
+
 .SH "USING DISTCC WITH CCACHE"
 ccache is a program that speeds software builds by caching the results
 of compilations.  ccache is normally called before distcc, so that
@@ -303,7 +350,7 @@ source and so will never get a cache hit if it is run from distccd or
 distcc.  It must be run only on the client side and before distcc to
 be any use.
 
-distcc-pump mode is not compatible with ccache.
+distcc's pump mode is not compatible with ccache.
 .SH "HOST SPECIFICATIONS"
 A "host list" tells distcc which machines to use for compilation.  In
 order, distcc looks in the 
@@ -483,7 +530,7 @@ messages.  Compression is usually economical on networks slower than
 source tree.
 .PP 
 Enabling compression makes the distcc client and server use more CPU time, but
-less network traffic.  The added CPU time is insignificant for distcc-pump.  The
+less network traffic.  The added CPU time is insignificant for pump mode.  The
 compression ratio is typically 4:1 for source and 2:1 for object code.
 .PP
 Using compression requires both client and server to use at least
@@ -727,7 +774,7 @@ parts, but rather runs the whole thing locally.
 distcc-pump mode reverts to plain distcc mode for source files that contain 
 includes with absolute paths (either directly or in an included file).
 .PP
-The .o files produced by discc-pump will be different from those produced
+The .o files produced by discc in pump mode will be different from those produced
 locally: for non-ELF files, the debug information will specify compile
 directories of the server.  The code itself should be identical.
 .PP
@@ -740,13 +787,20 @@ In distcc-pump mode, the include server is unable to handle certain very complic
 includes as found in parts of the boost library. The include server will time
 out and distcc will revert to plain mode.
 .PP
+In distcc-pump mode, includes of the form -I/usr/include/foolib do not usually
+work, see discussion in section HOW DISTCC-PUMP MODE WORKS above.
+.PP
+In distcc-pump mode, certain assumptions are made that source and header files
+do not change during the build.  See discussion in section DISTCC DISCREPANCY
+SYMPTOMS of \fBinclude_server\fR(1().
+
 Other known bugs may be documented on 
-.I http://distcc.samba.org/
+.I http://code.google.com/p/distcc/
 .SH "AUTHOR"
 distcc was written by Martin Pool <mbp@sourcefrog.net>, with the
 co-operation of many scholars including Wayne Davison, Frerich Raabe,
 Dimitri Papadopoulos and others noted in the NEWS file.  Please report
-bugs to <distcc@lists.samba.org>.
+bugs to <distcc@lists.samba.org>.  See \fBpump\fR(1) for the authors of pump mode.
 .SH "LICENCE"
 You are free to use distcc.  distcc (including this manual) may be
 copied, modified or distributed only under the terms of the GNU
@@ -754,6 +808,7 @@ General Public Licence version 2 or later.  distcc comes with
 absolutely no warrany.  A copy of the GPL is included in the file
 COPYING.
 .SH "SEE ALSO"
-distccd(1), ccache(1), gcc(1), make(1)
-.I http://distcc.samba.org/
+\fBdistccd\fR(1), \fBpump\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1),
+\fBmake\fR(1), and  \fBccache\fR(1).
+.I http://code.google.com/p/distcc/
 .I http://ccache.samba.org/

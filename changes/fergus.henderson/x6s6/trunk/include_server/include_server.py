@@ -26,21 +26,22 @@ __author__ = "Nils Klarlund"
 
 # Python imports
 import gc
+import getopt
+import glob
 import os
 import re
-import sys
-import glob
+import shutil
 import signal
-import getopt
+import SocketServer
+import sys
 import tempfile
 import traceback
-import SocketServer
 
 # Include server imports
 import basics
-import statistics
-import include_analyzer_memoizing_node
 import distcc_pump_c_extensions
+import include_analyzer_memoizing_node
+import statistics
 
 # The default size passed to listen by a streaming socket server of
 # SocketServer is only 5. Make it 128 (which appears to be the hard
@@ -62,7 +63,7 @@ NotCoveredTimeOutError = basics.NotCoveredTimeOutError
 def Usage():
   print """Usage:
 
-include_server --port INCLUDE_SERVER_PORT [options]
+include_server --port INCLUDE_SERVER_PORT [OPTIONS]
 
 where INCLUDE_SERVER_PORT is a socket name. Fork the include server
 for incremental include analysis. The include server answers queries
@@ -70,10 +71,8 @@ from the distcc client about which files to include in a C/C++
 compilation. This command itself terminates as soon as the include
 server has been spawned.
 
-Options:
- --pid_file FILEPATH         The pid of the include server is written to file
-                             FILEPATH.
-                             
+OPTIONS:
+
  -dPAT, --debug_pattern=PAT  Bit vector for turning on warnings and debugging
                                1 = warnings
                                2 = trace some functions
@@ -82,16 +81,23 @@ Options:
  -e, --email                 Send email to discc-pump developers when include
                              server gets in trouble.
 
- --no-email                  Do not send email.
- 
  --email_bound NUMBER        Maximal number of emails to send (in addition to
                              a final email). Default: 3.
                              
- --realpath_warning_re=RE    Write a warning to stderr whenever a filename is
+ --no-email                  Do not send email.
+ 
+ --path_observation_re=RE    Issue warning message whenever a filename is
                              resolved to a realpath that is matched by RE,
                              which is a regular expression in Python syntax.
-                             (Warnings must be enabled with at least -d1.)
+                             This is useful for finding out where files included
+                             actually come from. Use RE="" to find them all.
+                             Note: warnings must be enabled with at least -d1.
+
+ --pid_file FILEPATH         The pid of the include server is written to file
+                             FILEPATH.
                              
+ -s, --statistics            Print information to stdout about include analysis.
+ 
  --stat_reset_triggers=LIST  Flush stat caches when the timestamp of any
                              filepath in LIST changes or the filepath comes in
                              or out of existence.  LIST is a colon separated
@@ -102,26 +108,24 @@ Options:
                              exceptions to distcc_pump's normal assumption that
                              source files are not modified during the build.
 
+ -t, --time                  Print elapsed, user, and system time to stderr.
+
  --unsafe_absolute_includes  Do preprocessing on the compilation server even if 
                              includes of absolute filepaths are encountered.
                              Such includes are then ignored for the purposes of
                              gathering the include closure. See the
                              include_server(1) man page for futher information.
                              Using this option may lead to incorrect results.
-
- -x, --exact_analysis        Use CPP instead, do not omit system headers files.
- 
+                             
  -v, --verify                Verify that files in CPP closure are contained in
                              closure calculated by include processor.
-                             
- -s, --statistics            Print information to stdout about include analysis.
- 
- -t, --time                  Print elapsed, user, and system time to stderr.
- 
+  
  -w, --write_include_closure Write a .d_approx file which lists all the
                              included files calculated by the include server;
                              with -x, additionally write the included files
                              as calculated by CPP to a .d_exact file.
+
+ -x, --exact_analysis        Use CPP instead, do not omit system headers files.
 """
 
 # TODO(klarlund)
@@ -441,11 +445,14 @@ def DistccIncludeHandlerGenerator(include_analyzer):
       else:
         # No exception raised, include closure can be trusted.
         distcc_pump_c_extensions.XArgv(self.wfile.fileno(), files_and_links)
+      # Print out observed paths.
+      if basics.opt_path_observation_re:
+         include_analyzer.build_stat_cache.WarnAboutPathObservations(
+             include_analyzer.translation_unit)
       # Finally, stop the clock and report statistics if needed.
       statistics.EndTiming()
       if basics.opt_statistics:
         statistics.PrintStatistics(include_analyzer)
-
 
   return IncludeHandler
 
@@ -469,9 +476,9 @@ def _ParseCommandLineOptions():
                                 "no-email",
                                 "email_bound=",
                                 "exact_analysis",
+                                "path_observation_re=",
                                 "stat_reset_triggers=",
                                 "simple_algorithm",
-                                "realpath_warning_re=",
                                 "statistics",
                                 "time",
                                 "unsafe_absolute_includes",
@@ -497,8 +504,8 @@ def _ParseCommandLineOptions():
         basics.opt_send_email = False
       if opt in ("--email_bound",):
         basics.opt_email_bound = int(arg)
-      if opt in ("--realpath_warning_re",):
-        basics.opt_realpath_warning_re = re.compile(arg)
+      if opt in ("--path_observation_re",):
+        basics.opt_path_observation_re = re.compile(arg)
       if opt in ("--stat_reset_triggers",):
         basics.opt_stat_reset_triggers = (
           dict([ (glob_expr,

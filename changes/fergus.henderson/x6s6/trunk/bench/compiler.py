@@ -23,12 +23,19 @@ import commands
 import os
 import shutil
 import stat
+import sys
 import tempfile
 
 import buildutil
 
 STANDARD_CC_NAMES = ['cc', 'gcc']
 STANDARD_CXX_NAMES = ['cxx', 'c++', 'g++' ]
+
+def _find_executable(name):
+    (rs, output) = commands.getstatusoutput('which "%s"' % name)
+    if rs:
+        sys.exit("Could not determine location of '%s'" % name)
+    return output.strip()
 
 class CompilerSpec:
     """Describes a compiler/make setup.
@@ -52,16 +59,16 @@ class CompilerSpec:
           name: a string
         """
         self.where = where
-        self.real_cc = cc
-        self.real_cxx = cxx
-        self.cc = prefix + cc
-        self.cxx = prefix + cxx
+        self.real_cc = _find_executable(cc)
+        self.real_cxx = _find_executable(cxx)
+        self.cc = prefix + self.real_cc
+        self.cxx = prefix + self.real_cxx
         self.make_opts = make_opts
         self.host_opts = host_opts
         self.pump_cmd = pump_cmd
         self.num_hosts = num_hosts
         self.host_opts = host_opts
-        self.name = name or (self.pump_cmd + self.cc + "__" +
+        self.name = name or (self.pump_cmd + self.real_cc + "__" +
                              self.make_opts).replace(' ', '_')
 
     def prepare_shell_script_farm(self, farm_dir, masquerade):

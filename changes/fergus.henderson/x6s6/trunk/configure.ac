@@ -10,7 +10,7 @@ dnl Process this file with autoconf to produce a configure script
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
 AC_PREREQ(2.53)
-AC_INIT(distcc, 3.0prerelease3, distcc-pump@google.com)
+AC_INIT(distcc, 3.0prerelease3, distcc@lists.samba.org)
 
 AC_CONFIG_HEADERS(src/config.h)
 AC_CANONICAL_HOST
@@ -441,10 +441,13 @@ PKG_CHECK_MODULES(AVAHI, [avahi-client >= 0.6],
 [AC_DEFINE(HAVE_AVAHI, 1, [defined if Avahi is available])
 CFLAGS="$CFLAGS $AVAHI_CFLAGS"
 LIBS="$LIBS $AVAHI_LIBS"
-ZEROCONF_DISTCC_OBJS="src/zeroconf.o"
+ZEROCONF_COMMON_OBJS="src/zeroconf.o src/gcc-id.o"
+ZEROCONF_DISTCC_OBJS=""
 ZEROCONF_DISTCCD_OBJS="src/zeroconf-reg.o"],
-[ZEROCONF_DISTCC_OBJS=""
+[ZEROCONF_COMMON_OBJS=""
+ZEROCONF_DISTCC_OBJS=""
 ZEROCONF_DISTCCD_OBJS=""])
+AC_SUBST(ZEROCONF_COMMON_OBJS)
 AC_SUBST(ZEROCONF_DISTCC_OBJS)
 AC_SUBST(ZEROCONF_DISTCCD_OBJS)
 

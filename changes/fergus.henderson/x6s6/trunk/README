@@ -1,7 +1,7 @@
 
 	  distcc -- a free distributed C/C++ compiler system
 
-		       http://distcc.samba.org/
+		   http://code.google.com/p/distcc/
 
 		    by Martin Pool <mbp@samba.org>
 
@@ -41,7 +41,11 @@ regular gcc options and features work as normal.
 distcc is designed to be used with GNU make's parallel-build feature
 (-j). Shipping files across the network takes time, but few cycles on
 the client machine. Any files that can be built remotely are
-essentially "for free" in terms of client CPU.
+essentially "for free" in terms of client CPU.  This is even more true
+in "pump" mode, where the client does not even have to take time to
+preprocess the source files.  distcc has been successfully used in
+environments with hundreds of distcc servers, supporting dozens of
+simultaneous compiles.
 
 distcc is now reasonably stable and can successfully compile the Linux
 kernel, rsync, KDE, GNOME (via GARNOME), Samba and Ethereal.  distcc

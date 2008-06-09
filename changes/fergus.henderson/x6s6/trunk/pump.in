@@ -129,6 +129,13 @@ GetScriptDir() {
   fi
 }
 
+# Constants used by this process.
+
+# TODO(klarlund) This value must be the same as that in src/compile.c. See
+# comment there.
+max_discrepancies_before_demotion=1
+
+
 # Variables inherited from the environment of the caller.
 if [ -z "$DISTCC_LOCATION" ]; then
    # Set the default for location of 'pump' script'.
@@ -170,20 +177,6 @@ Initialize() {
   # formation of the relative path that takes us from the 'bin' directory of an
   # installation to the 'include_server' directory.
   include_server_relative="../$PYTHON_RELATIVE_LIB/include_server"
-
-  # We use a little heuristic to determine whether this pump script is part of
-  # an installation. Specifically, we check whether we're a bin directory, and
-  # more importantly, we look for the include_server.py script. If we're running
-  # out of the distcc_pump source directory, both conditions below will fail.
-  if [ "`basename $DISTCC_LOCATION`" = 'bin' ] \
-     && [ -f "$DISTCC_LOCATION/$include_server_relative/include_server.py" ]
-  then
-    # Running from installed directory.
-    is_in_installation=true
-  else
-    # Running from configured directory, usually the source directory.
-    is_in_installation=""
-  fi
 
   distcc_location="$DISTCC_LOCATION"
 
@@ -275,15 +268,20 @@ StartIncludeServer() {
     esac
 
     if [ -z "$PYTHONOPTIMIZE" ]; then PYTHONOPTIMIZE=1; fi
+    # We use 'eval' so that INCLUDE_SERVER_ARGS can use shell quoting such 
+    # as in:
+    #
+    #   INCLUDE_SERVER_ARGS='--stat_reset_triggers="*"'
+    #
+    # which will pass '*' to the include server (that is, the string consisting
+    # of one asterisk) without filename expansion.
     PYTHONOPTIMIZE=$PYTHONOPTIMIZE \
     PYTHONPATH="$pythonpath::$PYTHONPATH" \
-    $PYTHON                          \
-        "$include_server"            \
-        --port "$socket"             \
-        --pid_file "$tmp_pid_file"   \
-        --email                      \
-        --email_bound=5              \
-        -d1                          \
+    eval "'$PYTHON'"                   \
+        "'$include_server'"            \
+        --port "'$socket'"             \
+        --pid_file "'$tmp_pid_file'"   \
+        -d1                            \
         $INCLUDE_SERVER_ARGS
   )
 
@@ -322,12 +320,16 @@ StartIncludeServer() {
 ReportDiscrepancies() {
   # The discrepancy_counter file is created when a pump-mode distcc invocation
   # failed remotely but succeeded locally.
-  if [ -f $socket_dir/discrepancy_counter ]; then
+  num_discrepancies=`(cat $socket_dir/discrepancy_counter 2>/dev/null | wc -c \
+                      || echo 0)`
+  if [ $num_discrepancies -ge $max_discrepancies_before_demotion ]; then
     echo -n '__________Warning: ' 1>&2
-    echo -n `cat $socket_dir/discrepancy_counter | wc -c`' '  1>&2
+    echo -n "$num_discrepancies " 1>&2
     echo -n 'pump-mode compilation(s) failed on server, '  1>&2
     echo    'but succeeded locally.' 1>&2
-    echo    '__________See pump(1) manual page.' 1>&2
+    echo -n '__________Distcc-pump was demoted to plain mode.' 1>&2
+    echo -n '  See the Distcc Discrepancy Symptoms section in the ' 1>&2
+    echo    'include_server(1) man page.' 1>&2
   fi
 }
 
@@ -338,6 +340,12 @@ ShutDown() {
     ps -p "$include_server_pid" > /dev/null; then
     echo '__________Shutting down distcc-pump include server'
     kill $include_server_pid
+    # Wait until it's really dead.  We need to do this because the
+    # include server may produce output after receiving SIGTERM.
+    # Note that while 'sleep 0.01' is relying on a feature of GNU sleep,
+    # that's OK; on systems that don't support it, it's effectively the
+    # same as 'sleep 0', i.e. we'll just busy-wait rather than sleeping.
+    while kill -0 $include_server_pid; do sleep 0.01; done >/dev/null 2>&1
   fi
 
   if [ -f "$include_server_stdout" ]; then

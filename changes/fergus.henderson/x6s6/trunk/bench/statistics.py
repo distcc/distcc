@@ -21,11 +21,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
 
-
-# Based in part on http://starship.python.net/crew/jhauser/NumAdd.py.html by Janko Hauser
-
-
-import Numeric
+import math
 
 def var(m):
     """
@@ -33,18 +29,17 @@ def var(m):
     """
     if len(m) < 2:
         return None
-    mu = Numeric.average(m)
-    return (Numeric.add.reduce(Numeric.power(Numeric.ravel(m)-mu, 2))
-            / (len(m)-1.))
+    mu = mean(m)
+    return sum((x - mu) * (x - mu) for x in m) / (len(m) - 1.0)
 
 def std(m):
     """
     Standard deviation of m.
     """
     v = var(m)
-    return v and Numeric.sqrt(v)
+    return v and math.sqrt(v)
 
 def mean(m):
     if len(m) < 1:
         return None
-    return Numeric.average(m)
+    return sum(m)/len(m)
