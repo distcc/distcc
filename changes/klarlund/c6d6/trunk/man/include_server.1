@@ -41,7 +41,7 @@ There are two kinds of failures that relate to the include server. The include
 server may fail to compute the includes or fail in other ways, see section
 \fBINCLUDE SERVER SYMPTOMS\fR.  And, the compilation on the remove server may
 fail due to inadequacy of the calculated include closure, but then succeed when
-locally retried, see section \fBDISTCC SYMPTOMS\fR.
+locally retried, see section \fBDISTCC DISCREPANCY SYMPTOMS\fR.
 
 .SH "OPTION SUMMARY"
 The following options are understood by include_server.py.
@@ -53,7 +53,9 @@ Bit vector for turning on warnings and debugging
  other powers of two: see include_server/basics.py.
 .TP
 .B -e, --email
-Send email to discc-pump developers when include server gets in trouble.
+Send email to 'distcc-pump-errors' or if defined, the value of enviroment
+variable DISTCC_EMAILLOG_WHOM_TO_BLAME, when include server gets in trouble.
+The default is to not send email.
 .TP
 .B --email_bound NUMBER
 Maximal number of emails to send (in addition to a final email). Default: 3.
@@ -87,17 +89,25 @@ Print elapsed, user, and system time to stderr.
 .TP
 .B --unsafe_absolute_includes  
 Do preprocessing on the compilation server even if includes of absolute
-filepaths are encountered.  Such includes are then ignored for the purposes of
-gathering the include closure.  Using this option may lead to incorrect results
-because (1) the header may actually be included on the compilation server and it
-may not be the same as on the client, (2) the include directives of the header
-are not further analyzed.  The option is useful for compiling code that has such
-hardcoded absolute locations of header files tugged inside conditional
-directives that render the includes irrelevant.  More precisely, these includes
-must be eliminated during preprocessing for the actual configuration. Then the
-question of existence of the header file is moot and the remote compilation is
-sound.  This is often the case if such includes are meant for unusual
-configurations different from the actual configuration.
+filepaths are encountered.  Normally the include-server will fall back on local
+preprocessing if it detects any absolute includes.  Thus, this flag is useful
+for preventing such fallbacks when the absolute includes are a false alarm,
+either because the absolute include is discarded during preprocessing or because
+the absolutely included file exists on the compilation servers.  
+
+More precisely, with --unsafe_absolute_includes absolute includes are ignored
+for the purposes of gathering the include closure.  Using this option may lead
+to incorrect results because (1) the header may actually be included on the
+compilation server and it may not be the same as on the client, (2) the include
+directives of the header are not further analyzed.  
+
+The option is useful for compiling code that has such hardcoded absolute
+locations of header files inside conditional directives (e.g. "#ifdef") that
+render the includes irrelevant.  More precisely, these includes must be
+eliminated during preprocessing for the actual configuration. Then the question
+of existence of the header file is moot and the remote compilation is sound.
+This is often the case if such includes are meant for unusual configurations
+different from the actual configuration.
 .TP
 .B -v, --verify
 Verify that files in CPP closure are contained in
@@ -132,11 +142,11 @@ macro expressions. The distcc client will use plain distcc mode.
 .B Warning: Filepath must be relative but isn't
 The include server does not accept absolute filepaths, such as
 /usr/include/stdio.h, in include directives, because there is no guarantee that
-this header on the compilation server machine will be that of the client.  The
-include server gives up analyzing the include closure. The distcc client cannot
-use pump-mode.
+this header on the compilation server machine will be the same as that on the
+client.  The include server gives up analyzing the include closure. The distcc
+client cannot use pump-mode.
 
-To overcome this problem in not always reliable way, set the environment
+To overcome this problem in a not always reliable way, set the environment
 variable INCLUDE_SERVER_ARGS='--unsafe_absolute_includes' when invoking the pump
 script to pass the --unsafe_absolute_includes option to the include server.
 .TP
@@ -148,7 +158,10 @@ this case the include will provide an answer to the distcc client.
 .B Warning: Path '/PATH/FILE' changed/came into existence/no longer exists
 These warnings are issued when using stat reset triggers.  Because /PATH/FILE
 changed, the include server clears its caches; the new version of the file (or
-the lack of it) renders the include analysis invalid.
+the lack of it) renders the include analysis invalid. This message can usually
+be ignored; it does signify a somewhat precarious use of files by the build
+system.  It is recommended to fix the build system so that files are not
+rewritten.
 
 .TP
 .B Warning: For translation unit ..., lookup of file ... resolved to ... whose realpath is ...
@@ -156,21 +169,53 @@ This warning occurs with --path_observation_re when a new realpath matching
 a source or header file is observed.
  
 
-.SH "DISTCC SYMPTOMS"
+.SH "DISTCC DISCREPANCY SYMPTOMS"
 
-The interaction between the build system, distcc, and the include server may
-suffer issues that manifest themselves with the message:
-.B "remote compilation of '...' failed, retried locally and got a different 
-result"
-The messages result from the safety-net that is a part of distcc-pump mode: a
-failing compilation is retried locally.
+
+The interactions between the build system, distcc, and the include server is
+somewhat complex. When a distcc commands receives a failing compilation from the
+remote server it retries the compilation locally.  This section discusses the
+causes of discrepancies between remote and local compilation.  These are flagged
+by the demotion message:
+
+.B __________Warning: ... pump-mode compilation(s) failed on server, 
+.B but succeeded locally.
+.br
+.B __________Distcc-pump was demoted to plain mode.  
+.B See the Distcc Discrepancy Symptoms section in the include_server(1) man 
+.B page.
+
+The pump script issues this message at the end of the build. This means that for
+at least one distcc invocation a local compilation succeeded after the remote
+compilation failed. Each distcc invocation for which such a discrepancy occurred
+in turn also issues a message such as:
+
+.B Warning: remote compilation of '...' failed, 
+.B retried locally and got a different result.
+
+The demotion makes subsequent distcc invocations use plain distcc mode.  Thus
+preprocessing will take place on the local machine for the remainder of the
+build.  This technique prevents very slow builds where all compilations end up
+on the local machine after failing remotely.
+
+Of course, if the local compilations fails after the remote failures, then the
+distcc invocation exits with the non-zero status of the local compilation. The
+error messages printed are also those of the local compilation.
+
+The fallback behavior for distcc-pump mode to local compilation can be disabled
+by setting the environment variable DISTCC_FALLBACK to 1, which makes the distcc
+command fail as soon as the remote compilation has failed. This setting is very
+useful for debugging why the remote compilation went wrong, because now the
+output from the server will be printed.
+
+Next we discuss the possible causes of discrepancies.
 
 .TP
-The user saved a source or header file during the build. 
+.B The user changed a source or header file during the build. 
 This yields inconsistent results of course.
 
 .TP
-A source or header file changed during the build. 
+.B A source or header file changed during the build.  
 The build system rewrites a file.  For Linux kernel 2.6, this happens
 for 'include/linux/compile.h' and 'include/asm/asm-offsets.h'. This condition is
 fixed by letting the include server know that it must reset its caches when a
@@ -181,23 +226,26 @@ as in:
    include_server_args="--stat_reset_triggers=include/linux/compile.h:include/asm/asm-offsets.h"
 
 .TP
-A very obscure variant of this situation.  
+.B A header file is potentially included, but does not exist, and is then later included.
+ 
 This occurs when some header foo.h includes another header file trick.h, but the
 trick.h file has not yet been generated and the inclusion is actually ignored
 because of preprocessing directives. The include server will probe for the
 existence of trick.h, because it overapproximates all possible ways directives
 actually evaluate. The file trick.h is determined not to exist. If it is later
-generated, and then really included, then the include server will falsely believe
-that the file still does not exist.
+generated, and then really included, then the include server will falsely
+believe that the file still does not exist.
 
 .TP
-The include server was started with '--unsafe_absolute_includes'.  This is a
-problem if there are header files locally that do not exist remotely and that
-are actually used (which means that conditional directives evaluate to actually
-include the files).
+.B The include server was started with \fB--unsafe_absolute_includes\fR.
+This is a problem if there are header files locally that do not exist remotely
+and that are actually used.  Such includes are often protected by conditional
+directives that evaluate so that are actually used on only specific and often
+uncommon platforms. If you are not compiling for such a platform, then it may be
+correct to use \fB--unsafe_absolute_include\fR.
 
 .TP
-The include server has calculated the wrong includes. 
+.B The include server has calculated the wrong includes. 
 We do not know of such a situation.
 
 
@@ -208,7 +256,9 @@ been started properly is communicated through the existence of the pid_file.
 .SH "ENVIRONMENT VARIABLES"
 
 .B DISTCC_EMAILLOG_WHOM_TO_BLAME
-The email address to use for include server automated emails.
+The email address to use for include server automated emails. The default
+is 'distcc-pump-errors' (which is an email address that probably will not
+exist in your domain).
 
 Additionally, the invocation of the compiler may use additional environment
 variables.

@@ -154,12 +154,11 @@ phases are being invoked, and whether the job can be
 distributed.
 
 .SH "HOW DISTCC-PUMP MODE WORKS"
-In pump mode, distcc runs the preprocessor remotely too.  To do so,
-the preprocessor must have access to all the files that it would
-have accessed if had been running locally.  In pump mode, therefore,
-distcc gathers all of the recursively included headers,
-except the ones that are part of the compiler installation, and sends them along
-with the source file to the compilation server. 
+In pump mode, distcc runs the preprocessor remotely too.  To do so, the
+preprocessor must have access to all the files that it would have accessed if
+had been running locally.  In pump mode, therefore, distcc gathers all of the
+recursively included headers, except the ones that are default system headers,
+and sends them along with the source file to the compilation server.
 
 In distcc-pump mode, the server unpacks the set of all source files in a
 temporary directory, which contains a directory tree that mirrors the part of
@@ -201,6 +200,24 @@ for Linux kernel 2.6, do not quite satisfy this requirement.  To
 overcome such issues, and other corner cases such as absolute
 filepaths in includes, see the include_server(1) man page.
 
+Another important assumption is that the include configuration of all machines
+must be identical.  Thus the headers under the default system path must be the
+same on all servers or and all clients.  If a standard GNU compiler installation
+is used, then this requirement applies to all libraries whose header files are
+installed under /usr/include or /usr/local/include/.  Note that installing
+software packages often lead to additional headers files being placed in
+subdirectories of either.
+
+If this assumption does not hold, then it is possible to break builds with
+distcc-pump mode, or worse, to get wrong results without warning.  Presently
+this condition is not verified, but is on our todo list.
+
+An easy way to guarantee that the include configurations are identical is to use
+a crosscompiler that defines a default system search path restricted to
+directories of the compiler installation instead.
+
+See the \fBinclude_server\fR(1) manual for more information on symptoms and
+causes of violations of distcc-pump mode assumptions.
 
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
