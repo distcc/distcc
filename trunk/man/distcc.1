@@ -154,12 +154,11 @@ phases are being invoked, and whether the job can be
 distributed.
 
 .SH "HOW DISTCC-PUMP MODE WORKS"
-In pump mode, distcc runs the prepreprocessor remotely too.  To do so,
-the preprocessor must have access to all the files that it would
-have accessed if had been running locally.  In pump mode, therefore,
-distcc gathers all of the recursively included headers,
-except the ones that are part of the compiler installation, and sends them along
-with the source file to the compilation server. 
+In pump mode, distcc runs the preprocessor remotely too.  To do so, the
+preprocessor must have access to all the files that it would have accessed if
+had been running locally.  In pump mode, therefore, distcc gathers all of the
+recursively included headers, except the ones that are default system headers,
+and sends them along with the source file to the compilation server.
 
 In distcc-pump mode, the server unpacks the set of all source files in a
 temporary directory, which contains a directory tree that mirrors the part of
@@ -201,6 +200,27 @@ for Linux kernel 2.6, do not quite satisfy this requirement.  To
 overcome such issues, and other corner cases such as absolute
 filepaths in includes, see the include_server(1) man page.
 
+Another important assumption is that the include configuration of all machines
+must be identical.  Thus the headers under the default system path must be the
+same on all servers and all clients.  If a standard GNU compiler installation
+is used, then this requirement applies to all libraries whose header files are
+installed under /usr/include or /usr/local/include/.  Note that installing
+software packages often lead to additional headers files being placed in
+subdirectories of either.
+
+If this assumption does not hold, then it is possible to break builds with
+distcc-pump mode, or worse, to get wrong results without warning.  Presently
+this condition is not verified, and it is on our TODO list to address this
+issue. Also, currently, explicit include specifications that resolve to something
+under the default system search path such as -I/usr/include/foolib do not work
+except if this directory is specified with -isystem.
+
+An easy way to guarantee that the include configurations are identical is to use
+a crosscompiler that defines a default system search path restricted to
+directories of the compiler installation.
+
+See the \fBinclude_server\fR(1) manual for more information on symptoms and
+causes of violations of distcc-pump mode assumptions.
 
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
@@ -767,6 +787,12 @@ In distcc-pump mode, the include server is unable to handle certain very complic
 includes as found in parts of the boost library. The include server will time
 out and distcc will revert to plain mode.
 .PP
+In distcc-pump mode, includes of the form -I/usr/include/foolib do not usually
+work, see discussion in section HOW DISTCC-PUMP MODE WORKS above.
+.PP
+In distcc-pump mode, certain assumptions are made that source and header files
+do not change during the build.  See discussion in section DISTCC DISCREPANCY
+SYMPTOMS of \fBinclude_server\fR(1().
 
 Other known bugs may be documented on 
 .I http://code.google.com/p/distcc/
