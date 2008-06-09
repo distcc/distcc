@@ -505,7 +505,7 @@ Main() {
         DumpEnvironmentVariables
         exit 0
       else
-        exit m1
+        exit 1
       fi
       ;;
     --shutdown)
