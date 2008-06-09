@@ -317,7 +317,7 @@ StartIncludeServer() {
   fi
 }
 
-Critique() {
+ReportDiscrepancies() {
   # The discrepancy_counter file is created when a pump-mode distcc invocation
   # failed remotely but succeeded locally.
   num_discrepancies=`(cat $socket_dir/discrepancy_counter 2>/dev/null | wc -c \
@@ -334,7 +334,7 @@ Critique() {
 }
 
 ShutDown() {
-  Critique
+  ReportDiscrepancies
   # Always -- at exit -- shut down include_server and remove $socket_dir
   if [ -n "$include_server_pid" ] && \
     ps -p "$include_server_pid" > /dev/null; then
