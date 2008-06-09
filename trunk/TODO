@@ -410,32 +410,6 @@ dnotify in monitor
     delete events.
 
 
-SSH connection hoarding
-
-    It might be nice to hold open SSH connections to avoid the network
-    and CPU overhead of opening new ones.  
-
-    However, fsh is far too slow, probably because of being written in
-    Python. 
-
-    It's only going to work on systems which can pass file descriptors
-    and therefore needs to be optional.  Probably this only works on
-    Unix.
-
-    Building the kernel between the three x2000s seems to make
-    localhost thrash.  A few jobs (but not many) get passed out to the
-    other machines.
-
-    Perhaps for C++ or something with really large files fsh would be
-    better because the cost of starting Python would be amortized
-    across more work.
-
-    I don't think this needs to be done in distcc.  It can be a
-    completely separate project to just rewrite fsh into C.  Indeed
-    you could even be compatible with the Python implementation and
-    just write the short-lived client bit in C.
-
-
 Masquerade
 
     It might be nice to automatically create the directory and
@@ -448,10 +422,6 @@ Masquerade
 
 Packaging
 
-    Perhaps build RPMS and .debs?
-
-    Is it easy to build a static (or LSB-compliant?) .rpm on Debian?
-    
     What about an apt repository?
 
 
@@ -486,7 +456,7 @@ check that all lengths are unsigned 32-bit
     I think this is done, but it's worth checking a bit more.
 
 
-abort when cpp fails
+in plain (non-pump) mode, abort when cpp fails
 
     The same SIGCHLD handling approach used to feed the compiler from
     a fifo might be used to abort early if the preprocessor fails.
@@ -865,7 +835,8 @@ Just cpp and linker?
 -g support
 
     I'm told that gcc may fix this properly in a future release.  There would
-    then be no need to kludge around it in distcc.
+    then be no need to kludge around it in distcc.  [Yes, this is now
+    fixed in gcc 4.0 and later.]
 
     Perhaps detect the -g option, and then absolutify filenames passed to the
     compiler.  This will cause absolute filenames to appear in error messages,
@@ -930,7 +901,7 @@ rsync-like distributed caching
     librsync is probably not stable enough to do this very well.
 
 
---ping option
+--ping option [Done - see "lsdistcc"]
        
     It would be nice to have a <tt>--ping</tt> client option to contact
     all the remote servers, and perhaps return some kind of interesting
@@ -1067,6 +1038,9 @@ OpenMOSIX autodiscovery
 
     what is this?
 
+    [This is probably moot now - I think ZeroConf support
+    accomplishes the same goals?]
+
 
 central configuration
 
@@ -1091,7 +1065,11 @@ Large-scale Distribution
     "peer-to-peer" systems like Freenet and Napster.
 
 
-preprocess remotely
+-------------------------------------------------------------------------------
+DONE TODOs
+-------------------------------------------------------------------------------
+
+preprocess remotely [Done! This is distcc 3.0's "pump" mode.]
 
     Some people might like to assume that all the machines have the same
     headers installed, in which case we really can preprocess remotely and
@@ -1105,6 +1083,40 @@ preprocess remotely
 
     Perhaps those people should just use a different tool like dmake, etc.
 
+SSH connection hoarding
+
+    It might be nice to hold open SSH connections to avoid the network
+    and CPU overhead of opening new ones.  
+
+    However, fsh is far too slow, probably because of being written in
+    Python. 
+
+    It's only going to work on systems which can pass file descriptors
+    and therefore needs to be optional.  Probably this only works on
+    Unix.
+
+    Building the kernel between the three x2000s seems to make
+    localhost thrash.  A few jobs (but not many) get passed out to the
+    other machines.
+
+    Perhaps for C++ or something with really large files fsh would be
+    better because the cost of starting Python would be amortized
+    across more work.
+
+    I don't think this needs to be done in distcc.  It can be a
+    completely separate project to just rewrite fsh into C.  Indeed
+    you could even be compatible with the Python implementation and
+    just write the short-lived client bit in C.
+
+    [This has been done, in ssh itself: the -M option and the
+    ControlMaster and ControlPath configuration settings.]
+
+Packaging
+
+    Perhaps build RPMS and .debs? [DONE]
+
+    Is it easy to build a static (or LSB-compliant?) .rpm on Debian? [DONE]
+    
 
 Local variables:
 mode: indented-text
