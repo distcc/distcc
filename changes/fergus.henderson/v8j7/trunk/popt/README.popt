@@ -1,0 +1,12 @@
+This is a perfectly ordinary copy of libpopt 1.7, except that the
+configure scripts have been munged to make them fit with distcc.  NLS
+support has been removed, because distcc currently does not use it. 
+
+It is only used on platforms that do not have a sufficiently
+up-to-date copy of their own.  If you build distcc on a platform which
+has popt, this directory should not be used.  (You can control that
+using the --with-included-popt configure flag.)
+
+popt has no apparent home page, but the source can be retrieved from 
+
+ftp://ftp.rpm.org/pub/rpm/dist/rpm-4.1.x
