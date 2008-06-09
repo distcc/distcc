@@ -281,8 +281,6 @@ StartIncludeServer() {
         "'$include_server'"            \
         --port "'$socket'"             \
         --pid_file "'$tmp_pid_file'"   \
-        --email                        \
-        --email_bound=5                \
         -d1                            \
         $INCLUDE_SERVER_ARGS
   )
