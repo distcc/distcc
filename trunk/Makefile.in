@@ -362,10 +362,11 @@ conf_files = $(conf_dir)/hosts \
 default_dir = packaging/RedHat/default
 default_files = $(default_dir)/distcc
 
-man1_MEN = man/distcc.1 man/distccd.1 man/distccmon-text.1 man/pump.1
+man1_MEN = man/distcc.1 man/distccd.1 man/distccmon-text.1 \
+           man/pump.1 man/include_server.1
 man_HTML = man/distcc_1.html man/distccd_1.html man/distccmon_text_1.html \
-	   man/pump_1.html
-MEN = $(man1_MEN) 
+	   man/pump_1.html man/include_server_1.html
+MEN = $(man1_MEN)
 
 gnome_data = gnome/distccmon-gnome-icon.png	\
 	gnome/distccmon-gnome.desktop
@@ -650,6 +651,8 @@ man/distccmon_text_1.html: man/distccmon-text.1
 man/pump_1.html: man/pump.1
 	troff2html -man "$(srcdir)"/man/pump.1 > $@
 
+man/include_server_1.html: man/include_server.1
+	troff2html -man "$(srcdir)"/man/include_server.1 > $@
 
 ######################################################################
 ## CHECK targets for code that has been build.
