@@ -61,7 +61,9 @@
 #include "dotd.h"
 
 
-static const int max_discrepancies_before_demotion = 1;
+/* TODO(klarlund)Warning: this constant should have the same value as in the
+ * pump.in script! Make it configurable and user changeable.*/
+ static const int max_discrepancies_before_demotion = 1;
 
 static const char *const include_server_port_suffix = "/socket";
 static const char *const discrepancy_suffix = "/discrepancy_counter";
