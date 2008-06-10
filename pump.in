@@ -275,14 +275,15 @@ StartIncludeServer() {
     #
     # which will pass '*' to the include server (that is, the string consisting
     # of one asterisk) without filename expansion.
-    PYTHONOPTIMIZE=$PYTHONOPTIMIZE \
-    PYTHONPATH="$pythonpath::$PYTHONPATH" \
-    eval "'$PYTHON'"                   \
-        "'$include_server'"            \
-        --port "'$socket'"             \
-        --pid_file "'$tmp_pid_file'"   \
-        -d1                            \
-        $INCLUDE_SERVER_ARGS
+    eval \
+      PYTHONOPTIMIZE=$PYTHONOPTIMIZE    \
+      PYTHONPATH="$pythonpath::$PYTHONPATH" \
+      "'$PYTHON'"                       \
+         "'$include_server'"            \
+         --port "'$socket'"             \
+         --pid_file "'$tmp_pid_file'"   \
+         -d1                            \
+         $INCLUDE_SERVER_ARGS
   )
 
   # solaris sh's built-in test does not support -S, so we need to use
