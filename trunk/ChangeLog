@@ -3977,6 +3977,10 @@
 	* distcc/src/lsdistcc.c: edit
 
 
+## More changes that were made internally to Google, and not integrated
+## into the main distcc distribution until 2008.  These log messages
+## are from the RPM spec file's changlog.
+
 * Thu Jun 14 2007 Manos Renieris <opensource@google.com>
 - Added all the distcc-pump related parts to distcc.spec.
 - Changed the way the package is built.
