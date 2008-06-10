@@ -48,9 +48,9 @@ real-world compilation tasks; in this case, compiling various
 open-source projects.  In each case, we compiled in four modes:</p>
 <ol>
   <li> <b>local_01</b>: all compilation done locally
-  <li> <b>dist_h38_j40</b>: using distcc with 38 server machines (152
+  <li> <b>dist_h38_j40</b>: using distcc with 38 compilation servers (152
        CPUs), and <code>make -j40</code>, which gives 40 parallel
-       compilations.
+       compilations. distcc is used in non-pump mode (local preprocessing).
   <li> <b>pump_h38_j40</b>: like <code>dist_h38_j40</code>, but using
        distcc in pump (remote preprocessing) mode.
   <li> <b>pump_h38_j80</b>: like <code>pump_h38_j40</code>, but using
@@ -139,33 +139,30 @@ project's tarball before building.</p>
 
 <ul>
 
-  <li> For all but the smallest projects, <code>distcc</code> results
-       in a significant speedup in compilation time over compiling
-       locally.  Partly this is because the distcc servers are beefier
-       machines than the desktop machine, but the main reason for this
-       is the ability to parallelize (this is why <code>hello</code>,
-       with only a few source files, is faster to compile locally).
+  <li> For all but the smallest projects, <code>distcc</code> results in a
+       significant speedup in compilation time over compiling locally. This is
+       because distcc is able to compile many source files in parallel. Such
+       parallelism may not possible for small projects such as
+       <code>hello</code>, which involves four small compilations.
        <br><br></li>
 
-  <li> In almost all cases, distcc's pump mode results in a
-       significant speedup in compilation time over plain distcc.
-       Sometimes, as for Samba 3.0, the speedup is more than a factor
-       of three! <br><br></li>
+  <li> In almost all cases, distcc's new pump mode results in a significant
+       speedup in compilation time over non-pump mode.  Sometimes, as for
+       Samba 3.0, the speedup is more than a factor of three!<br><br></li>
 
   <li> The parallelism of the various projects' Makefiles affects
-       distcc speedup a lot.  Makefiles that run <code>make</code>
-       sequentially in subdirectories benefit the least from distcc.
-       These projects may still see a benefit from distcc, especially
-       if the distcc servers are faster than the local
-       machine, but they will see less of a benefit from distcc's pump
-       mode, which gets its speedup from being able to parallelize
-       pre-processing. <br><br></li>
+       the obtained speedup significantly.  Makefiles that
+       run <code>make</code> sequentially in subdirectories benefit less from
+       distcc.  They will see little addded benefit from distcc's pump mode
+       because the sequentiality of their execution allows only some,
+       but not many, compilations to be issued near
+       simultaneously. <br><br></li>
 
   <li> All these opensource projects are built by running
        <code>configure</code> plus <code>make</code>.  In each case,
        we count only the <code>make</code> time, not the
        <code>configure</code> time.  However, projects such as
-       bintuils run extra configuration during the <code>make</code>
+       binutils run extra configuration during the <code>make</code>
        step (for binutils, the initial <code>configure</code> run is
        trivial, and the <code>make</code> command does more intensive
        configuration in various subdirectories before building).  This
@@ -181,6 +178,20 @@ project's tarball before building.</p>
        require more memory on the host machine than non-pump mode
        does. <br><br></li>
 
+  <li> With a multi-processor client machine, the speed-ups would have been
+       less, both for non-pump distcc over local compilation as for
+       distcc-pump over non-pump distcc. Still, with four-processor client
+       machines, distcc's pump-mode is up to 2 1/2 times faster than its
+       non-pump mode for large projects benchmarked at Google.<br><br></li>
+
+  <li> As a side note, while collecting benchmark results, we found sometimes
+       that pump mode did not give the expected speedup.  On analyzing the
+       logs, we discovered the reason: that distcc had encountered an error
+       running the test in pump mode, and had fallen back to plain distcc
+       mode.  This can happen for
+       <a href="man/include_server_1.html#TOC_5">several
+       reasons</a>.  For example, the Linux kernel needed special attention
+       because it rewrites header files during the build.
 </ul> 
 
 </td>
