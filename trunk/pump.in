@@ -276,8 +276,8 @@ StartIncludeServer() {
     # which will pass '*' to the include server (that is, the string consisting
     # of one asterisk) without filename expansion.
     eval \
-      PYTHONOPTIMIZE=$PYTHONOPTIMIZE    \
-      PYTHONPATH="$pythonpath::$PYTHONPATH" \
+      "PYTHONOPTIMIZE='$PYTHONOPTIMIZE' " \
+      "PYTHONPATH='$pythonpath::$PYTHONPATH' " \
       "'$PYTHON'"                       \
          "'$include_server'"            \
          --port "'$socket'"             \
