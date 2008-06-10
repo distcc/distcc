@@ -3,6 +3,3921 @@
 ## the dates they were applied to the internal-Google branch, and
 ## interleave with the changes to the main branch, below.
 
+2008-06-10 00:52  Craig Silverstein <opensource@google.com>
+
+	* pump.in:
+	  
+	  Apparently, for freebsd's sh at least, "eval FOO=a bar" lets bar see
+	  FOO=a, while "FOO=a eval bar" does not. So change from the latter
+	  formulation to the former.
+	  
+	  Tested by running 'make pump-maintainer-check' on freebsd and on linux
+	  (ubuntu).
+	  
+	  Reviewed by klarlund
+
+2008-06-10 00:09  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  While testdistcc.py tries to use port 42000 to communicate, if it
+	  fails it tries 42001, etc. When checking output, make sure we match
+	  the port we actually ended up binding on.
+	  
+	  Tested by running 'make check' on a wide variety or architectures,
+	  including a FreeBSD machine where make check failed before this
+	  change.
+	  
+	  Reviewed by fergus
+
+2008-06-09 23:12  Craig Silverstein <opensource@google.com>
+
+	* man/distcc.1, man/distccd.1, man/include_server.1, man/pump.1:
+	  
+	  Update date to june 9 instead of june 2.
+
+2008-06-09 23:08  Craig Silverstein <opensource@google.com>
+
+	* configure.ac:
+	  
+	  I had talked Fergus into changing the version number from 3.0rc1 to
+	  3.0-rc1. But now rpm is complaining that - is illegal in a version
+	  string, so I'm changing it back to 3.0rc1. Sorry Fergus...
+
+2008-06-09 23:07  Craig Silverstein <opensource@google.com>
+
+	* ChangeLog:
+	  
+	  I had talked Fergus into changing the version number from 3.0rc1 to
+	  3.0-rc1. But now rpm is complaining that - is illegal in a version
+	  string, so I'm changing it back to 3.0rc1. Sorry Fergus...
+
+2008-06-09 22:02  Fergus Henderson <opensource@google.com>
+
+	* configure.ac:
+	  
+	  Change version number to 3.0rc1
+	  (for "release candidate 1").
+	  
+	  Reviewers: Craig Silverstein
+
+2008-06-09 21:22  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, doc/web/man/distcc_1.html,
+	  doc/web/man/include_server_1.html, packaging/RedHat/rpm.spec:
+	  
+	  Update the html version of the man pages, based on the .1 updates.
+	  Add include_server, which is a new man page. Update the Makefile to
+	  know about the new man page, include it in the distribution, etc.
+	  Also update the rpm spec to include it too.
+
+2008-06-09 20:31  Fergus Henderson <opensource@google.com>
+
+	* TODO:
+	  
+	  Some updates to the TODO list to mark as done issues which are
+	  addressed
+	  in distcc 3.0.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-06-09 20:28  Fergus Henderson <opensource@google.com>
+
+	* pump.in:
+	  
+	  Rename "Critique" function as "ReportDiscrepancies",
+	  to make it clearer what the function does.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund
+
+2008-06-09 19:59  Nils Klarlund <opensource@google.com>
+
+	* include_server/include_server.py, man/distcc.1, man/include_server.1,
+	  pump.in:
+	  
+	  The missing include_server(1) man page and additional material about
+	  the basic
+	  assumptions of distcc-pump added to man/distcc.1 as well. The BUGS
+	  section
+	  of distcc.1 has been updated.
+	  
+	  A spelling error correction is made to man/distcc.1.
+	  
+	  The pump.in script is changed so that it does not introduce other
+	  certain
+	  defaults than those mentioned in the manual (which are those of the of
+	  include
+	  server).
+	  
+	  Finally, I changed the order of the options in the include server
+	  source code to
+	  be alphabetical in accordance with include_server(1) man page.
+	  
+	  Reviewers: fergus, csilvers.
+
+2008-06-09 19:53  Nils Klarlund <opensource@google.com>
+
+	* find_c_extension.sh:
+	  
+	  Correct obscure bug (that quoting a variable eliminates the conversion
+	  of
+	  newlines to spaces).
+	  
+	  Reviewers: fergus and csilvers (at Google).
+
+2008-06-09 16:38  Lei Zhang <opensource@google.com>
+
+	* src/lsdistcc.c, test/testdistcc.py:
+	  
+	  lsdistcc should print non-default port numbers.
+	  
+	  Reviewed by fergus
+
+2008-06-09 15:04  Fergus Henderson <opensource@google.com>
+
+	* pump.in:
+	  
+	  Fix typo in Nils' previous change.
+
+2008-06-09 14:14  Nils Klarlund <opensource@google.com>
+
+	* pump.in, src/compile.c:
+	  
+	  Add necessary message to pump script with warning that compilations
+	  were forced
+	  from distcc-pump mode into plain mode.
+	  
+	  I had resisted doing this at first, because of the
+	  max_discrepancies_before_demotion constant in src/compile.c, which
+	  actually
+	  controls whether there were sufficiently many discrepancies to force a
+	  demotion.
+	  The problem is that the constant is not known to the pump script. It
+	  should be
+	  made configurable, through gosh, another env var. But that'll be for
+	  later.
+	  
+	  This constant is currently 1 and it shouldn't be changed.
+	  
+	  Reviewers: fergus and csilvers.
+
+2008-06-07 01:21  Craig Silverstein <opensource@google.com>
+
+	* doc/web/benchmark.html, doc/web/compared.html, doc/web/compilers.html,
+	  doc/web/faq.html, doc/web/index.html, doc/web/results.html,
+	  doc/web/scenarios.html, doc/web/security.html:
+	  
+	  Add a link to the man pages from the side-bar.
+	  
+	  Also, fixed up the side-bar from a few non-top-level pages to be
+	  consistent with the top-level-pages bars: compilers.html and
+	  compared.html.
+
+2008-06-07 01:16  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  When uploading the package, we try to update the website as well.
+	  Since the website contents are checked into svn, that's just a matter
+	  of checking in any auto-generated html-ized pages (eg the man pages).
+
+2008-06-07 01:13  Craig Silverstein <opensource@google.com>
+
+	* doc/web/benchmark.html, doc/web/man/distcc_1.html,
+	  doc/web/man/distccd_1.html, doc/web/man/distccmon_text_1.html,
+	  doc/web/man/pump_1.html:
+	  
+	  Oops, the attribute is called svn:mime-type, not svn:content-type.
+
+2008-06-07 01:10  Craig Silverstein <opensource@google.com>
+
+	* doc/web/man/distcc_1.html:
+	  
+	  Update from the empty file.
+
+2008-06-07 01:08  Craig Silverstein <opensource@google.com>
+
+	* doc/web/man, doc/web/man/distcc_1.html, doc/web/man/distccd_1.html,
+	  doc/web/man/distccmon_text_1.html, doc/web/man/pump_1.html:
+	  
+	  Html version of the man pages, auto-generated.
+
+2008-06-04 07:06  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  The avahi files (zeroconf.c, etc), were being left out of the
+	  distribution tarball. Add them in.
+	  
+	  Tested by running 'make distcheck' on a machine with avahi libs
+	  installed.
+	  
+	  Reviewed by fergus
+
+2008-06-04 06:04  Craig Silverstein <opensource@google.com>
+
+	* pump.in:
+	  
+	  Get rid of setting is_in_installation; that variable isn't used
+	  anywhere anymore, so no reason to set it.
+	  
+	  Tested by running 'make pump-maintainer-check'.
+	  
+	  Reviewed by klarlund
+
+2008-06-04 05:17  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  It turns out setup.py has a bug(?) in its --record output: in theory,
+	  the paths of the --record fields should start with --prefix, but
+	  sometimes the paths remove the leading / from --prefix:
+	  
+	  % env CPPFLAGS='-Isrc -Ilzo -Ipopt' SRCDIR=`pwd`
+	  include_server/setup.py install --prefix=/tmp/distcc-bar
+	  --record=/dev/stdout --root=/var/
+	  tmp/distcc-bar/lib/python2.4/site-packages/include_server/parse_file_test.pyc
+	  [...]
+	  
+	  % env CPPFLAGS='-Isrc -Ilzo -Ipopt' SRCDIR=`pwd`
+	  include_server/setup.py install --prefix=/tmp/distcc-bar
+	  --record=/dev/stdout --root=/var
+	  /tmp/distcc-bar/lib/python2.4/site-packages/include_server/parse_file_test.pyc
+	  [...]
+	  
+	  It's hard to predict how, when and why it does this (--root=/ and
+	  --root="" are particularly confusing cases), but luckily we know we
+	  always want the leading slash: configure dies if --prefix isn't an
+	  absolute path. So with this change, we just let setup.py write
+	  whatever it wants to, and then add a leading slash before each line of
+	  the --record output if it's missing.
+	  
+	  Tested by running
+	  ./configure --prefix=/tmp/distcc
+	  rm -rf /tmp/distcc; make install
+	  rm -rf /var/tmp/tmp/distcc; make install DESTDIR=/var/tmp
+	  rm -rf /var/tmp/tmp/distcc; make install DESTDIR=/var/tmp/
+	  and verified that files ended up where expected, and the pump script
+	  looked like expected (with pump's sibling files living in
+	  /tmp/distcc/...).
+	  
+	  Reviewed by fergus
+
+2008-06-03 23:06  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac:
+	  
+	  Fix up the list of zeroconf files needed to actually compile distcc
+	  and distccd.
+	  
+	  Tested by installing avahi and running 'make' plus 'make check'.
+	  
+	  Reviewed by klarlund
+
+2008-06-03 21:00  Craig Silverstein <opensource@google.com>
+
+	* src/zeroconf.h:
+	  
+	  Fix up the top-of-file comments to look the same as for all the other
+	  files.
+
+2008-06-03 20:58  Craig Silverstein <opensource@google.com>
+
+	* src/zeroconf-reg.c, src/zeroconf.c:
+	  
+	  Fix some extra comment specifiers that shouldn't have been there.
+
+2008-06-03 12:30  Nils Klarlund <opensource@google.com>
+
+	* man/distcc.1, man/distccd.1, man/pump.1:
+	  
+	  Various edits:
+	  
+	  -- refer to pump(1) credits (and remove distcc(1) credits from pump(1)
+	  credentials)
+	  -- detail fundamental include server assumption
+	  -- clean up incl server discussion
+	  -- refer to include_server(1) for hairy stuff (this man page is to
+	  follow shortly in separate CL)
+	  -- discuss shell scripts instead of symlinks
+	  -- change date to June 2 2008
+	  -- other minor edits
+
+2008-06-03 05:43  Craig Silverstein <opensource@google.com>
+
+	* NEWS:
+	  
+	  Update the release date.
+
+2008-06-03 05:32  Craig Silverstein <opensource@google.com>
+
+	* bench/ProjectDefs.py:
+	  
+	  Add some new benchmark routines (including C++ projects like yate and
+	  ACE), and normalize syntax for existing ones. I've tested that we can
+	  at least build all of these projects locally, as long as all neccesary
+	  dependent packages are installed.
+	  
+	  Reviewed by fergus
+
+2008-06-03 03:45  Fergus Henderson <opensource@google.com>
+
+	* bench/Build.py, pump.in:
+	  
+	  Fix a bug in the pump script where it wasn't waiting for the include
+	  server to terminate before exiting.
+	  
+	  Reviewers: Nils Klarlund, Craig Silverstein
+
+2008-06-03 00:32  Craig Silverstein <opensource@google.com>
+
+	* doc/web/faq.html, doc/web/index.html, doc/web/results.html,
+	  doc/web/scenarios.html, doc/web/security.html:
+	  
+	  Revamp the toc sidebar to organize the categories a bit better. Also
+	  added a benchmark line.
+
+2008-06-03 00:32  Craig Silverstein <opensource@google.com>
+
+	* doc/web/benchmark.html:
+	  
+	  Add benchmark results, and a discussion of same.
+	  
+	  Reviewed by klarlund
+
+2008-06-02 22:38  Fergus Henderson <opensource@google.com>
+
+	* src/clirpc.c:
+	  
+	  Fix spelling error and punctuation in warning message.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-06-02 19:35  Nils Klarlund <opensource@google.com>
+
+	* include_server/basics.py, include_server/cache_basics.py,
+	  include_server/include_server.py, pump.in:
+	  
+	  Fix option real_path_warning_re not working.
+	  
+	  I renamed the option to path_observation_re. Now by prefixing
+	  
+	  INCLUDE_SERVER_ARGS='-d1 --path_observation_re="/usr/.*"'
+	  
+	  to say make include-server-maintainer-check, one gets a message each
+	  time the
+	  include server finds a path whose realpath name matches the regular
+	  expression.
+	  That results in messages like:
+	  
+	  WARNING include server: For translation unit 'src/testtmp.c', lookup
+	  of file
+	  'bits/stdio_lim.h' resolved to '/usr/include/bits/stdio_lim.h' whose
+	  realpath is
+	  '/usr/include/bits/stdio_lim.h'.
+	  
+	  To make the interpretation of quoted arguments within
+	  INCLUDE_SERVER_ARGS
+	  correct, I added 'eval' to the command that cranks up the include
+	  server. I
+	  remembered to put extra quoted quotes inside the parameters that
+	  should be
+	  considered a token after the double interpretation that eval implies.
+
+2008-05-31 00:38  Nils Klarlund <opensource@google.com>
+
+	* test/comfychair.py, test/testdistcc.py:
+	  
+	  Tidy-up testing framework to overcome recently introduced bug.
+	  
+	  Testing on cygwine revealed that as tests were being issued the
+	  temporary
+	  testing directory would suffer from longer and longer prefixes until a
+	  'filename
+	  too long' error would stop the party. This is result of an earlier
+	  attempt to
+	  avoid too much printing to stdout during tests, spefically during
+	  recursive test
+	  invocations.
+	  
+	  The problem is that the teardown mechanism of the comfychair
+	  enviroment is not
+	  expressed -- by any name at all (it could be 'teardown' for example).
+	  So, I
+	  added a name --- but because there's no expectation that the TestCase
+	  class
+	  defined there has its teardown method called from derived classes ---
+	  I chose
+	  the name CleanUps, which corresponds to the private variable.
+	  
+	  I also made an abstraction for running a test. This new
+	  Comfychair.runtest
+	  function can the conveniently by called to carry out a subtest.
+	  
+	  With this CL, 'make pump-maintainer-check' now works on cygwin.
+
+2008-05-30 22:57  Craig Silverstein <opensource@google.com>
+
+	* AUTHORS, INSTALL, README, README.pump, configure.ac, doc/example/init,
+	  doc/web/compared.html, doc/web/compilers.html, doc/web/faq.html,
+	  doc/web/favicon.ico, doc/web/index.html, doc/web/results.html,
+	  doc/web/scenarios.html, doc/web/security.html, man/distcc.1,
+	  man/distccd.1, man/distccmon-text.1, man/pump.1:
+	  
+	  Documentation fixes:
+	  
+	  1) Replace http://distcc.samba.org with the new google code location
+	  2) Add favicon.ico from the distcc.samba.org site
+	  3) Use distcc@lists.samba.org as the only distcc mailing list (there
+	  were at least three mailing lists scattered around the docs, some of
+	  which don't even exist anymore!)
+	  4) Update man pages and other docs to not use "distcc-pump" anywhere;
+	  it's now "pump mode" or "distcc's pump mode", or "distcc-pump
+	  mode".
+	  
+	  I also add, to the README, some discussion of scaling to hundreds of
+	  machines.
+	  
+	  Reviewed by fergus and klarlund
+
+2008-05-30 07:46  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, packaging/RedHat/rpm.spec:
+	  
+	  Fix a bug where the "pump" man page was not included in the RPM
+	  and Debian packages.
+	  
+	  Also, fix a bug where the Makefile rules for building HTML files were
+	  not working when srcdir != builddir.
+	  
+	  Tested by "make install-deb; man pump".
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-29 21:44  Nils Klarlund <opensource@google.com>
+
+	* bench/Build.py:
+	  
+	  Add include server option '--unsafe_absolute_includes' to all
+	  benchmarks in pump
+	  mode.
+	  
+	  This is harmless I think, and it's easy to forget this option. It is
+	  of
+	  importance to at least Samba-2.2.7.
+
+2008-05-29 18:51  Nils Klarlund <opensource@google.com>
+
+	* bench/benchmark.py, bench/compiler.py:
+	  
+	  Tigthen how compilers are located. This overcomes issues on Cygwin. I
+	  also
+	  changed default C++ compiler to 'c++' instead of 'cxx'. 'c++' is the
+	  more common
+	  name I believe. Witht this change, both compilers must exist for
+	  benchmark.py
+	  to run.
+	  
+	  REVIEW: Craig Silverstein
+
+2008-05-29 18:51  Nils Klarlund <opensource@google.com>
+
+	* bench/Build.py, bench/Summary.py, bench/statistics.py:
+	  
+	  Enhance performance reporting for benchmarking.
+	  
+	  This CL adds reporting of:
+	  
+	  - number of processors
+	  - total cpu time
+	  - cpu utilization
+	  - include server cpu time
+	  
+	  I corrected issues with overly loose specification of compiler
+	  locations. (I
+	  developed this CL under Cygwin and encountered new problems.) This
+	  resulted in
+	  evil recursive invocations of distcc.
+	  
+	  I also:
+	  
+	  -- removed an unnecessary parameter from Build(..)
+	  
+	  -- pruned the number of decimals reported from 4 to 1.
+	  
+	  -- removed the dependency of 'Numeric', which is a non-standard
+	  package and
+	  rewrote the math do to std deviation
+	  
+	  -- use shell built-in 'time' instead of Python time functionality
+	  
+	  -- corrected deficient error reporting: builds would fail with
+	  non-zero status
+	  and not be reported as failing.
+	  
+	  REVIEW: Craig Silverstein
+	  
+	  TESTS:
+	  DISTCC_HOSTS="--randomize `/home/klarlund/svn-distcc/distcc/lsdistcc
+	  -P1 -k100 -d`" PATH=`pwd`:$PATH bench/benchmark.py
+	  --cc='/usr/crosstool/v10/gcc-4.2.1-glibc-2.3.2/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-gcc'
+	  -n 1 -c 'pump,h40,j120' -c 'dist,h40,j32' linux-2.6.25
+	  
+	  Part of the printout for hello-2.1.1:
+	  
+	  Local number of CPUs: 4
+	  Linux klarlund-warp.nyc.corp.google.com
+	  2.6.18.5-gg34workstation-mixed64-32 #1 SMP Thu May 8 01:31:23 UTC 2008
+	  x86_64 GNU/Linux
+	  project compiler time s.d. CPU time CPU util incl serv
+	  hello-2.1.1 pump_h39_j120 0.9s 0.0s 0.5s 13.5% 0.2s
+	  hello-2.1.1 dist_h39_j32 0.4s 0.1s 0.3s 18.1%
+	  
+	  
+	  (For this small program, pump is a disadvantage.)
+
+2008-05-29 05:38  Craig Silverstein <opensource@google.com>
+
+	* bench/Build.py, bench/Project.py, bench/actions.py,
+	  bench/benchmark.py, bench/compiler.py:
+	  
+	  Some changes to the benchmark framework to not redo work
+	  unnecessarily. Most prominently, no longer re-run 'tar xf &&
+	  configure' every benchmark run. Instead, if configure was
+	  successfully executed last benchmark run, just do 'make clean'. This
+	  is equivalent to what we do now between build runs, when the
+	  repeat-count is > 1.
+	  
+	  This feature is not turned on by default, but must be enabled with the
+	  new --force=0 flag. --force=1 keeps the same behavior as before: we
+	  always re-run configure in each build-directory. --force=2 adds more
+	  repeat-work than before; in --force=2 mode, we always re-download the
+	  package from the web, even if we had successfully downloaded it
+	  before.
+	  
+	  Note that the 'tar' command currently warms the file-cache, which
+	  makes build times more consistent, so there is so cost to setting
+	  --force=0, in terms of the data collected.
+	  
+	  Reviewed by klarlund
+
+2008-05-29 02:04  Nils Klarlund <opensource@google.com>
+
+	* bench/Build.py, bench/Project.py, bench/ProjectDefs.py:
+	  
+	  Add include server args to benchmarking framework.
+	  
+	  This makes the linux kernel build with pump-mode when the benchmark
+	  script is
+	  used.
+	  
+	  Also, include the '-t' option to the include server; that prints out
+	  the elapsed
+	  and CPU times at the end of the build.
+	  
+	  REVIEW: Craig Silverstein
+	  TESTS: (on quad-cpu workstation)
+	  DISTCC_HOSTS="--randomize `/home/klarlund/svn-distcc/distcc/lsdistcc
+	  -P1 -k100 -d`" PATH=`pwd`:$PATH bench/benchmark.py
+	  --cc='/usr/crosstool/v10/gcc-4.2.1-glibc-2.3.2/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-gcc'
+	  --cxx='void' -n 5 -c 'pump,h40,j120' -c 'dist,h40,j32' linux-2.6.25
+	  
+	  project compiler time s.d.
+	  linux-2.6.25 pump_h39_j120 69.6525s 3.0969s
+	  linux-2.6.25 dist_h39_j32 103.8416s 10.8041s
+
+2008-05-29 01:57  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Add critique of pump-mode when include server shuts down.
+	  
+	  Print a message like:
+	  
+	  __________Warning: 1 pump-mode compilation(s) failed on server, but
+	  succeeded locally.
+	  
+	  when compile discrepancies have occurred. Currently, a user may think
+	  that all
+	  is well because we do not terminate a build when discrepancies occur
+	  and the
+	  warning messages occurring in the middle of a build may easily be
+	  overlooked.
+	  
+	  REVIEW: Craig Silverstein
+	  TESTS: make linux-kernel without stat reset triggers to observe
+	  message
+
+2008-05-29 01:46  Craig Silverstein <opensource@google.com>
+
+	* src/dotd.c, src/dotd.h, src/emaillog.c, src/emaillog.h:
+	  
+	  Fix some of the written-on dates for some google patches. Pointed out
+	  by fergus.
+
+2008-05-28 13:12  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Fix unproctected invocation of distcc and numeric designation of one
+	  with a
+	  plural noun.
+	  
+	  I discovered this bug by deleting /usr/bin/distcc. I did that after I
+	  found out
+	  that the Linux kernel compilation is suffering from a similar issue
+	  (amongst
+	  others), because the PATH is apparently rewritten.
+	  
+
+2008-05-28 02:32  Nils Klarlund <opensource@google.com>
+
+	* include_server/cache_basics.py, include_server/parse_command.py:
+	  
+	  Remove spurious warning messages about absolute filepaths.
+	  
+	  During compilation of the Linux kernel messages like:
+	  
+	  absolute filepath blabla.h was IGNORED (correctness of build may be
+	  affected)
+	  
+	  are issued. They are wrong. The problem is that -include or -imacro or
+	  even
+	  source file names with absolute filepaths trigger a complaint from the
+	  caching
+	  mechanism usually used for relative file names.
+	  
+	  We correct this problem.
+	  
+	  We also substitute fp_map for includepath_map, which is the now
+	  preferred term.
+	  
+	  REVIEWER: Craig Silverstein
+	  
+	  TESTS:
+	  
+	  make pump-maintainer-check
+	  make include-server-maintainer-check
+
+2008-05-28 02:19  Nils Klarlund <opensource@google.com>
+
+	* src/compile.c:
+	  
+	  Fix race condition that may prevent the warning message that pump-mode
+	  is no
+	  longer used from being displayed.
+	  
+	  This is the current crop of error messages. A couple of them *really*
+	  should be
+	  suppressed, but not the last one, which the CL is about.
+	  
+	  distcc[4333] ERROR: compile arch/x86/kernel/syscall_64.c on
+	  distcc4.nyc.corp.google.com,lzo,cpp failed
+	  distcc[4333] (dcc_build_somewhere) Warning: remote compilation of
+	  'arch/x86/kernel/syscall_64.c' failed, retrying locally
+	  distcc[4333] Warning: failed to distribute
+	  arch/x86/kernel/syscall_64.c to distcc4.nyc.corp.google.com,lzo,cpp,
+	  running locally instead
+	  distcc[4333] (dcc_please_send_email_after_investigation) Warning:
+	  remote compilation of 'arch/x86/kernel/syscall_64.c' failed, retried
+	  locally and got a different result.
+	  distcc[4333] (dcc_please_send_email_after_investigation) Warning: file
+	  'include/asm/asm-offsets.h', a dependency of
+	  arch/x86/kernel/syscall_64.c, changed during the build
+	  distcc[4333] (dcc_note_discrepancy) Warning: now using plain distcc,
+	  possibly due to inconsistent file system changes during build
+	  
+	  The last message may not occur: the code contains a race condition,
+	  because more
+	  processes may increment the unary file, after it has reached the size
+	  of
+	  max_discrepancies_before_demotion, preventing the equality from ever
+	  becoming true.
+
+2008-05-27 20:33  Nils Klarlund <opensource@google.com>
+
+	* include_server/include_analyzer.py,
+	  include_server/include_analyzer_memoizing_node.py,
+	  include_server/include_analyzer_memoizing_node_test.py,
+	  include_server/include_analyzer_test.py,
+	  include_server/parse_command.py, include_server/parse_command_test.py:
+	  
+	  Make the Linux 2.6 kernel build with distcc-pump mode.
+	  
+	  Add a new piece of command line parse information: send_systemdirs.
+	  This
+	  boolean is normally false. It is true if there is a -isystem option
+	  with a
+	  default system directory (one known to the compiler).
+	  
+	  With send_systemdirs true, the compiler headers of system headers are
+	  sent to
+	  the servers and mounted under the server root. The isystem option is
+	  as usual
+	  rewritten to be relative to the root. Without this flag setting,
+	  distcc quickly
+	  decides that pump mode is not viable because remote compilations fail.
+	  
+	  Also, fixed the comment:
+	  # TODO(klarlund): Make mechanism for handling -U, -undef options,
+	  along with
+	  # default symbols.
+	  
+	  (-D options are handled.)
+	  
+	  ---------------
+	  
+	  TESTS: make pump-maintainer-check
+	  make include-server-maintainer-check
+	  make 'linux kernel' in a directory made by the benchmark script (as
+	  shown below)
+	  
+	  DISTCC_EMAILLOG_WHOM_TO_BLAME=Nils Klarlund <opensource@google.com>
+	  DISTCC_ENABLE_DISCREPANCY_EMAIL=1 INCLUDE_SERVER_ARGS='-d1 -t --email
+	  --unsafe_absolute_includes --send_systemdirs
+	  --stat_reset_triggers=include/linux/*' DISTCC_HOSTS="--randomize
+	  `/home/klarlund/svn-distcc/distcc/lsdistcc -P3 -k100 -d`"
+	  PATH=/home/klarlund/svn-distcc/distcc:$PATH ./masquerade pump make
+	  -j120
+	  
+	  REVIVIEWER: Craig Silverstein <opensource@google.com>
+	  
+	  TRIVIA: the about 1000 files in the kernel build involve on average
+	  400
+	  headers. The build time on a quad-cpu machine drops from about 1m40 s
+	  to 1m20s.
+	  With pump-mode, the machine is underutilized judging from the total
+	  sys + user
+	  time, which is around only 2m20s.
+	  
+	  NOTE: this is a successor to 'g6n8', which simply introduced a command
+	  line
+	  option to force sending of system files. A bug in gvn did not allow me
+	  to
+	  resuse that change list.
+
+2008-05-23 22:24  Craig Silverstein <opensource@google.com>
+
+	* bench/Build.py, bench/Project.py, bench/Summary.py, bench/actions.py,
+	  bench/benchmark.py, bench/buildutil.py, bench/compiler.py,
+	  bench/statistics.py, include_server/basics.py,
+	  include_server/basics_test.py, include_server/c_extensions_test.py,
+	  include_server/cache_basics.py, include_server/compiler_defaults.py,
+	  include_server/compress_files.py, include_server/include_analyzer.py,
+	  include_server/include_analyzer_memoizing_node.py,
+	  include_server/include_analyzer_memoizing_node_test.py,
+	  include_server/include_analyzer_test.py,
+	  include_server/include_server.py,
+	  include_server/include_server_test.py, include_server/macro_eval.py,
+	  include_server/macro_eval_test.py, include_server/mirror_path.py,
+	  include_server/mirror_path_test.py, include_server/parse_command.py,
+	  include_server/parse_command_test.py, include_server/parse_file.py,
+	  include_server/parse_file_test.py, include_server/run.py,
+	  include_server/setup.py, include_server/statistics.py, src/access.c,
+	  src/access.h, src/arg.c, src/argutil.c, src/backoff.c, src/bulk.c,
+	  src/bulk.h, src/cleanup.c, src/climasq.c, src/clinet.c, src/clinet.h,
+	  src/clirpc.c, src/compile.c, src/compile.h, src/compress.c, src/cpp.c,
+	  src/daemon.c, src/daemon.h, src/distcc.c, src/distcc.h, src/dopt.c,
+	  src/dopt.h, src/dotd.c, src/dotd.h, src/dparent.c, src/dsignal.c,
+	  src/emaillog.c, src/emaillog.h, src/exec.c, src/exec.h,
+	  src/exitcode.h, src/filename.c, src/fix_debug_info.c,
+	  src/fix_debug_info.h, src/gcc-id.c, src/h_argvtostr.c,
+	  src/h_compile.c, src/h_dotd.c, src/h_exten.c, src/h_hosts.c,
+	  src/h_issource.c, src/h_parsemask.c, src/h_sa2str.c, src/h_scanargs.c,
+	  src/h_strip.c, src/help.c, src/history.c, src/hostfile.c, src/hosts.c,
+	  src/hosts.h, src/implicit.c, src/implicit.h, src/include_server_if.c,
+	  src/include_server_if.h, src/io.c, src/loadfile.c, src/lock.c,
+	  src/lock.h, src/lsdistcc.c, src/mon-gnome.c, src/mon-notify.c,
+	  src/mon-text.c, src/mon.c, src/mon.h, src/ncpus.c, src/netutil.c,
+	  src/netutil.h, src/prefork.c, src/pump.c, src/remote.c,
+	  src/renderer.c, src/renderer.h, src/rpc.c, src/rpc.h, src/rslave.c,
+	  src/rslave.h, src/safeguard.c, src/sendfile.c, src/serve.c,
+	  src/setuid.c, src/snprintf.h, src/srvnet.c, src/srvnet.h,
+	  src/srvrpc.c, src/ssh.c, src/state.c, src/state.h, src/stats.c,
+	  src/stats.h, src/stringmap.c, src/stringmap.h, src/strip.c,
+	  src/tempfile.c, src/timefile.c, src/timefile.h, src/timeval.c,
+	  src/timeval.h, src/trace.c, src/trace.h, src/traceenv.c, src/types.h,
+	  src/util.c, src/util.h, src/where.c, src/where.h, src/zeroconf-reg.c,
+	  src/zeroconf.c, src/zeroconf.h, test/comfychair.py,
+	  test/testdistcc.py:
+	  
+	  Normalize the copyright text, to the latest version of the GPLv2 text
+	  (typically the only change is in the FSF street address). Add Google
+	  copyright line in some places it was missing. Add GPLv2 notice to
+	  avahi patches.
+	  
+	  OKed by fergus
+
+2008-05-23 20:43  Craig Silverstein <opensource@google.com>
+
+	* packaging/RedHat/rpm.spec:
+	  
+	  Update install-message wording.
+	  
+	  Reviewed by fergus
+
+2008-05-23 07:33  Craig Silverstein <opensource@google.com>
+
+	* configure.ac:
+	  
+	  Update copyright and GPL notice.
+
+2008-05-23 07:29  Craig Silverstein <opensource@google.com>
+
+	* pump.in, test/onetest.py:
+	  
+	  Fix author lines. Also, add gpl text.
+	  
+	  OKed by fergus and klarlund
+
+2008-05-23 06:30  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/conf/clients.allow, packaging/RedHat/rpm.spec:
+	  
+	  Do not include 127.0.0.1 in clients.allow by default,
+	  because it is a security risk: it may allow other
+	  users on the machine to execute arbitrary code as
+	  the distcc user.
+	  
+	  Instead, leave clients.allow empty by default,
+	  and require the system admistrator to edit
+	  clients.allow manually, if they want to use distcc
+	  in TCP mode.
+	  
+	  We still install distccd as a service, but distccd
+	  will exit immediately unless you've already added
+	  some hosts to clients.allow.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-23 03:19  Fergus Henderson <opensource@google.com>
+
+	* include_server/include_analyzer_memoizing_node.py:
+	  
+	  Fix a typo in a comment.
+
+2008-05-23 03:18  Fergus Henderson <opensource@google.com>
+
+	* src/dopt.c:
+	  
+	  Fix a bug: --wizard is supposed to imply --log-level debug, but this
+	  wasn't working, because the code that handles --wizard wasn't setting
+	  opt_log_level_num.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-23 03:12  Nils Klarlund <opensource@google.com>
+
+	* include_server/include_analyzer.py, include_server/mirror_path.py:
+	  
+	  Fix unsoundess of directory replication.
+	  
+	  Testing of distcc-pump mode on the Linux kernel showed that the
+	  computed include
+	  closure was sometimes wrong: header files were missing.
+	  
+	  Further testing showed that sometimes apparently not even the
+	  compilation unit
+	  made it across to the server or rather, the c-file in its real
+	  location would
+	  come across, but the path designating it would not.
+	  
+	  Take as an example: compilation unit is designated by the path
+	  ../bar/baz.c and
+	  the current directory is /foo but no files in /foo are in actuality
+	  referenced
+	  during include processing. Then the compilation server will get
+	  /PREFIX/bar/baz.h -- the image of the real file -- but /PREFIX/foo,
+	  the image of
+	  the current directory, will not even be created!
+	  
+	  So, this CL corrects an oversight in the way that the include
+	  processor
+	  explores files: although it does take into account the chasing of
+	  symbolic links,
+	  no provisions are in place to properly model '..' for climbing up
+	  directories.
+	  Specifically, to climb up a directory, it must exist! Usually, the
+	  directory in
+	  fact would exist on the server, because it would be replicated thanks
+	  to the
+	  header files it contains. But there is no guarentee.
+	  
+	  We solve this problem by forcing the creation of dummy .c files the
+	  first time a
+	  path is explored. Because paths are being investigated backwards (from
+	  the end),
+	  forcing results in extra files only at the "deep" levels. Since files
+	  are
+	  usually clustered together in directories, the addition of a dummy
+	  file per deep
+	  directory should be inconsequential for performance.
+	  
+	  TBD: integration level tests that this really work. I will either
+	  include that
+	  later or in a separate CL.
+	  
+	  Tested:
+	  
+	  make pump-maintainer-check
+	  
+	  build the Linux 2.6 kernel in true pump-mode (with extra patch, to be
+	  described separately that sends compiler system files to the server)
+	  [all
+	  files but a few towards the end suffer from absolute includes are
+	  preprocessed and compiled on the compile servers!]
+	  
+	  The command I used is:
+	  
+	  DISTCC_EMAILLOG_WHOM_TO_BLAME=Nils Klarlund <opensource@google.com>
+	  DISTCC_ENABLE_DISCREPANCY_EMAIL=1 INCLUDE_SERVER_ARGS='-d1 -t --email
+	  --stat_reset_triggers=include/linux/compile.h'
+	  DISTCC_HOSTS="--randomize `/home/klarlund/svn-distcc/distcc/lsdistcc
+	  -P3 -k100 -d`" PATH=/home/klarlund/svn-distcc/distcc:$PATH
+	  ./masquerade pump make -j120
+	  
+	  I had to delete /usr/bin/distcc for this work, because of the PATH
+	  acrobatics
+	  that the kernel makefiles apparently exercise. Otherwise,
+	  /usr/bin/distcc
+	  would sometimes get called.
+	  
+	  Reviewed:
+	  
+	  Fergus Henderson <opensource@google.com>, Craig Silverstein <opensource@google.com>
+
+2008-05-23 03:03  Fergus Henderson <opensource@google.com>
+
+	* INSTALL:
+	  
+	  Some trivial style changes.
+
+2008-05-23 02:35  Nils Klarlund <opensource@google.com>
+
+	* bench/Build.py, bench/benchmark.py, bench/compiler.py:
+	  
+	  Set-up masquerading for benchmarks.
+	  
+	  Follow the advice of the distcc man page for executing the benchmarks
+	  to not
+	  rely on CC and CXX variables by also routing naked calls of 'cc',
+	  'gcc', etc to
+	  a 'farm' of tiny shell scripts.
+	  
+	  Also, provide a little wrapper script that does this for people who
+	  have to
+	  debug a benchmark build.
+	  
+	  This change is convenient for running the benchmark on the linux
+	  kernel,
+	  because building the kernel uses naked 'gcc' calls.
+	  
+	  Testing:
+	  
+	  Building the linux kernel.
+
+2008-05-23 01:41  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Fix a bug which broke the Debian and RPM distributions: the generated
+	  pump
+	  script was referring to DESTDIR.
+	  
+	  Files should be installed into DESTDIR, but they should never refer to
+	  DESTDIR,
+	  because it is only a temporary location used for constructing the RPM
+	  file;
+	  when the package is actually installed, the files will get put in e.g.
+	  /usr
+	  rather than DESTDIR/usr.
+	  
+	  Tested with "make install-deb && make daemon-installcheck".
+	  
+	  Reviewers: Nils Klarlund
+
+2008-05-23 01:11  Manos Renieris <opensource@google.com>
+
+	* NEWS, README.pump, doc/protocol-3-impl.txt, doc/protocol-3.txt,
+	  man/distcc.1, man/pump.1:
+	  
+	  Minor documentation changes.
+
+2008-05-22 19:06  Fergus Henderson <opensource@google.com>
+
+	* src/dotd.h, src/include_server_if.h:
+	  
+	  Remove "svn:executable" property (the "+x" permission bit) from header
+	  files.
+	  
+	  Reviewers: Manos Renieris
+
+2008-05-22 05:36  Fergus Henderson <opensource@google.com>
+
+	* survey.txt:
+	  
+	  Direct survey response to distcc-survey@google.com rather than to
+	  Martin Pool.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-22 05:35  Fergus Henderson <opensource@google.com>
+
+	* INSTALL:
+	  
+	  A major overhaul of the INSTALL file. Describe pump mode better, and
+	  explain the effects of installing via RPM or Debian package.
+	  Also a bunch of other minor edits.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-22 04:51  Fergus Henderson <opensource@google.com>
+
+	* configure.ac:
+	  
+	  Bump version number to 3.0-prerelease3.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-22 04:49  Fergus Henderson <opensource@google.com>
+
+	* include_server/include_analyzer_test.py:
+	  
+	  Fix a test case that was failing on MacOS X.
+	  The test was implicitly assuming that /tmp == realpath(/tmp).
+	  But in MacOS X, /tmp is a symbolic link to /private/tmp.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund
+
+2008-05-22 04:40  Fergus Henderson <opensource@google.com>
+
+	* doc/web/index.html:
+	  
+	  Update the "60 second instructions" to use pump mode.
+	  
+	  I considered mentioning both regular mode and pump mode in the 60
+	  second instructions, but 60 seconds doesn't really give you much
+	  time to describe the difference between the two, so I thought it
+	  was simpler to just go with pump mode.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-21 22:42  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Disable the Gdb_Case test in non-pump mode when using gcc versions
+	  that don't preserve the source directory in the preprocessed output.
+	  
+	  Reviewers: Nils Karlund, Craig Silverstein
+
+2008-05-21 20:28  Nils Klarlund <opensource@google.com>
+
+	* src/clirpc.c:
+	  
+	  Make an obscure and common error message more informative.
+	  
+	  Currently, our users get the following error message when their
+	  workstation is
+	  not in the allowed domains as specified in the server configuration:
+	  
+	  distcc[20742] (dcc_readx) ERROR: unexpected eof on fd5
+	  distcc[20742] (dcc_r_token_int) ERROR: read failed while waiting for
+	  token "DONE"
+	  
+	  With this change, a message explains some likely causes of the
+	  problem.
+
+2008-05-21 16:37  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Disable some tests that were failing if you don't have a C++ compiler
+	  installed.
+	  
+	  Also, tidy up the output from the DotD_Case test: instead of
+	  
+	  DotD_Case TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  TempCompile_Case OK
+	  OK
+	  
+	  you now get just
+	  
+	  DotD_Case OK
+	  
+	  Also, fix a problem where ObjectiveCPlusPlus_Case test was on some
+	  systems
+	  being run even though the system didn't have Objective C++ installed.
+	  
+	  Reviewers: Nils Klarlund
+
+2008-05-21 16:26  Nils Klarlund <opensource@google.com>
+
+	* include_server/basics.py, include_server/cache_basics.py,
+	  include_server/include_analyzer_test.py,
+	  include_server/include_server.py:
+	  
+	  Add '--unsafe_absolute_includes' option so that more can be compiled
+	  in
+	  pump-mode.
+	  
+	  An occurrence of say
+	  
+	  #include "/usr/include/acl.h"
+	  
+	  will normally force the include processor to abort (even when this
+	  include is
+	  platform-specific and #ifdef'ed away), because there are no guarantees
+	  that the
+	  file /usr/include/acl.h exists on the host. With this option, these
+	  includes
+	  will be ignored.
+	  
+	  A message like:
+	  
+	  WARNING include server: absolute filepath '/usr/include/acl.h' was
+	  IGNORED (correctness of build may be affected)
+	  
+	  will be printed.
+	  
+	  The normal message raised when this option is off, the default, has
+	  been
+	  modified. It now mentions the option.
+	  
+	  An include server manual page is to follow, which explains the
+	  consequences in
+	  detail of using this option.
+	  
+	  Testing: this makes the samba-2.2.7 benchmark build without hiccups
+	  using distcc
+	  pump. Without the change many compilations fail because the include
+	  server
+	  bails out and because another unrelated bug in the include server
+	  makes it later
+	  dish up with include closures that are too small.
+	  
+	  Revievers: Craig Silverstein <opensource@google.com>, Fergus Henderson <opensource@google.com>
+
+2008-05-21 09:04  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, pump.in, src/include_server_if.c:
+	  
+	  Some usability improvements, in particular better diagnostics for
+	  common setup errors.
+	  
+	  In pump script:
+	  - If DISTCC_HOSTS is set, print out a message saying how many hosts
+	  there are (similar to the one that we already print if you instead
+	  set DISTCC_POTENTIAL_HOSTS) and how many of them have pump enabled.
+	  - Report an error if you run pump using a host list containing no
+	  hosts with ',cpp'. (Should this be a warning instead?)
+	  - Report an error if you run pump using an empty host list.
+	  (Should this be a warning instead?)
+	  
+	  In distcc client:
+	  - Improve the warning messages that you get if you run distcc using
+	  hosts with ",cpp" without running pump.
+
+2008-05-21 06:13  Craig Silverstein <opensource@google.com>
+
+	* bench/Project.py, bench/ProjectDefs.py:
+	  
+	  Document the options that the Package constructor takes.
+	  
+	  Get rid of source_name, which isn't used anywhere.
+	  
+	  Also, add a few more benchmark projects. These are big(ish) and
+	  written in C++, to test distcc on C++ code.
+	  
+	  Reviewed by Nils Klarlund
+
+2008-05-20 21:49  Craig Silverstein <opensource@google.com>
+
+	* bench/Build.py, bench/benchmark.py:
+	  
+	  In the benchmark code, make sure a directory exists before cd-ing into
+	  it. This is to handle projects like ACE, which require you to build
+	  from an entirely new directory.
+	  
+	  Also fix up an obsolete help-text sentence.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-20 20:23  Fergus Henderson <opensource@google.com>
+
+	* include_server/basics.py, include_server/compiler_defaults.py,
+	  include_server/parse_command.py, include_server/parse_command_test.py,
+	  test/testdistcc.py:
+	  
+	  Re-enable Objective C and Objective C++ support.
+	  
+	  This required the following changes:
+	  - Compute the default search paths for each language lazily,
+	  when the language is first encountered, rather than
+	  computing it for 'c' and 'c++'.
+	  - Make the tests of Objective C and Objective C++
+	  conditional on the relevant compiler being installed.
+	  
+	  Tested by "make check" on two systems:
+	  - One with Objective C installed, but not Objective C++.
+	  - One with neither installed.
+	  I didn't test on a system with Objective C++ installed,
+	  because I didn't have one easily available.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund.
+
+2008-05-20 20:19  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Disable part of the DashWpMD_Case test, because it doesn't pass :-(
+	  
+	  Tested with "make check"; fails before this CL, passes afterwards.
+	  
+	  Reviewers: Nils Klarlund, Craig Silverstein.
+
+2008-05-20 18:16  Craig Silverstein <opensource@google.com>
+
+	* src/access.c, src/access.h, src/arg.c, src/backoff.c, src/bulk.c,
+	  src/bulk.h, src/cleanup.c, src/climasq.c, src/clinet.c, src/clinet.h,
+	  src/clirpc.c, src/compile.c, src/compile.h, src/compress.c, src/cpp.c,
+	  src/daemon.c, src/daemon.h, src/distcc.c, src/distcc.h, src/dopt.c,
+	  src/dopt.h, src/dotd.c, src/dotd.h, src/dparent.c, src/dsignal.c,
+	  src/emaillog.c, src/emaillog.h, src/exec.c, src/exec.h,
+	  src/exitcode.h, src/fix_debug_info.c, src/fix_debug_info.h,
+	  src/gcc-id.c, src/h_hosts.c, src/h_parsemask.c, src/help.c,
+	  src/history.c, src/hostfile.c, src/hosts.c, src/hosts.h,
+	  src/implicit.c, src/implicit.h, src/include_server_if.c,
+	  src/include_server_if.h, src/io.c, src/loadfile.c, src/lock.c,
+	  src/lock.h, src/lsdistcc.c, src/mon-gnome.c, src/mon-notify.c,
+	  src/mon-text.c, src/mon.c, src/mon.h, src/ncpus.c, src/netutil.c,
+	  src/netutil.h, src/prefork.c, src/pump.c, src/remote.c,
+	  src/renderer.c, src/renderer.h, src/rpc.c, src/rpc.h, src/rslave.c,
+	  src/rslave.h, src/safeguard.c, src/sendfile.c, src/serve.c,
+	  src/setuid.c, src/snprintf.c, src/snprintf.h, src/srvnet.c,
+	  src/srvnet.h, src/srvrpc.c, src/ssh.c, src/state.c, src/state.h,
+	  src/stats.c, src/stats.h, src/stringmap.c, src/stringmap.h,
+	  src/strip.c, src/tempfile.c, src/timefile.c, src/timefile.h,
+	  src/timeval.c, src/timeval.h, src/trace.c, src/trace.h,
+	  src/traceenv.c, src/types.h, src/util.c, src/util.h, src/where.c,
+	  src/where.h, src/zeroconf-reg.c, src/zeroconf.c, src/zeroconf.h:
+	  
+	  Change C++-style // comments to /**/.
+	  
+	  Also, fix the emacs var-setting line: it was missing a semicolon
+	  before, which means the entire line was being ignored.
+	  
+	  No contentful change.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-20 06:13  Craig Silverstein <opensource@google.com>
+
+	* src/access.c, src/access.h, src/arg.c, src/argutil.c, src/backoff.c,
+	  src/bulk.c, src/bulk.h, src/climasq.c, src/clinet.c, src/clinet.h,
+	  src/clirpc.c, src/compile.c, src/compile.h, src/compress.c, src/cpp.c,
+	  src/daemon.c, src/daemon.h, src/distcc.c, src/distcc.h, src/dopt.c,
+	  src/dopt.h, src/dotd.c, src/dotd.h, src/dparent.c, src/dsignal.c,
+	  src/emaillog.c, src/emaillog.h, src/exec.c, src/exec.h,
+	  src/exitcode.h, src/filename.c, src/fix_debug_info.c,
+	  src/fix_debug_info.h, src/gcc-id.c, src/h_argvtostr.c,
+	  src/h_compile.c, src/h_dotd.c, src/h_exten.c, src/h_hosts.c,
+	  src/h_issource.c, src/h_parsemask.c, src/h_sa2str.c, src/h_scanargs.c,
+	  src/h_strip.c, src/help.c, src/history.c, src/hostfile.c, src/hosts.c,
+	  src/hosts.h, src/implicit.c, src/implicit.h, src/include_server_if.c,
+	  src/include_server_if.h, src/io.c, src/loadfile.c, src/lock.c,
+	  src/lock.h, src/lsdistcc.c, src/mon-gnome.c, src/mon-notify.c,
+	  src/mon-text.c, src/mon.c, src/mon.h, src/ncpus.c, src/netutil.c,
+	  src/netutil.h, src/prefork.c, src/pump.c, src/remote.c,
+	  src/renderer.c, src/renderer.h, src/rpc.c, src/rpc.h, src/rslave.c,
+	  src/rslave.h, src/safeguard.c, src/sendfile.c, src/serve.c,
+	  src/setuid.c, src/snprintf.c, src/snprintf.h, src/srvnet.c,
+	  src/srvnet.h, src/srvrpc.c, src/ssh.c, src/state.c, src/state.h,
+	  src/stats.c, src/stats.h, src/stringmap.c, src/stringmap.h,
+	  src/strip.c, src/tempfile.c, src/timefile.c, src/timefile.h,
+	  src/timeval.c, src/timeval.h, src/trace.c, src/trace.h,
+	  src/traceenv.c, src/types.h, src/util.c, src/util.h, src/where.c,
+	  src/where.h, src/zeroconf-reg.c, src/zeroconf.c, src/zeroconf.h:
+	  
+	  Turned all tabs into 4 spaces. Got rid of whitespace at the end of
+	  lines. Fixed up resulting mis-indented code I noticed (mostly in
+	  files that used 8 space indents, or used 4-space and 8-space indents
+	  in the same file (!)). Added the emacs tab-var setting for all files,
+	  not just some of them.
+	  
+	  I also added in copyright notices for files I noticed that didn't have
+	  them. We'll want to do another pass-through to fix these up properly,
+	  though.
+	  
+	  I used the following perl snippet to check for mis-indented code after
+	  converting tabs to whitespace:
+	  
+	  $ for i in *.{c,h}; do echo $i; perl -nle 'if ($indent > 0) {$sp=" " x
+	  $indent; /^$sp[^ ]/ && print "$.: $_"; $indent=0;}; if (/^( *).*{/ )
+	  {$indent=length($1);} else {$indent=0;}' $i; done | less
+	  
+	  It had false positives, but hopefully didn't miss anything.
+	  
+	  Reviewed by Nils Klarlund
+
+2008-05-20 05:58  Craig Silverstein <opensource@google.com>
+
+	* bench/benchmark.py:
+	  
+	  Add --output to benchmark.py, to print the final timing summary to a
+	  file in addition to stdout. Also made sure we don't try to access
+	  opt_cc and opt_cxx until after all flags are read, so flag order
+	  doesn't matter. Finally, fixed indentation so we only print the
+	  default actions when --help is specified (as intended).
+	  
+	  Tested by running make benchmark.
+	  
+	  Reviewed by Nils Klarlund
+
+2008-05-20 03:32  Nils Klarlund <opensource@google.com>
+
+	* src/emaillog.c:
+	  
+	  Fix polarity of condition.
+	  
+	  Reviewers: Fergus Henderson
+	  Tests: manual (both with and without DISTCC_EMAILLOG_WHOM_TO_BLAME
+	  set).
+
+2008-05-20 03:31  Nils Klarlund <opensource@google.com>
+
+	* bench/benchmark.py:
+	  
+	  Corrent option name.
+	  
+	  The option is said to be 'distcc', but it's actually implemented as
+	  'dist'. The
+	  latter is fine with me: we have 'dist' and 'pump', with 'pump' being a
+	  more
+	  advanced 'dist'.
+
+2008-05-20 03:31  Nils Klarlund <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Improve assert message.
+	  
+	  Revievers: Fergus Henderson <opensource@google.com>
+
+2008-05-19 10:00  Fergus Henderson <opensource@google.com>
+
+	* bench/compiler.py, test/testdistcc.py:
+	  
+	  Add 'DashWpMD_Case' to the list of test cases that actually get run.
+	  
+	  Also, an unrelated change to the benchmarking scripts:
+	  fix a cut-and-paste error in an error message.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-19 09:58  Fergus Henderson <opensource@google.com>
+
+	* src/arg.c:
+	  
+	  Whitespace change: make indentation more consistent.
+
+2008-05-18 06:06  Fergus Henderson <opensource@google.com>
+
+	* src/arg.c, src/argutil.c, src/compile.c, src/distcc.c, src/dotd.c,
+	  src/implicit.c, src/strip.c:
+	  
+	  Fix bugs in my previous change to handle "-Wp," options: arguments
+	  to str_startswith() were in the wrong order, and in one place I had
+	  wrongly passed 'argv' instead of 'new_argv'.
+	  
+	  Move the call to dcc_expand_preprocessor_options() from
+	  dcc_get_dotd_info() to gcc_build_somewhere(), so that it is pretty
+	  much the first thing done to argv. Not sure if this is really needed,
+	  but it seems like a good idea.
+	  
+	  Fix various memory management problems, including some introduced by
+	  moving the call to dcc_expand_preprocessor_options(). One problem
+	  was that dcc_find_compiler() was producing a result that was sometimes
+	  allocated with malloc() and sometimes not, so the caller couldn't
+	  safely deallocate it. I changed dcc_find_compiler to always return
+	  a dynamically allocated result.
+	  
+	  Fix some places where return values were being ignored.
+	  Also fix one place where distcc was inconsistenly calling exit()
+	  rather than returning a return code.
+	  
+	  Like my previous change, this one is necessary, but perhaps not
+	  sufficient, for building the Linux kernel with distcc-pump.
+	  
+	  Tested by "make valgrind-check", and by building and installing the
+	  debian package and the building Linux 2.6.25 in pump mode using the
+	  benchmark.py script.
+	  
+	  Reviewers
+
+2008-05-18 06:03  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/init.d/distcc:
+	  
+	  Fix a bug where "/etc/init.d/distcc stop" was not working when you had
+	  installed a new distcc. It wasn't working properly because the call to
+	  "start-stop-daemon --stop" used the "--exec /usr/bin/distccd" option,
+	  and (perhaps due to a bug in start-stop-daemon?) that option checks
+	  /proc/<pid>/exe against /usr/bin/distccd by comparing inode numbers.
+	  Comparing inode numbers doesn't work, because when we install a new
+	  distccd, we create a fresh file with a new inode number, so the inode
+	  number used by running processes won't match the inode number of
+	  /usr/bin/distccd on disk after you've installed a new version.
+	  
+	  The fix was to remove the "--exec /usr/bin/distccd"
+	  option from the call to start-stop-daemon. We're already passing
+	  "--name distccd", which is sufficient to indentify the running
+	  distccd processes.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-17 16:24  Fergus Henderson <opensource@google.com>
+
+	* src/compile.c, src/compile.h, src/h_compile.c, test/testdistcc.py:
+	  
+	  Fix a typo: s/ddc_/dcc_/
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-17 15:18  Nils Klarlund <opensource@google.com>
+
+	* include_server/basics.py, include_server/include_server.py:
+	  
+	  Tune gc for 25% speed-up of include processor.
+	  
+	  Set first parameter of gc.set_threshold to 10000 instead of default
+	  700.
+	  
+	  See comments in program text.
+	  
+	  
+	  Notes
+	  -----
+	  
+	  I used a little script to find the include server timings as a
+	  function of this
+	  parameter.
+	  
+	  This script executes:
+	  
+	  "DISTCC_PUMP_INSTALLATION=/tmp/distcc3.0 INCLUDE_SERVER_ARGS='-t
+	  --gc_threshold=700' \
+	  /usr/bin/time -p make-dbg -j120 -r -experimental-ld -g0 gws:gws"
+	  
+	  with various values of gc_threshold.
+	  
+	  The measurement were done on a four processor system (dual Opterons),
+	  loaded
+	  with an nxserver process. Files were served through Fuse.
+	  
+	  
+	  gc include server user + sys time
+	  setting
+	  
+	  700 155.1s 154.0s 164.7s 186.1s 154.3s Mean: 162.8
+	  10000 123.8s 125.4s 120.6s 120.4s 121.0s Mean: 122.2
+	  100000 123.4s 123.3s 122.2s 123.3s 116.5s Mean: 121.7
+	  
+	  700 166.5s 156.4s 150.8s 153.4s 155.4s Mean: 156.5
+	  10000 120.7s 142.1s 118.3s 117.7s 119.2s Mean: 123.6
+	  100000 140.3s 117.1s 149.7s 116.7s 141.6s Mean: 123.6
+	  
+	  
+	  The corresponding elapsed times:
+	  
+	  371.0s 363.3s 361.9s 370.8s 369.0s Mean: 367.2
+	  341.8s 346.1s 336.3s 338.3s 340.5s Mean: 340.6
+	  345.9s 338.5s 342.9s 374.4s 340.0s Mean: 348.3
+	  
+	  377.4s 379.9s 387.1s 377.4s 373.2s Mean: 379.0
+	  332.1s 337.7s 336.5s 332.2s 314.7s Mean: 330.6
+	  341.1s 334.6s 357.8s 338.5s 352.4s Mean: 344.9
+	  
+	  Note that the saving in include server time is around 35s, but the
+	  savings in
+	  elapsed time is around 44s. These numbers are uncertain. Even so, they
+	  strongly
+	  indicate that the include server is a signifcant bottleneck.
+	  
+	  BTW, for comparison with plain distcc:
+	  
+	  821.4s 822.0s 842.4s 821.5s 852.0s Mean: 831.9
+	  878.7s 857.2s 860.3s 880.1s 856.0s Mean: 866.5
+	  
+	  Thus, pump-mode 2.5X is faster than plain distcc (with the
+	  set_threshold =
+	  10000 of this CL).
+	  
+	  Revievers: Fergus Henderson <opensource@google.com>, Craig Silverstein <opensource@google.com>
+
+2008-05-16 23:12  Craig Silverstein <opensource@google.com>
+
+	* src/exec.c:
+	  
+	  There's cygwin-specific code in exec.c, but it seems to assume that
+	  when running under cygwin, we'll be using a native windows app to
+	  compile. But sometimes we're using a cygwin app (eg /bin/gcc).
+	  Trying to use native-windows forking routines with cygwin apps causes
+	  a segfault (and takes a while to do it); we need to use unix forking
+	  routines there.
+	  
+	  With this change, when we're asked to spawn a sub-process, we try to
+	  guess whether the sup-process app is windows or cygwin, based on its
+	  path location (this benefits from using absolute paths):
+	  /bin/gcc
+	  vs
+	  C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\bin\cl.exe
+	  or even
+	  C:/Program Files/Microsoft Visual Studio .NET 2003/Vc7/bin/cl.exe
+	  
+	  If we decide it's a windows app but are wrong, then the
+	  windows-forking code should eventually fail with "file not found"; in
+	  that case, we fall through to the normal unix-fork case, to give
+	  cygwin a chance to find the binary.
+	  
+	  I also took the opportunity to clean up some of the code (handles
+	  should be initialized to ILLEGAL_HANDLE values, not NULL). I also
+	  replaced the crazy permissions the code was asking for before, with
+	  normal GENERIC_READ/GENERIC_WRITE. This allows the code to work when
+	  the tmpdir is c:\windows, which was failing before.
+	  
+	  Tested on cygwin using /bin/gcc as the compiler, like so:
+	  ./distcc /bin/gcc -c testtmp.c -o testtmp.o
+	  where testtmp.c is a simple "hello world" program.
+	  
+	  I also tested by running 'make check'. With this change, 'make check'
+	  passes on cygwin! (Using gcc to do compilations.)
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-16 22:00  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, src/compile.c:
+	  
+	  Two bug fixes:
+	  - Fix a bug where 'valgrind-check' was invoking 'pump-check',
+	  but 'pump-check' was disabling valgrind.
+	  - Fix an off-by-one error caught by valgrind.
+	  
+	  Tested by "make check" and "make valgrind-check".
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-16 21:54  Fergus Henderson <opensource@google.com>
+
+	* src/arg.c, src/distcc.h, src/dotd.c, test/testdistcc.py:
+	  
+	  Handle '-Wp,-MD,<dotdfile>' option.
+	  This is needed to build the Linux kernel.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-16 20:46  Fergus Henderson <opensource@google.com>
+
+	* bench/ProjectDefs.py:
+	  
+	  In the list of projects to benchmark:
+	  - comment out Linux 2.5.51, because it doesn't compile
+	  - add Linux 2.6.25.
+	  
+	  Reviewers: Nils Klarlund, Craig Silverstein
+
+2008-05-16 20:44  Fergus Henderson <opensource@google.com>
+
+	* bench/actions.py:
+	  
+	  In the benchmarking script, don't remove the build directories by
+	  default, because the log files get stored in the build directories,
+	  and it's useful to have the log files around afterwards.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-16 18:08  Craig Silverstein <opensource@google.com>
+
+	* src/dotd.c:
+	  
+	  Comment the need to handle gcc's -Wp flag.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-16 01:15  Nils Klarlund <opensource@google.com>
+
+	* include_server/include_analyzer_test.py:
+	  
+	  Fix freak name collision on OSs that do not distinguish upper and
+	  lowercase in
+	  file names.
+	  
+	  The symbol 'TESTING' is potentially unevaluated according to the
+	  overapproximation semantics of the include server. So if this symbol
+	  is used in
+	  a file name and if 'TESTING' really means 'testing' according to the
+	  OS and if
+	  in fact 'testing' does exist as file, then there is trouble.
+	  
+	  Revievewers: Craig Silverstein <opensource@google.com>
+	  
+	  Testing:
+	  make include-server-maintainer-check (on Linux)
+
+2008-05-16 01:10  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Fix: speed-up the include processor a few times by exporting
+	  PYTHONOPTIMIZE.
+	  
+	  This took a little while: fortunately, the tracing information is
+	  dependent on
+	  the PYTHONOPTIMIZE setting, so after a diff on the outputs of the gws
+	  example
+	  before and after, it finally dawned upon me what was wrong.
+	  
+	  Tested: manually on the gws example with 600 include directories.
+
+2008-05-16 00:59  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Fix removal of 'pump'.
+	  
+	  Review: Craig Silverstein
+
+2008-05-16 00:52  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in, pump.in:
+	  
+	  Fix variable that denotes the source location.
+	  
+	  (1) It was not documented. I rewrote the documentation for a couple
+	  of associated variables.
+	  (2) There was no default value.
+	  
+	  Now, the variable does not need to be set from 'make', so I've removed
+	  it from
+	  Makefile.in. And, I've made it into a standard shell lowercase
+	  variable.
+	  
+	  Reviewers: Fergus Henderson, Craig Silverstein
+	  Tests: (1) make distcheck
+	  (2) Running the pump script out of the build directory.
+
+2008-05-15 21:45  Craig Silverstein <opensource@google.com>
+
+	* find_c_extension.sh, test/testdistcc.py:
+	  
+	  Modifications to the pump and test framework for cygwin.
+	  
+	  1) find_c_extension looks for .dll files in addition to .so files.
+	  
+	  2) Likewise, testdistcc.py has to check whether binary names might end
+	  in .exe. Usually that doesn't matter, but sometimes (eg when running
+	  cp on them), it does.
+	  
+	  3) testdistcc.py adds a routine to detect PE binaries. These, like
+	  dwarf binaries, do not always give reproducible output on the same
+	  input, so take that into account in the gdb tests.
+	  
+	  4) In the lsdistcc test, we assumed that when the ping failed,
+	  127.0.0.2 isn't available. But it's also possible ping is just broken
+	  (or different) on that machine. So in the failed-ping case, we no
+	  longer make any assumption about 127.0.0.2, one way or the other.
+	  
+	  Tested by running 'make check' on cygwin. Most every test passes!
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-15 20:11  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Add 'pump' to 'all' target. Add 'rm pump' to 'clean' target.
+	  
+	  - 'pump' is a dependency of 'install'.
+	  - 'include_server' is a dependency of 'all.
+	  
+	  So I propose that 'pump' should be a dependency of 'all'.
+	  
+	  Reviewers: Fergus Henderson
+	  Test: make distcheck
+
+2008-05-15 19:39  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac, pump.in:
+	  
+	  Instead of a hack to figure out if pump is installed or not -- one
+	  that fails on macs with python 2.5 (at least) because of weirdnesses
+	  with distutils installation on that platform -- just rewrite pump at
+	  install-time to indicate it's installed. We take the opportunity to
+	  tell pump where the installed include_server.py is, because it needs
+	  to know, and we know that during 'make install'.
+	  
+	  Tested by running 'make distcheck' on linux (ubuntu) with python 2.4,
+	  and mac 10.5 with python 2.5. I also tested by running, on the linux
+	  machine,
+	  ./configure --prefix=/tmp/distcc.install && make install && make
+	  DISTCC_INSTALLATION=/tmp/distcc.install/bin installcheck
+	  
+	  Furthermore, I manually inspected the installed pump file after that
+	  to make sure it looked correct.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-15 02:53  Craig Silverstein <opensource@google.com>
+
+	* include_server/compiler_defaults.py:
+	  
+	  Add a comment. From Nils Klarlund <opensource@google.com>:
+	  
+	  "Assume that:
+	  
+	  (1) 'gcc' is a link to 'distcc' earlier on PATH than the real gcc.
+	  (2) gcc is invoked; in fact that invokes distcc, which will rewrite
+	  the PATH in src/climasq.c before invoking 'gcc' again.
+	  
+	  That will make calls by distcc such as 'gcc -E' for preprocessing work
+	  OK, but the include processor will in fact be calling the 'distcc' as
+	  'gcc' again! But because the input argument is an I/O redirection,
+	  distcc will then correctly call 'gcc'. In args.c it fails to recognize
+	  an input file."
+
+2008-05-15 02:40  Craig Silverstein <opensource@google.com>
+
+	* src/access.c, src/access.h, src/arg.c, src/backoff.c, src/bulk.c,
+	  src/bulk.h, src/cleanup.c, src/climasq.c, src/clinet.c, src/clinet.h,
+	  src/clirpc.c, src/compile.h, src/compress.c, src/cpp.c, src/daemon.c,
+	  src/daemon.h, src/distcc.c, src/distcc.h, src/dopt.c, src/dopt.h,
+	  src/dparent.c, src/dsignal.c, src/exec.h, src/exitcode.h,
+	  src/h_hosts.c, src/h_parsemask.c, src/help.c, src/history.c,
+	  src/hostfile.c, src/hosts.c, src/hosts.h, src/implicit.c,
+	  src/implicit.h, src/io.c, src/loadfile.c, src/lock.c, src/lock.h,
+	  src/mon-gnome.c, src/mon-notify.c, src/mon-text.c, src/mon.c,
+	  src/mon.h, src/ncpus.c, src/netutil.c, src/netutil.h, src/prefork.c,
+	  src/pump.c, src/remote.c, src/renderer.c, src/renderer.h, src/rpc.c,
+	  src/rpc.h, src/safeguard.c, src/sendfile.c, src/serve.c, src/setuid.c,
+	  src/srvnet.c, src/srvnet.h, src/srvrpc.c, src/ssh.c, src/state.c,
+	  src/state.h, src/stats.c, src/stats.h, src/strip.c, src/tempfile.c,
+	  src/timefile.c, src/timefile.h, src/traceenv.c, src/types.h,
+	  src/util.c, src/util.h, src/where.c, src/where.h:
+	  
+	  Add a consistent emacs-variable header to all source files. This
+	  affects the way emacs users will see these files, when visiting them
+	  in emacs. In particular, tabs will show up as 4 spaces, which is
+	  (clearly) the setting the original distcc author used when writing the
+	  code.
+	  
+	  We also set an emacs variable to never insert new tabs, but use spaces
+	  instead. This will help stop the problem we have now with mixed tabs
+	  and spaces. In a future cleanup, we may replace all tabs with 4
+	  spaces, and make other whitespace improvements.
+	  
+	  The final new variable set, is to set line-wrapping at 78 chars.
+	  Personally, I would have made it more like 72, but some existing files
+	  already had the 78 limit, so I just do that everywhere, to be
+	  consistent.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-15 01:58  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  The gdb tests was making two assumptions that the input was ELF, which
+	  was failing on OS X (Which uses Mach-O). One is that two identical
+	  link commands always produce the same output, which is not true for
+	  mach-o. The other is just a test of ELF-specific code, without an
+	  "iself" check. Now I check the object-file type and run the
+	  appropriate test, based on the type, in each case.
+	  
+	  Tested by running 'make check' on linux (ubuntu 6) and OS X (10.5).
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-15 01:36  Craig Silverstein <opensource@google.com>
+
+	* include_server/compiler_defaults.py:
+	  
+	  When running gcc -v, we were clearing the environment too
+	  aggressively: in particular, we were clearing $PATH, which is needed
+	  to find gcc when it's in an unusual location. Now we clear everything
+	  but $PATH.
+	  
+	  Tested by running 'make include-server-maintainer-check' on solaris
+	  x86, which has gcc outside the standard path, and on linux (ubuntu),
+	  which does not.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-15 01:15  Craig Silverstein <opensource@google.com>
+
+	* src/tempfile.c:
+	  
+	  The tmpdir-creation routine has an (undocumented) invariant that the
+	  tmpdir should not end in a slash -- at least, inside distcc, you see
+	  code like this:
+	  snprintf("%s/%s", tmpdir, filename)
+	  
+	  On the other hand, windows's routine to create a tempdir guarantees it
+	  will end with a slash. I'm not sure it really matters, but get rid of
+	  the slash in that case. That way we don't have to worry about how
+	  filenames are interpreted (since // does have a special meaning for
+	  filenames in windows, though probably not in a way this code could
+	  generate before; still, no harm in normalizing to one slash).
+	  
+	  Tested by running 'make check' on cygwin.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-14 21:01  Craig Silverstein <opensource@google.com>
+
+	* test/comfychair.py:
+	  
+	  Replace an os.system calls ('rm -rf') with python (shutil.rmtree).
+	  This should improve portability. It seems to help on cygwin, for
+	  instance.
+	  
+	  I also got rid of anotehr os.system call that was redundant: it did a
+	  "mkdir -p foo" after the previous line had done a "mkdir -p foo/bar".
+	  
+	  Tested by running 'make check on linux (ubuntu) and cygwin.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-14 19:48  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  1) Fix up a PATH= assignment that would fail if builddir had spaces in
+	  it (because the output of `cd "$builddir" && pwd` was not being
+	  quoted). As a bonus, make the PATH= fit on one line, which makes some
+	  shells happier.
+	  
+	  2) Fixed up some install targets. On some systems, tar without -f
+	  reads from stdin, but that's non-standard (it should read from some
+	  tape-drive device in /dev in that case). Add -f- to $(TAR) in that
+	  case, which should work everywhere.
+	  
+	  3) cp -a isn't supported on all systems. I checked what automake
+	  does, and it emits cp -pR, so that's what I do too. We don't have any
+	  internal symlinks that I need to worry about -P or anything like
+	  that.
+	  
+	  Tested by running 'make installcheck' on a freebsd 6.0 system.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-14 19:22  Craig Silverstein <opensource@google.com>
+
+	* include_server/include_server_test.py:
+	  
+	  Show more data when an assert fails, to help in debugging.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-14 18:59  Craig Silverstein <opensource@google.com>
+
+	* m4/acx_pthread.m4:
+	  
+	  Update acx_pthread to the latest version we use internally. This is
+	  like the one on the cryp.to autoconf repository website, but with the
+	  avahi patches added in to deal with some compiler quirks. However,
+	  these patches have been rewritten internally within google to make
+	  them more robust. In particular, the new code now works with cygwin,
+	  which it previously didn't (resulting in the spurious error: "Unable
+	  to determine how to use pthreads with shared libraries").
+	  
+	  Tested by running configure on cygwin.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-14 14:26  Nils Klarlund <opensource@google.com>
+
+	* configure.ac, include_server/include_server_test.py:
+	  
+	  Make distcc 3.0 compatible with Python 2.5.
+	  
+	  Tests:
+	  
+	  I made PATH=$PATH:/usr/python/bin (where python2.5 resides on my
+	  machine). I ran
+	  autogen and reconfigured. Then I did:
+	  
+	  make include-server-maintainer-check
+	  make pump-maintainer-check
+	  
+	  and I made sure that -Is now are set according to Python2.5.
+
+2008-05-14 08:03  Craig Silverstein <opensource@google.com>
+
+	* pump.in:
+	  
+	  Ick. On some systems test is in /bin, and in others /usr/bin. Now
+	  figure out where it is before running it, and fall back on the shell
+	  test if no binary can be found.
+	  
+	  Tested by running 'make check' on a FreeBSD machine (/bin/test) and
+	  linux (/usr/bin/test).
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-14 07:28  Craig Silverstein <opensource@google.com>
+
+	* src/compile.c:
+	  
+	  getc returns an int, not a char. We're checking whether a char ==
+	  EOF, which isn't kosher, and on systems where -funsigned-char is true,
+	  dangerous. Change the type of the var to an int.
+	  
+	  Tested by running on linux (ubuntu) and on linux ppc (debian), the
+	  latter of which complained at compile time.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-14 07:15  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/init.d/distcc:
+	  
+	  Fix problems where distcc's init script was using the wrong
+	  exit status and giving misleading messages as a result.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-14 07:14  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/conf/commands.allow.sh:
+	  
+	  Increase the set of commands allowed by default:
+	  allow cc, c++, c89, c99, and g++, in addition to gcc.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-14 02:27  Craig Silverstein <opensource@google.com>
+
+	* pump.in:
+	  
+	  Fix a test to work on solaris sh.
+	  
+	  Tested by running 'make check' on linux (ubuntu) and solaris 10 x86.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-14 01:00  Nils Klarlund <opensource@google.com>
+
+	* include_server/basics.py, include_server/basics_test.py,
+	  include_server/include_server.py:
+	  
+	  Finish refactoring and add tests. Move _CleanOutClientRoot and
+	  _CleanOutOthers
+	  to the ClientRootKeeper package in basics. Replace
+	  _RemoveDirectoryTree with
+	  shutil function. Add tests to see that directories are created and
+	  deleted.
+	  Add a couple of title headers to basics.py. Remove a couple of now
+	  irrelevant
+	  comments.
+	  
+	  Tests: make pump-maintainer-check
+	  make include-server-maintainer-check
+	  
+	  Reviewer: Craig Silverstein
+
+2008-05-14 00:42  Craig Silverstein <opensource@google.com>
+
+	* include_server/setup.py:
+	  
+	  Include snprintf.c in the source-list for the python extension. This
+	  is needed on systems that don't define asprintf/etc on their own.
+	  
+	  Tested by running 'make check' on a linux ubuntu machine and on a
+	  solaris machine.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-14 00:31  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, find_c_extension.sh, pump.in:
+	  
+	  A few more cleanups:
+	  
+	  1) No ! outside of a 'test' (sh-compatibility).
+	  2) grep >/dev/null instead of grep -q (solaris portability).
+	  3) Improved the quote hygenie a little.
+	  4) prepend to PYTHONPATH instead of overriding it.
+	  
+	  Tested by running on a solaris machine, and on a machine where
+	  PYTHONPATH is needed to locate the python distribution (which is not
+	  in the standard location).
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-13 23:53  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  On some systems (FreeBSD), it looks like connect() can return EINVAL.
+	  This isn't documented, but there's some talk about it on the web, eg
+	  http://mail-index.netbsd.org/netbsd-bugs/2003/08/18/0002.html
+	  
+	  It looks like the cause is that the first connect fails for whatever
+	  reason, and then subsequent ones fail with EINVAL.
+	  
+	  I've detected that in the NoDetachDaemon_Case, both on FreeBSD and OS
+	  X machines. The symptom is that sock.connect_ex(('127.0.0.1',
+	  self.server_port) continually returns EINVAL, and no amount of time
+	  will fix things.
+	  
+	  I'm not exactly sure why, but I figure one possible problem is the
+	  connect is happening before distccd has started listening, and that
+	  causes problems. So I put in a bit of a delay to give distccd time to
+	  start up. I figure it can't hurt, and may well help.
+	  
+	  Tested by running 'make check' on a ubuntu machine (not subject to
+	  this problem) and a freebsd machine (which sometimes is). It
+	  certainly didn't hurt, though I can't tell if it solved the problem
+	  for good.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-13 23:36  Craig Silverstein <opensource@google.com>
+
+	* include_server/setup.py:
+	  
+	  I found a machine whose python was compiled with _FORTIFY_SOURCE,
+	  which -- on linux FC5 at least -- gives warnings (which we turn into
+	  errors via -Werror) on distcc code for libc functions where we ignore
+	  the return value. Unfortunately, setup.py always uses the same flags
+	  that python was compiled with on the local machine, so _FORTIFY_SOURCE
+	  is always set when compiling distcc extensions via setup.py, and that
+	  compilation fails.
+	  
+	  Without getting into a philosophical debate about the merits of the
+	  warn-unused warnings, we'd rather the code compile, so I turn off
+	  _FORTIFY_SOURCE when it exists.
+	  
+	  Tested by running 'make check' on a goobuntu machine (no
+	  _FORTIFY_SOURCE) and an FC5 machine (with _FORTIFY_SOURCE).
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-13 20:33  Nils Klarlund <opensource@google.com>
+
+	* src/compile.c:
+	  
+	  Fix buglet: insert (void) in call of strcpy to avoid gcc 4.1.1. making
+	  trouble.
+	  
+	  gcc 4.1.1 with glibc 2.2.2. insists that the return value must be
+	  used. That
+	  appears to be a bug in gcc.
+	  
+	  Reviewers: Fergus Henderson, Craig Silverstein.
+
+2008-05-13 18:59  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Two changes to robustify the unittests:
+	  
+	  1) Don't try to run the gdb tests on machines that don't have gdb
+	  installed. Likewise, don't try to run the implicit-cc test on a
+	  machine that doesn't have cc installed (it happens! Sometimes
+	  there's only gcc.)
+	  
+	  2) Raise the file-descriptor limit if we can. Mac OS X likes to keep
+	  the limit at 256, but some of these tests need more.
+	  
+	  Tested by running 'make check' on linux and mac os x 10.5. On linux,
+	  I ran on both a machine with gdb installed, and one without.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-13 18:40  Craig Silverstein <opensource@google.com>
+
+	* src/exec.c:
+	  
+	  We were logging a char* that could be NULL. With glibc, the printf
+	  would just print "(null)", but on solaris libc it would segfault.
+	  Explicitly test that case now.
+	  
+	  Tested by running 'make check' on linux and solaris x86.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-13 17:49  Nils Klarlund <opensource@google.com>
+
+	* include_server/basics.py, include_server/basics_test.py,
+	  include_server/compress_files.py, include_server/include_analyzer.py,
+	  include_server/include_analyzer_memoizing_node.py,
+	  include_server/include_analyzer_memoizing_node_test.py,
+	  include_server/include_analyzer_test.py,
+	  include_server/include_server.py,
+	  include_server/include_server_test.py,
+	  include_server/parse_file_test.py:
+	  
+	  Clean-up the handling of directories for storing compressed files.
+	  
+	  The code was lacked encapsulation and proper object-orientation. (I
+	  wrote it --
+	  it had started out much simpler.) For example, key parameteres were
+	  communicated through file name patterns expressed in file names on
+	  disk. These
+	  patterns were then inferred from reading file names. Now the patterns
+	  are
+	  properly abstracted away in a class.
+	  
+	  There should be no semantic changes.
+	  
+	  Testing:
+	  
+	  make include-server-maintainer-check
+	  make pump-maintainer-check
+	  DISTCC_CLIENT_TMP='/tmp' make pump-maintainer-check
+	  
+	  The latter test exercices the padding gymnastics.
+
+2008-05-13 07:02  Craig Silverstein <opensource@google.com>
+
+	* pump.in:
+	  
+	  Rewrite 'pump' to remove bash-isms. This should now work with
+	  standard sh.
+	  
+	  This involved the following changes:
+	  
+	  1) `cmd` instead of $(cmd).
+	  2) [ -n "$VAR" ] instead of [ "$VAR" ]
+	  3) "Here document" (<<EOF) instead of a multi-line string (for
+	  CheckUsage)
+	  4) if/then instead of fancy var stuff like $(var-foo)
+	  5) if/then instead of x || { cmd1; cmd2; } (probably not necessary)
+	  6) [ ! foo ] instead of ! [ foo ] (that is, ! inside the test command)
+	  7) No more "local" for variable declarations
+	  8) I rewrote a case statement as an if, to not need bash extensions
+	  
+	  Not too much, actually. I've verified that the following "fancy"
+	  features are supported by all the sh's I have access to (bash,
+	  freebsd's sh, and solaris 10's sh):
+	  
+	  1) Use of 'exec' to redirect the shell's stdin and stdout
+	  2) Functions returning values, which are checkable via $?
+	  3) Assigning text emitted via a funcion using `` (a=`MyFunc arg1
+	  arg2`)
+	  4) trap
+	  
+	  In addition to the above conversions, I also cleaned up quote hygenie
+	  (in case variables have spaces in them).
+	  
+	  Tested by running 'make pump-maintainer-check' on a linux machine and
+	  freebsd machine. On the solaris machine, I ran 'pump' manually
+	  (setting various environment vars to try to test different codepaths),
+	  but could not successfully run 'make pump-maintainer-check' since that
+	  machine lacks the necessary version of python.
+	  
+	  Really, we should probably rewrite this script in python one day (it
+	  calls python scripts, so that's not adding a new dependency), and then
+	  we won't have to worry about portability at all. But that will have
+	  to wait for another day.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-13 07:00  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  printenv doesn't exist on all systems. 'env' does, and does the same
+	  thing as printenv when no arguments are given, so just use env instead
+	  of printenv.
+	  
+	  Tested by running 'make check' on a linux machine (which has both env
+	  and printenv).
+	  
+	  To be reviewed by Fergus Henderson
+
+2008-05-13 05:28  Craig Silverstein <opensource@google.com>
+
+	* include_server/include_server.py:
+	  
+	  Be more informative on an assert.
+	  
+	  Reviewed by Fergus Henderson and Nils Klarlund
+
+2008-05-13 01:49  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac:
+	  
+	  In the non-included popt case, POPT_INCLUDES was the empty string,
+	  leading to a compile command that had -I"" in it. Who knows what that
+	  means? Now the -I is part of POPT_INCLUDES, so when it's absent we
+	  don't add anything to CPPFLAGS.
+	  
+	  Tested on a machine where POPT_INCLUDES is not empty and one where it
+	  is.
+	  
+	  Reviewed by Nils Klarlund
+
+2008-05-12 23:53  Fergus Henderson <opensource@google.com>
+
+	* bench/benchmark.py:
+	  
+	  Fix a typo in my previous change:
+	  s/parse_opt_compiler/parse_compiler_opt/
+
+2008-05-12 23:07  Fergus Henderson <opensource@google.com>
+
+	* include_server/parse_command.py, test/testdistcc.py:
+	  
+	  Handle gcc's "-MF" option in the include server.
+	  
+	  This option only affects the name of the ".d" file, not the include
+	  closure, so the include server doesn't need to do anything for this
+	  option; the actual handling of this option in distcc is done by the
+	  distcc
+	  client, which already handles it correctly. This change just stops the
+	  include server from throwing an exception whenever '-MF' is
+	  encountered.
+	  
+	  Reviewers: Nils Klarlund
+
+2008-05-12 23:02  Fergus Henderson <opensource@google.com>
+
+	* bench/benchmark.py, bench/compiler.py:
+	  
+	  Add new options '--cc' and '--cxx' for specifying the paths to use for
+	  the C and C++ compilers.
+	  
+	  Also, update the help message to document the new format for the
+	  --compiler option.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-12 20:18  Nils Klarlund <opensource@google.com>
+
+	* include_server/c_extensions/distcc_pump_c_extensions_module.c:
+	  
+	  Fix call of 'realpath' to work on FreeBSD. Also fix memory leak.
+	  
+	  Reviewer: Craig Silverstein, Fergus Henderson.
+	  Tests: make pump-maintainer-check
+	  make include-server-maintainer-check
+
+2008-05-12 19:11  Fergus Henderson <opensource@google.com>
+
+	* bench/Build.py, bench/ProjectDefs.py, bench/Summary.py,
+	  bench/buildutil.py, bench/compiler.py, bench/statistics.py:
+	  
+	  Add support for pump mode to the benchmarking scripts.
+	  
+	  Also add support for setting the number of hosts to use.
+	  
+	  Fix division by zero error that occurred when running benchmark script
+	  with the "-a" option.
+	  
+	  Fix broken URL for GNU hello package.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund
+
+2008-05-12 18:32  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Fix 'ps' invocation to be more FreeBSD friendly.
+	  
+	  Reviewers: Fergus Henderson, Craig Silverstein
+	  Tests: make pump-maintainer-check
+
+2008-05-12 16:19  Nils Klarlund <opensource@google.com>
+
+	* include_server/include_analyzer_test.py:
+	  
+	  Fix include server test so that it passes on system w/o /dev/shm.
+	  
+	  Reviewers: Craig Silverstein, Fergus Henderson
+	  Tests: make include-server-maintainer-check
+
+2008-05-12 16:15  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Get rid of 'readlink -f', which is a Gnuism.
+	  
+	  The purpose of the readlink -f was to give the absolute path of the
+	  installation; that happens to reveal the installation date given the
+	  way we set
+	  up distcc-pump at Google. But this does not work under FreeBSD. The
+	  installation information can be communicated in different ways (for
+	  example by
+	  explicit actions of the build system).
+	  
+	  Reviewers: Fergus Henderson, Craig Silverstein
+
+2008-05-11 19:06  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Annoyingly, different versions of gcc are inconsistent in how they
+	  treat a non-existent #include file when invoked with "-MMD": some
+	  versions treat it as an error (rc 1), some as a warning (rc 0). When
+	  distcc is responsible for preprocessing (_server_options includes
+	  'cpp'), we need to figure out which our gcc does, in order to verify
+	  distcc is doing the same thing.
+	  
+	  Before this change, we just hard-coded in one sort of gcc behavior
+	  (that it always warns). This change actually tries gcc out to see
+	  which it does, to make sure distcc does the same.
+	  
+	  Tested by running 'make pump-maintainer-check' on both Linux gcc 4.0.3
+	  (which warns) and FreeBSD gcc 3.4.4 (which errors).
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-10 06:54  Craig Silverstein <opensource@google.com>
+
+	* src/sendfile.c:
+	  
+	  No matter what the reason, if we can't use sendfile() but it's still
+	  safe to fall back on readwrite(), do that. Before we only did this
+	  for certain errors, but we might as well do it for any error we don't
+	  expect to be able to recover from.
+	  
+	  Tested by running on mac os x 10.4, which has a problem with sendfile
+	  failing sometimes. The relevant test succeeds after this patch.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-10 00:58  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Double-quote unprotected directory reference.
+	  
+	  Reviewers: csilvers
+	  Tests: make distcheck
+
+2008-05-10 00:56  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Cosmetic clean-up of Makefile.in.
+	  
+	  -- Put a @ in front of a comment shell command (it shouldn't be
+	  printed). It is
+	  the only comment in the action part of a build rule in the whole
+	  Makefile. In
+	  Emacs, this comment is flagged as a syntax issue.
+	  -- Group all .PHONYs at beginning of section.
+	  
+	  Tests: make distcheck
+	  Reviewers: fergus, csilvers
+
+2008-05-09 23:19  Nils Klarlund <opensource@google.com>
+
+	* configure.ac, pump.in:
+	  
+	  Make the identification of Python 'binaries' more robust.
+	  
+	  Use the distutil function that generates the library name for locating
+	  the
+	  Python stuff in an installation.
+	  
+	  Reviewers: Fergus Henderson, Craig Silverstein
+	  Test: make distcheck
+
+2008-05-09 23:17  Nils Klarlund <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Speed-up integration/systems tests.
+
+2008-05-09 21:02  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Add "daemon-installcheck" target.
+	  
+	  This tests that the distcc daemon is running, and that it and distcc
+	  and the pump script have been installed correctly, by compiling a
+	  simple
+	  hello world program with distcc and distcc-pump.
+
+2008-05-09 20:36  Craig Silverstein <opensource@google.com>
+
+	* src/lsdistcc.c:
+	  
+	  A whitespace-only change. Got rid of spaces at the end of lines, and
+	  also of tabs. Went through to normalize indents and so forth (some
+	  functions were using 4-space indents, and others were using 8-space
+	  indents, which were probably actually originally written as tabs on a
+	  system with 4-space tabs).
+	  
+	  diff -w shows no diffs; this is really whitespace-only.
+	  
+	  Tested by making sure the file still compiles.
+
+2008-05-09 20:33  Craig Silverstein <opensource@google.com>
+
+	* src/lsdistcc.c:
+	  
+	  Modify lsdistcc to reduce the number of concurrent fd's it tries to
+	  open, when the system doesn't support a lot of concurrent fd's (which
+	  we see by default in freebsd). It uses getrlimit and setrlimit to get
+	  as many fd's as it can, and then stick to that number.
+	  
+	  I modified the main search loop to work in stages, where each stage
+	  uses at most maxfd's fd's. In the common -- almost universal -- case
+	  there will only need to be one stage, and the code will behave the
+	  same as before. In some limited environments, you might see multiple
+	  stages. You can reproduce this artificially via code like this:
+	  $ ulimit -SH -n 32 # in sh-like shells
+	  $ ./lsdistcc
+	  
+	  Tested by running manually on a configuration that gives 141 hosts.
+	  Tested both with many fd's available, and arbitrarily limited to 32
+	  (via the ulimit command above).
+	  
+	  Reviewed by Nils Klarlund
+
+2008-05-09 19:45  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/init.d/distcc:
+	  
+	  Fix a bug in my changes to add 'commands.allow.sh' that broke the
+	  Debian
+	  distribution.
+	  
+	  There was a spurious assignment to CMDLIST. CMDLIST used for the
+	  output of /etc/distcc/commands.allow.sh; it is supposed to be set to
+	  /var/state/distcc/commands.allow. But due to the spurious assignment,
+	  CMDLIST was being set to /etc/distcc/commands.allow.sh, causing the
+	  script to overwrite itself.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-09 19:24  Nils Klarlund <opensource@google.com>
+
+	* packaging/RedHat/rpm.spec:
+	  
+	  Fix so that include server record can be found.
+
+2008-05-09 19:23  Fergus Henderson <opensource@google.com>
+
+	* src/stringmap.c:
+	  
+	  Fix what appears to be a bug in the handling of DISTCC_CMDLIST.
+	  
+	  The documentation is not very clear, but distccd was documented
+	  as matching against the last DISTCC_CMDLIST_NUMWORDS words of the
+	  command, where I think by words they meant directory components.
+	  For example, if the file refered to by DISTCC_CMDLIST contains the
+	  line
+	  "/usr/bin/i686-blah-blah/gcc", and DISTCC_CMDLIST_NUMWORDS=2, only
+	  commands which end in "/i686-blah-blah/gcc" would be matched.
+	  The bug is that a command "i686-blah-blah/gcc" should be considered
+	  to match.
+	  
+	  Likewise, if DISTCC_CMDLIST contains the line "/usr/bin/gcc", and
+	  DISTCC_CMDLIST_NUMWORDS is 1 (or not set), then plain "gcc" should be
+	  allowed to match.
+	  
+	  Reviewers: Dan Kegel, Craig Silverstein
+
+2008-05-09 18:15  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in, configure.ac, popt/system.h, src/access.c, src/arg.c,
+	  src/argutil.c, src/backoff.c, src/bulk.c, src/cleanup.c,
+	  src/climasq.c, src/clinet.c, src/clirpc.c, src/compile.c,
+	  src/compress.c, src/cpp.c, src/daemon.c, src/distcc.c, src/dopt.c,
+	  src/dparent.c, src/dsignal.c, src/exec.c, src/filename.c,
+	  src/fix_debug_info.c, src/gcc-id.c, src/h_argvtostr.c,
+	  src/h_compile.c, src/h_dotd.c, src/h_exten.c, src/h_hosts.c,
+	  src/h_issource.c, src/h_parsemask.c, src/h_sa2str.c, src/h_scanargs.c,
+	  src/h_strip.c, src/help.c, src/history.c, src/hostfile.c, src/hosts.c,
+	  src/implicit.c, src/io.c, src/loadfile.c, src/lock.c, src/mon-gnome.c,
+	  src/mon-notify.c, src/mon-text.c, src/mon.c, src/ncpus.c,
+	  src/netutil.c, src/prefork.c, src/pump.c, src/remote.c,
+	  src/renderer.c, src/rpc.c, src/safeguard.c, src/sendfile.c,
+	  src/serve.c, src/setuid.c, src/snprintf.c, src/srvnet.c, src/srvrpc.c,
+	  src/ssh.c, src/state.c, src/stats.c, src/strip.c, src/tempfile.c,
+	  src/timefile.c, src/trace.c, src/traceenv.c, src/util.c, src/where.c,
+	  src/zeroconf-reg.c, src/zeroconf.c:
+	  
+	  Make handling of config.h sound.
+	  
+	  (1) Correct order of -Is in Makefile.
+	  
+	  (2) remove unnessary PATH modification in configure.ac (this is
+	  fergus's
+	  suggestion -- hopefully this will do, this replaces a circumvention
+	  mechanism I
+	  had originally concocted.
+	  
+	  (3) Fix place of the include of popt in CPPFLAGS.
+	  
+	  (4) Convert quoted includes of config.h to angle bracket includes so
+	  that the
+	  build version, not the source version, of this file is picked up.
+	  
+	  The order of -Is in the build system is wrong: it contradicts the
+	  VPATH mechanism.
+	  
+	  This means that builds in a build directory different from that
+	  of the source (distribution) directory will find wrong files even
+	  after the hapless developer has issued only a 'configure' command
+	  in the source directory (but not actually 'made' any thing
+	  there). For in that case, the src/config.h will be generated in
+	  the source directory and this will be the file picked in the
+	  build directory even if that directory has it's own src/config.h.
+	  This can lead to wrong builds and it can be hard to diagnose the
+	  problem.
+	  
+	  Currently, this what CPPFLAGS end up being (as found in the
+	  generated Makefile):
+	  
+	  CPPFLAGS = -DHAVE_CONFIG_H -D_GNU_SOURCE \
+	  -I../distcc/popt -I../distcc/src \
+	  ${DIR_DEFS} \
+	  -Isrc -Ilzo \
+	  -I"$(srcdir)/src" -I"$(srcdir)/lzo" \
+	  
+	  Here my source dir was ../distcc.
+	  
+	  The presence of '-I../distcc/popt' in front of -Isrc is the exact
+	  opposite of the semantics of VPATH mechanism, which looks for
+	  files in the build directory, then in the source directory.
+	  
+	  Also, note the remarks in:
+	  
+	  http://www.gnu.org/software/autoconf/manual/autoconf.html#Configuration-Headers
+	  
+	  (they do not quite correctly discuss the search path, btw).
+	  
+	  TESTING: I verified that with a corrupted config.h file in the source
+	  directory,
+	  building now succeeds.
+	  
+	  Also: make distcheck (it fails the same place as before: this is
+	  corrected in
+	  another change of mine --- I'll verify that with that change in place,
+	  this
+	  change makes 'make distcheck' succeed.)
+	  
+	  REVIEWERS: Fergus Henderson, Craig Silverstein
+
+2008-05-09 18:00  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in, find_c_extension.sh, include_server/setup.py, pump.in:
+	  
+	  Rewrite setup.py and associated logic to fix multiple build problems.
+	  
+	  The recent distcheck revealed that paths were set incorrectly for the
+	  setup.py
+	  script. Also, as I dug deeper, it turned out that built files were
+	  placed in
+	  the src directory (thanks to os.path.join I found in the distutil's
+	  source code,
+	  that trips up the location if relative paths contains too many
+	  '..'s.). [The
+	  distccheck revealed this!] I didn't like either that setup was run in
+	  the
+	  source directory and not from the build directory (that's asking for
+	  trouble).
+	  I did't like either that the search path, the list of includes, in
+	  setup.py was
+	  handcoded and not simply that of CPPFLAGS. Finally, I was confused by
+	  _builddir
+	  being another build directory under $(buildir). I renamed the former
+	  _include_server to better explain its role.
+	  
+	  So, I rewrote most of setup.py (correcting some of the documentation
+	  strings
+	  along the way). Also, I partly removed the 'jumping through the hoops'
+	  gymnastics from the Makefile.
+	  
+	  TESTING: 'make distcheck'
+	  REVIEWERS: csilvers, fergus
+
+2008-05-08 23:18  Fergus Henderson <opensource@google.com>
+
+	* doc/web/compared.html, doc/web/compilers.html, doc/web/faq.html,
+	  doc/web/security.html:
+	  
+	  Update web pages to correct statements that are no longer accurate for
+	  distcc 3.0.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-08 19:41  Fergus Henderson <opensource@google.com>
+
+	* doc/example/README, doc/example/default, doc/example/hosts.allow,
+	  doc/example/logrotate, doc/example/services, doc/example/xinetd,
+	  packaging/RedHat/logrotate.d/distcc, packaging/RedHat/rpm.spec:
+	  
+	  Revise the doc/example directory:
+	  - Add README file to the doc/example directory.
+	  - Add files in doc/example for every system configuration file
+	  installed or modified by the RPM installation script (rpm.spec).
+	  - Update some comments in rpm.spec.
+	  - Some whitespace changes to doc/example/logrotate and
+	  packaging/RedHat/logrotate.d/distcc to make those two files match.
+	  - Copy warning from packaging/RedHat/xinetd.d/distcc to
+	  doc/examples/xinetd.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-08 16:33  Nils Klarlund <opensource@google.com>
+
+	* include_server/basics.py:
+	  
+	  Make this file mostly conformant with gpylint. There should be no
+	  semantic
+	  consequences.
+	  
+	  TESTS: make distcheck
+	  REVIEWER: Fergus Henderson
+
+2008-05-07 23:50  Craig Silverstein <opensource@google.com>
+
+	* NEWS, doc/web/compared.html, doc/web/compilers.html, doc/web/faq.html,
+	  doc/web/index.html, doc/web/results.html, doc/web/scenarios.html,
+	  doc/web/security.html:
+	  
+	  Change NEWS links to point to the actual NEWS file, rather than the
+	  svn history-log for the NEWS file.
+	  
+	  Also changed the NEWS file itself to use ^L instead of a ^ + L, for
+	  the top instance.
+
+2008-05-07 23:03  Fergus Henderson <opensource@google.com>
+
+	* man/pump.1:
+	  
+	  Add a man page for the "pump" script.
+	  
+	  The contents are similar to the output of "pump --help",
+	  but with a bit more mark-up, and with additional sections
+	  "INVOKING LSDISTCC", "BUGS", "AUTHORS", "LICENSE", and "SEE ALSO".
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund.
+
+2008-05-07 18:54  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  The DaemonBadPort test case was not passing in --allow, which is a new
+	  flag required by distcc 3 (all other tests had been modified to add
+	  it). We never noticed until now because the distccd command is
+	  *expected* to fail with a "bad arguments" error code -- though the bad
+	  argument is supposed to be --port, not --allow. So this change gets
+	  this test actually testing what it's supposed to, again.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-07 18:21  Fergus Henderson <opensource@google.com>
+
+	* include_server/include_server.py:
+	  
+	  Insert "Usage: " at the start of the usage message for the include
+	  server.
+
+2008-05-07 18:01  Craig Silverstein <opensource@google.com>
+
+	* doc/web, doc/web/compared.html, doc/web/compilers.html,
+	  doc/web/distcc-green.css, doc/web/distcc-lca-2004.html,
+	  doc/web/distcc-lca-2004.pdf, doc/web/distcc-lca2003.ps.gz,
+	  doc/web/distccmon-gnome-2003-09-23-01.png, doc/web/faq.html,
+	  doc/web/index.html, doc/web/results.html, doc/web/scenarios.html,
+	  doc/web/security.html:
+	  
+	  Add the documentation files, as downloaded from distcc.samba.org. I
+	  then modified the files slightly, mostly by deleting content that
+	  referred to files on the samba.org server and replacing them by files
+	  (or, usually, links) to Google Code. For instance, the 'source' link
+	  now points to the Google Code svn page for distcc, rather than a page
+	  holding tarball information. Likewise, the News page now just points
+	  to the svn trunk's NEWS file.
+	  
+	  For the record, here's email from Martin Pool OK-ing this move/copy:
+	  ---
+	  From: Martin Pool <mbp@sourcefrog.net>
+	  Date: Sun, May 4, 2008 at 9:31 PM
+	  Subject: Re: sources for distcc web site
+	  To: Fergus Henderson <Fergus Henderson <opensource@google.com>>
+	  
+	  Hi,
+	  
+	  The sources are at
+	  <http://sourcefrog.net/archive/distcc-web-200411.tar.bz2>
+	  
+	  You are welcome to either work from these or scrape the web site. You
+	  can make any reasonable use of the text in making a new web site.
+	  
+	  --
+	  Martin <http://launchpad.net/~mbp/ <http://launchpad.net/%7Embp/>>
+	  ---
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-05 15:31  Fergus Henderson <opensource@google.com>
+
+	* man/distcc.1, man/distccd.1:
+	  
+	  Document Zeroconf support: the "--zeroconf" option to distccd
+	  and the "+zeroconf" entry in the distcc hosts list.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund.
+
+2008-05-05 15:26  Fergus Henderson <opensource@google.com>
+
+	* man/distcc.1:
+	  
+	  Document the -j and --show-hosts options in the man page.
+	  Also mention that pump mode requires release 3.0 or later,
+	  and a few other minor corrections.
+
+2008-05-02 23:07  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Change Lsdistcc_Case to work on hosts for which 127.0.0.2 is not a
+	  loopback address.
+	  
+	  Tested by "(g)make TESTNAME=Lsdistcc_Case single-test" on both Linux
+	  and FreeBSD.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund.
+
+2008-05-02 21:11  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix EmptySource_Case test so that it passes with gcc 3.4.x.
+	  
+	  Tested by "(g)make SINGLETEST=EmptySource_Case single-test"
+	  on both FreeBSD (gcc 3.4.4) and Linux (gcc 4.0.3).
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-02 19:54  Nils Klarlund <opensource@google.com>
+
+	* configure.ac, lzo/.stamp-conf.in, popt/.stamp-conf.in:
+	  
+	  Explain stamp files and remove unneeded @src_dir@ (which was
+	  misspelled?).
+	  
+	  TESTED: make distcheck
+	  REVIEWED: Craig Silverstein, Fergus Henderson
+
+2008-05-02 19:09  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac:
+	  
+	  For machines without python installed, before this change we'd check
+	  for that case, but still give an error rc in that case, so the make
+	  would fail. Now I make sure we don't fail just because we don't have
+	  python installed.
+	  
+	  Also, some machines (solaris 10) don't have a grep with -q, so just
+	  use >/dev/null insteasd.
+	  
+	  Third, we had left out a file to add to the tarball: ontest.py.
+	  
+	  Fourth, 'make distcheck' fails a bit on the pump-installcheck. I've
+	  addressed some of the problems, but others remain.
+	  
+	  Finally -- and this is the bulk of the change, line-count wise, I
+	  added quotes around all variables, so we do the right thing when
+	  variables have spaces or other shell-meaningful characters in them, as
+	  indeed they often do on windows machines.
+	  
+	  Tested by running 'make check' on various architectures, including
+	  solaris 10 x86 and cygwin.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-05-02 18:49  Fergus Henderson <opensource@google.com>
+
+	* src/sendfile.c:
+	  
+	  Treat ENOTSOCK errors from sendfile() the same way that we treat
+	  ENONSYS and EINVAL errors: fall back to using read() and write().
+	  This fixes the failure of SyntaxError_Case and MissingCompiler_Case
+	  on FreeBSD.
+	  
+	  Tested by "make check".
+	  
+	  Reviewers: Craig Silverstein
+
+2008-05-02 18:17  Nils Klarlund <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Remove .d test case for which gcc stumbles on Mac OS.
+
+2008-05-02 18:11  Craig Silverstein <opensource@google.com>
+
+	* src/distcc.h:
+	  
+	  This adds an #two that's technically needed to compile. Cygwin
+	  happened to notice this was missing.
+	  
+	  Tested by compiling (via 'make') on cygwin and ubuntu.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-02 18:10  Craig Silverstein <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Four improvements to the test framework:
+	  
+	  1) While pump-mode requires python 2.4, the test framework is designed
+	  to work with python 2.2 and later. A few non-2.2 features have snuck
+	  in though. I replaced them with 2.2-compatible code.
+	  
+	  2) The test system used the --ex flag to gdb, which is only supported
+	  in more recent gdb's. I've changed the code to use --command instead,
+	  which is supported in old gdb's as well. I also added a workaround
+	  for a buggy error-message that gdb sometimes emits. See
+	  http://www.archlinux.org/pipermail/arch/2007-January/013366.html
+	  
+	  3) I fixed a regexp for the gcc-options case, to handle correctly
+	  systems that don't name gcc "gcc" (for instance, they might name it
+	  powerpc-apple-darwin8-gcc-4.0.1).
+	  
+	  4) Use shell quoting, when appropriate, to deal with paths that have
+	  spaces (eg on windows) or other weird characters in them.
+	  
+	  Tested by running 'make maintainer-check' on a variety of
+	  architectures, including os x and cygwin. The tests successfully run
+	  on all of them (though not all tests successfully pass yet...)
+	  
+	  Reviewed by Fergus Henderson and Nils Klarlund
+
+2008-05-02 00:10  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Small wording change, suggested by Nils Klarlund <opensource@google.com>
+
+2008-05-01 23:52  Craig Silverstein <opensource@google.com>
+
+	* configure.ac:
+	  
+	  This test was broken before: I needed to escape [ and ] from m4.
+	  
+	  Tested by running configure on a machine with python 2.2 installed.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-05-01 23:51  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Previously, 'make check' was a noop because we do not require python
+	  to be installed for distcc, but the tests require python. Therefore,
+	  to run the tests you had to run 'make maintainer-check' instead (since
+	  maintainers of distcc *do* have to have python installed).
+	  
+	  Now, I have 'make check' check if python is installed. If so, it runs
+	  the tests. Otherwise, it prints a message and exits.
+	  
+	  Tested by running 'make check' and 'make installcheck' manually, on
+	  systems with the various pythons installed as well as a few without.
+	  
+	  Code reviewed by Fergus Henderson
+
+2008-05-01 23:02  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac:
+	  
+	  Include-server requires python 2.4 or higher, but the test framework
+	  only requires python 2.2. Check for both, so for folks with python
+	  2.2 or python 2.3, they can at least run the tests, even if they can't
+	  install the include-server.
+
+2008-05-01 00:58  Nils Klarlund <opensource@google.com>
+
+	* include_server/c_extensions_test.py:
+	  
+	  Clean up Python code.
+	  
+	  -- Do TODOs.
+	  -- Heed most pylint warnings.
+
+2008-04-30 22:46  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in, find_c_extension.sh, include_server/c_extensions_test.py,
+	  pump.in:
+	  
+	  Make install-checks work and a lot of clean-up in regards to the
+	  'checking'
+	  targets.
+	  
+	  - Remove temporary installation for include server tests. The current
+	  scheme
+	  doesn't make too much sense: when testing a real installation, the
+	  include
+	  server is tested in the separate temporary installation.
+	  
+	  Instead, we propose to make the installation tests run only the
+	  regression
+	  tests in the 'test' directory, unpumped and pumped. The include server
+	  is now
+	  tested as part of maintainer-check only, but run out of the source
+	  directory,
+	  except for the C extension module.
+	  
+	  - The maintainer-check and the maintainer-install-check now run the
+	  integration
+	  test (test/testdistcc.py) also in pump mode.
+	  
+	  - A new script, find_c_extension.sh, is added; it finds the location
+	  of the
+	  shared library. It is used for both running the include server tests
+	  and the
+	  regression tests out of the built (not installed) version of the
+	  software. It
+	  was cut of the 'pump' script, which now has been simplified.
+	  
+	  - Reorganize the order of affected targets. Introduce
+	  '###############...' as
+	  separator between sections of Makefile in a more consistent way. Make
+	  each
+	  section consistently declare all the phony targets at the beginning of
+	  the
+	  section.
+	  
+	  - Introduce DISTCC_INSTALLATION variable to account for the precise
+	  location
+	  of the tested binaries in an installation.
+	  
+	  - Add verify-binaries-installcheck target to ensure that binaries are
+	  in this
+	  location.
+	  
+	  - Also, this target reports the location to users:
+	  
+	  Make sure all paths below are where you expect them to be:
+	  **********************************************************
+	  /home/klarlund/svn-distcc/mybin/installation/bin/distcc
+	  /home/klarlund/svn-distcc/mybin/installation/bin/distccd
+	  /home/klarlund/svn-distcc/mybin/installation/bin/distccmon-text
+	  /home/klarlund/svn-distcc/mybin/installation/bin/lsdistcc
+	  **********************************************************
+	  
+	  
+	  - Absolutize a couple of relative directory references before they are
+	  passed to
+	  scripts, because otherwise things won't work with the disciplined
+	  approach to
+	  DISTCC_INSTALLATION.
+	  
+	  - Change a randomly generated filename so that it resides in /tmp (in
+	  c_extensions_test.py) and not inside the build directory tree. Fix up
+	  logic
+	  for filenaming to be more secure. This makes 'make distcheck' pass w/o
+	  permission problems. Also, delete the temporary file and directory
+	  when
+	  test passes.
+	  
+	  - Make include-server-maintainer-check remove the .out file when test
+	  passes.
+	  This makes 'make distcheck' pass the final test of the clean-out.
+	  
+	  - Remove the 'Filtering' of the c_extensions_test output. This
+	  filtering was
+	  necessary in a previous version that printed all output to stdout to
+	  reduce
+	  user confusion. But now the test results go to intermediate files.
+	  This
+	  change was forced by the removal of the .out files (above).
+	  
+	  REVIEWED: fergus, csilvers.
+	  
+	  TESTS: make distcheck
+	  make maintainer-installcheck
+	  make include-server-maintainer-check
+	  make maintainer-check
+
+2008-04-28 21:52  Craig Silverstein <opensource@google.com>
+
+	* src/sendfile.c:
+	  
+	  OS X added sendfile support in 10.5, so add this case to sendfile.c.
+	  Looking at the man pages, it looks like os x sendfile is pretty much
+	  the same as BSD's, so I copied much of the code from the existing BSD
+	  case.
+	  
+	  Tested by ensuring the code compiles and links on os x 10.5. No
+	  attempt to see if it runs correctly, though.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-28 19:23  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac, include_server/setup.py, src/compile.c,
+	  src/distcc.h, src/dotd.c, src/emaillog.c, src/exec.c,
+	  src/fix_debug_info.c, src/io.c, src/lsdistcc.c, src/netutil.c,
+	  src/snprintf.c, src/srvrpc.c, src/tempfile.c, src/trace.c, src/util.c:
+	  
+	  These changes are enough to get code to compile, and at least some of
+	  the unittests to pass, on FreeBSD 6.0, Solaris 10 x86, and OS X
+	  Leopard. You have to use gmake instead of standard bsd make, though,
+	  because neither bsd nor solari make understand 'include */*.d' and
+	  'CFLAGS += $(POPT_FLAGS).' These may be fixable later.
+	  
+	  Most changes fall into four categories:
+	  1) #include differences
+	  2) New errors due to some #ifdef paths being taken differently
+	  3) Undefined functions (see, eg, the new HAVE_STRSEP)
+	  4) Type differences (eg tv_usec is an int on os x, not a long int)
+	  
+	  As one concrete example, snprintf.c is an empty file on linux, where
+	  all the functionality is part of glibc. But on Solaris, some of its
+	  functionality is useful. This turned up a bug where if you have
+	  vsnprintf on your system but not vasnprintf, then dopr() was not being
+	  used but was being defined, leading to an "unused static function"
+	  warning in gcc.
+	  
+	  As another, solaris would complain about "index" being used as a
+	  variable, since it's also a function name. The var was renamed idx.
+	  
+	  Tested by compiling on FreeBSD, Solaris 10, and OS X leopard (x86). I
+	  also compiled and ran unittests under Linux Ubuntu, to make sure
+	  this change didn't break anything there.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-25 06:29  Craig Silverstein <opensource@google.com>
+
+	* include_server/include_analyzer_test.py,
+	  include_server/test_data/symlink_farm/foo,
+	  include_server/test_data/symlink_farm/sub_farm/link_to_dd_dd_dfoo_include_dotdot_foo[CPY],
+	  include_server/test_data/symlink_farm/sub_farm/link_to_dotdot_dotdot_dfoo_include_dotdot_foo[DEL]:
+	  
+	  Some older versions of tar have problems with filenames > 100
+	  characters. To maximize compatibility, I renamed the only file we
+	  have that is close to that limitation, to be shorter.
+
+2008-04-24 06:40  Craig Silverstein <opensource@google.com>
+
+	* configure.ac:
+	  
+	  Neglected to commit this with the Makefile.am changes from last time,
+	  though it's needed to define UNINSTALL_GNOME.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-24 05:39  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Add uninstall targets, to undo the effects of 'make install'. I try
+	  to be semi-smart about deleting empty directories.
+	  
+	  Unfortunately, python's setup.py does not have an --uninstall mode, so
+	  I can only uninstall the include-server if a python-record-file was
+	  preserved during make install. This record-file must be passed in for
+	  make uninstall as well.
+	  
+	  Tested by running 'make install' followed by 'make uninstall' on my
+	  local machine.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-23 00:40  Craig Silverstein <opensource@google.com>
+
+	* TODO:
+	  
+	  Update the TODO file to add an entry on better non-ELF support. Also
+	  get rid of the TODO for Latte, since we're not going to be using any
+	  doc-template system on Google Code.
+	  
+	  While in the area, normalize a little bit the number of blank lines
+	  between entries (I try to make it 2).
+
+2008-04-19 23:40  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, configure.ac, packaging/googlecode_upload.py:
+	  
+	  Fix some bugs in the googlecode-upload script, and modify the upload
+	  target in the Makefile to call it. Also added googlecode_upload.py to
+	  the dist tarball.
+	  
+	  Also update the version number to prerelease2. As part of testing
+	  this change, I actually uploaded the tarballs and rpm files to
+	  code.google.com.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-18 19:19  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in, test/comfychair.py:
+	  
+	  Rename directory testtmp to _testtmp in line with our current practice
+	  for
+	  generated directories.
+
+2008-04-18 18:51  Craig Silverstein <opensource@google.com>
+
+	* .:
+	  
+	  Another auto-generated file I had forgotten last time.
+
+2008-04-18 18:32  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, packaging/RedHat/conf,
+	  packaging/RedHat/conf/clients.allow,
+	  packaging/RedHat/conf/commands.allow.sh, packaging/RedHat/conf/hosts,
+	  packaging/RedHat/default, packaging/RedHat/default/distcc,
+	  packaging/RedHat/init.d/distcc, packaging/RedHat/rpm.spec:
+	  
+	  A bunch of changes to the configuration files and installation:
+	  
+	  (1) Remove the Google crosstool-specific stuff from
+	  packaging/RedHat/init.d/distcc; instead, make it
+	  source a new configuration file "commands.allow.sh".
+	  
+	  (2) Install default versions of all the configuration files
+	  in $(sysconfdir), i.e. /etc:
+	  distcc/hosts, distcc/clients.allow, commands.allow.sh,
+	  and defaults/distcc.
+	  
+	  (3) Fix a bug in Makefile.in: "make install" didn't work when you
+	  configured with srcdir != builddir. Added "$(srcdir)/" in various
+	  places to make it work. (There's similar problems with "make dist",
+	  but I gave up on those for now.)
+	  
+	  (4) Add "install-deb" rule, to install the ".deb" files.
+	  
+	  (5) Don't run install-for-include-server-tests as part of "make
+	  install".
+	  That target is part of "make check", not "make install".
+	  
+	  (6) Add missing dependency on "include-server" to "pump-check" rule.
+	  
+	  (7) Remove some bash-isms from the "init.d/distcc" script.
+	  
+	  Tested by running "make install-deb" followed by
+	  "distcc /usr/bin/gcc -c foo.c" - this now works "out-of-the-box"! :->
+	  
+	  Also ran "make maintainer-check" and "make pump-check".
+
+2008-04-18 16:01  Fergus Henderson <opensource@google.com>
+
+	* autogen.sh:
+	  
+	  Address review comments on an earlier change:
+	  - autogen.sh now uses "#!/bin/sh -e" rather than "|| exit 1"
+	  everywhere.
+	  - autogen.sh now determines srcdir automatically from $0
+	  - autogen.sh no longer tells you to run "./configure --srcdir=.".
+
+2008-04-18 15:13  Nils Klarlund <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix-up test in regard to angle bracket includes of non-existent files
+	  in order
+	  to explicitly accommodate the rather strange difference between
+	  running gcc
+	  locally and running it remotely in pump mode. In the former case, gcc
+	  fails
+	  with an error message; in the latter it succeeds and the error has
+	  been demoted
+	  to a warning.
+	  
+	  TESTING:
+	  make maintainer-check
+	  make pump-check
+
+2008-04-18 08:59  Fergus Henderson <opensource@google.com>
+
+	* man/distccd.1:
+	  
+	  The --allow option to distccd is no longer optional.
+	  Update the distccd man page to better reflect that.
+
+2008-04-18 06:53  Craig Silverstein <opensource@google.com>
+
+	* ., lzo, packaging, popt, src, test:
+	  
+	  Update the svn:ignore property on these directories, so 'svn status'
+	  doesn't show the auto-generated files that can show up, such as
+	  distcc.d or config.h.in.
+
+2008-04-18 06:37  Craig Silverstein <opensource@google.com>
+
+	* packaging/googlecode_upload.py:
+	  
+	  Add distcc-specific code to googlecode_upload. This allows us to
+	  upload all the package files we create in one fell swoop (they must be
+	  specified on the commandline). We figure out the summary to give to
+	  each file and the label to apply, and then upload each in turn.
+	  
+	  I've also turned off the feature to figure out the name and password
+	  directly from the local svn repository, because that feature is broken
+	  (alas), with the current python-subversion bindings. Instead, I
+	  prompt for them, but at least it's only once per upload as opposed to
+	  once per file!
+	  
+	  Not yet tested (will do so when I add to the Makefile to actually use
+	  it).
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-18 01:12  Nils Klarlund <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Add missing dependency on pump for target pump-check and
+	  pump-installcheck. To
+	  do so, introduce new phony intermediate target. Add TODO about the
+	  `pwd` in
+	  maintainer-installcheck target.
+
+2008-04-18 01:08  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Fix missing line continuation in a Makefile rule.
+	  
+	  Also, use "@" to avoid printing out a line with disturbing contents
+	  ("ERROR")
+	  during normal successful test execution.
+
+2008-04-18 01:05  Fergus Henderson <opensource@google.com>
+
+	* autogen.sh:
+	  
+	  Support running autogen.sh in the build directory, rather than the
+	  source directory.
+	  Now the source directory should be completely untouched, so we should
+	  be able
+	  to autogen, configure, and build even if the source directory is
+	  read-only.
+
+2008-04-18 01:03  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Quick fix to my previous commit: I have to make sure every Make line
+	  ends in success, when it in fact succeeds. Thus you need to use ||
+	  sometimes instead of &&.
+
+2008-04-18 01:00  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Augment 'make distcheck' to ensure that 'make', 'make check', 'make
+	  install', etc. only write into builddir and instdir, not srcdir. In
+	  the process, fixed up a typo -- introduced when I merged all the
+	  Makefile.in's -- that affected us in the (common) case DISTDIR is the
+	  empty string.
+	  
+	  Tested by running 'make distcheck'.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-18 00:07  Craig Silverstein <opensource@google.com>
+
+	* packaging/googlecode_upload.py:
+	  
+	  Add googlecode_upload.py, a script to help upload tarballs and package
+	  files to the Google Code location of distcc. This is the version as
+	  downloaded from the web, at
+	  http://support.googlecode.com/svn-history/r57/trunk/scripts/googlecode_upload.py
+	  
+	  After this pristine version is checked in, we'll hack on it to add
+	  some distcc-specific features (multiple uploads, etc). We'll also add
+	  it to the Makefile at that time, both to use ('make upload') and as
+	  part of the distribution (hey, why not).
+
+2008-04-17 22:27  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, build-distcc.sh[DEL], distcc.spec[DEL],
+	  packaging/RedHat/rpm.spec[CPY], packaging/deb.sh,
+	  packaging/rpm.sh[CPY]:
+	  
+	  Add 'make rpm' to make the rpm files for this project (much like 'make
+	  dist' makes a tar.gz file), and 'make deb' to make the deb files.
+	  'make alldist' will make all three (well, four): .tar.gz, .tar.bz2,
+	  .rpm, and .deb.
+	  
+	  The rpm.spec file that's used is based on the old distcc.spec file,
+	  which is now deleted. However, it's reordered to look a bit more like
+	  other spec files for Google projects, removes the obsolete
+	  'include-server' package (that's now part of the distcc package
+	  proper), and takes out all the ChangeLog entries that don't relate to
+	  the spec file in particular.
+	  
+	  I also added a script, rpm.sh, to build the rpm file, which is a
+	  combination of the rpm.sh script used to build other google projects,
+	  and the existing build-distcc.sh, which is now deleted. Mostly it
+	  just calls rpmbuild with the right flags. deb.sh could have re-done
+	  all the work that rpm.spec and rpm.sh does, but instead we just use
+	  "alien" to convert the rpm to a deb file.
+	  
+	  Tested by installing the deb files (both client and server) on my home
+	  machine and then running 'make maintainer-installcheck'.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-17 05:42  Fergus Henderson <opensource@google.com>
+
+	* README.pump:
+	  
+	  Avoid referring to "the distcc-pump".
+	  
+	  Reviewed by Nils Klarlund.
+
+2008-04-17 02:45  Craig Silverstein <opensource@google.com>
+
+	* INSTALL, Makefile.in, configure.ac, include_server/setup.py:
+	  
+	  Resolve some TODO's in the Makefile (and, to a lesser extent, in
+	  configure.ac):
+	  
+	  1) Create a .gz tarfile as well as a .bz2 tarfile, with "make dist".
+	  I've also added a few more dist rules: "make rpm", "make deb", and
+	  "make alldist", though currently they're commented out since the
+	  scripts they call have yet to be written.
+	  
+	  2) setup.py looks at os.environ("BUILDDIR"), so make sure that
+	  environment variable is always set properly.
+	  
+	  3) setup.py was hard-coding the version number. Instead, have it get
+	  it from the environment ("DISTCC_VERSION"), and set that envvar
+	  before calling setup.py in the Makefile. (The alternate solution,
+	  of making a setup.py.in and having configure set the version number
+	  in setup.py, did not work well because the Makefile really wants
+	  setup.py to be in $srcdir, that the configure option puts it in
+	  builddir.)
+	  
+	  4) Clean up distcheck to have three separate directories: src, build,
+	  and install. Before src and build were the same. This pulled up
+	  several places that were using srcdir instead of builddir, which I
+	  fixed.
+	  
+	  5) Clean up distcheck to make sure that 'make distclean' cleans all
+	  the build files created during the build. At first it didn't
+	  quite, so I fixed that up as well.
+	  
+	  6) Added some new files to 'make dist': particularly, the files used
+	  to build rpm and deb files.
+	  
+	  7) Have maintainer-check and maintainer-installcheck both call the
+	  same routine (via recursive make) rather than copy all that code.
+	  This simplifies things surprisingly, especially since the main
+	  check logic no longer has be inside a big "if $(PYTHON)".
+	  
+	  8) (Various rules:) replace $^, which is not very portable, with a
+	  repetition of the dependency line.
+	  
+	  9) Rename GZIP to GZIP_BIN, since GZIP as an envvar is read by gzip
+	  and parsed as gzip options.
+	  
+	  10) In include_server/setup.py, we weren't setting builddir/src as an
+	  include dir, and it needs to be (as 'make distcheck' shows). I'm
+	  not sure builddir/../../src really needs to be anymore, but I guess
+	  it can't hurt, so I've left it in.
+	  
+	  11) Updated INSTALL to refer to autogen.sh, which will create
+	  configure if it's not already there.
+
+2008-04-15 02:23  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Clean logic and error messaging in pump script.
+	  
+	  - There were missing error messages.
+	  - Some of them did not go to stderr.
+	  - Global variable include_server_started_successfully was ugly.
+	  Changed to a
+	  status variable.
+	  - Also, joined some lines that were joinable.
+	  - Fixed a spurious parameter to a function ExportDISTCC_HOSTS. Added a
+	  parameter to same function.
+	  
+	  Tests
+	  -----
+	  
+	  Can run 'pump-check'.
+	  
+	  Also, when I forced more than one C extension, I get the following
+	  tirade.
+	  
+	  __________Using distcc-pump from /home/klarlund/svn-distcc/distcc
+	  __________Shared libraries for multiple architectures discovered.
+	  __________Cannot determine which one to use among:
+	  ./_builddir/lib.blah/include_server/distcc_pump_c_extensions.so
+	  ./_builddir/lib.linux-x86_64-2.4/include_server/distcc_pump_c_extensions.so
+	  __________Could not start distcc-pump include server
+
+2008-04-14 23:17  Craig Silverstein <opensource@google.com>
+
+	* ChangeLog:
+	  
+	  Added some Google-branch changes to the ChangeLog file, now that we've
+	  integrated them back into the main branch in preparation for distcc
+	  3.0. These messages were taken from the rpm.spec ChangeLog, where
+	  they had been living before. I can't say that it's a complete list of
+	  google-branch patches, but it's a good started.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-04-14 17:11  Nils Klarlund <opensource@google.com>
+
+	* pump.in:
+	  
+	  Fix up pump.in:
+	  
+	  - Rename DISTCC_PUMP_LOCATION because there is now no distinct such
+	  entity.
+	  
+	  - Comment 'return 0'.
+	  
+	  - Fix logic in Main so that script aborts when include server not
+	  started.
+	  
+	  - Add missing line: include_server_started_successfully=0.
+
+2008-04-12 00:58  Craig Silverstein <opensource@google.com>
+
+	* Makefile.in, autogen.sh, bench/Build.py, bench/Project.py,
+	  bench/ProjectDefs.py, bench/Summary.py, bench/actions.py,
+	  bench/benchmark.py, bench/buildutil.py, bench/compiler.py,
+	  bench/statistics.py, configure.ac, distcc[DEL],
+	  include_server/basics.py, include_server/setup.py, pump.in:
+	  
+	  The second part of my change to hoist everything in the distcc/
+	  directory up to the top level: delete the distcc directory (I already
+	  copied it all to the top level in my last commit).
+	  
+	  This requires changing all files that refer to distcc/FOO to refer
+	  directly to FOO instead. Mostly this is Makefile.in and setup.py, but
+	  there are a few other changes in scripts that have to hard-code paths,
+	  like configure.ac and pump.in. Also, several files changed their
+	  comments to refer to the new location, which isn't strictly necessary
+	  but I did anyway.
+	  
+	  The only other change I made was to get rid of the hack I had put in
+	  before, which renamed distcc to distcc-bin. I had needed to do that
+	  before, temporarily, because "distcc" was already the name of a
+	  directory, and couldn't also be the name of a binary. Now that the
+	  distcc directory is going away, I can rename the target back to
+	  distcc.
+	  
+	  Tested by running './autogen; ./configure; make maintainer-check'.
+	  I also ran 'make pump-check' and 'make distcheck'.
+	  
+	  To be reviewed (post-facto) by Nils Klarlund and
+	  Fergus Henderson <opensource@google.com>
+
+2008-04-11 22:36  Craig Silverstein <opensource@google.com>
+
+	* bench[CPY], contrib[CPY], doc[CPY], gnome[CPY], lzo[CPY], m4[CPY],
+	  m4/pkg.m4[CPY], man[CPY], packaging[CPY], popt[CPY], src[CPY],
+	  survey.txt[CPY], test[CPY]:
+	  
+	  The first step of moving everything in the distcc directory to the top
+	  level. I'm doing this in two stages, because I don't understand svn
+	  enough to be confident to do it in one. This first stage just copies
+	  all the files from distcc/FOO to FOO. Now there are two copies of
+	  each file under distcc; the Makefile/etc uses the one in distcc and
+	  ignores the one at the top level.
+	  
+	  The next commit will delete everything under distcc, and rewrite the
+	  Makefile/etc to use the top-level versions instead.
+
+2008-04-11 22:20  Craig Silverstein <opensource@google.com>
+
+	* INSTALL, Makefile.in[CPY], autogen.sh[CPY], build-distcc.sh,
+	  config.guess[CPY], config.sub[CPY], configure.ac[CPY],
+	  distcc/Makefile.in[DEL], distcc/autogen.sh[DEL],
+	  distcc/config.guess[DEL], distcc/config.sub[DEL],
+	  distcc/configure.ac[DEL], distcc/install-sh[DEL], distcc/m4/pkg.m4,
+	  distcc/mkinstalldirs[DEL], include_server/Makefile.in[DEL],
+	  include_server/configure.ac[DEL], include_server/setup.py,
+	  install-sh[CPY], mkinstalldirs[CPY], pump.in,
+	  run_all_autoconf.sh[DEL], version.sh[DEL]:
+	  
+	  Merge configure.ac, distcc/configure.ac, and
+	  include_server/configure.ac into a single, top-level configure.ac
+	  script. Likewise with the three Makefile.in scripts. Now one config
+	  file at the top level controls everything.
+	  
+	  I had to rewrite quite a bit of code to account for the new level-up.
+	  In particular, I had to add "distcc/" in front of many things in order
+	  to refer to the same files I used to refer to when the
+	  configure.ac/Makefile.in text lived in the distcc/ directory rather
+	  than the top-level directory. Likewise (though to a lesser extent)
+	  for include_server.
+	  
+	  I also had to do a bit of merge work. Typically I'd leave the
+	  originally-distcc-directory content as close to the original as
+	  possible, and then try to put in the include_server directory stuff.
+	  
+	  Most of the top-level configure.ac and Makefile.in could go away,
+	  since they were glue before. I also could get rid of other top-level
+	  helper scripts that were used for the glue, such as version.sh.
+	  
+	  I also fixed a number of typos and other bugs:
+	  
+	  Makefile.in:
+	  1) Removed obsolete CVS comment (we're 3 source-control systems past
+	  that now!)
+	  
+	  2) distcc/Makefile.in was using top_builddir without importing it from
+	  the configure script.
+	  
+	  3) Add zeroconf.h to HEADERS, which is needed for 'make dist'. I also
+	  added all the include_server files to 'make dist'.
+	  
+	  4) "make dist" was passing 'h' ("no symlinks") to tar. This does not
+	  work with the include_server test-suite, which includes symlinks.
+	  I verified no other part of the distribution uses symlinks.
+	  Removed the h.
+	  
+	  5) "make dist" was missing a lot of stuff (including almost all the
+	  include-server files). Updated it to get it all now. Likewise,
+	  updated "make clean" and its cousins to be more precise. Also made
+	  "make distcheck" more careful in checking that kind of thing.
+	  
+	  6) Declared more phony targets .PHONY.
+	  
+	  7) The include-server build commands do a lot of 'cd'-ing (since
+	  setup.py requires it), and then using make variables that might
+	  store relative directory paths. I now go through some hoops to
+	  make those directory paths absolute before the cd.
+	  
+	  8) "make pump-check" was not setting the path, so it was using the
+	  installed distcc instead of the local one in the client. Fixed
+	  that, and added a new target, "make pump-installcheck", to use the
+	  installed distcc instead (parallel to the maintainer-check and
+	  maintainer-installcheck targets).
+	  
+	  configure.ac:
+	  1) popt test was using $srcdir rather than required ${srcdir}, and
+	  thus was always getting the empty string. (Luckily, srcdir is
+	  usually ".", and the empty string is usually equivalent.)
+	  Likewise when setting CPPFLAGS, which again didn't matter because
+	  it turns out the relevant code was redundant with what autoconf
+	  already does automatically.
+	  
+	  2) A merge error: apparently the avahi check was added twice. Get rid
+	  of the second one.
+	  
+	  3) Was using obsolete AC_OUTPUT format. Use AC_CONFIG_FILES instead.
+	  
+	  4) Added pkg.m4 to the m4/ directory. Before it only lived in
+	  autoconf.m4. But my system, at least, doesn't have it.
+	  
+	  5) include-server requires python2.4, so remove checks for earlier
+	  pythons.
+	  
+	  autogen.sh:
+	  1) Added aclocal call. I think it was a bug that it was left out
+	  before.
+	  
+	  pump.in:
+	  1) Fixed it to notice when it can't find the .so file it needs.
+	  
+	  I also modified INSTALL to point to the new file locations, and the
+	  new instructions to run them (eg no more run_all_autoconf.sh).
+	  
+	  Despite all these bugfixes, I made the minimal changes possible to get
+	  things to work. I marked with "TODO" further improvements I'd like to
+	  make later.
+	  
+	  One particular TODO is that I had to rename the "distcc" target -- the
+	  main executable -- because it conflicts with the existing distcc
+	  directory. This is a temporary breakage which will be fixed in the
+	  next submit after this one, where I move the subdirs under distcc to
+	  the top level, getting rid of the artificial extra directory
+	  introduced.
+	  
+	  Tested by running 'make maintainer-check', 'make distcheck', and 'make
+	  pump-check' on my local machine, which passed. I've not tested all
+	  the various configurations and options (including using avahi, using
+	  the library popt library, building without python, etc). I've also
+	  not tried 'make benchmark'.
+	  
+	  Reviewed by Nils Klarlund and Fergus Henderson
+
+2008-04-11 20:40  Fergus Henderson <opensource@google.com>
+
+	* README.pump:
+	  
+	  Update README.pump to better describe performance on small clusters.
+
+2008-04-11 18:45  Fergus Henderson <opensource@google.com>
+
+	* distcc/Makefile.in:
+	  
+	  In the rule for 'make pump-check', set DISTCC_HOSTS, so that
+	  'pump' won't complain that it isn't set.
+
+2008-04-10 00:27  Craig Silverstein <opensource@google.com>
+
+	* distcc/README[DEL]:
+	  
+	  I meant to delete this as part of my last commit, but apparently
+	  neglected to...
+
+2008-04-09 23:19  Craig Silverstein <opensource@google.com>
+
+	* AUTHORS[CPY], ChangeLog[CPY], INSTALL, NEWS[CPY], README,
+	  README.packaging[CPY], README.pump[CPY], TODO[CPY],
+	  distcc/AUTHORS[DEL], distcc/COPYING[DEL], distcc/ChangeLog[DEL],
+	  distcc/ChangeLog.old[DEL], distcc/INSTALL[DEL], distcc/NEWS[DEL],
+	  distcc/README.packaging[DEL], distcc/TODO[DEL]:
+	  
+	  Take these human-readable files and normalize their content and
+	  location:
+	  README Our blurp, tooting our horn
+	  INSTALL The run_all_autoconf and friends incantations
+	  COPYING GPL 2.0 license
+	  distcc/README Martin's blurp
+	  distcc/INSTALL Also: more on masquerading, host lists,
+	  distcc/COPYING GPL 2.0 license
+	  distcc/NEWS Recently updated
+	  distcc/AUTHORS Martin Pool
+	  distcc/README.packaging Various advice (version numbering etc)
+	  distcc/TODO A very long list (not updated)
+	  distcc/ChangeLog All changes under arch and under bzr
+	  distcc/ChangeLog.old All changes from before arch.
+	  
+	  Now all live in the top-level directory. This is the first step
+	  towards our eventual goal of getting rid of the second-level distcc
+	  and include_server directories, and just having everything under one
+	  top-level directory. We're all part of the same project now!
+	  
+	  Here's how I merged and updated content:
+	  
+	  . README became README.pump. It was slightly edited for clarity. (I
+	  also redid all the line-wrapping, which makes diff-ing
+	  difficult. :-( ) distcc/README became README, with a small amount
+	  of text added to describe 'pump' mode, and point to README.pump.
+	  
+	  . distcc/NEWS became NEWS. pump functionality was added (a new
+	  "distcc-3.0" entry). I also added all new features and bug-fixes
+	  since we moved from arch to bzr. It looks like NEWS was
+	  well-maintained before the move to bzr, so this might be pretty
+	  complete. There may be some more pump-developed bugfixes we need to
+	  add, though.
+	  
+	  . I got rid of distcc/COPYING. Now COPYING is the only license in
+	  this directory. This file was not changed. It remains the GPL 2.0
+	  license.
+	  
+	  . distcc/AUTHORS became AUTHORS. I changed Martin to maintainer
+	  emeritus. I added the Google authors as authors of the "pump"
+	  functionality, and current maintainers. I set the Google email
+	  address to be distcc@googlegroups.com, which is a new group I've set
+	  up to be the clearinghouse for distcc discussions.
+	  
+	  . distcc/README.packaging became README.packaging. It was not
+	  otherwise changed.
+	  
+	  . distcc/TODO became TODO. It was not otherwise changed, except I
+	  added that folks should look for FIXMEs in source files, not just
+	  TODOs.
+	  
+	  . I merged INSTALL and distcc/INSTALL (in that order). I rearranged
+	  the text a little bit to remove redundancy (both talked about
+	  running 'configure'), but did not make any contentful changes.
+	  
+	  . I merged distcc/ChangeLog and distcc/ChangeLog.old to have a single
+	  changelog again going all the way to 2002. Comments now separate
+	  the various version control systems used. (svn is #4!) The single
+	  ChangeLog file now lives in the top-level directory.
+
+2008-04-09 23:11  Craig Silverstein <opensource@google.com>
+
+	* distcc/ChangeLog, distcc/Makefile.in, distcc/configure.ac, distcc/m4,
+	  distcc/m4/acx_pthread.m4, distcc/src/distcc.c, distcc/src/distcc.h,
+	  distcc/src/dopt.c, distcc/src/dopt.h, distcc/src/dparent.c,
+	  distcc/src/gcc-id.c, distcc/src/help.c, distcc/src/hostfile.c,
+	  distcc/src/hosts.c, distcc/src/io.c, distcc/src/tempfile.c,
+	  distcc/src/zeroconf-reg.c, distcc/src/zeroconf.c,
+	  distcc/src/zeroconf.h:
+	  
+	  Integrate the following post-bzr (post 2.18.3) patch from the mainline
+	  distcc sources (http://bazaar.launchpad.net/%7Embp/distcc/trunk/):
+	  
+	  % bzr log -r3
+	  message: merge avahi patch from Lennart Poettering
+	  
+	  (This patch comes from http://0pointer.de/public/distcc-avahi.patch,
+	  which is the version of the patch I applied, since the one in the bzr
+	  repository was missing the new files from the avahi patch.)
+	  
+	  I've also manually updated ChangeLog, which is not automatically
+	  updated by bzr the same way it is by arch.
+	  
+	  I've also added a new m4 directory, including non-standard autoconf
+	  macros that we use. For now, it only includes ACX_PTHREAD (added by
+	  the avahi patch) which I got from 0pointer.de. See the notes at the
+	  top of m4/acx_pthread.m4 for more details.
+	  
+	  I removed the change to Makefile.in that added in distccmon-gnome.1.
+	  This file is not actually added in as part of this patch (it seems to
+	  be part of a separate patch, at
+	  http://patches.ubuntu.com/d/distcc/extracted/02_distccmongnome_man.dpatch),
+	  and may have gotten in here by accident.
+	  
+	  Tested by running 'make maintainer-check'. However, I did not test
+	  with avahi installed, so I don't know how well that works.
+	  
+	  Reviewed by Fergus Henderson and Nils Klarlund
+
+2008-04-09 16:21  Fergus Henderson <opensource@google.com>
+
+	* version.sh:
+	  
+	  Change the version number from "distcc 2.18.3-17gg1.pump20" (ugh!)
+	  to "distcc 3.0-prerelease1".
+
+2008-04-09 00:38  Craig Silverstein <opensource@google.com>
+
+	* distcc/ChangeLog, distcc/NEWS, distcc/src/lock.c:
+	  
+	  Integrate the following post-bzr (post 2.18.3) patches -- all of them,
+	  so far -- from the mainline distcc sources
+	  (http://bazaar.launchpad.net/%7Embp/distcc/trunk/):
+	  
+	  % bzr log -r2
+	  message: Add more ignored files
+	  % bzr log -r4
+	  message: Locks taken through F_SETLK or lockf() must be
+	  explicitly released, because closing the file does not do
+	  so. (Sascha Demetrio)
+	  
+	  r2 is a noop for us, since it just updates a .bzr config file (which
+	  we may want to update in svn-land too, one day, but not for now).
+	  
+	  r3, not part of this CL, is the "avahi" patch
+	  (http://0pointer.de/public/distcc-avahi.patch). It was imperfectly
+	  applied: the new files that are part of this patch were not added to
+	  the bzr repository. We're following up with the patch-applier to see
+	  if these files can be taken verbatim from the patch in the 0pointer
+	  website. We'll also have to audit this patch to make sure it works
+	  with distcc-pump without needing any changes. For those reasons,
+	  we'll apply that patch in a separate change.
+	  
+	  I've also manually updated ChangeLog, which is not automatically
+	  updated by bzr the same way it is by arch.
+	  
+	  Tested by running 'make maintainer-check'.
+	  
+	  Reviewed by Nils Klarlund
+
+2008-03-31 04:38  Craig Silverstein <opensource@google.com>
+
+	* distcc/ChangeLog, distcc/Makefile.in, distcc/NEWS,
+	  distcc/man/distcc.1, distcc/src/clinet.c:
+	  
+	  Integrate the following post-2.18.3 patches from the mainline
+	  distcc sources (distcc--devel--2/mbp@sourcefrog.net--2004):
+	  
+	  % tla cat-log patch-179:
+	  Summary: More details on error 110
+	  % tla cat-log patch-180:
+	  Summary: draft patch for substituting compiler command name
+	  % tla cat-log patch-181:
+	  Summary: fix error check in dcc_connect_by_add
+	  % tla cat-log patch-182:
+	  Summary: build fix for --as-needed
+	  % tla cat-log patch-183:
+	  Summary: ignore tags file
+	  
+	  Note only one of these (patch-181) affects code in the src/
+	  directory.
+	  
+	  Tested by running 'make maintainer-check'.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-03-29 19:19  Craig Silverstein <opensource@google.com>
+
+	* distcc/ChangeLog, distcc/NEWS, distcc/autogen.sh,
+	  distcc/bench/ProjectDefs.py, distcc/configure.ac, distcc/src/exec.c,
+	  distcc/src/exitcode.h, distcc/src/io.c, distcc/src/tempfile.c,
+	  distcc/test/comfychair.py, distcc/test/testdistcc.py:
+	  
+	  Integrate the following post-2.18.3 patches from the mainline
+	  distcc sources (distcc--devel--2/mbp@sourcefrog.net--2004):
+	  
+	  % tla cat-log patch-167:
+	  Summary: - better autogen message
+	  % tla cat-log patch-168:
+	  Summary: use python2.4 if available
+	  % tla cat-log patch-169:
+	  Summary: bump version number
+	  % tla cat-log patch-170:
+	  Summary: return error on timeout in dcc_select_for_write
+	  % tla cat-log patch-171:
+	  Summary: doc
+	  % tla cat-log patch-172:
+	  Summary: doc
+	  % tla cat-log patch-173:
+	  Summary: [patch] cygwin improvements from Alex Besogonov
+	  % tla cat-log patch-174:
+	  Summary: update patch to fix up gdb line numbers
+	  % tla cat-log patch-175:
+	  Summary: [patch] update stale benchmark source URLS (Dongmin
+	  Zhang)
+	  % tla cat-log patch-176:
+	  Summary: update benchmark project urls and md5s
+	  % tla cat-log patch-177:
+	  Summary: Update more benchmark project definitions
+	  % tla cat-log patch-178:
+	  Summary: set locale when running make maintainer-check
+	  
+	  Note only two of these (patch-170 and patch-173) affect non-comment
+	  code in the src/ directory. patch-173 introduced an "unused variable"
+	  warning in tempfile.c when run in non-cygwin mode, which I fixed up
+	  separate to the above patches.
+	  
+	  Tested by running 'make maintainer-check'.
+	  
+	  Reviewed by Fergus Henderson
+
+2008-03-29 04:40  Craig Silverstein <opensource@google.com>
+
+	* run_all_autoconf.sh:
+	  
+	  Replace the sanity-check in run_all_autoconf.sh with a more accurate
+	  one.
+	  
+	  Reviewed by Nils Klarlund
+
+2008-03-28 22:38  Craig Silverstein <opensource@google.com>
+
+	* distcc/ChangeLog, distcc/NEWS, distcc/TODO, distcc/man/distcc.1,
+	  distcc/src/arg.c, distcc/src/clinet.c, distcc/test/testdistcc.py:
+	  
+	  Integrate the following post-2.18.3 patches from the mainline
+	  distcc sources (distcc--devel--2/mbp@sourcefrog.net--2004):
+	  
+	  % tla cat-log patch-160:
+	  Summary: note on .incbin from asm()
+	  % tla cat-log patch-161:
+	  Summary: args: -d must be local
+	  % tla cat-log patch-162:
+	  Summary: manpage correction from Frerich
+	  % tla cat-log patch-163:
+	  Summary: todo
+	  % tla cat-log patch-164:
+	  Summary: add note that the mDNS patch cannot be legally merged
+	  % tla cat-log patch-165:
+	  Summary: add hosts-from-dnsdomain patch from dan
+	  % tla cat-log patch-166:
+	  Summary: [patch] better checking for errors on connect()
+	  
+	  Note only two of these (patch-161 and patch-166) affect the
+	  src/ or test/ directories.
+	  
+	  Tested via 'make maintainer-check'.
+
+2008-03-28 17:39  Fergus Henderson <opensource@google.com>
+
+	* distcc/Makefile.in:
+	  
+	  Fix typo.
+
+2008-03-28 17:38  Fergus Henderson <opensource@google.com>
+
+	* distcc/src/fix_debug_info.c:
+	  
+	  Work around spurious gcc warning that was causing trouble with
+	  -Werror.
+
+2008-03-28 17:30  Fergus Henderson <opensource@google.com>
+
+	* distcc/src/lsdistcc.c:
+	  
+	  Fix a portability issue: compile error on 64-bit platform.
+
+## This is the point at which the code was moved to the svn repository.
+## The changes below this were made in an internal Google repository.
+
 2008/03/03 11:35:34  Fergus Henderson <opensource@google.com>
 
 	Add extra "-I" option that seems to be needed when building distcc-pump
