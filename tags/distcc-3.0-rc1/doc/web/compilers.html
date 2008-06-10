@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+                      "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!-- This document was created with Latte version 2.1 -->
+<!-- For information on Latte, see http://www.latte.org/ -->
+<html>
+<head><meta name="generator" content="Latte 2.1"><title>supported compilers</title>
+    <meta name="author" content="Martin Pool">
+    <meta name="keywords" content="distributed, make, build, gcc,
+               parallel, network, networked, faster, free, fast, paralel, cc, c,
+               C++, Objective C, ObjC, compile, compiler, compilation,
+               simple, GPL, GNU, Linux, BSD, Unix, software, development,
+               developer, TeamBuilder, quick, dmake, pvmake,
+               transparent, easy, workstations, Solaris, IncrediBuild,
+               productivity, speed, time, tool, performance, hardware,
+               agents, nfs, libraries, source, headers, workload,
+               buildfarm, farm, server, cluster, clustered, clustering, MOSIX, OpenMOSIX">
+    <link rel="SHORTCUT ICON" href="favicon.ico">
+    <link type="text/css" rel="stylesheet" href="distcc-green.css">
+    <link type="text/html" rel="top" href="index.html">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
+   <body vlink="#003300" text="#000000" link="#003300" bgcolor="#ffffff" alink="#336633"><p><table width="100%"><tr><td valign="top"><div class="navbar"><ul>
+          <li><a href="index.html">distcc</a></li>
+          <li><a href="http://code.google.com/p/distcc/source/browse/trunk">source</a>
+          <li><a href="http://code.google.com/p/distcc/downloads/list">binaries</a></li>
+          <li><a href="http://distcc.googlecode.com/svn/trunk/NEWS">news</a></li>
+          <li><a href="scenarios.html">scenarios</a></li>
+	  <li><a href="results.html">testimonials</a></li>
+	  <li><a href="benchmark.html">benchmarks</a></li>
+	  <li><a href="security.html">security</a></li>
+	  <li><a href="distcc-lca-2004.html">whitepaper</a></li>
+	  <li><a href="http://distcc.googlecode.com/svn/trunk/doc/web/man/">Man pages</a></li>
+	  <li><a href="faq.html">FAQ</a></li>
+
+	  <p>
+	  <li><a href="http://code.google.com/p/distcc/issues/list">report a bug</a></li>
+	  <li><a href="https://lists.samba.org/mailman/listinfo/distcc">mailing list</a>
+           <ul><li><a href="mailto:distcc@lists.samba.org">post</a></li>
+            <li><a href="http://lists.samba.org/archive/distcc/">archive</a></li>
+            <li><a href="news://news.gmane.org/gmane.comp.compilers.distcc">newsgroup</a></li></ul>
+	  </li>
+          <li><a href="http://freshmeat.net/projects/distcc">Freshmeat</a>
+            <ul><li><a href="http://freshmeat.net/subscribe/28140">be notified</a></li></ul>
+	  </li>
+
+	  <p>
+	  <li>related:</li>
+	  <ul>
+	      <li><a title="How to use distcc and Gentoo" href="http://www.gentoo.org/doc/en/distcc.xml">Gentoo</a></li>
+	      <li><a title="Script to ease building cross-compilers and toolchains" href="http://kegel.com/crosstool/">crosstool</a></li>
+	      <li><a title="Cache compiler results" href="http://ccache.samba.org/">ccache</a></li>
+	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
+	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
+</ul>
+       <p><p></td>                                      <td valign="top"><div class="body"><h1 class="title">supported compilers</h1>
+
+<p><dl><dt>gcc</dt>
+<dd>The main focus of distcc is <a href="http://gcc.gnu.org/">GCC</a>,
+    the Free GNU C Compiler.
+
+    <p>Compilation of C, C++, Objective C and Objective C++ can be
+    distributed by distcc.  All recent versions (from 2.9 up) should
+    work.  This includes versions of gcc distributed in development
+    kits from various vendors, including those for the Sony
+    Playstation and Apple OS X.
+
+    <p>Other languages supported by the GNU compiler collection such as
+    Java, Ada and FORTRAN are not supported because their compilation
+    process is very different.</dd>
+
+
+<p><dt>icc</dt>
+<dd><a href="http://www.intel.com/software/products/compilers/clin/">icc</a> is a proprietary C/C++ compiler for i386 and ia64 from
+     Intel.  icc is claimed to be source, object and command-line
+     compatible with gcc and so should work with distcc.  (However,
+     some people have reported bugs in particular versions of icc that
+     cause problems with distcc.)</dd>
+
+<p><dt>Sun CC</dt>
+<dd>Sun's proprietary C compiler is reported to work with distcc in C
+     mode.  It appears that Sun CC cannot compile C++ templates
+     correctly when using a separate preprocessor, so it is generally
+     not practical to compile C++  using Sun CC and distcc.</dd>
+
+<p><dt>Microsoft C</dt>
+<dd>There is experimental support for Microsoft's compiler using a wrapper,
+<a href="http://www.mail-archive.com/distcc@lists.samba.org/msg02263.html"><tt>wrapmsvc.exe</tt></a>,
+that makes it behave like gcc.</dd></dl>
+
+
+<p>For all compilers it is very important to have the same version installed
+on all machines participating in the build.
+
+<p>The main feature required by distcc is that the compiler must be able
+to run the preprocessor separately, and then compile the preprocessor
+output from a file.  This was a basic part of the original design of
+C, but some compilers seem to have lost the ability to do this.
+However, this feature is not required if you use distcc's "pump" mode.
+
+<p>Secondarily, distcc is currently hardcoded to suit gcc's behaviour and
+command-line syntax, so only compilers that act like gcc will work.
+This could in principle be changed.
+
+<p>If you want to report results with any of these compilers or
+information on a new compiler please send mail to distcc at lists.samba.org.</div></td>
+</tr></table>
+    <div class="thanks">Copyright &copy; 2002&ndash;2004 Martin Pool.
+     distcc is a trademark of Martin Pool.
+
+     <p>Send comments to <tt>distcc(at)lists.samba.org</tt>,
+     or talk to us on <tt>#distcc</tt> on <a href="http://oftc.net/">irc.oftc.net</a>.</div></body>
+</html>
