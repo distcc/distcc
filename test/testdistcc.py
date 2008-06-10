@@ -1817,7 +1817,7 @@ class Lsdistcc_Case(WithDaemon_Case):
             + " anInvalidHostname")
         out_list = out.split()
         out_list.sort()
-        expected = ["%s:%d" % (host, DISTCC_TEST_PORT) for host in
+        expected = ["%s:%d" % (host, self.server_port) for host in
                     ["127.0.0.1", "127.0.0.2", "localhost"]]
         if multiple_loopback_addrs:
           self.assert_equal(out_list, expected)
@@ -1833,12 +1833,12 @@ class Lsdistcc_Case(WithDaemon_Case):
         # Test "lsdistcc host%d".
         out, err = self.runcmd(lsdistcc + " 127.0.0.%d")
         self.assert_equal(err, "")
-        self.assert_re_search("127.0.0.1:%d\n" % DISTCC_TEST_PORT, out)
+        self.assert_re_search("127.0.0.1:%d\n" % self.server_port, out)
         if multiple_loopback_addrs:
-          self.assert_re_search("127.0.0.2:%d\n" % DISTCC_TEST_PORT, out)
-          self.assert_re_search("127.0.0.3:%d\n" % DISTCC_TEST_PORT, out)
-          self.assert_re_search("127.0.0.4:%d\n" % DISTCC_TEST_PORT, out)
-          self.assert_re_search("127.0.0.5:%d\n" % DISTCC_TEST_PORT, out)
+          self.assert_re_search("127.0.0.2:%d\n" % self.server_port, out)
+          self.assert_re_search("127.0.0.3:%d\n" % self.server_port, out)
+          self.assert_re_search("127.0.0.4:%d\n" % self.server_port, out)
+          self.assert_re_search("127.0.0.5:%d\n" % self.server_port, out)
 
 # When invoking compiler, use absolute path so distccd can find it
 for path in os.environ['PATH'].split (':'):
