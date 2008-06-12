@@ -1,0 +1,158 @@
+distcc-0.13  "Armistice"  2002-11-11
+
+  FEATURES:
+
+    * New --no-detach option to cause the server not to detach from its
+      parent.  It still forks normally when a connection is accepted.  This
+      may be useful with daemontools or other frameworks that prefer the
+      daemon not to detach.  (Martin Pool)
+
+    * Log messages on the server of severity "warning" or higher are captured
+      and sent back to the client.  (Martin Pool)
+
+    * If the local preprocessor fails, do not re-run the job locally because
+      it would presumably fail in the same way.  (Martin Pool)
+
+    * By default, the client only sends "warning" or higher messages to
+      stderr, so that nothing extra is logged unless there is possibly a
+      failure in distcc itself.  With a DISTCC_LOG file, "notices" and higher
+      are logged.  (Martin Pool)
+
+    * Better messages when a compiler exits or crashes.  (Martin Pool)
+
+    * If the compiler because of a signal, return 128+SIGNAL, per Unix
+      convention.  (Martin Pool)
+
+    * Compilers and preprocessors are now run in their own process groups, and
+      terminated if the daemon is killed.  (Martin Pool)
+
+    * When the daemon parent is terminated, it does not kill all its children.
+      Instead, they're allowed to finish whatever they're working on, and then
+      exit.  This allows for more graceful shutdown.  (Martin Pool)
+
+    * More specific exit codes for some error cases.  Don't panic.  (Martin
+      Pool)
+
+    * Include popt library and --with-included-popt configure option to aid
+      installation on systems that don't have it.  By default it is statically
+      linked in only if the build machine does not have a suitable library and
+      header.  (Martin Pool)
+
+
+  REMOVALS:
+
+    * Remove support for feeding the compiler from a fifo.  The gain from
+      using fifos does not seem to justify the maintenance burden.  (Martin Pool)
+
+       - This makes the behaviour more consistent, because some platforms
+         (Cygwin) or filesystems (NFS, strangely) can't use fifos.  It removes
+         a code path and a slightly complex autodetection.
+ 
+       - Using fifos makes some potential scheduling improvements hard: the
+         server can't make good decisions about how many tasks to run, because
+         each one will only use a fraction of the CPU.  The client cannot
+         serialize file transmission, which would probably be desirable.
+         
+       - Using fifos makes reliably handling compiler failures slightly
+         harder: the compiler may crash or exit at any time, which will in
+         turn cause the server to hang if it later tries to open or write to
+         the fifo.  In previous versions, distcc tried to handle this by
+         catching SIGCHLD when the child terminated, and aborting the
+         operation, but I am not sure that the method is completely reliable.
+
+
+  BUG FIXES:
+
+    * Detached daemon now ignores hangup signal.  (Martin Pool)
+
+    * When the parent is terminated, don't kill its process group.  Allow
+      children to finish in their own time.  (Martin Pool)
+
+    * Detect the case where cpp claims to have succeeded, but did not actually
+      produce any output.  (Martin Pool)
+
+    * Do not use atexit() to clean up temporary files, because this can cause
+      havoc if it's ever called from a child process that forked but failed to
+      exec.  (Martin Pool)
+
+    * Handle "gcc -S foo.c -o -", which ought to write assembly to stdout.
+      (Alexandre Oliva)
+
+    * Fix bug in handling IO errors (e.g. dropped connection) in the server.
+      (Martin Pool)
+
+    * If we fail to cork a socket, continue anyhow.  (Martin Pool)
+
+    * Make error handling for IO more consistent.  (Martin Pool)
+
+    * Follow Unix convention of returning 128+SIGNAL if the compiler exits
+      with a signal.  (Martin Pool)
+
+
+  TESTING:
+
+    * Add tests for parsing slot limit from host specification.  (Martin Pool)
+
+    * Daemon tests collect dead servers faster, so the tests run a bit
+      faster.  (Martin Pool)
+
+    * Nicer handling of ^C while running tests: print "INTERRUPT" and
+      terminate the whole test.  (Martin Pool)
+
+    * Add new tests for scanning command lines with an implied compiler name.
+      (Martin Pool)
+
+    * When the parent is terminated, don't kill its process group.  Allow
+      children to finish in their own time.  (Martin Pool)
+
+    * Detect the case where cpp claims to have succeeded, but did not actually
+      produce any output.  (Martin Pool)
+
+    * Add test case for #error directive.  (Martin Pool)
+
+    * Add test case for preprocessing non-C text, as is done by (for example)
+      xrdb.  (Martin Pool)
+
+    * Add test case for invocations like "distcc -c test1.c test2.c".  (Martin Pool)
+
+    * Add test for handling of a compiler missing from the server.  (Martin Pool)
+
+    * Allow distcc's version to be set to something like "0.13cvs-nofifo".
+      (Martin Pool)
+
+    * Add test for handling of a compiler missing from the server.  (Martin
+      Pool)
+
+    * Improved ComfyChair testing framework.  (Tim Potter, Martin Pool)
+
+ 
+  PORTABILITY:
+
+    * Includes example init.d script for SuSE 7.x and 8.0.  Not installed by
+      default.  (Brandon Forehand)
+
+
+  DOCUMENTATION:
+
+    * Document use with Gentoo Linux.  (Dean Bailey, Ernesto, Martin Pool)
+
+
+  INTERNAL:
+
+    * Get rid of recursive Make and fix various small Makefile bugs.  (Martin
+      Pool)
+
+    * Add $(TARGET_ROOT) variable for "make install", for use in building
+      binary packages.  (Martin Pool, Nick Moffitt)
+
+    * wait4() on Solaris can't handle a pid of -1, which means "any child" on
+      Linux and BSD.  Use pid of 0 instead to collect any children from the
+      same process group.  (Kevin Bailey)
+
+    * Client does not abruptly drop network connection on compiler failure but
+      rather reads the 0-byte object file token.  (Martin Pool)
+
+    * Rework logger library to allow multiple logger callbacks to be active at
+      once.  This is used for the server, which can write to its own log files
+      and also send a copy of messages to a buffer to be sent to the client.
+      (Martin Pool)

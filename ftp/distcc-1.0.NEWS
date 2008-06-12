@@ -1,0 +1,44 @@
+distcc-1.0  "consider the oyster"  2003-01-16
+
+  BUG FIXES:
+
+    * Fix sendfile() bug on FreeBSD that could cause files to be
+      mistransmitted.  Perhaps not manifest on x86?  Reported by Kris
+      Kennaway.
+
+
+  PACKAGING:
+
+    * Distribute as .tar.bz2 rather than .tar.gz.  (We pay by the byte.)
+
+
+  DOCUMENTATION:
+
+    * The recommended convention for gcc names is <target>-gcc-<version>, and
+      GCC 3.3 will install itself under this name.  (Alexandre Oliva, Claes
+      Wallin)
+
+
+  BENCHMARK:
+
+    * New macro-benchmark and test suite for distcc.  Invoke it with "make
+      benchmark."  It takes a long time to run and causes a lot of source code
+      to be downloaded, but should be self-contained.
+
+      This is the start of a script that runs distcc to build various open
+      source programs, as an overall test of correctness, and to measure
+      performance of a distcc installation.  It relies on the user to install
+      and configure distcc servers and clients, but handles the work of
+      downloading, preparing, and building packages by itself.
+
+      There are still some rough edges on the script, but it may be of
+      interest.
+
+
+  REMOVALS:
+
+    * Remove Plucker file: nobody seems to be downloading it, and it's
+      easy enough for people to build if they're interested.
+
+    * Remove PDF and Postscript from documentation in tarball.  They are still
+      available from the web site or may be built from source.

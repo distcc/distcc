@@ -1,0 +1,41 @@
+distcc-0.4  "GSV Wisdom Like Silence (Continent)"  (9 June 2002)
+
+  ENHANCEMENTS:
+
+   * Assembly and assembly-with-preprocessor files can now be
+     assembled remotely.  (Martin Pool)
+
+   * Client now emits no messages unless there is a warning or error,
+     or $DISTCC_VERBOSE is specified.  This improves operation with
+     ccache.  (Martin Pool)
+
+   * Client and server both respect $TMPDIR if set.  (Martin Pool)
+
+   * Standalone server puts itself in the background and detaches from
+     controlling tty.  (Martin Pool)
+
+   * Server has --port option.  Currently useless, since there's no
+     corresponding option on the client.  (Martin Pool)
+
+   * Server has --pid-file option.  (Martin Pool)
+
+   * Server now allows multiple concurrent compile tasks, forking per
+     connection.  (Martin Pool)
+
+  BUG FIXES:
+
+    * gcc invocations with -fprofile-arcs or -ftest-coverage that
+      would emit coverage information to a local file are always run
+      locally.  (Martin Pool)
+
+    * Handle lines like "gcc -c -c hello.c".  (Martin Pool)
+
+  DOCUMENTATION:
+
+    * Various enhancements to the user manual.  (Martin Pool)
+
+  INTERNAL:
+
+    * Add a partial test suite based on PyUnit.  Python 2 is now
+      required to run the test suite, though not to just build or run
+      distcc.  (Martin Pool)

@@ -1,0 +1,68 @@
+distcc-0.15  "petrified forest"  2002-12-12
+
+   INCOMPATIBILITIES:
+
+    * Change default port from 4200 to IANA-assigned standard for distcc
+      service "3632".  Compatibility with old installations can be retained by
+      explicitly setting --port=4200 on the server, or using "HOST:PORT" on
+      the client.
+
+    * Fake-root directory for "make install" is now set by DESTDIR, not
+      TARGET_ROOT.  (Alexandre Oliva.)
+
+
+   BUG FIXES:
+
+    * Run the preprocessor with output sent to stdout and redirected to a
+      file, rather than by using the -o option.  This should fix some
+      compilers that can't handle "-E -o".  It may improve gcc behaviour with
+      -MD, but because gcc behaviour has changed over time it may not be a
+      complete fix.  
+
+      For gcc 3.2 it is recommended that -MF be used to explicitly set the
+      dependency output filename.
+
+
+  TESTING:
+
+    * Add test case for transmission of a zero-byte file. 
+
+    * Add badly-behaved compiler drop-in for use in testing.
+
+
+  PORTABILITY:
+
+    * Use the correct autoconf macros to detect whether install(1) is
+      available and working, and if not, fall back to using the included
+      install-sh script.  This should fix "make install" on Solaris.  (Mike
+      Santy)
+
+    * Fix waitpid() takes three options.  Required for Irix.  (Michael Santy)
+
+    * Fix autoconf detection of resolv.h on Solaris.  (Dimitri Papadopoulos)
+
+
+  DOCUMENTATION:
+
+    * Describe information to include in a bug report.
+
+    * Remove "Results" chapter from manual: there are now many more detailed
+      results on the web site, and this information is better suited to
+      storage there, because it will be updated on a different cycle.
+      End-users don't really need to have it in their reference.
+
+    * Remove "MOC Compatibility" section from manual because at the moment
+      there is nothing to say.
+
+    * Add a new section about the complexities of gcc -MD. 
+
+    * Remove "Bugs" section from the manual, and put it into a new TOOD file
+      instead.  Keep information about reporting bugs and using the test
+      suite, but put it in a different section.
+
+
+Local variables:
+mode: indented-text
+fill-column: 78
+indent-tabs-mode: nil
+End:

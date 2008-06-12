@@ -1,0 +1,16 @@
+distcc-0.12  "Klein, kosten- und schnörkellos"  2002-10-07
+
+  BUG FIXES:
+
+    * Handle "gcc -S foo.c -o -", which ought to write assembly to stdout.
+      (Alexandre Oliva)
+
+  PORTABILITY:
+
+    * wait4() on Solaris can't handle a pid of -1, which means "any child" on
+      Linux and BSD.  Use pid of 0 instead to collect any children from the
+      same process group.  (Kevin Bailey)
+
+  TESTING:
+
+    * Add tests for "-o -".  (Martin Pool)

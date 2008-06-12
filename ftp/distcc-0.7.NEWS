@@ -1,0 +1,43 @@
+distcc-0.7  "Pipeline Authority"  2002-08-05
+
+  FEATURES:
+
+   * Can now either use fifos for feeding the compiler or not.  This can be
+     controlled by --no-fifo to the server.  By default, it tries a fifo and
+     falls back to using regular temporarily files if that fails, as it will
+     on Cygwin or an NFS-mounted /tmp.  (Martin Pool)
+
+   * --log-stderr option, intended mainly for debugging or testing.  (Martin
+       Pool)
+
+   * DISTCC_HOSTS can now specify non-default port numbers using "host:port"
+     syntax.  (Martin Pool)
+
+  DOCUMENTATION:
+
+   * Built documentation (HTML, PS, PDF, Info) is now shipped in the
+     distributed tarball, so that you can more easily install it on a machine
+     lacking the Linuxdoc SGML tools.  You still need them to modify and
+     rebuild the documentation, of course.  (Martin Pool)
+
+  BUG FIXES:
+
+   * Log pid even if running with --no-fork.  Remove pid file on exit.
+     (Martin Pool)
+ 
+  PORTABILITY:
+
+    * Try fcntl locks in addition to lockf and flock; apparently this helps
+      portability to Cygwin.  (Martin Pool, Marco Alanen)
+
+    * Port to Cygwin.  (Martin Pool, Marco Alanen)
+
+    * Partial port to Solaris.  (Dimitri PAPADOPOULOS-ORFANOS, Martin Pool)
+
+  TESTABILITY:
+
+    * Further internal improvements to test suite.  (Martin Pool)
+
+    * Test suite should now run whether or not there is a daemon listening on
+      localhost, because it uses a non-standard port for testing.  (Martin
+      Pool)

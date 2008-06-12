@@ -1,0 +1,56 @@
+distcc-0.11  "Nuclear Bedtime Story"  2002-09-25
+
+  FEATURES:
+
+    * More helpful message explaining that popt is needed if it is missing at
+      build time.  (Martin Pool)
+     
+    * Better stripping of options from remote command lines.  (Martin Pool)
+
+    * Handle the new -MM, -MG, -MP, -MF, -MT, -MQ options for gcc 3.x.
+      (Stephan Kulow, Martin Pool)
+
+
+  PERFORMANCE:
+
+    * Whenever a command by either the client or the server, it counts towards
+      the load on that machine.  This covers undistributed commands, cpp, and
+      compilation.  This should avoid the bias in earlier versions towards
+      overloading the client.  (Martin Pool)
+
+
+  BUG FIXES:
+
+    * IO errors should not cause the process to terminate straight away,
+      because they are properly handled and we may have important cleanup to
+      do.  (Martin Pool)
+
+    * Fix error handling in code for executing compilers.  (Martin Pool)
+
+    * Fix leakage of file descriptors when trying to acquire a lock.  (Martin
+      Pool)
+
+    * Do not object to running as group 0, because on BSD this is "wheel" and
+      many non-privileged users are in it.  (Frerich Raabe, Martin Pool)
+
+    * Fix (non-exploitable) buffer overrun bug.  (Dave Zarzycki)
+
+
+  PORTABILITY:
+
+    * Fixes to build on Linux libc5.  (Richard Zidlicky, Martin Pool)
+
+
+  TESTING:
+
+    * Keep $TMPDIR separate for each test case.  (Martin Pool)
+
+    * testdistcc.py now optionally takes arguments saying which tests to run.
+      (Martin Pool)
+
+    * Test permissions on output files are correct.  (Martin Pool)
+
+    * Add more test cases for implicit compiler name handling.  Extend
+      h_scanargs to exercise this.  (Martin Pool)
+
+    * More tests for argument stripping.  (Martin Pool)

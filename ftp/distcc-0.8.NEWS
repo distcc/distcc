@@ -1,0 +1,26 @@
+distcc-0.8  "cat and girl"  2002-08-15
+
+  FEATURES:
+
+    * If for any reason a job can't be distributed, it is run locally rather
+      than failing.  This includes servers which are not running or
+      unreachable, servers which crash, bad host specifications, etc.  (Martin
+      Pool)
+
+    * --help for distcc explains more about host specifications.  (Martin
+      Pool) 
+
+  BUG FIXES:
+
+    * Correctly handle compilation of C++ code under ccache, by properly
+      recognizing the .ii extension.  (Stephen White, Chris Halls)
+
+    * Boolean environment variables (e.g. DISTCC_SAVE_TEMPS, DISTCC_VERBOSE)
+      are now consistently required to be literally "1" to count as true.
+      (Martin Pool)
+
+  DOCUMENTATION: 
+
+    * Document that $DISTCC_HOSTS can now specify ports.  (Martin Pool)
+
+    * Document --no-fifo and --log-stderr.  (Martin Pool)

@@ -1,0 +1,39 @@
+distcc-0.3
+
+  Released: 28 May 2002
+  Codename: GSV The Anticipation of a New Lover's Arrival
+
+  ENHANCEMENTS:
+
+    * Support C++ compilation (including with ccache) by correctly
+      detecting prefixes.  (Ian Reinhart Geiser, Martin Pool)
+
+    * Use a FIFO to feed preprocessed source from the daemon into the
+      compiler, so that compilation can be overlapped with network
+      transit.  (Martin Pool)
+
+
+  BUG FIXES:
+
+    * Only fiddle with the compiler's stdin/out/err when running on
+      the server, not on the client.  This should make cpp from stdin
+      work.  (Reported by Ian Reinhart Geiser from KDE) (Martin Pool)
+
+    * Prevent server crashing on aborted connectiong by using EPIPE
+      rather than SIGPIPE in daemon as well as client.  (Martin Pool,
+      Ben Elliston.)
+
+
+  PORTABILITY:
+
+    * Builds on GNU/Linux, FreeBSD, and others if you're lucky.
+      (Martin Pool, Frerich Raabe, Luke Gorrie)
+
+
+  INTERNAL:
+
+    * Convert to using GNU automake and autoconf, so that distcc can
+      better handle portability, distribution and testing.  (Martin
+      Pool, Frerich Raabe, Ian Reinhart Geiser)
+
+    * Start adding some "make check" tests. (Martin Pool)

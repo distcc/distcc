@@ -1,0 +1,57 @@
+distcc-0.6  "reptilian agenda"  (12 July 2002)
+ 
+  FEATURES:
+ 
+   * Daemon now refuses to run as root, because this is just too ridiculously
+     insecure.  (Martin Pool)
+
+   * Output shows CPU time taken by distcc and programs that it runs.  (Martin
+     Pool)
+
+   * distcc will now distribute jobs which use -s to compile but not assemble.
+     Previously they were always run locally, but there's no strong reason why
+     they must be.  Unfortunately you need to upgrade both the client and
+     server for this to work, because old servers will refuse to run gcc with
+     -s.  (Martin Pool)
+
+  BUG FIXES:
+
+   * -M<anything> option implies that cpp must be run locally, because it will
+      want to write dependency information to a file.  (Martin Pool)
+
+   * Add --daemon and --inetd options, so that you can properly start a remote
+     daemon with a single-line ssh command.  (Martin Pool)
+
+   * Fix bugs related to collecting child processes.  (Probably not very
+     user-visible.)  (Martin Pool)
+
+   * Fixed some Makefile-related bugs causing "make install" breakage and
+     similar things.  (Martin Pool)
+
+   * If the system supports sendfile, but the particular filesystem we're on
+     (e.g. tmpfs) doesn't, then fall back to using read/write.  (Eivind Magnus
+     Hvidevold, Martin Pool)
+
+   * Change to argument analyzer to placate Valgrind.  Possibly this was a
+     memory corruption bug, but I can't see it.  I think Valgrind was just too
+     picky.  (Martin Pool)
+
+  PORTABILITY:
+
+   * Build on FreeBSD, though you do need GNU make.  (Lauri Watts, Martin
+     Pool)
+
+  DOCUMENTATION:
+
+   * Better description of how to do cross-compilation.  (Martin Pool)
+
+  TESTING:
+
+   * Improved Python test suite.  (Martin Pool)
+
+  INTERNAL CHANGES:
+
+   * Get rid of automake; just use plain autoconf 2.53.  (Martin Pool)
+
+   * If $DISTCC_SAVE_TEMPS is set to "1", then files are not actually deleted
+      -- good for debugging.  (Martin Pool)

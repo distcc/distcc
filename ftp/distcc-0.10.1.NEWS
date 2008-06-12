@@ -1,0 +1,73 @@
+distcc-0.10  "shiny fast red thing"  2002-09-12
+
+  FEATURES:
+
+    * Allow distcc to be directly used with the same syntax as a compiler:
+      "distcc -c hello.c".  At the moment, always calls "cc".  (Martin Pool)
+
+    * If distribution fails, show the name of the server that we were trying
+      to use.  (Martin Pool)
+
+    * Strip -D, -I, -L, -M* options before passing the command line across the
+      network, for clarity (and perhaps a tiny performance improvement.)
+      Also, this allows new clients which support -MD to be used with old
+      servers that can't handle it.  (Martin Pool)
+
+
+  BUG FIXES:
+
+    * Correctly handle "gcc -c -S hello.c", which should only assemble, not
+      compile.  (Alexandre Oliva)
+
+    * If the volunteer compiler exits without reading all of its input, return
+      the compiler's own exit code across the network, rather than
+      EXIT_DISTCC_FAILED.  (Martin Pool)
+
+    * Attempt to fix a race where the compiler process could exit without
+      opening its input before we started writing to the FIFO.  In that case,
+      the daemon would hang forever waiting for the compiler to arrive.  In
+      the new code, SIGCHLD causes a longjmp to break out of trying to feed
+      the compiler.  (Martin Pool)
+
+    * If .o file is 0 bytes or not created on the server, do not create it on
+      the client either.  (Martin Pool)
+
+    * Fix bug that caused compilation to fail if an old compiler output file
+      existed.  (Martin Pool)
+
+    * Try to make sure to uncork client socket before closing if cpp fails, to
+      work around Linux 2.2 bug that causes the socket to jam in FIN_WAIT1.
+      See <http://marc.theaimsgroup.com/?l=linux-netdev&r=1&b=200209&w=2>.
+      (Martin Pool)
+
+    * Invocations of gcc that use -MD or -MMD can be distributed, although -M
+      cannot be.  Both client and server must be updated to make this work.
+      (Martin Pool)
+
+    * It turns out that .s and .S files in fact cannot be assembled remotely,
+      because they might use the gas '.include' pseudo op, which is resolved
+      by the assembler and would end up reading something from the volunteer's
+      disk.  (Richard Zidlicky, Martin Pool)
+
+
+  PORTABILITY:
+  
+    * Solaris portability fixes.  (Dimitri PAPADOPOULOS-ORFANOS)
+
+
+  TESTS:
+
+    * Test handling of -c and -S.  (Martin Pool)
+
+    * Test handling of a file that causes a preprocessor error.  (Martin Pool)
+
+    * Test compiler that succeeds without reading input.  (Martin Pool)
+
+    * Test many simple compilations, in case there is an infrequent error.
+      (Martin Pool) 
+
+    * Test many concurrent compilations.  (Martin Pool)
+
+    * Test using -D on the compiler command line.  (Martin Pool)
+
+    * Tests for .s and .S files.  (Martin Pool)

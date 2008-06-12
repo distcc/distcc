@@ -1,0 +1,24 @@
+distcc-0.14  "no agonizing hanging weights"  2002-11-13
+
+  BUG FIXES:
+
+    * Take lock on localhost only when compiling locally, not for all
+      compilations.  This removes the accidental limit of only 4 overall jobs.
+      (Martin Pool)
+
+    * Fix Makefile bug that caused HTML documentation to be missing from the
+      distribution tarball.  (Frerich Raabe, Martin Pool)
+
+    * Make PreprocessPlainText_Case run in appropriate subdirectory.  (Martin
+      Pool)
+
+
+  PORTABILITY:
+
+    * Test for wait4 and wait3, which are missing on IRIX.  (Mike Santy,
+      Martin Pool)
+
+
+  DOCUMENTATION:
+
+    * Include example init.d script.  (Jason Thomas)

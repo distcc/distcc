@@ -1,0 +1,34 @@
+distcc-0.5  "Unacceptable Behaviour"  (27 June 2002)
+
+  FEATURES:
+
+   * Use more specific return codes when the remote compiler fails:
+     EXIT_COMPILER_CRASHED for a signal, or the return code from the
+     compiler if it exited non-0.
+
+  FIXES:
+
+    * Fix bug in h_hosts that caused us to write off the end of the
+      real argv[], rather than a copy.  Thanks to Julian Seward.
+      (Martin Pool)
+
+  PORTABILITY:
+
+    * Cope on compilers without varargs macros.  (Petter Reinholdtsen, Martin
+      Pool)
+
+    * Build on Solaris.  (Petter Reinholdtsen, Martin Pool)
+
+    * FreeBSD fixes.  (Claes Wallin, Frerich Raabe, Michael
+      Nottebrock, Martin Pool)
+
+  DOCUMENTATION:
+
+    * Manpages are correctly distributed and installed.  (Petter Reinholdtsen)
+
+  TESTING:
+
+    * Test suite now runs a server on localhost and tests against it,
+      and shuts it down on completion.  (Martin Pool)
+
+    * More test cases.  (Martin Pool)

@@ -1,0 +1,1008 @@
+distcc-2.0.1  2003-03-28
+
+  BUG FIXES:
+
+    * Fix comfychair.py library missing from distribution.
+
+
+distcc-2.0  "shoot through like a Bondi tram"  2003-03-28
+
+  BUG FIXES:
+
+    * Fix small signal handling race that would occasionally cause distccd not
+      to exit when signalled.  Pointed out by Vance Lankhaar.
+
+    * If DISTCC_LOG is an empty string, treat as undefined.
+
+    * If the file specified by DISTCC_LOG can't be opened, then show an
+      error and use stderr.  Previously, error messages were just lost.
+
+
+  FEATURES:
+
+    * New "masquerade" mode: distcc can be linked into a directory on the
+      search path as 'cc'.  By Wayne Davison and Martin Pool.
+  
+    * Detect number of online processors on the server.  At the moment it is
+      just logged but in the future it might be used to guide scheduling.
+      Thanks to Dimitri Papadopoulos-Orfanos for describing how to do this on
+      many operating systems.
+
+    * Log signal name when terminating, on systems with strsignal().
+
+
+  PERFORMANCE:
+
+    * Internal CPU efficiency fixes in logging and RPC code.
+
+
+  PORTABILITY:
+
+    * Apparently now builds on IRIX.  Reports about whether it works would be
+      welcome.
+
+    * Fix cast in call to sprintf for platforms where ssize_t != int.  Found
+      on Alpha Linux in the hp Compaq testdrive.
+
+    * Clean up some warnings on IRIX.
+
+    * Fix problem with vsnprintf() declarations on Solaris 8.
+
+    * Cope when in_addr_t and socklen_t are not defined, as is the case on
+      FreeBSD 3.3.
+
+    * Fix test suite to allow for 'true' and 'false' being in /usr/bin on
+      BSD.
+
+
+  TESTING:
+
+    * Many internal updates to ComfyChair framework.  
+
+    * Test suite now works with Python 1.5 or later.
+
+    * Add new undocumented (heh) "--lifetime" option that causes the daemon to
+      expire after a certain period.
+
+    * Specify limited lifetime when running daemon, so that if it is not
+      cleaned up by the tests it will go away after a little while anyhow.
+
+    * Use "--allow" to limit connections to localhost when running
+      daemon for testing.
+
+    * Use randomly chosen TCP port for the server when running tests.  This
+      makes repeated or concurrent invocations of the test less likely to
+      conflict.
+
+    * On machines without Python, just say "test skipped" rather than failing.
+
+    * Test DISTCC_LOG being set to an unwriteable file.
+
+
+  REMOVALS:
+
+    * The GNU Info form of the manual is no longer included in the source
+      distribution or installed by default.  It can be built from SGML if
+      desired, with "make install-linuxdoc-info".
+
+
+distcc-1.2.3  "stubborn tiny lights"  2003-03-02
+
+  PORTABILITY:
+
+    * Don't use ':' in lock filenames, because that's a bit too tough for
+      Windows.  This only affects Cygwin clients, not servers.  Pointed out by
+      Heiko Elger.
+
+    * Check existence of ctype.h.  Fixes warnings when building popt.  Pointed
+      out by Tom Matelich.
+
+    * Fix "access denied" errors on lock files on HP-UX and Cygwin, so clients
+      on those platforms should work.  Reported by Tom Matelich, Heiko Elger
+      and others.
+
+
+distcc-1.2.2  "clustering darkness forever"  2003-02-27
+
+  BUG FIXES:
+
+    * "make distclean" should not remove ./configure.
+
+
+  PORTABILITY:
+
+    * Don't assume POSIX-style reentrant file locks, which can't be supported on
+      Cygwin.
+
+    * Check for inet_aton in libresolv, which might fix Solaris 2.6.
+
+    * Remove some gnudity from the Makefile in an attempt to build with
+      non-GNU Make.
+
+    * Attempted fix for header files on BSD.
+
+    * Attempted sendfile implementation for HP-UX.
+
+
+  TESTING:
+
+    * Add a simple "make distcheck" target to test that the tarball is built
+      properly.
+
+distcc-1.2.1  "you know you're right"  2003-02-25
+
+  BUG FIXES:
+
+    * Better detection of python2.2 during configuration.
+
+    * Allow installation from CVS on machines that don't have the Linuxdoc tools.
+
+    * Check for autoconf >= 2.53 when configuring.  Remove dependencies on
+      features from later versions of autoconf to allow autogen to run on Red
+      Hat Linux 7.2 systems.
+
+
+  TESTING:
+
+    * Add "make installcheck" target.
+
+    * "make check" now fails if any of the tests fail to run.
+
+    * distcc is now built on the build.samba.org build farm.  Please contribute
+      machines if you want your platform to be properly supported.
+
+
+  PORTABILITY:
+
+    * Remove libiberty, and use Samba's asprintf() implementation instead.  Yay
+      copy and paste.  This should fix problems with asprintf and ansidecls.h on
+      Solaris, BSD, and Cygwin.
+
+
+distcc-1.2  "lizard drinking"  2003-02-22
+
+  FEATURES:
+
+    * New scheduler makes a better attempt at keeping remote machines solidly
+      loaded by allowing only one request at a time to be in transit to remote
+      machines, therefore letting the actual compiler start sooner.  Gives
+      about a 10% improvement in some circumstances.  The new algorithm should
+      also be a better foundation for adding compression or server-side load
+      limiting.
+
+    * New --allow option for distccd allows IP-based access control in either
+      inetd or standalone daemon modes.
+
+    * Locking mechanism now distinguishes between daemons on different ports
+      of the same machine for the purposes of load balancing.
+
+    * Print timing and estimated rate on bulk data transfers.
+
+    * Open binary files in O_BINARY mode on Cygwin.  May fix some corruption
+      problems on this platform.  More investigation would be appreciated.
+      Based on a patch by Helind.
+
+
+  PORTABILITY:
+
+    * Use putenv() rather than setenv() to fit into SUSv2 and work on Solaris
+      8.  Pointed out by Dimitri Papadopoulos.
+
+    * Add some functions from libiberty to aid portability. 
+
+
+distcc-1.1  "balls to the wall"  2003-01-28
+
+  BUGS:
+
+    * Flag platforms that have a sendfile() function, but that aren't
+      explicitly supported, because it seems to vary substantially.  At the
+      moment only FreeBSD and Linux are known.
+
+    * Fix configure test for hstrerror().  Patch from Frerich Raabe.
+
+    * Check for inadvertent recursion, where distcc calls itself as the
+      compiler.  Causes an exit with value 111.
+
+    * Don't log client hostname, only the IP address.  It's not really
+      necessary and can slow us down.
+
+    * If run by root, discard privileges rather than flagging an error.  The
+      persona to assume is set by the --user option and defaults to "distcc".
+      The user "nobody" or uid 65534 is used as a fallback if the named user
+      is not found.
+ 
+
+  BENCHMARK:
+
+    * Allow for running benchmarks repeatedly, printing the mean and standard
+      deviation of run time.
+
+    * Projects may now be selected by an unambiguous prefix of their name, so
+      you can just say "benchmark hello" rather than "benchmark hello-2.1.1".
+
+    * Print better explanatory messages while the benchmark is running.
+
+
+  TESTING:
+
+    * Update some tests to work with changed behaviour of gcc 3.2 as well as
+      2.95.
+
+
+  DOCUMENTATION:
+
+    * Many updates to distcc User Manual.
+
+    * Comply with GNU Standards by keeping all messages in the NEWS file, not
+      just those for the current release.
+
+
+distcc-1.0  "consider the oyster"  2003-01-16
+
+  BUG FIXES:
+
+    * Fix sendfile() bug on FreeBSD that could cause files to be
+      mistransmitted.  Perhaps not manifest on x86?  Reported by Kris
+      Kennaway.
+
+
+  PACKAGING:
+
+    * Distribute as .tar.bz2 rather than .tar.gz.  (We pay by the byte.)
+
+
+  DOCUMENTATION:
+
+    * The recommended convention for gcc names is <target>-gcc-<version>, and
+      GCC 3.3 will install itself under this name.  (Alexandre Oliva, Claes
+      Wallin)
+
+
+  BENCHMARK:
+
+    * New macro-benchmark and test suite for distcc.  Invoke it with "make
+      benchmark."  It takes a long time to run and causes a lot of source code
+      to be downloaded, but should be self-contained.
+
+      This is the start of a script that runs distcc to build various open
+      source programs, as an overall test of correctness, and to measure
+      performance of a distcc installation.  It relies on the user to install
+      and configure distcc servers and clients, but handles the work of
+      downloading, preparing, and building packages by itself.
+
+      There are still some rough edges on the script, but it may be of
+      interest.
+
+    * Add control over which phases of the benchmark are run.
+
+    * Add ability to run tests repeatedly and report mean and standard
+      deviation.
+
+  
+  REMOVALS:
+
+    * Remove Plucker file: nobody seems to be downloading it, and it's
+      easy enough for people to build if they're interested.
+
+    * Remove PDF and Postscript from documentation in tarball.  They are still
+      available from the web site or may be built from source.
+
+distcc-0.15  "petrified forest"  2002-12-12
+
+   INCOMPATIBILITIES:
+
+    * Change default port from 4200 to IANA-assigned standard for distcc
+      service "3632".  Compatibility with old installations can be retained by
+      explicitly setting --port=4200 on the server, or using "HOST:PORT" on
+      the client.
+
+    * Fake-root directory for "make install" is now set by DESTDIR, not
+      TARGET_ROOT.  (Alexandre Oliva.)
+
+
+   BUG FIXES:
+
+    * Run the preprocessor with output sent to stdout and redirected to a
+      file, rather than by using the -o option.  This should fix some
+      compilers that can't handle "-E -o".  It may improve gcc behaviour with
+      -MD, but because gcc behaviour has changed over time it may not be a
+      complete fix.  
+
+      For gcc 3.2 it is recommended that -MF be used to explicitly set the
+      dependency output filename.
+
+
+  TESTING:
+
+    * Add test case for transmission of a zero-byte file. 
+
+    * Add badly-behaved compiler drop-in for use in testing.
+
+
+  PORTABILITY:
+
+    * Use the correct autoconf macros to detect whether install(1) is
+      available and working, and if not, fall back to using the included
+      install-sh script.  This should fix "make install" on Solaris.  (Mike
+      Santy)
+
+    * Fix waitpid() takes three options.  Required for Irix.  (Michael Santy)
+
+    * Fix autoconf detection of resolv.h on Solaris.  (Dimitri Papadopoulos)
+
+
+  DOCUMENTATION:
+
+    * Describe information to include in a bug report.
+
+    * Remove "Results" chapter from manual: there are now many more detailed
+      results on the web site, and this information is better suited to
+      storage there, because it will be updated on a different cycle.
+      End-users don't really need to have it in their reference.
+
+    * Remove "MOC Compatibility" section from manual because at the moment
+      there is nothing to say.
+
+    * Add a new section about the complexities of gcc -MD. 
+
+    * Remove "Bugs" section from the manual, and put it into a new TOOD file
+      instead.  Keep information about reporting bugs and using the test
+      suite, but put it in a different section.
+
+
+distcc-0.14  "no agonizing hanging weights"  2002-11-13
+
+  BUG FIXES:
+
+    * Take lock on localhost only when compiling locally, not for all
+      compilations.  This removes the accidental limit of only 4 overall jobs.
+      (Martin Pool)
+
+    * Fix Makefile bug that caused HTML documentation to be missing from the
+      distribution tarball.  (Frerich Raabe, Martin Pool)
+
+    * Make PreprocessPlainText_Case run in appropriate subdirectory.  (Martin
+      Pool)
+
+
+  PORTABILITY:
+
+    * Test for wait4 and wait3, which are missing on IRIX.  (Mike Santy,
+      Martin Pool)
+
+
+  DOCUMENTATION:
+
+    * Include example init.d script.  (Jason Thomas)
+
+distcc-0.13  "Armistice"  2002-11-11
+
+  FEATURES:
+
+    * New --no-detach option to cause the server not to detach from its
+      parent.  It still forks normally when a connection is accepted.  This
+      may be useful with daemontools or other frameworks that prefer the
+      daemon not to detach.  (Martin Pool)
+
+    * Log messages on the server of severity "warning" or higher are captured
+      and sent back to the client.  (Martin Pool)
+
+    * If the local preprocessor fails, do not re-run the job locally because
+      it would presumably fail in the same way.  (Martin Pool)
+
+    * By default, the client only sends "warning" or higher messages to
+      stderr, so that nothing extra is logged unless there is possibly a
+      failure in distcc itself.  With a DISTCC_LOG file, "notices" and higher
+      are logged.  (Martin Pool)
+
+    * Better messages when a compiler exits or crashes.  (Martin Pool)
+
+    * If the compiler because of a signal, return 128+SIGNAL, per Unix
+      convention.  (Martin Pool)
+
+    * Compilers and preprocessors are now run in their own process groups, and
+      terminated if the daemon is killed.  (Martin Pool)
+
+    * When the daemon parent is terminated, it does not kill all its children.
+      Instead, they're allowed to finish whatever they're working on, and then
+      exit.  This allows for more graceful shutdown.  (Martin Pool)
+
+    * More specific exit codes for some error cases.  Don't panic.  (Martin
+      Pool)
+
+    * Include popt library and --with-included-popt configure option to aid
+      installation on systems that don't have it.  By default it is statically
+      linked in only if the build machine does not have a suitable library and
+      header.  (Martin Pool)
+
+
+  REMOVALS:
+
+    * Remove support for feeding the compiler from a fifo.  The gain from
+      using fifos does not seem to justify the maintenance burden.  (Martin Pool)
+
+       - This makes the behaviour more consistent, because some platforms
+         (Cygwin) or filesystems (NFS, strangely) can't use fifos.  It removes
+         a code path and a slightly complex autodetection.
+ 
+       - Using fifos makes some potential scheduling improvements hard: the
+         server can't make good decisions about how many tasks to run, because
+         each one will only use a fraction of the CPU.  The client cannot
+         serialize file transmission, which would probably be desirable.
+         
+       - Using fifos makes reliably handling compiler failures slightly
+         harder: the compiler may crash or exit at any time, which will in
+         turn cause the server to hang if it later tries to open or write to
+         the fifo.  In previous versions, distcc tried to handle this by
+         catching SIGCHLD when the child terminated, and aborting the
+         operation, but I am not sure that the method is completely reliable.
+
+
+  BUG FIXES:
+
+    * Detached daemon now ignores hangup signal.  (Martin Pool)
+
+    * When the parent is terminated, don't kill its process group.  Allow
+      children to finish in their own time.  (Martin Pool)
+
+    * Detect the case where cpp claims to have succeeded, but did not actually
+      produce any output.  (Martin Pool)
+
+    * Do not use atexit() to clean up temporary files, because this can cause
+      havoc if it's ever called from a child process that forked but failed to
+      exec.  (Martin Pool)
+
+    * Handle "gcc -S foo.c -o -", which ought to write assembly to stdout.
+      (Alexandre Oliva)
+
+    * Fix bug in handling IO errors (e.g. dropped connection) in the server.
+      (Martin Pool)
+
+    * If we fail to cork a socket, continue anyhow.  (Martin Pool)
+
+    * Make error handling for IO more consistent.  (Martin Pool)
+
+    * Follow Unix convention of returning 128+SIGNAL if the compiler exits
+      with a signal.  (Martin Pool)
+
+
+  TESTING:
+
+    * Add tests for parsing slot limit from host specification.  (Martin Pool)
+
+    * Daemon tests collect dead servers faster, so the tests run a bit
+      faster.  (Martin Pool)
+
+    * Nicer handling of ^C while running tests: print "INTERRUPT" and
+      terminate the whole test.  (Martin Pool)
+
+    * Add new tests for scanning command lines with an implied compiler name.
+      (Martin Pool)
+
+    * When the parent is terminated, don't kill its process group.  Allow
+      children to finish in their own time.  (Martin Pool)
+
+    * Detect the case where cpp claims to have succeeded, but did not actually
+      produce any output.  (Martin Pool)
+
+    * Add test case for #error directive.  (Martin Pool)
+
+    * Add test case for preprocessing non-C text, as is done by (for example)
+      xrdb.  (Martin Pool)
+
+    * Add test case for invocations like "distcc -c test1.c test2.c".  (Martin Pool)
+
+    * Add test for handling of a compiler missing from the server.  (Martin Pool)
+
+    * Allow distcc's version to be set to something like "0.13cvs-nofifo".
+      (Martin Pool)
+
+    * Add test for handling of a compiler missing from the server.  (Martin
+      Pool)
+
+    * Improved ComfyChair testing framework.  (Tim Potter, Martin Pool)
+
+ 
+  PORTABILITY:
+
+    * Includes example init.d script for SuSE 7.x and 8.0.  Not installed by
+      default.  (Brandon Forehand)
+
+
+  DOCUMENTATION:
+
+    * Document use with Gentoo Linux.  (Dean Bailey, Ernesto, Martin Pool)
+
+
+  INTERNAL:
+
+    * Get rid of recursive Make and fix various small Makefile bugs.  (Martin
+      Pool)
+
+    * Add $(TARGET_ROOT) variable for "make install", for use in building
+      binary packages.  (Martin Pool, Nick Moffitt)
+
+    * wait4() on Solaris can't handle a pid of -1, which means "any child" on
+      Linux and BSD.  Use pid of 0 instead to collect any children from the
+      same process group.  (Kevin Bailey)
+
+    * Client does not abruptly drop network connection on compiler failure but
+      rather reads the 0-byte object file token.  (Martin Pool)
+
+    * Rework logger library to allow multiple logger callbacks to be active at
+      once.  This is used for the server, which can write to its own log files
+      and also send a copy of messages to a buffer to be sent to the client.
+      (Martin Pool)
+
+distcc-0.12  "Klein, kosten- und schnörkellos"  2002-10-07
+
+  BUG FIXES:
+
+    * Handle "gcc -S foo.c -o -", which ought to write assembly to stdout.
+      (Alexandre Oliva)
+
+  PORTABILITY:
+
+    * wait4() on Solaris can't handle a pid of -1, which means "any child" on
+      Linux and BSD.  Use pid of 0 instead to collect any children from the
+      same process group.  (Kevin Bailey)
+
+  TESTING:
+
+    * Add tests for "-o -".  (Martin Pool)
+
+distcc-0.11  "Nuclear Bedtime Story"  2002-09-25
+
+  FEATURES:
+
+    * More helpful message explaining that popt is needed if it is missing at
+      build time.  (Martin Pool)
+     
+    * Better stripping of options from remote command lines.  (Martin Pool)
+
+    * Handle the new -MM, -MG, -MP, -MF, -MT, -MQ options for gcc 3.x.
+      (Stephan Kulow, Martin Pool)
+
+
+  PERFORMANCE:
+
+    * Whenever a command by either the client or the server, it counts towards
+      the load on that machine.  This covers undistributed commands, cpp, and
+      compilation.  This should avoid the bias in earlier versions towards
+      overloading the client.  (Martin Pool)
+
+
+  BUG FIXES:
+
+    * IO errors should not cause the process to terminate straight away,
+      because they are properly handled and we may have important cleanup to
+      do.  (Martin Pool)
+
+    * Fix error handling in code for executing compilers.  (Martin Pool)
+
+    * Fix leakage of file descriptors when trying to acquire a lock.  (Martin
+      Pool)
+
+    * Do not object to running as group 0, because on BSD this is "wheel" and
+      many non-privileged users are in it.  (Frerich Raabe, Martin Pool)
+
+    * Fix (non-exploitable) buffer overrun bug.  (Dave Zarzycki)
+
+
+  PORTABILITY:
+
+    * Fixes to build on Linux libc5.  (Richard Zidlicky, Martin Pool)
+
+
+  TESTING:
+
+    * Keep $TMPDIR separate for each test case.  (Martin Pool)
+
+    * testdistcc.py now optionally takes arguments saying which tests to run.
+      (Martin Pool)
+
+    * Test permissions on output files are correct.  (Martin Pool)
+
+    * Add more test cases for implicit compiler name handling.  Extend
+      h_scanargs to exercise this.  (Martin Pool)
+
+    * More tests for argument stripping.  (Martin Pool)
+
+distcc-0.10  "shiny fast red thing"  2002-09-12
+
+  FEATURES:
+
+    * Allow distcc to be directly used with the same syntax as a compiler:
+      "distcc -c hello.c".  At the moment, always calls "cc".  (Martin Pool)
+
+    * If distribution fails, show the name of the server that we were trying
+      to use.  (Martin Pool)
+
+    * Strip -D, -I, -L, -M* options before passing the command line across the
+      network, for clarity (and perhaps a tiny performance improvement.)
+      Also, this allows new clients which support -MD to be used with old
+      servers that can't handle it.  (Martin Pool)
+
+
+  BUG FIXES:
+
+    * Correctly handle "gcc -c -S hello.c", which should only assemble, not
+      compile.  (Alexandre Oliva)
+
+    * If the volunteer compiler exits without reading all of its input, return
+      the compiler's own exit code across the network, rather than
+      EXIT_DISTCC_FAILED.  (Martin Pool)
+
+    * Attempt to fix a race where the compiler process could exit without
+      opening its input before we started writing to the FIFO.  In that case,
+      the daemon would hang forever waiting for the compiler to arrive.  In
+      the new code, SIGCHLD causes a longjmp to break out of trying to feed
+      the compiler.  (Martin Pool)
+
+    * If .o file is 0 bytes or not created on the server, do not create it on
+      the client either.  (Martin Pool)
+
+    * Fix bug that caused compilation to fail if an old compiler output file
+      existed.  (Martin Pool)
+
+    * Try to make sure to uncork client socket before closing if cpp fails, to
+      work around Linux 2.2 bug that causes the socket to jam in FIN_WAIT1.
+      See <http://marc.theaimsgroup.com/?l=linux-netdev&r=1&b=200209&w=2>.
+      (Martin Pool)
+
+    * Invocations of gcc that use -MD or -MMD can be distributed, although -M
+      cannot be.  Both client and server must be updated to make this work.
+      (Martin Pool)
+
+    * It turns out that .s and .S files in fact cannot be assembled remotely,
+      because they might use the gas '.include' pseudo op, which is resolved
+      by the assembler and would end up reading something from the volunteer's
+      disk.  (Richard Zidlicky, Martin Pool)
+
+
+  PORTABILITY:
+  
+    * Solaris portability fixes.  (Dimitri PAPADOPOULOS-ORFANOS)
+
+
+  TESTS:
+
+    * Test handling of -c and -S.  (Martin Pool)
+
+    * Test handling of a file that causes a preprocessor error.  (Martin Pool)
+
+    * Test compiler that succeeds without reading input.  (Martin Pool)
+
+    * Test many simple compilations, in case there is an infrequent error.
+      (Martin Pool) 
+
+    * Test many concurrent compilations.  (Martin Pool)
+
+    * Test using -D on the compiler command line.  (Martin Pool)
+
+    * Tests for .s and .S files.  (Martin Pool)
+
+distcc-0.9  "samui desu ne?"  2002-09-03
+
+  FEATURES:
+
+    * Add new environment variable for client and server, DISTCC_TCP_CORK.
+      Defaults to on, intended mostly for performance comparison or
+      debugging.  (Martin Pool)
+
+  PORTABILITY:
+
+    * Properly support platforms with 32-bit pids, such as Cygwin.  (Aaron
+      Lehmann, Martin Pool)
+
+    * On FreeBSD, the sa_family_t type is defined in <sys/socket.h>  (Dennis
+      Taylor)
+
+  BUG FIXES:
+
+    * Fix bugs related to leftover fifos in the temporary directory causing
+      occasional server hangs.  (Martin Pool)
+
+    * Stop the compiler from inheriting file descriptors connected to the
+      network.  This was causing the client to hang if the server abnormally
+      terminated while the compiler was reading from a fifo.  (Martin Pool)
+
+    * Handle the case of sendfile() transmitting only part of the supplied
+      data, similarly to a short write on a socket.  This doesn't often
+      happen, but can occur if a ptrace debugger attaches while sendfile is
+      running.  (Martin Pool)
+
+    * When run with --daemon and not --no-fork, the parent does not detach
+      until the pid file has been created.  This removes a slight race window
+      that sometimes confused the test scripts.  (Martin Pool)
+
+    * Message for completion of local cpp now gives the correct hostname.
+      (Martin Pool)
+
+    * Do not try to collect daemon children if --no-fork was specified.
+      (Martin Pool)
+
+    * Set SIGPIPE handler back to default before starting compiler tasks.
+      (Martin Pool)
+
+    * If a network error is detected while feeding input to the compiler, then
+      it is terminated with a SIGHUP.  (Martin Pool)
+
+    * If transmission to the server fails, close the socket sooner rather than
+      later so as not to make the server process wait around unnecessarily.
+      (Martin Pool)
+
+    * Better handling of the case where the compiler command exits without
+      reading its input.  (Martin Pool)
+
+    * Make sure compilation children are always properly collected, even if
+      transmission failed.  (Martin Pool)
+
+  PERFORMANCE:
+
+    * Write token/parameters using a single write() call.  May be very
+      slightly more efficient in CPU and perhaps packets.  (Martin Pool)
+
+  TESTS:
+
+    * Display test names while they're running so that long tests are easier
+      to follow.  (Martin Pool)
+
+    * When cleaning up after running the dameon, make sure it's really dead
+      before proceeding, so that tests don't trip over each other.  (Martin
+      Pool)
+
+    * New test of compilation of a largish (~4MB) C file to a ~5MB object
+      file.  (Martin Pool)
+
+distcc-0.8  "cat and girl"  2002-08-15
+
+  FEATURES:
+
+    * If for any reason a job can't be distributed, it is run locally rather
+      than failing.  This includes servers which are not running or
+      unreachable, servers which crash, bad host specifications, etc.  (Martin
+      Pool)
+
+    * --help for distcc explains more about host specifications.  (Martin
+      Pool) 
+
+  BUG FIXES:
+
+    * Correctly handle compilation of C++ code under ccache, by properly
+      recognizing the .ii extension.  (Stephen White, Chris Halls)
+
+    * Boolean environment variables (e.g. DISTCC_SAVE_TEMPS, DISTCC_VERBOSE)
+      are now consistently required to be literally "1" to count as true.
+      (Martin Pool)
+
+  DOCUMENTATION: 
+
+    * Document that $DISTCC_HOSTS can now specify ports.  (Martin Pool)
+
+    * Document --no-fifo and --log-stderr.  (Martin Pool)
+
+distcc-0.7  "Pipeline Authority"  2002-08-05
+
+  FEATURES:
+
+   * Can now either use fifos for feeding the compiler or not.  This can be
+     controlled by --no-fifo to the server.  By default, it tries a fifo and
+     falls back to using regular temporarily files if that fails, as it will
+     on Cygwin or an NFS-mounted /tmp.  (Martin Pool)
+
+   * --log-stderr option, intended mainly for debugging or testing.  (Martin
+       Pool)
+
+   * DISTCC_HOSTS can now specify non-default port numbers using "host:port"
+     syntax.  (Martin Pool)
+
+  DOCUMENTATION:
+
+   * Built documentation (HTML, PS, PDF, Info) is now shipped in the
+     distributed tarball, so that you can more easily install it on a machine
+     lacking the Linuxdoc SGML tools.  You still need them to modify and
+     rebuild the documentation, of course.  (Martin Pool)
+
+  BUG FIXES:
+
+   * Log pid even if running with --no-fork.  Remove pid file on exit.
+     (Martin Pool)
+ 
+  PORTABILITY:
+
+    * Try fcntl locks in addition to lockf and flock; apparently this helps
+      portability to Cygwin.  (Martin Pool, Marco Alanen)
+
+    * Port to Cygwin.  (Martin Pool, Marco Alanen)
+
+    * Partial port to Solaris.  (Dimitri PAPADOPOULOS-ORFANOS, Martin Pool)
+
+  TESTABILITY:
+
+    * Further internal improvements to test suite.  (Martin Pool)
+
+    * Test suite should now run whether or not there is a daemon listening on
+      localhost, because it uses a non-standard port for testing.  (Martin
+      Pool)
+
+distcc-0.6  "reptilian agenda"  (12 July 2002)
+ 
+  FEATURES:
+ 
+   * Daemon now refuses to run as root, because this is just too ridiculously
+     insecure.  (Martin Pool)
+
+   * Output shows CPU time taken by distcc and programs that it runs.  (Martin
+     Pool)
+
+   * distcc will now distribute jobs which use -s to compile but not assemble.
+     Previously they were always run locally, but there's no strong reason why
+     they must be.  Unfortunately you need to upgrade both the client and
+     server for this to work, because old servers will refuse to run gcc with
+     -s.  (Martin Pool)
+
+  BUG FIXES:
+
+   * -M<anything> option implies that cpp must be run locally, because it will
+      want to write dependency information to a file.  (Martin Pool)
+
+   * Add --daemon and --inetd options, so that you can properly start a remote
+     daemon with a single-line ssh command.  (Martin Pool)
+
+   * Fix bugs related to collecting child processes.  (Probably not very
+     user-visible.)  (Martin Pool)
+
+   * Fixed some Makefile-related bugs causing "make install" breakage and
+     similar things.  (Martin Pool)
+
+   * If the system supports sendfile, but the particular filesystem we're on
+     (e.g. tmpfs) doesn't, then fall back to using read/write.  (Eivind Magnus
+     Hvidevold, Martin Pool)
+
+   * Change to argument analyzer to placate Valgrind.  Possibly this was a
+     memory corruption bug, but I can't see it.  I think Valgrind was just too
+     picky.  (Martin Pool)
+
+  PORTABILITY:
+
+   * Build on FreeBSD, though you do need GNU make.  (Lauri Watts, Martin
+     Pool)
+
+  DOCUMENTATION:
+
+   * Better description of how to do cross-compilation.  (Martin Pool)
+
+  TESTING:
+
+   * Improved Python test suite.  (Martin Pool)
+
+  INTERNAL CHANGES:
+
+   * Get rid of automake; just use plain autoconf 2.53.  (Martin Pool)
+
+   * If $DISTCC_SAVE_TEMPS is set to "1", then files are not actually deleted
+      -- good for debugging.  (Martin Pool)
+
+distcc-0.5  "Unacceptable Behaviour"  (27 June 2002)
+
+  FEATURES:
+
+   * Use more specific return codes when the remote compiler fails:
+     EXIT_COMPILER_CRASHED for a signal, or the return code from the
+     compiler if it exited non-0.
+
+  FIXES:
+
+    * Fix bug in h_hosts that caused us to write off the end of the
+      real argv[], rather than a copy.  Thanks to Julian Seward.
+      (Martin Pool)
+
+  PORTABILITY:
+
+    * Cope on compilers without varargs macros.  (Petter Reinholdtsen, Martin
+      Pool)
+
+    * Build on Solaris.  (Petter Reinholdtsen, Martin Pool)
+
+    * FreeBSD fixes.  (Claes Wallin, Frerich Raabe, Michael
+      Nottebrock, Martin Pool)
+
+  DOCUMENTATION:
+
+    * Manpages are correctly distributed and installed.  (Petter Reinholdtsen)
+
+  TESTING:
+
+    * Test suite now runs a server on localhost and tests against it,
+      and shuts it down on completion.  (Martin Pool)
+
+    * More test cases.  (Martin Pool)
+
+distcc-0.4  "Wisdom Like Silence"  (9 June 2002)
+
+  ENHANCEMENTS:
+
+   * Assembly and assembly-with-preprocessor files can now be
+     assembled remotely.  (Martin Pool)
+
+   * Client now emits no messages unless there is a warning or error,
+     or $DISTCC_VERBOSE is specified.  This improves operation with
+     ccache.  (Martin Pool)
+
+   * Client and server both respect $TMPDIR if set.  (Martin Pool)
+
+   * Standalone server puts itself in the background and detaches from
+     controlling tty.  (Martin Pool)
+
+   * Server has --port option.  Currently useless, since there's no
+     corresponding option on the client.  (Martin Pool)
+
+   * Server has --pid-file option.  (Martin Pool)
+
+   * Server now allows multiple concurrent compile tasks, forking per
+     connection.  (Martin Pool)
+
+  BUG FIXES:
+
+    * gcc invocations with -fprofile-arcs or -ftest-coverage that
+      would emit coverage information to a local file are always run
+      locally.  (Martin Pool)
+
+    * Handle lines like "gcc -c -c hello.c".  (Martin Pool)
+
+  DOCUMENTATION:
+
+    * Various enhancements to the user manual.  (Martin Pool)
+
+  INTERNAL:
+
+    * Add a partial test suite based on PyUnit.  Python 2 is now
+      required to run the test suite, though not to just build or run
+      distcc.  (Martin Pool)
+
+distcc-0.3  "The Anticipation of a New Lover's Arrival"  (28 May 2002)
+
+  ENHANCEMENTS:
+
+    * Support C++ compilation (including with ccache) by correctly
+      detecting prefixes.  (Ian Reinhart Geiser, Martin Pool)
+
+    * Use a FIFO to feed preprocessed source from the daemon into the
+      compiler, so that compilation can be overlapped with network
+      transit.  (Martin Pool)
+
+
+  BUG FIXES:
+
+    * Only fiddle with the compiler's stdin/out/err when running on
+      the server, not on the client.  This should make cpp from stdin
+      work.  (Reported by Ian Reinhart Geiser from KDE) (Martin Pool)
+
+    * Prevent server crashing on aborted connectiong by using EPIPE
+      rather than SIGPIPE in daemon as well as client.  (Martin Pool,
+      Ben Elliston.)
+
+
+  PORTABILITY:
+
+    * Builds on GNU/Linux, FreeBSD, and others if you're lucky.
+      (Martin Pool, Frerich Raabe, Luke Gorrie)
+
+
+  INTERNAL:
+
+    * Convert to using GNU automake and autoconf, so that distcc can
+      better handle portability, distribution and testing.  (Martin
+      Pool, Frerich Raabe, Ian Reinhart Geiser)
+
+    * Start adding some "make check" tests. (Martin Pool)
+
+distcc-0.2 (17 May 2002)
+
+  ENHANCEMENTS:
+
+    * First public release
+
+    * Correctly and usefully builds various large programs

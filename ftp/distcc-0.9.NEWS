@@ -1,0 +1,72 @@
+distcc-0.9  "samui desu ne?"  2002-09-03
+
+  FEATURES:
+
+    * Add new environment variable for client and server, DISTCC_TCP_CORK.
+      Defaults to on, intended mostly for performance comparison or
+      debugging.  (Martin Pool)
+
+  PORTABILITY:
+
+    * Properly support platforms with 32-bit pids, such as Cygwin.  (Aaron
+      Lehmann, Martin Pool)
+
+    * On FreeBSD, the sa_family_t type is defined in <sys/socket.h>  (Dennis
+      Taylor)
+
+  BUG FIXES:
+
+    * Fix bugs related to leftover fifos in the temporary directory causing
+      occasional server hangs.  (Martin Pool)
+
+    * Stop the compiler from inheriting file descriptors connected to the
+      network.  This was causing the client to hang if the server abnormally
+      terminated while the compiler was reading from a fifo.  (Martin Pool)
+
+    * Handle the case of sendfile() transmitting only part of the supplied
+      data, similarly to a short write on a socket.  This doesn't often
+      happen, but can occur if a ptrace debugger attaches while sendfile is
+      running.  (Martin Pool)
+
+    * When run with --daemon and not --no-fork, the parent does not detach
+      until the pid file has been created.  This removes a slight race window
+      that sometimes confused the test scripts.  (Martin Pool)
+
+    * Message for completion of local cpp now gives the correct hostname.
+      (Martin Pool)
+
+    * Do not try to collect daemon children if --no-fork was specified.
+      (Martin Pool)
+
+    * Set SIGPIPE handler back to default before starting compiler tasks.
+      (Martin Pool)
+
+    * If a network error is detected while feeding input to the compiler, then
+      it is terminated with a SIGHUP.  (Martin Pool)
+
+    * If transmission to the server fails, close the socket sooner rather than
+      later so as not to make the server process wait around unnecessarily.
+      (Martin Pool)
+
+    * Better handling of the case where the compiler command exits without
+      reading its input.  (Martin Pool)
+
+    * Make sure compilation children are always properly collected, even if
+      transmission failed.  (Martin Pool)
+
+  PERFORMANCE:
+
+    * Write token/parameters using a single write() call.  May be very
+      slightly more efficient in CPU and perhaps packets.  (Martin Pool)
+
+  TESTS:
+
+    * Display test names while they're running so that long tests are easier
+      to follow.  (Martin Pool)
+
+    * When cleaning up after running the dameon, make sure it's really dead
+      before proceeding, so that tests don't trip over each other.  (Martin
+      Pool)
+
+    * New test of compilation of a largish (~4MB) C file to a ~5MB object
+      file.  (Martin Pool)
