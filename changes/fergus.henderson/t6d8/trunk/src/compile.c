@@ -467,7 +467,7 @@ dcc_build_somewhere(char *argv[],
     int needs_dotd = 0;
     int sets_dotd_target = 0;
     pid_t cpp_pid = 0;
-    int cpu_lock_fd = 0, local_cpu_lock_fd = 0;
+    int cpu_lock_fd = -1, local_cpu_lock_fd = -1;
     int ret;
     int remote_ret = 0;
     struct dcc_hostdef *host = NULL;
@@ -562,7 +562,7 @@ dcc_build_somewhere(char *argv[],
             /* We're done with local "preprocessing" (include scanning). */
             dcc_unlock(local_cpu_lock_fd);
             /* Don't try to unlock again in dcc_compile_remote. */
-            local_cpu_lock_fd = 0;
+            local_cpu_lock_fd = -1;
         }
 
     }
@@ -606,17 +606,17 @@ dcc_build_somewhere(char *argv[],
          * the compiler itself bombed out. */
 
         /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
-        local_cpu_lock_fd = 0;
+        local_cpu_lock_fd = -1;
 
         goto fallback;
     }
     /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
-    local_cpu_lock_fd = 0;
+    local_cpu_lock_fd = -1;
 
     dcc_enjoyed_host(host);
 
     dcc_unlock(cpu_lock_fd);
-    cpu_lock_fd = 0;
+    cpu_lock_fd = -1;
 
     ret = dcc_critique_status(*status, "compile", input_fname, host, 1);
     if (ret == 0) {
@@ -660,13 +660,13 @@ dcc_build_somewhere(char *argv[],
     if (host)
         dcc_disliked_host(host);
 
-    if (cpu_lock_fd != 0) {
+    if (cpu_lock_fd != -1) {
         dcc_unlock(cpu_lock_fd);
-        cpu_lock_fd = 0;
+        cpu_lock_fd = -1;
     }
-    if (local_cpu_lock_fd != 0) {
+    if (local_cpu_lock_fd != -1) {
         dcc_unlock(local_cpu_lock_fd);
-        local_cpu_lock_fd = 0;
+        local_cpu_lock_fd = -1;
     }
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
@@ -713,8 +713,9 @@ dcc_build_somewhere(char *argv[],
             discrepancy_filename);
     }
 
-    if (cpu_lock_fd != 0) {
+    if (cpu_lock_fd != -1) {
         dcc_unlock(cpu_lock_fd);
+        cpu_lock_fd = -1; /* Not really needed, just for consistency. */
     }
 
   clean_up:

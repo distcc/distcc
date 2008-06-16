@@ -169,9 +169,9 @@ dcc_send_header(int net_fd,
  * @param cpp_pid If nonzero, the pid of the preprocessor.  Must be
  * allowed to complete before we send the input file.
  *
- * @param local_cpu_lock_fd If nonzero, file descriptor for the lock file.
- * Should be nonzero iff (host->cpp_where != DCC_CPP_ON_SERVER).
- * If nonzero, the lock must be held on entry to this function,
+ * @param local_cpu_lock_fd If != -1, file descriptor for the lock file.
+ * Should be != -1 iff (host->cpp_where != DCC_CPP_ON_SERVER).
+ * If != -1, the lock must be held on entry to this function,
  * and THIS FUNCTION WILL RELEASE THE LOCK.
  *
  * @param host Definition of host to send this job to.
@@ -182,6 +182,9 @@ dcc_send_header(int net_fd,
  * Returns 0 on success, otherwise error.  Returning nonzero does not
  * necessarily imply the remote compiler itself succeeded, only that
  * there were no communications problems.
+ *
+ * TODO: consider refactoring this (perhaps as two separate subroutines?)
+ * to avoid the need for releasing the lock as a side effect of this call.
  */
 int dcc_compile_remote(char **argv,
                        char *input_fname,
@@ -241,9 +244,9 @@ int dcc_compile_remote(char **argv,
 
         /* We are done with local preprocessing.  Unlock to allow someone
          * else to start preprocessing. */
-        if (local_cpu_lock_fd) {
+        if (local_cpu_lock_fd != -1) {
             dcc_unlock(local_cpu_lock_fd);
-            local_cpu_lock_fd = 0;
+            local_cpu_lock_fd = -1;
         }
 
         if (*status != 0)
@@ -284,7 +287,10 @@ int dcc_compile_remote(char **argv,
     }
 
   out:
-    if (local_cpu_lock_fd) { dcc_unlock(local_cpu_lock_fd); }
+    if (local_cpu_lock_fd != -1) {
+        dcc_unlock(local_cpu_lock_fd);
+        local_cpu_lock_fd = -1; /* Not really needed; just for consistency. */
+    }
 
     /* Close socket so that the server can terminate, rather than
      * making it wait until we've finished our work. */
