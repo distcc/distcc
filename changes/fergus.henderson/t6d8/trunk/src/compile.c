@@ -447,6 +447,9 @@ static int dcc_please_send_email_after_investigation(
  * and choosing the remote host requires acquiring its lock
  * (otherwise it might be busy when we we try to acquire it).
  * So we need to hold the remote host lock while we're doing
+ * local preprocessing or include scanning.  Since local
+ * preprocessing/include scanning requires us to acquire the
+ * local cpu lock, that means we need to hold two locks at one time.
  *
  * TODO: make pump mode a global flag, and drop support for
  * building with cpp mode on some hosts and not on others.
@@ -514,8 +517,10 @@ dcc_build_somewhere(char *argv[],
     }
 
     /* Lock ordering invariant: always acquire the lock for the
-     * remote host first, and release it last. */
+     * remote host (if any) first. */
 
+    /* Choose the distcc server host (which could be either a remote
+     * host or localhost) and acquire the lock for it.  */
     if ((ret = dcc_pick_host_from_list_and_lock_it(&host, &cpu_lock_fd)) != 0) {
         /* Doesn't happen at the moment: all failures are masked by
            returning localhost. */
