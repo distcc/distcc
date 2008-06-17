@@ -438,7 +438,26 @@ static int dcc_please_send_email_after_investigation(
  * preprocessor.  This function can succeed (in running the compiler) even if
  * the compiler itself fails.  If either the compiler or preprocessor fails,
  * @p status is guaranteed to hold a failure value.
- **/
+ *
+ * Implementation notes:
+ *
+ * This code might be simpler if we would only acquire one lock
+ * at a time.  But we need to choose the server host in order
+ * to determine whether it supports pump mode or not,
+ * and choosing the server host requires acquiring its lock
+ * (otherwise it might be busy when we we try to acquire it).
+ * So if the server chosen is not localhost, we need to hold the
+ * remote host lock while we're doing local preprocessing or include
+ * scanning.  Since local preprocessing/include scanning requires
+ * us to acquire the local cpu lock, that means we need to hold two
+ * locks at one time.
+ *
+ * TODO: make pump mode a global flag, and drop support for
+ * building with cpp mode on some hosts and not on others.
+ * Then change the code so that we only choose the remote
+ * host after local preprocessing/include scanning is finished
+ * and the local cpu lock is released.
+ */
 static int
 dcc_build_somewhere(char *argv[],
                     int sg_level,
@@ -452,7 +471,7 @@ dcc_build_somewhere(char *argv[],
     int needs_dotd = 0;
     int sets_dotd_target = 0;
     pid_t cpp_pid = 0;
-    int cpu_lock_fd, local_cpu_lock_fd;
+    int cpu_lock_fd = -1, local_cpu_lock_fd = -1;
     int ret;
     int remote_ret = 0;
     struct dcc_hostdef *host = NULL;
@@ -465,7 +484,7 @@ dcc_build_somewhere(char *argv[],
     if ((ret = dcc_discrepancy_filename(&discrepancy_filename)))
         goto clean_up;
 
-    if (sg_level)
+    if (sg_level) /* Recursive distcc - run locally, and skip all locking. */
         goto run_local;
 
     /* TODO: Perhaps tidy up these gotos. */
@@ -498,20 +517,27 @@ dcc_build_somewhere(char *argv[],
         goto fallback;
     }
 
-    if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
-        goto fallback;
-    }
+    /* Lock ordering invariant: always acquire the lock for the
+     * remote host (if any) first. */
 
-    if ((ret = dcc_pick_host_from_list(&host, &cpu_lock_fd)) != 0) {
+    /* Choose the distcc server host (which could be either a remote
+     * host or localhost) and acquire the lock for it.  */
+    if ((ret = dcc_pick_host_from_list_and_lock_it(&host, &cpu_lock_fd)) != 0) {
         /* Doesn't happen at the moment: all failures are masked by
            returning localhost. */
         goto fallback;
     }
-
-    if (host->mode == DCC_MODE_LOCAL)
+    if (host->mode == DCC_MODE_LOCAL) {
         /* We picked localhost and already have a lock on it so no
          * need to lock it now. */
         goto run_local;
+    }
+
+    /* Lock the local CPU, since we're going to be doing preprocessing
+     * or include scanning. */
+    if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
+        goto fallback;
+    }
 
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
         /* Perhaps it is not a good idea to preprocess on the server. */
@@ -538,11 +564,13 @@ dcc_build_somewhere(char *argv[],
                                            host->cpp_where,
                                            &host->protover);
         } else {
-            /* done "preprocessing" */
+            /* Include server succeeded. */
+            /* We're done with local "preprocessing" (include scanning). */
             dcc_unlock(local_cpu_lock_fd);
-            /* don't try to unlock again in dcc_compile_remote */
-            local_cpu_lock_fd = 0;
+            /* Don't try to unlock again in dcc_compile_remote. */
+            local_cpu_lock_fd = -1;
         }
+
     }
 
     if (host->cpp_where == DCC_CPP_ON_CLIENT) {
@@ -553,6 +581,7 @@ dcc_build_somewhere(char *argv[],
 
         if ((ret = dcc_strip_local_args(argv, &server_side_argv)))
             goto fallback;
+
     } else {
         char *dotd_target = NULL;
         cpp_fname = NULL;
@@ -581,12 +610,19 @@ dcc_build_somewhere(char *argv[],
                   host, status)) != 0) {
         /* Returns zero if we successfully ran the compiler, even if
          * the compiler itself bombed out. */
+
+        /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
+        local_cpu_lock_fd = -1;
+
         goto fallback;
     }
+    /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
+    local_cpu_lock_fd = -1;
 
     dcc_enjoyed_host(host);
 
     dcc_unlock(cpu_lock_fd);
+    cpu_lock_fd = -1;
 
     ret = dcc_critique_status(*status, "compile", input_fname, host, 1);
     if (ret == 0) {
@@ -603,6 +639,7 @@ dcc_build_somewhere(char *argv[],
             rs_log_warning("Could not show server-side errors");
             goto fallback;
         }
+        /* SUCCESS! */
         goto clean_up;
     }
     if (ret < 128) {
@@ -628,6 +665,15 @@ dcc_build_somewhere(char *argv[],
   fallback:
     if (host)
         dcc_disliked_host(host);
+
+    if (cpu_lock_fd != -1) {
+        dcc_unlock(cpu_lock_fd);
+        cpu_lock_fd = -1;
+    }
+    if (local_cpu_lock_fd != -1) {
+        dcc_unlock(local_cpu_lock_fd);
+        local_cpu_lock_fd = -1;
+    }
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
         rs_log_warning("failed to distribute and fallbacks are disabled");
@@ -673,14 +719,19 @@ dcc_build_somewhere(char *argv[],
             discrepancy_filename);
     }
 
+    if (cpu_lock_fd != -1) {
+        dcc_unlock(cpu_lock_fd);
+        cpu_lock_fd = -1; /* Not really needed, just for consistency. */
+    }
+
   clean_up:
     dcc_free_argv(argv);
     if (server_side_argv_deep_copied) {
-      if (server_side_argv != NULL) {
-        dcc_free_argv(server_side_argv);
-      }
+        if (server_side_argv != NULL) {
+          dcc_free_argv(server_side_argv);
+        }
     } else {
-      free(server_side_argv);
+        free(server_side_argv);
     }
     free(discrepancy_filename);
     return ret;
