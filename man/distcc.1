@@ -739,12 +739,6 @@ incompatible versions.  Compiler errors about link problems or
 declarations in system header files are usually due to mismatched or
 incorrectly installed compilers.
 .PP
-Due to limitations in gcc, gdb may not be able to automatically find
-the source files for programs built using distcc in some
-circumstances.  The gdb 
-.B directory
-command can be used.  This should be fixed in gcc 3.4.
-.PP
 gcc's 
 .B -MD 
 option can produce output in the wrong directory if the source and
@@ -773,6 +767,16 @@ parts, but rather runs the whole thing locally.
 .PP
 distcc-pump mode reverts to plain distcc mode for source files that contain 
 includes with absolute paths (either directly or in an included file).
+.PP
+Due to limitations in gcc, gdb may not be able to automatically find
+the source files for programs built using distcc in some
+circumstances.  The gdb 
+.B directory
+command can be used.  For distcc's plain (non-pump) mode, 
+this is fixed in gcc 3.4 and later.  For pump mode, the fix in
+gcc 3.4 does not suffice; we've worked around the gcc limitation
+by rewriting the object files that gcc produces, but this is only
+done for ELF object files, but not for other object file formats.
 .PP
 The .o files produced by discc in pump mode will be different from those produced
 locally: for non-ELF files, the debug information will specify compile
