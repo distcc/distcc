@@ -71,6 +71,23 @@
 #include "exitcode.h"
 #include "snprintf.h"
 
+/* Note that we use the _same_ lock file for
+ * dcc_hostdef_local and dcc_hostdef_local_cpp,
+ * so that they both use the same underlying lock.
+ * This ensures that we respect the limits for
+ * both "localslots" and "localslots_cpp".
+ *
+ * Extreme care with lock ordering is required in order to avoid
+ * deadlocks.  In particular, the following invariants apply:
+ *
+ *  - Each distcc process should hold no more than two locks at a time;
+ *    one local lock, and one remote lock.
+ *
+ *  - When acquring more than one lock, a strict lock ordering discipline
+ *    must be observed: the remote lock must be acquired first, before the
+ *    local lock; and conversely the local lock must be released first,
+ *    before the remote lock.
+ */
 
 struct dcc_hostdef _dcc_local = {
     DCC_MODE_LOCAL,

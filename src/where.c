@@ -83,7 +83,7 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
                         int *cpu_lock_fd);
 
 
-int dcc_pick_host_from_list(struct dcc_hostdef **buildhost,
+int dcc_pick_host_from_list_and_lock_it(struct dcc_hostdef **buildhost,
                             int *cpu_lock_fd)
 {
     struct dcc_hostdef *hostlist;
