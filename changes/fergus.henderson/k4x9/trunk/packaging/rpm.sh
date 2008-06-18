@@ -75,10 +75,10 @@ rpmbuild -bb RedHat/rpm.spec \
   --define "_rpmdir $RPM_SOURCE_DIR"
 
 # Clean out any existing rpms from a previous build.
-rm -f "${PACKAGE}"*.rpm
+rm -f "$PACKAGE"*[-._]"$VERSION"[-._]*.rpm
 
 # We want to get not only the main package but devel etc, hence the middle *
-mv "$RPM_SOURCE_DIR"/*/"${PACKAGE}"-*"${VERSION}"*.rpm .
+mv "$RPM_SOURCE_DIR"/*/"$PACKAGE"-*"$VERSION"*.rpm .
 
 echo
 echo "The rpm package file(s) are located in $PWD:"
