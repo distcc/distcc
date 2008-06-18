@@ -1,0 +1,1 @@
+#include FINCLUDE(foo.h)
