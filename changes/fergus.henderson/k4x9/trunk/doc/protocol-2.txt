@@ -1,0 +1,38 @@
+description of distcc protocol version 2
+Copyright (C) 2003 by Martin Pool
+
+disclaimer
+----------
+
+This document is provided as explanation for people developing or
+debugging distcc.  Discrepancies between this document and the distcc
+code are an error in the document.
+
+This document is intended to describe distcc 2.9.
+
+Because this program and document is licensed free of charge, there is
+no warranty of any kind, to the extent permitted by applicable law.
+
+If anything is unclear, please ask on the mailing list.
+
+
+protocol
+--------
+
+Protocol 2 is a variation of protocol 1.  It gets a new version number
+because that's the simplest way to indicate the change.
+
+The protocol number (DIST) sent by the client is set to 2.  The server
+must respond (DONE) in version 2.
+
+The content of the "bulk" tokens (DOTI, DOTO, SERR, SOUT) are
+compressed using the LZO1X algorithm.
+
+The token parameter gives the length of the compressed form.
+
+As a special case, if the uncompressed form is zero bytes, then it is
+not compressed but rather sent directly as zero bytes.  (Compression
+slightly expands a zero byte string.)
+
+The distcc client and server can handle either protocol 1 or 2
+depending on whether the user configures compression on.
