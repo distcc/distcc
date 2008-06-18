@@ -1,0 +1,36 @@
+This directory (distcc/doc/example) contains example configuration
+files for the distccd service that need to be installed manually when
+distccd is installed via "make install".  For a typical Linux system,
+these files would need to be installed in the following locations:
+
+   /etc/init.d/distcc
+   /etc/logrotate.d/distcc
+   /etc/inetd.d/distcc
+   /etc/defaults/distcc
+   /etc/services              # Just append one line to this file.
+   /etc/hosts.allow           # Just append one line to this file.
+
+The details of how to set up services are quite system-specific, so
+depending on your system you may need to do things differently.
+
+If you install distccd using the RPM or Debian package, appropriate
+versions of those files will be installed automatically, so you don't
+need to install them manually, and you don't need to bother looking at
+the files in this directory (distcc/doc/example).  However, you may need
+to edit the /etc/hosts.allow file.
+
+In addition to the above-mentioned configuration files, you may also
+need to edit the following three files in distcc's sysconf directory
+(/etc/distcc, or /usr/local/etc/distcc, or some other location, depending
+on how your configured distcc).  Example versions of these configuration
+files get installed automatically by "make install" and by the RPM and
+Debian packages.  Two configuration files on the server machines are
+used by the init script for starting distccd:
+
+   /etc/distcc/commands.allow.sh
+   /etc/distcc/clients.allow
+
+One configuration file on the client machine is used by distcc:
+
+   /etc/distcc/hosts
+
