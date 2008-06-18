@@ -93,12 +93,16 @@ def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
     # http://docs.freebsd.org/info/gcc/gcc.info.Environment_Variables.html,
     # or the "Environment Variables Affecting GCC" section of the gcc
     # info page.
+    if 'PATH' in os.environ:
+      trimmed_env = {'PATH': os.environ['PATH']}
+    else:
+      trimmed_env = {}
     p = subprocess.Popen(command,
                          shell=False,
                          stdin=None,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT,
-                         env={'PATH': os.environ['PATH']})
+                         env=trimmed_env)
     out = p.communicate()[0]
   except (IOError, OSError), why:
     raise NotCoveredError (
