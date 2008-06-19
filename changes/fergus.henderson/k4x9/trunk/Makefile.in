@@ -222,6 +222,9 @@ tarball_sig_bz2 = $(tarball_bz2).asc
 tarball_sig_gz = $(tarball_gz).asc
 distnews = $(PACKAGE_TARNAME)-$(VERSION).NEWS
 
+rpm_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.deb
+deb_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.rpm
+
 common_obj = src/arg.o src/argutil.o					\
 	src/cleanup.o src/compress.o					\
 	src/trace.o src/util.o src/io.o src/exec.o			\
@@ -946,10 +949,10 @@ upload-man: $(man_HTML)
 upload-dist: alldist
 	-$(MAKE) upload-man
 	"$(srcdir)/packaging/googlecode_upload.py" \
-	  "$(tarball_gz)" \
-	  "$(tarball_bz2)" \
-	  `find packaging -name "$(PACKAGE)*[-_.]$(VERSION)[-_.]*.rpm" \
-	               -o -name "$(PACKAGE)*[-_.]$(VERSION)[-_.]*.deb"`
+	    "$(tarball_gz)" \
+	    "$(tarball_bz2)" \
+	    packaging/$(rpm_glob_pattern) \
+	    packaging/$(deb_glob_pattern)
 
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
 	cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
@@ -963,15 +966,15 @@ install-deb: deb
 	tmpdir=`mktemp -d /tmp/distcc-install-deb-XXXXXX` && \
 	cp packaging/*.deb $$tmpdir && \
 	cd "$$tmpdir" && \
-	sudo dpkg -i "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.deb && \
+	sudo dpkg -i $(deb_glob_pattern) && \
 	rm -rf $$tmpdir
 
 # deb creates rpm files first, which in turn creates .gz files
 alldist: deb
 	@echo dist files created:
 	@ls -1 "$(tarball_gz)" "$(tarball_bz2)"
-	@ls -1 packaging/$(PACKAGE)*[-_.]"$(VERSION)"[-_.]*.rpm
-	@ls -1 packaging/$(PACKAGE)*[-_.]"$(VERSION)"[-_.]*.deb
+	@ls -1 packaging/$(rpm_glob_pattern)
+	@ls -1 packaging/$(deb_glob_pattern)
 
 ### INSTALL (and UNINSTALL) targets
 
