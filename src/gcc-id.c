@@ -1,6 +1,6 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
- * Copyright 2005 Google Inc.
+ * Copyright (C) 2007 Lennart Poettering
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
