@@ -1,7 +1,138 @@
-## These changes were made internally to Google, and not integrated
+## distcc 3.0rc2.
+
+2008-06-19 22:25  Fergus Henderson <opensource@google.com>
+
+	* src/gcc-id.c, src/zeroconf-reg.c, src/zeroconf.c:
+	  
+	  Add "Copyright (C) 2007 Lennart Poettering" to zeroconf.c,
+	  zeroconf-reg.c,
+	  and gcc-id.c. Remove Google copyright notice from src/gcc-id.c, since
+	  the Google changes to that file were very minor.
+
+2008-06-19 20:55  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, packaging/deb.sh, packaging/rpm.sh:
+	  
+	  Change the deb.sh and rpm.sh scripts to remove old .deb or .rpm
+	  files (for the same package and version) before generating the new
+	  ones.
+	  Similarly change "make install-deb" and "make upload-dist" so that
+	  they are more selective in which files they install.
+	  
+	  This fixes a bug where "make install-deb" tried to install the wrong
+	  .deb files, because it just did "rpm -i *.deb", and there can be old
+	  .deb files lying around. It also fixes a similar problem in "make
+	  upload-dist".
+	  
+	  Also, add a "tags" target to the Makefile.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-06-18 03:30  Fergus Henderson <opensource@google.com>
+
+	* include_server/compiler_defaults.py:
+	  
+	  Fix bug where the include server would crash if the PATH environment
+	  variable wasn't set.
+
+2008-06-18 02:23  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/conf/clients.allow:
+	  
+	  Fix a missing word in a comment.
+
+2008-06-17 20:26  Fergus Henderson <opensource@google.com>
+
+	* src/compile.c, src/lock.c, src/remote.c, src/where.c, src/where.h:
+	  
+	  Fix for a deadlock bug
+	  <http://code.google.com/p/distcc/issues/detail?id=1>
+	  that I observed (once!) when compiling the Linux kernel in pump mode:
+	  
+	  - Ensure that locks are acquired in the reverse order that they will
+	  be released: acquire remote lock before local lock.
+	  - Ensure that locks are released on all fallback paths.
+	  - Rename dcc_pick_host_from_list() as
+	  dcc_pick_host_from_list_and_lock_it(),
+	  so that its locking effect is clearer.
+	  - Document the lock ordering invariants.
+	  - Document the unlocking behaviour of dcc_compile_remote().
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund
+
+2008-06-17 18:32  Fergus Henderson <opensource@google.com>
+
+	* man/distcc.1:
+	  
+	  Document the limitations of pump mode w.r.t. debugging on
+	  systems with non-ELF object files.
+	  
+	  Reviewers: Craig Silverstein, Nils Klarlund
+
+2008-06-11 16:10  Fergus Henderson <opensource@google.com>
+
+	* src/arg.c:
+	  
+	  Apply patch from Maks Verver which fixes a bug where distcc
+	  was not doing the right thing when invoked with "-march=native"
+	  or "mtune=native".
+	  
+	  This fixes <https://bugs.edge.launchpad.net/distcc/+bug/188813>.
+
+2008-06-10 21:21  Fergus Henderson <opensource@google.com>
+
+	* doc/web/faq.html:
+	  
+	  Document the use of ssh connection sharing.
+
+2008-06-10 05:51  Craig Silverstein <opensource@google.com>
+
+	* pump.in:
+	  
+	  When I moved the envvar declarations to inside the 'eval', I had to
+	  quote them to protect them from the extra level of evaluation, but I
+	  had failed to do this. This change makes it so I do.
+	  
+	  Tested by running 'make pump-maintainer-check on linux (ubuntu).
+	  
+	  Detected and reviewed by fergus
+
+## distcc 3.0rc1.
+
+## The following changes were made internally to Google, and not integrated
 ## into the main distcc distribution until 2008.  The dates here are
 ## the dates they were applied to the internal-Google branch, and
 ## interleave with the changes to the main branch, below.
+
+2008-06-10 02:20  Nils Klarlund <opensource@google.com>
+
+	* doc/web/benchmark.html:
+	  
+	  Improve wording and accuracy of claims.
+	  
+	  Just various relatively minor suggestions. I didn't understand the
+	  remarks
+	  about the importance of having 'beefier' remote machines (their raw
+	  CPU power
+	  are not different although RAM and number of CPUs per machine differ),
+	  so I took
+	  them out. Instead, a made a separate point about what would have
+	  happened if
+	  we'd used multiple-CPU clients. I put in a reference to our gws:gws
+	  benchmark,
+	  which drove our work.
+	  
+	  Also,
+	  
+	  -- Add side point about possible configurations issues and link to man
+	  pages.
+	  
+	  -- The number 'four' (for # of hello compilations) was obtained by
+	  inspection of
+	  the distcc log.
+	  
+	  
+	  Review: csilvers and fergus (at Google).
 
 2008-06-10 00:52  Craig Silverstein <opensource@google.com>
 

@@ -1,4 +1,13 @@
-distcc-3.0 "My prices are insane."   2008-06-02
+distcc-3.0rc2 "Anti-aliasing."   2008-06-19
+
+  BUG FIXES
+
+   * Fallback to local compilation for "-march=native" or "mtune=native"
+     (Maks Verver).
+
+   * Fix for deadlock in pump mode.
+
+distcc-3.0rc1 "My prices are insane."   2008-06-09
 
   FEATURES:
 
@@ -18,6 +27,10 @@ distcc-3.0 "My prices are insane."   2008-06-02
    * Improved checking for errors on socket connection.  Patch 
      from Dan Kegel.
 
+   * Fallback to local compilation for "-march=native" or "mtune=native"
+     (Maks Verver).
+
+
   PORTABILITY:	
 
    * "Pump" code tested under Linux only.  Processing of object code
@@ -35,9 +48,15 @@ distcc-3.0 "My prices are insane."   2008-06-02
 
    * Execute compiler with correctly redirected output using win32 apis on
      Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
-   
+
    * Make distccmon-gnome link properly with gnu ld's new --as-needed 
      flag.  (Ben Skeggs, Lisa Seelye)
+
+  OTHER CHANGES:
+
+   * New web site: <http://distcc.googlecode.com>.
+   * New repository: <http://distcc.googlecode.com/svn/trunk/>.
+   * New maintainer: Fergus Henderson.
 
 
 distcc-2.18.3  "Porsche safari"  2004-11-30
