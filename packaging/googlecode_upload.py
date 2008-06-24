@@ -98,7 +98,11 @@ def derive_summary_and_labels(file_path, package, version):
   if file_path.find('distcc-server') != -1:
     project = 'Distcc server (distccd)'
   elif file_path.find('distcc') != -1:
-    project = 'Distcc client (distcc)'
+    if file_path.find('.tar') != -1:
+      # The source distribution has both client and server
+      project = 'Distcc (both client and server)'
+    else:
+      project = 'Distcc client (distcc)'
   else:
     raise ValueError("Unknown project name for '%s'" % file_path)
 
