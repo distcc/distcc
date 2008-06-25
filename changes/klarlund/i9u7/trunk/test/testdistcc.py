@@ -244,15 +244,13 @@ class SimpleDistCC_Case(comfychair.TestCase):
 
     def stripEnvironment(self):
         """Remove all DISTCC variables except DISTCC_FALLBACK from the
-        environment, so that the test is not affected by the development
-        environment.
+        environment so that the test is not affected by these variables.
 
         If DISTCC_FALLBACK is set to 0, then remote errors will result
-        in a printout from the remote compilation -- that may be helpful. Some
-        tests will not succeed, however, so DISTCC_FALLBACK=0 is for debugging
-        purposes only.
+        in a printout from the remote compilation -- that may be helpful for
+        researching a problem. Some tests will not succeed, however, so
+        DISTCC_FALLBACK=0 is for debugging purposes only.
         """
-
         for key in os.environ.keys():
             if key[:7] == 'DISTCC_' and key != 'DISTCC_FALLBACK':
                 # NOTE: This only works properly on Python 2.2: on
@@ -1718,7 +1716,6 @@ class BadLogFile_Case(SimpleDistCC_Case):
     def runtest(self):
         self.runcmd("touch distcc.log")
         self.runcmd("chmod 0 distcc.log")
-        print 'xxxx', os.getenv('DISTCC_HOSTS', 0)
         msgs, errs = self.runcmd("DISTCC_LOG=distcc.log " + \
                                  self.distcc() + \
                                  _gcc + " -c foo.c", expectedResult=1)
