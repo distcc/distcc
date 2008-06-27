@@ -27,9 +27,6 @@ distcc-3.0rc1 "My prices are insane."   2008-06-09
    * Improved checking for errors on socket connection.  Patch 
      from Dan Kegel.
 
-   * Fallback to local compilation for "-march=native" or "mtune=native"
-     (Maks Verver).
-
 
   PORTABILITY:	
 
