@@ -32,8 +32,8 @@ Debug = basics.Debug
 DEBUG_TRACE = basics.DEBUG_TRACE
 NotCoveredError = basics.NotCoveredError
 
-# TODO(klarlund): Make mechanism for handling -D, -U, -undef options, along
-# with default symbols.
+# TODO(klarlund): Make mechanism for handling -U, -undef options, along with
+# default symbols.
 
 class ParseState:
   """Everything we figure out during parsing.  This is accessed a lot and
@@ -468,5 +468,5 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
                                     (quote_dirs, angle_dirs, include_files,
                                      source_file, source_file_prefix,
                                      parse_state.Dopts)))
-  return (quote_dirs, angle_dirs, include_files, source_file, 
-          source_file_prefix, parse_state.Dopts)
+  return (quote_dirs, angle_dirs, include_files, source_file, source_file_prefix, 
+          parse_state.Dopts)
