@@ -1018,7 +1018,7 @@ install-programs: $(bin_PROGRAMS)
 # --record output and modify the installed pump to have that location.
 # Note: --record output is inconsistent (buggy?) and sometimes leaves out
 # the leading slash in $prefix, even though we require prefix start with
-# a slash.  We use set to add it back in at cp time.
+# a slash.  We use sed to add it back in at cp time.
 # Also, on Cygwin the --record output is in DOS text file format (CR LF
 # line endings), so we need to convert it from DOS text file format to
 # Unix text file format (LF line endings); we use sed for that too.
