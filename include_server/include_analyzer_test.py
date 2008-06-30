@@ -71,8 +71,6 @@ class IncludeAnalyzerTest(unittest.TestCase):
           cwd,
           self.include_analyzer.includepath_map,
           self.include_analyzer.directory_map,
-          self.include_analyzer.realpath_map,
-          self.include_analyzer.systemdir_prefix_cache,
           self.include_analyzer.compiler_defaults)))
 
   def CanonicalPathsForTestData(self, dirs, test_data_dir='test_data'):
