@@ -129,6 +129,13 @@ GetScriptDir() {
   fi
 }
 
+# Constants used by this process.
+
+# TODO(klarlund) This value must be the same as that in src/compile.c. See
+# comment there.
+max_discrepancies_before_demotion=1
+
+
 # Variables inherited from the environment of the caller.
 if [ -z "$DISTCC_LOCATION" ]; then
    # Set the default for location of 'pump' script'.
@@ -268,16 +275,15 @@ StartIncludeServer() {
     #
     # which will pass '*' to the include server (that is, the string consisting
     # of one asterisk) without filename expansion.
-    PYTHONOPTIMIZE=$PYTHONOPTIMIZE \
-    PYTHONPATH="$pythonpath::$PYTHONPATH" \
-    eval "'$PYTHON'"                   \
-        "'$include_server'"            \
-        --port "'$socket'"             \
-        --pid_file "'$tmp_pid_file'"   \
-        --email                        \
-        --email_bound=5                \
-        -d1                            \
-        $INCLUDE_SERVER_ARGS
+    eval \
+      "PYTHONOPTIMIZE='$PYTHONOPTIMIZE' " \
+      "PYTHONPATH='$pythonpath::$PYTHONPATH' " \
+      "'$PYTHON'"                       \
+         "'$include_server'"            \
+         --port "'$socket'"             \
+         --pid_file "'$tmp_pid_file'"   \
+         -d1                            \
+         $INCLUDE_SERVER_ARGS
   )
 
   # solaris sh's built-in test does not support -S, so we need to use
@@ -312,20 +318,24 @@ StartIncludeServer() {
   fi
 }
 
-Critique() {
+ReportDiscrepancies() {
   # The discrepancy_counter file is created when a pump-mode distcc invocation
   # failed remotely but succeeded locally.
-  if [ -f $socket_dir/discrepancy_counter ]; then
+  num_discrepancies=`(cat $socket_dir/discrepancy_counter 2>/dev/null | wc -c \
+                      || echo 0)`
+  if [ $num_discrepancies -ge $max_discrepancies_before_demotion ]; then
     echo -n '__________Warning: ' 1>&2
-    echo -n `cat $socket_dir/discrepancy_counter | wc -c`' '  1>&2
+    echo -n "$num_discrepancies " 1>&2
     echo -n 'pump-mode compilation(s) failed on server, '  1>&2
     echo    'but succeeded locally.' 1>&2
-    echo    '__________See pump.1 manual page.' 1>&2
+    echo -n '__________Distcc-pump was demoted to plain mode.' 1>&2
+    echo -n '  See the Distcc Discrepancy Symptoms section in the ' 1>&2
+    echo    'include_server(1) man page.' 1>&2
   fi
 }
 
 ShutDown() {
-  Critique
+  ReportDiscrepancies
   # Always -- at exit -- shut down include_server and remove $socket_dir
   if [ -n "$include_server_pid" ] && \
     ps -p "$include_server_pid" > /dev/null; then

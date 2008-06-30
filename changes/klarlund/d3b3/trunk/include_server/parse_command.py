@@ -468,5 +468,6 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
                                     (quote_dirs, angle_dirs, include_files,
                                      source_file, source_file_prefix,
                                      parse_state.Dopts)))
-  return (quote_dirs, angle_dirs, include_files,
-          source_file, source_file_prefix, parse_state.Dopts)
+
+  return (quote_dirs, angle_dirs, include_files, source_file,
+          source_file_prefix, parse_state.Dopts)

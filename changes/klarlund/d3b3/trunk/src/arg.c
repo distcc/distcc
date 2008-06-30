@@ -178,6 +178,14 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                     to distribute it even if we could. */
                 rs_trace("%s implies -E (maybe) and must be local", a);
                 return EXIT_DISTCC_FAILED;
+            } else if (!strcmp(a, "-march=native")) {
+                rs_trace("-march=native generates code for local machine; "
+                         "must be local");
+                return EXIT_DISTCC_FAILED;
+            } else if (!strcmp(a, "-mtune=native")) {
+                rs_trace("-mtune=native optimizes for local machine; "
+                         "must be local");
+                return EXIT_DISTCC_FAILED;
             } else if (str_startswith("-Wa,", a)) {
                 /* Look for assembler options that would produce output
                  * files and must be local.

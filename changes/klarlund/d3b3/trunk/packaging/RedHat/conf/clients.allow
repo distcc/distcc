@@ -17,7 +17,7 @@
 # You should only allow trusted hosts to connect to distccd in TCP mode.
 # You should assume that any user on the trusted hosts can (with some
 # effort) run arbitrary commands as the distcc user on the distccd host.
-# If this is not acceptible, then you leave this config file empty
+# If this is not acceptible, then you should leave this config file empty
 # (apart from comments) and thus only allow SSH mode rather than TCP mode.
 # However, be aware that SSH mode has poorer performance than TCP mode.
 

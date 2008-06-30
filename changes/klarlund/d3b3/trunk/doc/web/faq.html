@@ -552,39 +552,44 @@ Brian Mosher reports that
 
 
 
-<h3>Use fsh for holding SSH connections?</h3>
+<h3>How can I use SSH connection multiplexing?</h3>
 
 <p>
 <blockquote>
-Could you use <a href="http://www.lysator.liu.se/fsh/">fsh</a>
-to reduce the overhead of opening SSH connections?
+Can I use ssh connection sharing to reduce the overhead of opening SSH connections?
 </blockquote>
 <p>
-   Yes, in principle you can do that by settings <tt>DISTCC_SSH=fsh</tt>.
+Yes.  Using SSH connection sharing can reduce the overhead of establishing SSH connections by a factor of 10.
 <p>
-   In practice this seems not to work very well.  The main reason
-   seems to be that the fsh client is written in Python, and the CPU
-   usage for Python to start up very high compared to other things
-   done by distcc.
-<p>
-   The typical use of fsh is for connecting to a distant server for
-   something like CVS.  In this case it does very well, because
-   network roundtrips, not CPU usage, are the critical factor.  
-<p>
-   You wouldn't want to use distcc over an intercontinental network.
-   On local networks the round trips are not trivial but they are
-   relatively small compared to CPU usage.
-<p>
-   So to make this work well, somebody either needs to rewrite the
-   short-lived part of fsh in C, or write a replacement in C.  I think
-   the SSH2 protocol in fact allows for this to be done natively, so
-   you could also hack OpenSSH to allow adding new channels within an
-   existing connection.
-<p>
-   <a href="http://www.harding.motd.ca/autossh/">autossh</a> might be
-   useful instead.  It can't be used as an ssh replacement by distcc,
-   but it can forward ports.
+Make sure you have a recent SSH (only on client side).  I think you need OpenSSH 4 or later.
+<pre>
+  $ ssh -V
+  OpenSSH_4.6p1 Debian-5ubuntu0.1, OpenSSL 0.9.8e 23 Feb 2007
+</pre>
 
+<p>
+Create a file <code>~/.ssh/config</code>, and add this:
+<pre>
+  Host *
+  ControlMaster auto
+  ControlPath ~/.ssh_tmp/master-%r@%h:%p
+</pre>
+
+<p>
+Then create the master SSH connection:
+<pre>
+  ssh -fMN <var>hostname</var>
+</pre>
+
+<p>
+Subsequent connections to that host will now fly!
+
+<p>
+For best results, create master SSH connections for each host in your distcc host list.
+
+<p>
+For more information on ssh connection sharing,
+see <a href="http://www.linux.com/feature/54498">here</a>.
 
  <h3>Will compiling with distcc magically make my program distributed?</h3>
 <p>

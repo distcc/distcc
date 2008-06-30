@@ -22,8 +22,8 @@
  */
 
 /* where.c */
-int dcc_pick_host_from_list(struct dcc_hostdef **,
-                            int *cpu_lock_fd);
+int dcc_pick_host_from_list_and_lock_it(struct dcc_hostdef **,
+                                        int *cpu_lock_fd);
 
 int dcc_lock_local(int *cpu_lock_fd);
 

@@ -24,7 +24,7 @@ if [ -z "$so_files" ]; then
   echo \
     '__________Could not find shared libraries for distcc-pump' 1>&2
   exit 1
-elif echo "$so_files" | grep ' ' >/dev/null; then
+elif [ `echo "$so_files" | wc -l` -ge 2 ]; then
   echo \
     '__________Shared libraries for multiple architectures discovered.' \
     1>&2
