@@ -56,7 +56,6 @@ class ParseState:
     self.output_file = None
     self.iprefix = ""
     self.Dopts = []
-    self.send_systemdirs = False
 
   def set_nostdinc(self): self.nostdinc = True
   def set_language(self, x): self.language = x
@@ -64,16 +63,6 @@ class ParseState:
   def set_sysroot(self, x): self.sysroot = x
   def set_outputfile(self, x): self.output_file = x
   def set_iprefix(self, x): self.iprefix = x
-  
-  def _ProcessIsystem(self, arg):
-    """Investigate whether to turn send_systemdirs on."""
-    if arg.startswith('/'):
-      # Determine whether this is an include of a default system directory of the
-      # compiler (or a subdirectory thereof).
-      realpath_idx = self.realpath_map.Index(os.path.realpath(arg))
-      self.send_systemdirs |= self.systemdir_prefix_cache.StartsWithSystemdir(
-          realpath_idx, self.realpath_map)
-
 
 def _SplitMacroArg(arg):
   """Split an arg as found in -Darg
@@ -314,8 +303,8 @@ TRANSLATION_UNIT_FILEPATH_RE = (
                        for ext in basics.TRANSLATION_UNIT_MAP.keys()])))
 
 
-def ParseCommandArgs(args, current_dir, includepath_map, dir_map, realpath_map,
-                     systemdir_prefix_cache, compiler_defaults, timer=None):
+def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
+                     compiler_defaults, timer=None):
   """Parse arguments like -I to make include directory lists.
 
   Arguments:
@@ -323,8 +312,6 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map, realpath_map,
     current_dir: string
     includepath_map: a MapToIndex object
     dir_map: a DirectoryMapToIndex object
-    realpath_map:  a CanonicalMapToIndex cache
-    systemdir_prefix_cache: a SystemdirPrefixCache
     compiler_defaults: a CompilerDefaults object
     timer: a basics.IncludeAnalyzerTimer object
   Returns:
@@ -335,26 +322,15 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map, realpath_map,
       files: a list of includepath_map-indexed files
       source_file_prefix: the source file name with extension stripped
       dopts: a list of items as returned by _SplitMacroArg
-      send_systemdirs: a boolean, true only in exceptional cases
   Modifies:
     compiler_defaults
-
-  The send_systemdirs boolean is normally false.  It is true if there is a
-  -isystem option with a default system directory (one known to the compiler).
-  With send_systemdirs true, the compiler headers of system headers are sent to
-  the servers and mounted under the server root.  The isystem option is as usual
-  rewritten to be relative to the root.  Without this flag setting, distcc
-  quickly decides that pump mode is not viable because remote compilations fail.
   """
   if __debug__: Debug(DEBUG_TRACE, "ParseCommand %s" % args)
 
   assert isinstance(dir_map, cache_basics.DirectoryMapToIndex)
   assert isinstance(includepath_map, cache_basics.MapToIndex)
-  assert isinstance(realpath_map, cache_basics.CanonicalMapToIndex)
 
   parse_state = ParseState()
-  parse_state.realpath_map = realpath_map
-  parse_state.systemdir_prefix_cache = systemdir_prefix_cache
 
   if len(args) < 2:
     raise NotCoveredError("Command line: too few arguments.")
@@ -488,14 +464,9 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map, realpath_map,
                              ignore_absolute_path_warning=True)
        for f in parse_state.include_files])
 
-  # Send default system dirs?
-  for isystem_dir in parse_state.before_system_dirs:
-    parse_state._ProcessIsystem(isystem_dir)
-
   if __debug__: Debug(DEBUG_TRACE, ("ParseCommand result: %s %s %s %s %s %s" % 
                                     (quote_dirs, angle_dirs, include_files,
                                      source_file, source_file_prefix,
                                      parse_state.Dopts)))
-
-  return (quote_dirs, angle_dirs, include_files, source_file, 
-          source_file_prefix, parse_state.Dopts, parse_state.send_systemdirs)
+  return (quote_dirs, angle_dirs, include_files, source_file, source_file_prefix, 
+          parse_state.Dopts)
