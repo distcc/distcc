@@ -1018,7 +1018,10 @@ install-programs: $(bin_PROGRAMS)
 # --record output and modify the installed pump to have that location.
 # Note: --record output is inconsistent (buggy?) and sometimes leaves out
 # the leading slash in $prefix, even though we require prefix start with
-# a slash.  We add it back in at cp time.
+# a slash.  We use sed to add it back in at cp time.
+# Also, on Cygwin the --record output is in DOS text file format (CR LF
+# line endings), so we need to convert it from DOS text file format to
+# Unix text file format (LF line endings); we use sed for that too.
 install-include-server: include-server pump
 	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
@@ -1037,7 +1040,10 @@ install-include-server: include-server pump
 	         --record="$(include_server_builddir)/install.log.pre" \
 	         --root="$$DESTDIR"                     \
 	    || exit 1; \
-	  sed '/^[^\/]/ s,^,/,' "$(include_server_builddir)/install.log.pre" > "$(include_server_builddir)/install.log"; \
+	  sed -e '/^[^\/]/ s,^,/,' \
+	      -e 's/\r$$//' \
+	      "$(include_server_builddir)/install.log.pre" \
+	      > "$(include_server_builddir)/install.log"; \
 	  if test -n "$(PYTHON_INSTALL_RECORD)"; then \
 	    cp -f "$(include_server_builddir)/install.log" "$(PYTHON_INSTALL_RECORD)"; \
 	  fi; \
