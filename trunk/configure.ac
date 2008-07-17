@@ -436,20 +436,25 @@ AC_CHECK_MEMBER([struct sockaddr_storage.ss_family],
     AC_DEFINE(HAVE_SOCKADDR_STORAGE, 1, [define if you have struct sockaddr_storage]),,
     [#include <sys/socket.h>])
 
+AC_ARG_WITH(avahi,
+        AC_HELP_STRING([--without-avahi], [build without avahi]))
+
 dnl check for avahi
-PKG_CHECK_MODULES(AVAHI, [avahi-client >= 0.6],
-[AC_DEFINE(HAVE_AVAHI, 1, [defined if Avahi is available])
-CFLAGS="$CFLAGS $AVAHI_CFLAGS"
-LIBS="$LIBS $AVAHI_LIBS"
-ZEROCONF_COMMON_OBJS="src/zeroconf.o src/gcc-id.o"
-ZEROCONF_DISTCC_OBJS=""
-ZEROCONF_DISTCCD_OBJS="src/zeroconf-reg.o"],
-[ZEROCONF_COMMON_OBJS=""
-ZEROCONF_DISTCC_OBJS=""
-ZEROCONF_DISTCCD_OBJS=""])
-AC_SUBST(ZEROCONF_COMMON_OBJS)
-AC_SUBST(ZEROCONF_DISTCC_OBJS)
-AC_SUBST(ZEROCONF_DISTCCD_OBJS)
+if test x"$with_avahi" != xno; then
+    PKG_CHECK_MODULES(AVAHI, [avahi-client >= 0.6],
+    [AC_DEFINE(HAVE_AVAHI, 1, [defined if Avahi is available])
+    CFLAGS="$CFLAGS $AVAHI_CFLAGS"
+    LIBS="$LIBS $AVAHI_LIBS"
+    ZEROCONF_COMMON_OBJS="src/zeroconf.o src/gcc-id.o"
+    ZEROCONF_DISTCC_OBJS=""
+    ZEROCONF_DISTCCD_OBJS="src/zeroconf-reg.o"],
+    [ZEROCONF_COMMON_OBJS=""
+    ZEROCONF_DISTCC_OBJS=""
+    ZEROCONF_DISTCCD_OBJS=""])
+    AC_SUBST(ZEROCONF_COMMON_OBJS)
+    AC_SUBST(ZEROCONF_DISTCC_OBJS)
+    AC_SUBST(ZEROCONF_DISTCCD_OBJS)
+fi
 
 ACX_PTHREAD
 LIBS="$PTHREAD_LIBS $LIBS"
