@@ -809,7 +809,8 @@ class SetUpCaches(object):
     dirname_cache: DirnameCache
     simple_build_stat: SimpleBuildStat
 
-    client_root: string (used during default system dir determination)
+    client_root: a path such as /dev/shm/tmpX.include_server-X-1
+                 (used during default system dir determination)
 
     IsFilepathIndex: test for filepath index
     IsDirectoryIndex: test for director index

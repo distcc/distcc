@@ -51,6 +51,8 @@ class MirrorPath(object):
     Arguments:
       simple_build_stat: object of type SimpleBuildStat
       canonical_path: function of type CanonicalPath
+      realpath_map: a CanonicalMapToIndex; see cache_basics.py
+      systemdir_prefix_cache: a SystemdirPrefixCache; see cache_basics.py.
     """
     assert isinstance(simple_build_stat, cache_basics.SimpleBuildStat)
     assert isinstance(canonical_path, cache_basics.CanonicalPath)
@@ -94,10 +96,10 @@ class MirrorPath(object):
     # destinations exist, and replicate symbolic links where necessary.
     while filepath and filepath != '/':
       if (filepath, current_dir_idx) in link_stat:
-	# Filepath is already mirrored
-	return
+        # Filepath is already mirrored
+        return
       link_stat.add((filepath, current_dir_idx))
-      
+
       # Process suffix of filepath by
       # - making sure that the mirrored real path of the prefix exists,
       # - and that the suffix if a symbolic link
@@ -117,10 +119,11 @@ class MirrorPath(object):
       # Make sure that the parent, root_prefix_real, is there
       if not lookup(root_prefix_real):
         # We have not been in this real location before.
-	if not os.path.isdir(root_prefix_real):
+        if not os.path.isdir(root_prefix_real):
           # Now check that the parent of the link is not under a default system
-          # dir.  If it is, then we assume the that the parent and indeed the
-          # link itself exists on the server as well.
+          # dir.  If it is, then we assume that the parent and indeed the
+          # link itself exist on the server as well, and thus, don't need to
+          # be mirrored.
           realpath_map = self.realpath_map
           realpath_idx = realpath_map.Index(prefix_real)
           if not self.systemdir_prefix_cache.StartsWithSystemdir(realpath_idx,

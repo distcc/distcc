@@ -151,7 +151,12 @@ class ClientRootKeeper(object):
 
 # COMPILATION SERVER
 
-MAX_COMPONENTS_IN_SERVER_ROOT = 5
+# An upper bound on the number of directory components in the temporary
+# directory on the distccd server that corresponds to the root directory
+# on the client machine.  Normally the server root is /tmp/distccd_XXXXXX.
+# But it could be something different if TMPDIR is set when distccd is
+# started.  See dcc_get_tmp_top() in ../src/tempfile.c.
+MAX_COMPONENTS_IN_SERVER_ROOT = 10
 
 # EMAILS
 

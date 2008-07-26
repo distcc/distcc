@@ -87,10 +87,6 @@ class IncludeAnalyzer(object):
     # A fast cache for avoiding calls into the mirror_path object.
     self.mirrored = set([])
 
-    # The links to be created on the server to force system default directories
-    # (those on the compiler's default search path) to be handled correctly.
-    self.system_links = []
-
     # For statistics only. We measure the different search lists
     # (search paths) by accumulating them all in sets.
     self.quote_dirs_set = set([]) # quote search lists
@@ -237,17 +233,6 @@ class IncludeAnalyzer(object):
   def DoCompilationCommand(self, cmd, currdir, client_root_keeper):
     """Parse and and process the command; then gather files and links."""
     
-    def ForceDirectoriesToExist():
-      must_exist_dirs = self.mirror_path.MustExistDirs()
-      random_name = 'forcing_technique_271828'
-      forcing_files = [d + '/' + random_name
-                       for d in must_exist_dirs]
-      for forcing_file in forcing_files:
-        # If for extremly obscure reasons the file already exists and is useful,
-        # then don't change it.
-        open(forcing_file, "a").close()
-      return forcing_files
-      
     self.translation_unit = "unknown translation unit"  # don't know yet 
 
     # Any relative paths in the globs in the --stat_reset_trigger argument
@@ -286,7 +271,7 @@ class IncludeAnalyzer(object):
     links = self.compiler_defaults.system_links + self.mirror_path.Links()
     files = self.compress_files.Compress(include_closure, client_root_keeper)
 
-    forcing_files = ForceDirectoriesToExist()
+    forcing_files = _ForceDirectoriesToExist()
 
     files_and_links = files + links + forcing_files
 
@@ -312,6 +297,30 @@ class IncludeAnalyzer(object):
                         self.result_file_prefix + '.d_approx',
                         realpath_map)
     return files_and_links
+
+  def _ForceDirectoriesToExist():
+    """ Force any needed directories to exist.
+
+    In rare cases, the source files may contain #include "foo/../bar",
+    but may not contain any other files from the "foo" directory.
+    In such cases, we invent a dummy file in (the mirrored copy of)
+    each such directory, just to force the distccd server to create the
+    directory, so that the C compiler won't get an error when it tries
+    to resolve that #include.
+
+    Returns:
+      A list of files to pass as dummy inputs.
+    """
+
+    must_exist_dirs = self.mirror_path.MustExistDirs()
+    random_name = 'forcing_technique_271828'
+    forcing_files = [d + '/' + random_name
+                     for d in must_exist_dirs]
+    for forcing_file in forcing_files:
+      # If for extremly obscure reasons the file already exists and is useful,
+      # then don't change it: that's why we open in "append" mode.
+      open(forcing_file, "a").close()
+    return forcing_files
 
   def RunAlgorithm(self, filepath_resolved_pair, filepath_real_idx):
     """Run FindNode on filepath; then compute include closure.

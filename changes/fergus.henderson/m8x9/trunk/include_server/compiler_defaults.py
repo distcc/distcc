@@ -50,16 +50,17 @@ NotCoveredError = basics.NotCoveredError
 
   
 def _RealPrefix(path):
-  """Determine the longest real prefix and whether its extension is a link."
+  """Determine longest directory prefix and whether path contains a symlink.
+
+  Given an absolute path PATH, figure out the longest prefix of PATH where
+  every component of the prefix is a directory -- not a file or symlink.
 
   Args:
     path: a string starting with '/'
   Returns:
-    a pair consisting of:
-    - a list of directory components of path, corresponding to a prefix that is a
-      a file and directory that really exists (that is symlinks don't count), and
-    - a Boolean that is true if this prefix is not path and its extension by 
-      the next directory of path is a symlink.
+    a pair consisting of
+    - the prefix
+    - a bool, which is True iff PATH contained a symlink.
   """
   prefix = "/"
   parts = path.split('/')
@@ -77,6 +78,8 @@ def _RealPrefix(path):
 def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
   """Create a link under client root what will resolve to system dir on server.
 
+  See comments for CompilerDefaults class for rationale.
+
   Args:
     system_dir: a path such as /usr/include or
                 /usr/lib/gcc/i486-linux-gnu/4.0.3/include
@@ -84,10 +87,11 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
     system_links: a list of paths under client_root; each denotes a symlink
 
   The link is created only if necessary. So,
-    /usr/lib/gcc/i486-linux-gnu/4.0.3/include
+    /usr/include/gcc/i486-linux-gnu/4.0.3/include
   is not created if
     /usr/include
-  is already in place.  """
+  is already in place, since it's a prefix of the longer path.
+  """
   if not system_dir.startswith('/'):
     raise ValueError("Expected absolute path, but got '%s'." % system_dir)
   if not os.path.realpath(system_dir) == system_dir:
@@ -95,42 +99,42 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
         "Default compiler search path '%s' must be a realpath." %s)
   rooted_system_dir = client_root + system_dir
   # Typical values for rooted_system_dir:
-  #
   #  /dev/shm/tmpX.include_server-X-1/usr/include
-  make_link = False
   real_prefix, is_link = _RealPrefix(rooted_system_dir)
   parent = os.path.dirname(rooted_system_dir)
   if real_prefix == rooted_system_dir:
     # rooted_system_dir already exists as a real path. Make rooted_system_dir a
     # link.
     shutil.rmtree(rooted_system_dir)
-    make_link = True
   elif real_prefix == parent:
     # The really constructed path does not extend beoynd the parent directory,
     # so we're all set to create the link if it's not already there.
     if os.path.exists(rooted_system_dir):
       assert os.path.islink(rooted_system_dir)
-    else:
-      make_link = True
+      return
   elif not is_link:
     os.makedirs(parent)
-    make_link = True
   else:
     # A link above real_prefix has already been created with this routine.
-    pass
-  if make_link:
-    assert _RealPrefix(parent) == (parent, False), parent
-    depth = len([c for c in system_dir if c == '/'])
-    # The more directories on the path system_dir, the more '../' need to
-    # appended. We add 
-    os.symlink('../' * (basics.MAX_COMPONENTS_IN_SERVER_ROOT + depth + 3)
-               + system_dir[1:],  # remove leading '/'
-               rooted_system_dir)
-    system_links.append(rooted_system_dir)
+    return
+  assert _RealPrefix(parent) == (parent, False), parent
+  depth = len([c for c in system_dir if c == '/'])
+  # The more directories on the path system_dir, the more '../' need to
+  # appended. We add enough '../' to get to the root directory. It's OK
+  # if we have too many, since '..' in the root directory points back to
+  # the root directory.
+  # TODO(klarlund,fergus): do this in a more principled way.
+  # This probably requires changing the protocol.
+  os.symlink('../' * (basics.MAX_COMPONENTS_IN_SERVER_ROOT + depth)
+             + system_dir[1:],  # remove leading '/'
+             rooted_system_dir)
+  system_links.append(rooted_system_dir)
 
 
 def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
   """Run gcc on empty file; parse output to figure out default paths.
+
+  This function works only for gcc, and only some versions at that.
 
   Arguments:
     compiler: a filepath (the first argument on the distcc command line)
@@ -217,19 +221,43 @@ def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
 class CompilerDefaults(object):
   """Records and caches the default search dirs and creates symlink farm.
 
+  This function works only for gcc, and only some versions at that,
+  because we parse the output from gcc to determine the default search dirs.
+
   The 'default' searchdirs are those on the search-path that are built in, that
   is known to the preprocessor, as opposed to being set on the commandline via
   -I et al.
 
-  Because header files under the system default directories are assumed to exist
-  on the server and because the server unconditionally rewrites include search
+  When we pass an option such as -I/foo/bar to the server,
+  the server will rewrite it to say -I/server/path/root/foo/bar,
+  where /server/path/root is the temporary directory on the server
+  that corresponds to root on the client (e.g. typically /dev/shm/distccd_nnn).
+  This causes problems in this case of -I options such as -I/usr/include/foo,
+  where the path contains a 'default' search directory (in this case
+  /usr/include) as a prefix.
+  Header files under the system default directories are assumed to exist
+  on the server, and it would be expensive to send them to the server
+  unnecessarily (we measured it, and it slowed down the build of Samba by 20%).
+  So for -I options like -I/usr/include/foo, we want the server
+  to use /usr/include/foo on the server, not /server/path/root/usr/include/foo.
+
+  Because the server unconditionally rewrites include search
   paths on the command line to be relative to the server root, we must take
   corrective action when identifying default system dirs: references to files
   under these relocated system directories must be redirected to the absolute
   location where they're actually found.
 
-  To do so, we create a symlink forest under client_root that after being
-  sent to the server wil make
+  To do so, we create a symlink forest under client_root.
+  This will contain symlinks of the form
+
+    usr/include -> ../../../../../../../../../../../../usr/include
+
+  After being sent to the server, the server will rewrite them as
+
+    /server/path/root/usr/include ->
+       /server/path/root/../../../../../../../../../../../../usr/include
+
+  which will make
 
      /server/path/root/usr/include
 
@@ -237,12 +265,10 @@ class CompilerDefaults(object):
 
      /usr/include
 
-  Consequently, an include search directory such as -I /usr/include/foo will work on
-  the server, even after it has been rewritten to:
+  Consequently, an include search directory such as -I /usr/include/foo will
+  work on the server, even after it has been rewritten to:
 
     -I /server/path/root/usr/include/foo
- 
-  This function works only for gcc, and only some versions at that.
   """
 
   def __init__(self, canonical_lookup, client_root):
@@ -254,6 +280,7 @@ class CompilerDefaults(object):
         (strings) for compiler c and language lang
       system_dirs_default: a list of all such strings, subjected to
         realpath-ification, for all c and lang
+      client_root: a path such as /dev/shm/tmpX.include_server-X-1
       system_links: locations under client_root representing system default dirs
     """
     self.canonical_lookup = canonical_lookup
@@ -263,7 +290,7 @@ class CompilerDefaults(object):
     self.client_root = client_root
 
   def SetSystemDirsDefaults(self, compiler, language, timer=None):
-    """Set instance variables according to compiler.
+    """Set instance variables according to compiler, and make symlink farm.
 
     Arguments:
       compiler: a filepath (the first argument on the distcc command line)
@@ -272,8 +299,8 @@ class CompilerDefaults(object):
 
     The timer will be disabled during this routine because the select involved
     in Popen calls does not handle SIGALRM.
-    
-    See also the constructor documentation for this class.
+
+    See also the class documentation for this class.
     """
     assert isinstance(compiler, str)
     assert isinstance(language, str)
@@ -299,7 +326,7 @@ class CompilerDefaults(object):
       # Now summarize what we know and add to system_dirs_default_all.
       self.system_dirs_default_all |= (
           set(self.system_dirs_default[compiler][language]))
-      #
+      # Construct the symlink farm for the compiler default dirs.
       for system_dir in self.system_dirs_default[compiler][language]:
         _MakeLinkFromMirrorToRealLocation(system_dir, self.client_root,
                                           self.system_links)
