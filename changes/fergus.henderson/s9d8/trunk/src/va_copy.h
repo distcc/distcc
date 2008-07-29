@@ -24,17 +24,17 @@
 #ifdef HAVE_VA_COPY
   /* C99: use va_copy(), and match it with calls to va_end(). */
   #define VA_COPY(dest, src)      va_copy(dest, src)
-  #define VA_COPY_END(dest, src)  va_end(dest, src)
+  #define VA_COPY_END(dest)       va_end(dest)
 #elif defined(HAVE_UNDERSCORE_UNDERSCORE_VA_COPY)
   /* Earlier drafts of the C99 standard used __va_copy(). */
   #define VA_COPY(dest, src)      __va_copy(dest, src)
-  #define VA_COPY_END(dest, src)  va_end(dest, src)
+  #define VA_COPY_END(dest)       va_end(dest)
 #else
   /* Pre-C99: the best we can do is to assume that va_list
      values can be freely copied.  This works on most (but
      not all) pre-C99 C implementations. */
   #define VA_COPY(dest, src)      ((dest) = (src), (void) 0)
-  #define VA_COPY_END(dest, src)  ((void) 0)
+  #define VA_COPY_END(dest)       ((void) 0)
 #endif
 
 #endif /* VA_COPY_H */
