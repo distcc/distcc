@@ -1,0 +1,26 @@
+#! /bin/sh
+# Copyright 2002 Free Software Foundation
+# by Alexandre Oliva <aoliva@redhat.com>
+
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
+# Turn a local pathname into a network-neutral one.  It assumes
+# /net/$HOSTNAME/pathname can access $HOSTNAME's /pathname from other
+# machines, and that /net/$HOSTNAME is actually mounted (by amd)
+# inside /.automount/$HOSTNAME/root, so it compensates for that.
+
+dir=`${REAL_PWD-pwd}`
+case $dir in
+/net/*)
+  ;;
+/.automount/*/root/*)
+  dir=/net/`echo "$dir" |  sed -e '1s,^/\.automount/,,' -e 's,/root/,/,'`
+  ;;
+*)
+  dir=/net/${HOSTNAME-`uname -n`}$dir
+  ;;
+esac
+echo $dir
+exit 0
