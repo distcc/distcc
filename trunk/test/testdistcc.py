@@ -901,11 +901,12 @@ class Compilation_Case(WithDaemon_Case):
             self.fail("command %s produced error:\n%s" % (`cmd`, `err`))
 
     def compileCmd(self):
-        """Return command to compile source and run tests"""
+        """Return command to compile source"""
         return self.distcc_without_fallback() + \
                _gcc + " -o testtmp.o -c %s" % (self.sourceFilename())
 
     def linkCmd(self):
+        """Return command to link object files"""
         return self.distcc() + \
                _gcc + " -o testtmp testtmp.o"
 
@@ -915,7 +916,7 @@ class Compilation_Case(WithDaemon_Case):
                       % msgs)
 
     def checkBuiltProgram(self):
-        '''Check compile results.  By default, just try to execute.'''
+        '''Check compile/link results.  By default, just try to execute.'''
         msgs, errs = self.runcmd("./testtmp")
         self.checkBuiltProgramMsgs(msgs)
         self.assert_equal(errs, '')
@@ -944,6 +945,24 @@ int main(void) {
 
     def checkBuiltProgramMsgs(self, msgs):
         self.assert_equal(msgs, "hello world\n")
+
+
+class SystemIncludeDirectories_Case(CompileHello_Case):
+    """Test -I/usr/include/sys"""
+    def compileCmd(self):
+        return self.distcc_without_fallback() + _gcc + \
+               " -I/usr/include/sys -o testtmp.o -c %s" \
+               % (self.sourceFilename())
+    def source(self):
+        return """
+#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include <stdio.h>
+#include "testhdr.h"
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
 
 
 class ObjectiveC_Case(Compilation_Case):
@@ -1033,7 +1052,7 @@ class Gdb_Case(CompileHello_Case):
         return _gcc + " -g ";
 
     def compileCmd(self):
-        """Return command to compile source and run tests"""
+        """Return command to compile source"""
         os.mkdir("obj")
         return self.distcc_without_fallback() + self.compiler() + \
                " -o obj/testtmp.o -I. -c %s" % (self.sourceFilename())
@@ -1234,7 +1253,7 @@ class CppError_Case(CompileHello_Case):
         msgs, errs = self.runcmd(cmd, expectedResult=1)
         self.assert_re_search("not tonight dear", errs)
         self.assert_equal(msgs, '')
-    
+
 
 class BadInclude_Case(Compilation_Case):
     """Handling of error running cpp"""
@@ -1851,6 +1870,7 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
+         SystemIncludeDirectories_Case,
          ObjectiveC_Case,
          ObjectiveCPlusPlus_Case,
          Gdb_Case,

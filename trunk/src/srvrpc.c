@@ -117,6 +117,7 @@ int dcc_r_many_files(int in_fd,
         if ((ret = dcc_r_token_string(in_fd, "NAME", &name)))
             goto out_cleanup;
 
+        /* FIXME: verify that name starts with '/' and doesn't contain '..'. */
         if ((ret = prepend_dir_to_name(dirname, &name)))
             goto out_cleanup;
 
@@ -129,8 +130,13 @@ int dcc_r_many_files(int in_fd,
             if ((ret = dcc_r_str_alloc(in_fd, link_or_file_len, &link_target))){
                 goto out_cleanup;
             }
+            /* FIXME: verify that link_target doesn't contain '..'.
+             * But the include server uses '..' to reference system
+             * directories (see _MakeLinkFromMirrorToRealLocation
+             * in include_server/compiler_defaults.py), so we'll need to
+             * modify that first. */
             if (link_target[0] == '/') {
-               if ((ret = prepend_dir_to_name(dirname, &link_target))) {
+                if ((ret = prepend_dir_to_name(dirname, &link_target))) {
                     goto out_cleanup;
                 }
             }
