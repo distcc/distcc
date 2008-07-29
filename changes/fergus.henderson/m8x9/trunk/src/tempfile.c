@@ -155,7 +155,7 @@ static char* mkdtemp(char *pattern)
  * all (input) files during one compilation.
  * The name of the directory is stored in @p tempdir, which is
  * malloc'ed here. The caller is responsible for freeing it.
- * The format of the directory name is TMPTOP/randomnumber
+ * The format of the directory name is <TMPTOP>/distccd_<randomnumber>
  * Returns the new temp dir in tempdir.
  */
 int dcc_get_new_tmpdir(char **tempdir)
