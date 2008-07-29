@@ -665,7 +665,7 @@ man/include_server_1.html: man/include_server.1
 .PHONY: include-server-maintainer-check pump-maintainer-check
 .PHONY: maintainer-check 
 .PHONY: check
-.PHONY: lzo-check valgrind-check single-test
+.PHONY: lzo-check valgrind-check single-test pump-single-test
 
 check_programs: $(check_PROGRAMS) $(bin_PROGRAMS)
 
@@ -766,13 +766,21 @@ valgrind-check:
 
 # The following target is useful for running a single test at a time.
 # Sample usage:
-#    make TESTNAME=Lsdistcc_Case singletest
-#    make TESTNAME=Lsdistcc_Case TESTDISTCC_OPTS=--valgrind singletest
+#    make TESTNAME=Lsdistcc_Case single-test
+#    make TESTNAME=Lsdistcc_Case TESTDISTCC_OPTS=--valgrind single-test
 TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
 single-test: check_programs
 	PATH="`pwd`:$(RESTRICTED_PATH)" \
 	    $(TEST_PYTHON) "$(srcdir)/test/onetest.py" $(TESTDISTCC_OPTS) $(TESTNAME)
 
+# Run a single test in pump-mode.
+pump-single-test: pump include-server check_programs
+	DISTCC_HOSTS='<invalid>,cpp' \
+	    "$(builddir)/pump" \
+	        $(MAKE) \
+	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
+	        TESTDISTCC_OPTS="--pump $(TESTDISTCC_OPTS)" \
+	        single-test
 
 ######################################################################
 ## CHECK targets for code that has been installed.
