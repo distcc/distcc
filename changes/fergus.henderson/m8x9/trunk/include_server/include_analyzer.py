@@ -271,7 +271,7 @@ class IncludeAnalyzer(object):
     links = self.compiler_defaults.system_links + self.mirror_path.Links()
     files = self.compress_files.Compress(include_closure, client_root_keeper)
 
-    forcing_files = _ForceDirectoriesToExist()
+    forcing_files = self._ForceDirectoriesToExist()
 
     files_and_links = files + links + forcing_files
 
@@ -298,7 +298,7 @@ class IncludeAnalyzer(object):
                         realpath_map)
     return files_and_links
 
-  def _ForceDirectoriesToExist():
+  def _ForceDirectoriesToExist(self):
     """ Force any needed directories to exist.
 
     In rare cases, the source files may contain #include "foo/../bar",
