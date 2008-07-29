@@ -26,6 +26,8 @@ import basics
 import parse_file
 import cache_basics
 import macro_eval
+import shutil
+import tempfile
 import unittest
 
 NotCoveredError = basics.NotCoveredError
@@ -36,7 +38,8 @@ class MacroEvalTest(unittest.TestCase):
 
     basics.opt_debug_pattern = 1
 
-    caches = cache_basics.SetUpCaches()
+    self.tmp = tempfile.mkdtemp()
+    caches = cache_basics.SetUpCaches(self.tmp)
 
     self.includepath_map = caches.includepath_map
     self.canonical_path = caches.canonical_path
@@ -45,7 +48,7 @@ class MacroEvalTest(unittest.TestCase):
 
 
   def tearDown(self):
-    pass
+    shutil.rmtree(self.tmp)
 
 
   def test__SubstituteSymbolInString(self):
@@ -194,7 +197,7 @@ class MacroEvalTest(unittest.TestCase):
 
   def test_ResolveExpr(self):
     # Erect the edifice of caches.
-    caches = cache_basics.SetUpCaches()
+    caches = cache_basics.SetUpCaches(self.tmp)
     parse_file_obj = parse_file.ParseFile(caches.includepath_map)
 
     symbol_table = {}

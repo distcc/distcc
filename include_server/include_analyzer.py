@@ -50,7 +50,8 @@ class IncludeAnalyzer(object):
     # Make table for symbols in #define's.
     self.symbol_table = {}
     # Erect the edifice of caches.
-    caches = self.caches = cache_basics.SetUpCaches()
+    caches = self.caches = (
+        cache_basics.SetUpCaches(self.client_root_keeper.client_root))
 
     # Migrate the cache stuff to self namespace.
     self.includepath_map = caches.includepath_map
@@ -74,7 +75,9 @@ class IncludeAnalyzer(object):
     # Make a cache for the symbolic links encountered; also for their
     # replication into root directory.
     self.mirror_path = mirror_path.MirrorPath(self.simple_build_stat,
-                                              self.canonical_path)
+                                              self.canonical_path,
+                                              self.realpath_map,
+                                              self.systemdir_prefix_cache)
     # Make a parser for C/C++.
     self.parse_file = parse_file.ParseFile(self.includepath_map)
     # Make a compressor for source files.
@@ -229,7 +232,7 @@ class IncludeAnalyzer(object):
 
   def DoCompilationCommand(self, cmd, currdir, client_root_keeper):
     """Parse and and process the command; then gather files and links."""
-
+    
     self.translation_unit = "unknown translation unit"  # don't know yet 
 
     # Any relative paths in the globs in the --stat_reset_trigger argument
@@ -249,7 +252,8 @@ class IncludeAnalyzer(object):
                                        self.directory_map,
                                        self.compiler_defaults,
                                        self.timer))
-    (_, _, _, source_file, result_file_prefix, _) = parsed_command
+    (unused_quote_dirs, unused_angle_dirs, unused_include_files, source_file,
+     result_file_prefix, unused_Dopts) = parsed_command
 
     # Do the real work.
     include_closure = (
@@ -262,18 +266,12 @@ class IncludeAnalyzer(object):
     # Links are accumulated intra-build (across different compilations in a
     # build). We send all of 'em every time.  This will potentially lead to
     # performance degradation for large link farms. We expect at most a
-    # handful.
-    links = self.mirror_path.Links()
+    # handful. We add put the system links first, because there should be very
+    # few of them.
+    links = self.compiler_defaults.system_links + self.mirror_path.Links()
     files = self.compress_files.Compress(include_closure, client_root_keeper)
 
-    must_exist_dirs = self.mirror_path.MustExistDirs()
-    random_name = 'forcing_technique_271828'
-    forcing_files = [d + '/' + random_name
-                     for d in must_exist_dirs]
-    for forcing_file in forcing_files:
-      # If for extremly obscure reasons the file already exists and is useful,
-      # then don't change it.
-      open(forcing_file, "a").close()
+    forcing_files = self._ForceDirectoriesToExist()
 
     files_and_links = files + links + forcing_files
 
@@ -299,6 +297,30 @@ class IncludeAnalyzer(object):
                         self.result_file_prefix + '.d_approx',
                         realpath_map)
     return files_and_links
+
+  def _ForceDirectoriesToExist(self):
+    """Force any needed directories to exist.
+
+    In rare cases, the source files may contain #include "foo/../bar",
+    but may not contain any other files from the "foo" directory.
+    In such cases, we invent a dummy file in (the mirrored copy of)
+    each such directory, just to force the distccd server to create the
+    directory, so that the C compiler won't get an error when it tries
+    to resolve that #include.
+
+    Returns:
+      A list of files to pass as dummy inputs.
+    """
+
+    must_exist_dirs = self.mirror_path.MustExistDirs()
+    random_name = 'forcing_technique_271828'
+    forcing_files = [d + '/' + random_name
+                     for d in must_exist_dirs]
+    for forcing_file in forcing_files:
+      # If for extremly obscure reasons the file already exists and is useful,
+      # then don't change it: that's why we open in "append" mode.
+      open(forcing_file, "a").close()
+    return forcing_files
 
   def RunAlgorithm(self, filepath_resolved_pair, filepath_real_idx):
     """Run FindNode on filepath; then compute include closure.

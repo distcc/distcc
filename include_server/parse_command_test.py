@@ -27,6 +27,8 @@ import time
 import basics
 import cache_basics
 import parse_command
+import shutil
+import tempfile
 import unittest
 
 NotCoveredError = basics.NotCoveredError
@@ -37,7 +39,8 @@ class ParseCommandUnitTest(unittest.TestCase):
 
     basics.opt_debug_pattern = 1
 
-    caches = cache_basics.SetUpCaches()
+    self.tmp = tempfile.mkdtemp()
+    caches = cache_basics.SetUpCaches(self.tmp)
 
     self.includepath_map = caches.includepath_map
     self.canonical_path = caches.canonical_path
@@ -62,8 +65,7 @@ class ParseCommandUnitTest(unittest.TestCase):
     self.compiler_defaults.system_dirs_default[mock_compiler]['c++'] = []
 
   def tearDown(self):
-    pass
-
+    shutil.rmtree(self.tmp)
 
   def test__SplitMacroArg(self):
     self.assertEqual(parse_command._SplitMacroArg("="), ["="])

@@ -25,6 +25,8 @@ import os.path
 import basics
 import cache_basics
 import mirror_path
+import shutil
+import tempfile
 import unittest
 
 NotCoveredError = basics.NotCoveredError
@@ -39,13 +41,15 @@ class MirrorPathTest(unittest.TestCase):
   def setUp(self):
 
     basics.debug_pattern = 3
-
-    caches = cache_basics.SetUpCaches()
+    self.tmp = tempfile.mkdtemp()
+    caches = cache_basics.SetUpCaches(self.tmp)
 
     self.canonical_path = caches.canonical_path
     self.simple_build_stat = caches.simple_build_stat
     self.mirror_path = mirror_path.MirrorPath(self.simple_build_stat,
-                                              self.canonical_path)
+                                              self.canonical_path,
+                                              caches.realpath_map,
+                                              caches.systemdir_prefix_cache)
 
     self.directories = ['/', '/a', '/link', '/a/link', '/a/b',
                         '/link/link', '/root']
@@ -59,7 +63,7 @@ class MirrorPathTest(unittest.TestCase):
 
 
   def tearDown(self):
-    pass
+    shutil.rmtree(self.tmp)
 
   def test_MirrorPath(self):
 

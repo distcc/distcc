@@ -809,13 +809,17 @@ class SetUpCaches(object):
     dirname_cache: DirnameCache
     simple_build_stat: SimpleBuildStat
 
+    client_root: a path such as /dev/shm/tmpX.include_server-X-1
+                 (used during default system dir determination)
+
     IsFilepathIndex: test for filepath index
     IsDirectoryIndex: test for director index
     IsRealpathIndex: test for realpath index
     IsFilepathPair: test for filepath pair
   """
 
-  def __init__(self):
+  def __init__(self, client_root):
+     
     # A memoizing (caching) class to canonicalize a path: mostly by
     # resolving any symlinks in the path-component.
     self.canonical_path = CanonicalPath()
@@ -843,7 +847,7 @@ class SetUpCaches(object):
     # sure "our" system_dirs_default_all is updated.
     # TODO(csilvers): get rid of this once prefix_cache TODO is cleaned up
     self.compiler_defaults = compiler_defaults.CompilerDefaults(
-      self.canonical_path.Canonicalize)
+      self.canonical_path.Canonicalize, client_root)
     self.systemdir_prefix_cache = SystemdirPrefixCache(
       self.compiler_defaults.system_dirs_default_all)
 
