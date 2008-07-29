@@ -91,10 +91,18 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
   is not created if
     /usr/include
   is already in place, since it's a prefix of the longer path.
+
+  If a link is created, the symlink name will be appended to system_links.
+
+  For example, if system_dir is '/usr/include' and client_root is
+  '/dev/shm/tmpX.include_server-X-1', then this function will create a
+  symlink in /dev/shm/tmpX.include_server-X-1/usr/include which points
+  to ../../../../../../../../../../../../usr/include, and it will append
+  '/dev/shm/tmpX.include_server-X-1/usr/include' to system_links.
   """
   if not system_dir.startswith('/'):
     raise ValueError("Expected absolute path, but got '%s'." % system_dir)
-  if not os.path.realpath(system_dir) == system_dir:
+  if os.path.realpath(system_dir) != system_dir:
     raise NotCoveredError(
         "Default compiler search path '%s' must be a realpath." %s)
   rooted_system_dir = client_root + system_dir
@@ -103,11 +111,13 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
   real_prefix, is_link = _RealPrefix(rooted_system_dir)
   parent = os.path.dirname(rooted_system_dir)
   if real_prefix == rooted_system_dir:
-    # rooted_system_dir already exists as a real path. Make rooted_system_dir a
-    # link.
+    # rooted_system_dir already exists as a real (non-symlink) path.
+    # Make rooted_system_dir a link.
+    # TODO(fergus): do we need to delete anything from system_links
+    # in this case?
     shutil.rmtree(rooted_system_dir)
   elif real_prefix == parent:
-    # The really constructed path does not extend beoynd the parent directory,
+    # The really constructed path does not extend beyond the parent directory,
     # so we're all set to create the link if it's not already there.
     if os.path.exists(rooted_system_dir):
       assert os.path.islink(rooted_system_dir)

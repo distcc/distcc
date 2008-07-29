@@ -512,7 +512,6 @@ def _ParseCommandLineOptions():
                   dict ([ (path, basics.Stamp(path))
                           for path in glob.glob(glob_expr) ]))
                  for glob_expr in arg.split(':') ]))
-        print 'opt_stat_reset_triggers', basics.opt_stat_reset_triggers
       if opt in ("--simple_algorithm",):
         basics.opt_simple_algorithm = True
         sys.exit("Not implemented")
