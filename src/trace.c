@@ -41,6 +41,7 @@
 
 #include "trace.h"
 #include "snprintf.h"
+#include "va_copy.h"
 
 struct rs_logger_list {
     rs_logger_fn               *fn;
@@ -201,7 +202,6 @@ static void rs_lazy_default(void)
         rs_add_logger(rs_logger_file, RS_LOG_WARNING, NULL, STDERR_FILENO);
 }
 
-
 /* Heart of the matter */
 static void
 rs_log_va(int flags, char const *caller_fn_name, char const *fmt, va_list va)
@@ -215,9 +215,16 @@ rs_log_va(int flags, char const *caller_fn_name, char const *fmt, va_list va)
 
     if (level <= rs_trace_level)
       for (l = logger_list; l; l = l->next)
-          if (level <= l->max_level)
+          if (level <= l->max_level) {
+              /* We need to use va_copy() here, because functions like vsprintf
+               * may destructively modify their va_list argument, but we need
+               * to ensure that it's still valid next time around the loop. */
+              va_list copied_va;
+              VA_COPY(copied_va, va);
               l->fn(flags, caller_fn_name,
-                    fmt, va, l->private_ptr, l->private_int);
+                    fmt, copied_va, l->private_ptr, l->private_int);
+              VA_COPY_END(copied_va);
+          }
 }
 
 

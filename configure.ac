@@ -383,12 +383,19 @@ AC_TRY_COMPILE([#define func(a, b...) do { } while (0)],
  AC_DEFINE(HAVE_VARARG_MACROS, , [Define if your cpp has vararg macros])],
 [AC_MSG_RESULT(no)])
 
-AC_CACHE_CHECK([for __va_copy],samba_cv_HAVE_VA_COPY,[
+AC_CACHE_CHECK([for va_copy],dcc_cv_HAVE_VA_COPY,[
+AC_TRY_LINK([#include <stdarg.h>
+va_list ap1,ap2;], [va_copy(ap1,ap2);],
+dcc_cv_HAVE_VA_COPY=yes,dcc_cv_HAVE_VA_COPY=no)])
+if test x"$dcc_cv_HAVE_VA_COPY" = x"yes"; then
+    AC_DEFINE(HAVE_VA_COPY,1,[Whether va_copy() is available])
+fi
+AC_CACHE_CHECK([for __va_copy],dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY,[
 AC_TRY_LINK([#include <stdarg.h>
 va_list ap1,ap2;], [__va_copy(ap1,ap2);],
-samba_cv_HAVE_VA_COPY=yes,samba_cv_HAVE_VA_COPY=no)])
-if test x"$samba_cv_HAVE_VA_COPY" = x"yes"; then
-    AC_DEFINE(HAVE_VA_COPY,1,[Whether __va_copy() is available])
+dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY=yes,dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY=no)])
+if test x"$dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY" = x"yes"; then
+    AC_DEFINE(HAVE_UNDERSCORE_UNDERSCORE_VA_COPY,1,[Whether __va_copy() is available])
 fi
 
 AC_CACHE_CHECK([for C99 vsnprintf],rsync_cv_HAVE_C99_VSNPRINTF,[

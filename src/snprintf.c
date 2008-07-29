@@ -134,6 +134,7 @@
 #else
 
 #include "snprintf.h"
+#include "va_copy.h"
 
 #ifdef HAVE_LONG_DOUBLE
 #define LDOUBLE long double
@@ -146,14 +147,6 @@
 #else
 #define LLONG long
 #endif
-
-#ifndef VA_COPY
-#ifdef HAVE_VA_COPY
-#define VA_COPY(dest, src) __va_copy(dest, src)
-#else
-#define VA_COPY(dest, src) (dest) = (src)
-#endif /* ! HAVE_VA_COPY */
-#endif /* ndef VA_COPY */
 
 /* yes this really must be a ||. Don't muck with this (tridge) */
 #if !defined(HAVE_VSNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
@@ -463,6 +456,8 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
         else if (maxlen > 0)
             buffer[maxlen - 1] = '\0';
     }
+
+    VA_COPY_END(args);
 
     return currlen;
 }
@@ -854,16 +849,16 @@ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
     va_list ap2;
 
     VA_COPY(ap2, ap);
-
     ret = vsnprintf(NULL, 0, format, ap2);
+    VA_COPY_END(ap2);
     if (ret <= 0) return ret;
 
     (*ptr) = (char *)malloc(ret+1);
     if (!*ptr) return -1;
 
     VA_COPY(ap2, ap);
-
     ret = vsnprintf(*ptr, ret+1, format, ap2);
+    VA_COPY_END(ap2);
 
     return ret;
 }
