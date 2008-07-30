@@ -230,7 +230,7 @@ static int dcc_is_link(const char *fname, int *is_link)
         return EXIT_IO_ERROR;
     }
 
-    *is_link = ((buf.st_mode & S_IFLNK) == S_IFLNK);
+    *is_link = S_ISLNK(buf.st_mode);
     return 0;
 }
 
