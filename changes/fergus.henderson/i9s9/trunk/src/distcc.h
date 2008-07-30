@@ -297,6 +297,7 @@ int dcc_is_object(const char *filename);
 int dcc_source_needs_local(const char *);
 
 char * dcc_find_extension(char *sfile);
+const char * dcc_find_extension_const(const char *sfile);
 int dcc_output_from_source(const char *sfile, const char *out_extn,
                            char **ofile);
 
