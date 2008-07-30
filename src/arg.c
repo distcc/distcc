@@ -167,8 +167,11 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                  * nothing by themselves. */
             } else if (!strcmp(a, "-MF") || !strcmp(a, "-MT") ||
                        !strcmp(a, "-MQ")) {
-                /* as above but with extra argument */
+                /* As above but with extra argument. */
                 i++;
+            } else if (!strncmp(a, "-MF", 3) || !strncmp(a, "-MT", 3) ||
+                       !strncmp(a, "-MQ", 3)) {
+                /* As above, without extra argument. */
             } else if (a[1] == 'M') {
                 /* -M(anything else) causes the preprocessor to
                     produce a list of make-style dependencies on
