@@ -64,7 +64,8 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
                            const char *desired_section_name,
                            const void **section_start, int *section_size) {
   const unsigned char *elf_base = (const unsigned char *) elf_mapped_base;
-  const Elf32_Ehdr *elf32_header = (const Elf32_Ehdr *) (elf_base);
+  /* The double cast below avoids warnings with -Wcast-align. */
+  const Elf32_Ehdr *elf32_header = (const Elf32_Ehdr *) (const void *) elf_base;
   unsigned int i;
   unsigned int num_sections;
 
@@ -128,7 +129,8 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
   if (elf32_header->e_ident[EI_CLASS] == ELFCLASS32) {
     const Elf32_Ehdr *elf_header = elf32_header;
     const Elf32_Shdr *sections =
-        (const Elf32_Shdr *) (elf_base + elf_header->e_shoff);
+        /* The double cast below avoids warnings with -Wcast-align. */
+        (const Elf32_Shdr *) (const void *) (elf_base + elf_header->e_shoff);
     const Elf32_Shdr *string_section = sections + elf_header->e_shstrndx;
     const Elf32_Shdr *desired_section = NULL;
 
@@ -156,9 +158,9 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
       num_sections = sections[0].sh_size;
     }
     for (i = 0; i < num_sections; ++i) {
-      const char *section_name = (char*)(elf_base +
-                                         string_section->sh_offset +
-                                         sections[i].sh_name);
+      const char *section_name = (char *)(elf_base +
+                                          string_section->sh_offset +
+                                          sections[i].sh_name);
       if (!strcmp(section_name, desired_section_name)) {
         desired_section = &sections[i];
         break;
@@ -173,9 +175,10 @@ static int FindElfSection(const void *elf_mapped_base, off_t elf_size,
       return 0;
     }
   } else if (elf32_header->e_ident[EI_CLASS] == ELFCLASS64) {
-    const Elf64_Ehdr *elf_header = (const Elf64_Ehdr *) elf_base;
+    /* The double cast below avoids warnings with -Wcast-align. */
+    const Elf64_Ehdr *elf_header = (const Elf64_Ehdr *) (const void *) elf_base;
     const Elf64_Shdr *sections =
-        (const Elf64_Shdr *) (elf_base + elf_header->e_shoff);
+        (const Elf64_Shdr *) (const void *) (elf_base + elf_header->e_shoff);
     const Elf64_Shdr *string_section = sections + elf_header->e_shstrndx;
     const Elf64_Shdr *desired_section = NULL;
 

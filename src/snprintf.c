@@ -154,7 +154,7 @@
 static size_t dopr(char *buffer, size_t maxlen, const char *format,
            va_list args_in);
 static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
-            char *value, int flags, int min, int max);
+            const char *value, int flags, int min, int max);
 static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
             long value, int base, int min, int max, int flags);
 static void fmtfp(char *buffer, size_t *currlen, size_t maxlen,
@@ -396,7 +396,7 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
                 break;
             case 's':
                 strvalue = va_arg (args, char *);
-                                const_strvalue = strvalue;
+                const_strvalue = strvalue;
                 if (!const_strvalue) const_strvalue = "(NULL)";
                 if (max == -1) {
                     max = strlen(const_strvalue);
@@ -463,20 +463,19 @@ static size_t dopr(char *buffer, size_t maxlen, const char *format, va_list args
 }
 
 static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
-            char *value, int flags, int min, int max)
+            const char *value, int flags, int min, int max)
 {
     int padlen, strln;     /* amount to pad */
     int cnt = 0;
-        const char* const_value = value;
 
 #ifdef DEBUG_SNPRINTF
     printf("fmtstr min=%d max=%d s=[%s]\n", min, max, value);
 #endif
-    if (const_value == 0) {
-        const_value = "<NULL>";
+    if (value == 0) {
+        value = "<NULL>";
     }
 
-    for (strln = 0; const_value[strln]; ++strln); /* strlen */
+    for (strln = 0; value[strln]; ++strln); /* strlen */
     padlen = min - strln;
     if (padlen < 0)
         padlen = 0;
@@ -488,8 +487,8 @@ static void fmtstr(char *buffer, size_t *currlen, size_t maxlen,
         --padlen;
         ++cnt;
     }
-    while (*const_value && (cnt < max)) {
-        dopr_outch (buffer, currlen, maxlen, *const_value++);
+    while (*value && (cnt < max)) {
+        dopr_outch (buffer, currlen, maxlen, *value++);
         ++cnt;
     }
     while ((padlen < 0) && (cnt < max)) {

@@ -254,7 +254,8 @@ int dcc_check_client(struct sockaddr *psa,
     for (l = allowed; l; l = l->next) {
         if (psa->sa_family == AF_INET) {
             in_addr_t cli_inaddr;
-            cli_inaddr = ((struct sockaddr_in *) psa)->sin_addr.s_addr;
+            /* The double-cast here avoids warnings from -Wcast-align. */
+            cli_inaddr = ((struct sockaddr_in *) (void *) psa)->sin_addr.s_addr;
 
             if ((ret = dcc_check_address(cli_inaddr, l->addr, l->mask)) == 0)
                 break;
