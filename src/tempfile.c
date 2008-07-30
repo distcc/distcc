@@ -113,7 +113,7 @@ int dcc_mk_tmpdir(const char *path)
          * all is well, but we should not it delete later, since we did
          * not make it.
          */
-         if ((buf.st_mode & S_IFDIR) == S_IFDIR) {
+         if (S_ISDIR(buf.st_mode)) {
              return 0;
          } else {
              rs_log_error("mkdir '%s' failed: %s", path, strerror(errno));
