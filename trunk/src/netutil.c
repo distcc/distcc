@@ -197,7 +197,8 @@ int dcc_sockaddr_to_string(struct sockaddr *sa,
         *p_buf = strdup("NOTSOCKET");
         return 0;
     } else if (sa->sa_family == AF_INET) {
-        struct sockaddr_in *sain = (struct sockaddr_in *) sa;
+        /* The double-cast here suppresses warnings from -Wcast-align. */
+        struct sockaddr_in *sain = (struct sockaddr_in *) (void *) sa;
 
         asprintf(p_buf, "%s:%d", inet_ntoa(sain->sin_addr),
                  ntohs(sain->sin_port));
