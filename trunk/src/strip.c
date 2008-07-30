@@ -104,7 +104,10 @@ int dcc_strip_local_args(char **from, char ***out_argv)
                  || str_startswith("-U", from[from_i])
                  || str_startswith("-I", from[from_i])
                  || str_startswith("-l", from[from_i])
-                 || str_startswith("-L", from[from_i])) {
+                 || str_startswith("-L", from[from_i])
+                 || str_startswith("-MF", from[from_i])
+                 || str_startswith("-MT", from[from_i])
+                 || str_startswith("-MQ", from[from_i])) {
             /* Something like "-DNDEBUG" or
              * "-Wp,-MD,.deps/nsinstall.pp".  Just skip this word */
             ;
