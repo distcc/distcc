@@ -1212,6 +1212,7 @@ class DashONoSpace_Case(CompileHello_Case):
         else:
             CompileHello_Case.runtest (self)
 
+
 class WriteDevNull_Case(CompileHello_Case):
     def runtest(self):
         self.compile()
@@ -1378,11 +1379,30 @@ int main(void) {
     def checkBuiltProgramMsgs(self, msgs):
         self.assert_equal(msgs, "hello world\n")
 
+
+class DashMD_DashMF_DashMT_Case(CompileHello_Case):
+    """Test -MD -MFfoo -MTbar"""
+
+    def compileCmd(self):
+        return self.distcc_without_fallback() + _gcc + \
+               " -MD -MFdotd_filename -MTtarget_name_42 -o testtmp.o -c %s" % \
+                      (self.sourceFilename())
+
+    def runtest(self):
+        try:
+          os.remove('dotd_filename')
+        except OSError:
+          pass
+        self.compile();
+        dotd_contents = open("dotd_filename").read()
+        self.assert_re_search("target_name_42", dotd_contents)
+
+
 class DashWpMD_Case(CompileHello_Case):
     """Test -Wp,-MD,depfile"""
 
     def compileCmd(self):
-        return self.distcc() + _gcc + \
+        return self.distcc_without_fallback() + _gcc + \
                " -c -Wp,-MD,depsfile -o testtmp.o testtmp.c"
 
     def runtest(self):
@@ -1882,6 +1902,7 @@ tests = [
          ScanArgs_Case,
          ParseMask_Case,
          DotD_Case,
+         DashMD_DashMF_DashMT_Case,
          Compile_c_Case,
          ImplicitCompilerScan_Case,
          StripArgs_Case,

@@ -204,6 +204,8 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
         if (strcmp(a, "-MF") == 0) {
             ++i;
             deps_output = argv[i];
+        } else if (strncmp(a, "-MF", 3) == 0) {
+            deps_output = argv[i] + 3;
         } else if (strcmp(a, "-o") == 0) {
             has_dash_o = 1;
         }

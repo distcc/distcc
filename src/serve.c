@@ -442,7 +442,7 @@ static int dcc_convert_mt_to_dotd_target(char **argv, char **dotd_target)
 
     /* if we find -MT but only at the very end, that's an error. */
     if (argv[i+1] == NULL) {
-        rs_trace("found -MF at the end of the command line");
+        rs_trace("found -MT at the end of the command line");
         return 1;
     }
 
