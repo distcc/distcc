@@ -1,4 +1,249 @@
+## distcc 3.0rc3.
+
+2008-07-31   Fergus Henderson <opensource@google.com>
+
+	* ChangeLog, NEWS, configure.ac:
+	  
+	  Bump version number to 3.0rc3, and update NEWS file and ChangeLog.
+
+2008-07-31 05:40  Fergus Henderson <opensource@google.com>
+
+	* src/distcc.h, src/filename.c:
+	  
+	  Fix issue 10 <http://code.google.com/p/distcc/issues/detail?id=10>:
+	  add a work-around for a spurious gcc warning.
+	  
+	  Also, add a missing check for strdup() returning NULL.
+
+2008-07-30 22:56  Fergus Henderson <opensource@google.com>
+
+	* src/dotd.c, src/serve.c, src/strip.c, test/testdistcc.py:
+	  
+	  Add a test case to test "-MT" and "-MF" without spaces after them.
+	  
+	  Some more bug fixes to make the test case pass.
+	  
+	  Also, make the DashWpMD_Case test a bit more strict: disable
+	  fallbacks, so that it tests that we can distribute such jobs.
+
+2008-07-30 02:28  Fergus Henderson <opensource@google.com>
+
+	* src/fix_debug_info.c, src/netutil.c, src/snprintf.c, src/srvnet.c:
+	  
+	  Fix some warnings with -Wcast-align that show up only on machines
+	  that don't support unaligned accesses.
+	  
+	  Fix some const correctness warnings that show up only on machines
+	  that don't have vsnprintf().
+	  
+	  Reviewers: Craig Silverstein
+
+2008-07-30 02:27  Fergus Henderson <opensource@google.com>
+
+	* src/arg.c:
+	  
+	  Fix issue 13 <http://code.google.com/p/distcc/issues/detail?id=13>:
+	  allow distcc to distribute commands that use "-MF<filename>"
+	  rather than "-MF <filename>", and likewise for -MT and -MQ.
+
+2008-07-30 01:13  Fergus Henderson <opensource@google.com>
+
+	* src/clirpc.c, src/tempfile.c:
+	  
+	  Apply patch from e...@jessies.org in
+	  <http://code.google.com/p/distcc/issues/detail?id=9>:
+	  
+	  use S_ISLNK and S_ISDIR macros, to make the code more readable.
+
+2008-07-29 23:04  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  In the Makefile, add a target for running a single test in pump mode.
+
+2008-07-29 22:19  Fergus Henderson <opensource@google.com>
+
+	* include_server/basics.py, include_server/cache_basics.py,
+	  include_server/compiler_defaults.py,
+	  include_server/include_analyzer.py, include_server/macro_eval_test.py,
+	  include_server/mirror_path.py, include_server/mirror_path_test.py,
+	  include_server/parse_command_test.py, src/srvrpc.c, src/tempfile.c,
+	  test/testdistcc.py:
+	  
+	  This is based on klarlund's original version of this patch
+	  (klarlund/d3b3):
+	  gvn --project https://distcc.googlecode.com/svn/trunk review
+	  klarlund/d3b3
+	  
+	  Fix Issue 7: Compiling with -I/usr/include/FOO or ... in pump mode
+	  
+	  Problem:
+	  
+	  Default system include directories are the directories on the default
+	  include
+	  search path, such as /usr/include, that is determined by the compiler.
+	  Distcc
+	  will not send default system include directories to the distcc
+	  compilation
+	  servers. Nevertheless, distcc on the server blindly rewrites -I
+	  options such
+	  as -I/usr/include/foo to -I/tmp/distccNNN/usr/include/foo.
+	  
+	  This doesn't work, since the files in /usr/include/foo are not sent to
+	  the
+	  distccd server.
+	  
+	  Solution:
+	  
+	  The present solution keeps the rewriting on the server, because we
+	  would like
+	  to not manage starting the compiler, parsing its output, and storing
+	  the
+	  default system paths on the server
+	  
+	  Instead, we use the existing mechanism for defining relative symbolic
+	  links
+	  under the server root. We escape from the root by using a sufficient
+	  number
+	  of '../'s.
+	  
+	  All this is tremendously complicated by:
+	  
+	  -- The possibility that other links encountered may point into the
+	  system
+	  default dirs in which case the usual mirroring of the reachable places
+	  should not take place, because the routing of such links will go
+	  through
+	  the link created for the system directory.
+	  
+	  -- The fact that determination of default-system-dirness is lazy: a
+	  deeply-seated link in a default system dir may become obsolete if it
+	  is
+	  later determined that a higher directory than the parent directory of
+	  the
+	  link is in fact also a default system dir. In that case, a new
+	  symlink,
+	  sitting in a place higher than the previous one will need to be
+	  created.
+	  
+	  Tests:
+	  
+	  make check
+	  benchmarks: samba (still 3X faster than with distcc), linux 2.6
+	  kernel, and
+	  a couple of others
+	  
+	  TODO: better testing
+	  TODO:
+	  > In compiler_defaults.py, _MakeLinkFromMirrorToRealLocation:
+	  > Maybe comment each of the 'if' cases with an example of how this
+	  case
+	  > might be triggered. eg the real_prefix == rooted_system_dir is
+	  > triggered when we see /usr/include/foo, and the later see
+	  > /usr/include.
+
+2008-07-29 22:17  Fergus Henderson <opensource@google.com>
+
+	* configure.ac, src/snprintf.c, src/trace.c, src/va_copy.h:
+	  
+	  Fix a bug that caused "make check" to fail: MissingCompiler_Case
+	  was reporting an unexpected exit status: 139 instead of 110.
+	  This was caused by a seg fault in distccd, deep in the bowels of
+	  vsnprintf(), which appears to be due to calling vsnprintf() twice
+	  on the same va_list. The fix is to use va_copy() in src/trace.c.
+	  
+	  Of course it's never quite as easy as that. va_copy() exists
+	  only in C99, not in C89. Some implementations have __va_copy()
+	  but not va_copy(). So we need to autoconf it. There was
+	  already an autoconf test for this, but only for __va_copy.
+	  I've moved the code which defined VA_COPY from snprintf.c to
+	  a new header file va_copy.h, and added a VA_COPY_END macro.
+	  
+	  Also, fix another bug that I noticed at the same time:
+	  snprintf.c was using va_copy(), but was not matching each
+	  call to va_copy with a corresponding call to va_end(),
+	  as required by the C99 standard.
+
+2008-07-17 21:59  Lei Zhang <opensource@google.com>
+
+	* configure.ac:
+	  
+	  This adds an option for disabling avahi and friends. This is useful
+	  for
+	  building distcc targeted to machines without libavahi on a machine
+	  with libavahi.
+	  
+	  Reviewed by Fergus Henderson.
+
+2008-07-02 00:34  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Fix a bug reported by Aaron P. Perez <Aaron.Perez@hospira.com>
+	  where "make install" was failing on Cygwin.
+	  
+	  The problem was due to the install.log file generated by Python's
+	  distutils being generated in DOS text mode format rather than
+	  Unix text mode format. The fix is to use 'sed' to convert
+	  DOS text format to Unix text format when generating install.log.
+	  
+	  Note: this fix is slightly different than the original patch
+	  that I posted to the distcc mailing list. This patch is better
+	  because it fixes the install.log file, rather than just the
+	  grep command; this is important because the install.log file
+	  is also used for "make uninstall".
+	  
+	  Reviewers: Craig Silverstein
+
+2008-06-30 17:10  Nils Klarlund <opensource@google.com>
+
+	* include_server/include_analyzer.py,
+	  include_server/include_analyzer_memoizing_node.py,
+	  include_server/include_analyzer_memoizing_node_test.py,
+	  include_server/include_analyzer_test.py,
+	  include_server/parse_command.py, include_server/parse_command_test.py:
+	  
+	  Revert r393.
+	  
+	  This change is mostly reverted -- some variable renamings are not
+	  changed back. A subsequent CL proposes a less arbitrary way to solve
+	  the problem of -I<some_dir_in_default_place_where_compiler_looks>,
+	  which involves sending no system default header files at all.
+	  
+	  Tests: make pump-check and make include-server-check
+
+2008-06-27 21:59  Fergus Henderson <opensource@google.com>
+
+	* NEWS:
+	  
+	  Delete a duplicate entry from the NEWS file.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-06-24 22:06  Fergus Henderson <opensource@google.com>
+
+	* packaging/googlecode_upload.py:
+	  
+	  Fix wrong description for uploaded distcc-<version>.tar{.gz,.bz2}
+	  files.
+	  
+	  Reviewers: Craig Silverstein
+
 ## distcc 3.0rc2.
+
+2008-06-20 15:17  Fergus Henderson <opensource@google.com>
+
+	* ChangeLog, NEWS:
+	  
+	  Update NEWS file and ChangeLog for distcc 3.0rc2.
+	  
+	  Also mention new website, repository and maintainer in NEWS file.
+
+2008-06-20 02:54  Fergus Henderson <opensource@google.com>
+
+	* configure.ac:
+	  
+	  Bump version number to 3.0rc2.
 
 2008-06-19 22:25  Fergus Henderson <opensource@google.com>
 
