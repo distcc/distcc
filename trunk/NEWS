@@ -1,6 +1,29 @@
+distcc-3.0rc3 "Third time lucky."   2008-07-31
+
+  FEATURES:
+
+   * New "--without-avahi" option to configure (Lei Zhang).
+
+  BUG FIXES:
+
+   * Fixed a problem where pump mode was falling back to local compilation
+     when compiling with -I options that refer to a subdirectory of one
+     of the default system include directories (Nils Klarlund, Fergus Henderson).
+
+   * Allow distcc to distribute commands that use "-MF<filename>"
+     rather than "-MF <filename>", and likewise for "-MT<target>".
+
+  PORTABILITY:
+
+   * Fixed a build problem on ARM and Solaris systems.
+
+   * Fixed a build problem on some Linux systems reported by Daisuke Nishikawa.
+
+   * Fixed failure of "make install" on Cygwin.
+
 distcc-3.0rc2 "Anti-aliasing."   2008-06-19
 
-  BUG FIXES
+  BUG FIXES:
 
    * Fallback to local compilation for "-march=native" or "mtune=native"
      (Maks Verver).
