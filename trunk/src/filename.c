@@ -68,6 +68,24 @@ char * dcc_find_extension(char *sfile)
     return dot;
 }
 
+/**
+ * Return a pointer to the extension, including the dot, or NULL.
+ * Same as dcc_find_extension(), but the argument and return
+ * value are both pointers to const.
+ **/
+const char * dcc_find_extension_const(const char *sfile) {
+#if 0
+  return dcc_find_extension((char *) sfile);
+#else
+  /* The following intermediate variable works around a bug in gcc 4.2.3 where
+   * for the code above gcc spuriously reports "warning: passing argument 1
+   * of 'dcc_find_extension' discards qualifiers from pointer target type",
+   * despite the explicit cast. */
+  char *sfile_nonconst = (char *)sfile;
+  return dcc_find_extension(sfile_nonconst);
+#endif
+}
+
 
 /**
  * Return a pointer to the basename of the file (everything after the
@@ -114,7 +132,11 @@ static int dcc_set_file_extension(const char *sfile,
     char *dot, *o;
 
     o = strdup(sfile);
-    dot = dcc_find_extension((char *) o);
+    if (!o) {
+        rs_log_error("strdup failed (out of memory?)");
+        return EXIT_DISTCC_FAILED;
+    }
+    dot = dcc_find_extension(o);
     if (!dot) {
         rs_log_error("couldn't find extension in \"%s\"", o);
         return EXIT_DISTCC_FAILED;
@@ -183,7 +205,7 @@ const char * dcc_preproc_exten(const char *e)
 int dcc_is_preprocessed(const char *sfile)
 {
     const char *dot, *ext;
-    dot = dcc_find_extension((char *) sfile);
+    dot = dcc_find_extension_const(sfile);
     if (!dot)
         return 0;
     ext = dot+1;
@@ -212,7 +234,7 @@ int dcc_is_preprocessed(const char *sfile)
 int dcc_is_source(const char *sfile)
 {
     const char *dot, *ext;
-    dot = dcc_find_extension((char *) sfile);
+    dot = dcc_find_extension_const(sfile);
     if (!dot)
         return 0;
     ext = dot+1;
@@ -260,7 +282,7 @@ int dcc_is_source(const char *sfile)
 int dcc_is_object(const char *filename)
 {
     const char *dot;
-    dot = dcc_find_extension((char *) filename);
+    dot = dcc_find_extension_const(filename);
     if (!dot)
         return 0;
 
