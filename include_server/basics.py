@@ -156,7 +156,10 @@ class ClientRootKeeper(object):
 # on the client machine.  Normally the server root is /tmp/distccd_XXXXXX.
 # But it could be something different if TMPDIR is set when distccd is
 # started.  See dcc_get_tmp_top() in ../src/tempfile.c.
-MAX_COMPONENTS_IN_SERVER_ROOT = 10
+# It turns out that our own test infrastructure (test/testdistcc.py)
+# sets TMPDIR before invoking distccd, so this needs to be reasonably
+# high, otherwise 'make distcheck' will fail.
+MAX_COMPONENTS_IN_SERVER_ROOT = 20
 
 # EMAILS
 
