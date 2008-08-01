@@ -1,10 +1,29 @@
 ## distcc 3.0rc3.
 
-2008-07-31   Fergus Henderson <opensource@google.com>
+2008-08-01 03:42  Fergus Henderson <opensource@google.com>
+
+	* include_server/basics.py:
+	  
+	  Increase MAX_COMPONENTS_IN_SERVER_ROOT from 10 to 20.
+	  
+	  It turns out that our own test infrastructure (test/testdistcc.py)
+	  sets TMPDIR before invoking distccd, so this needs to be reasonably
+	  high, otherwise 'make distcheck' will fail.
+
+2008-08-01 03:11  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  List va_copy.h in HEADERS, so that it gets included in the source
+	  distribution.
+
+2008-07-31 19:19  Fergus Henderson <opensource@google.com>
 
 	* ChangeLog, NEWS, configure.ac:
 	  
 	  Bump version number to 3.0rc3, and update NEWS file and ChangeLog.
+	  
+	  Reviewed by Craig Silverstein.
 
 2008-07-31 05:40  Fergus Henderson <opensource@google.com>
 
