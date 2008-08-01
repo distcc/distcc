@@ -113,7 +113,7 @@ Project(url='http://ibiblio.org/pub/linux/system/emulators/wine/wine-0.9.4.tar.b
         md5='73205d83a5612a43441a8532683c0434  wine-0.9.4.tar.bz2',
         ).register()
 
-Project(url='http://mirror.aarnet.edu.au/pub/mozilla/releases/mozilla1.4/src/mozilla-source-1.4.tar.bz2',
+Project(url='ftp://ftp.slackware.com/pub/slackware/slackware-9.1/source/xap/mozilla/mozilla-source-1.4.tar.bz2',
         name='mozilla-1.4',
         configure_cmd="LIBIDL_CONFIG=libIDL-config-2 ./configure",
         unpacked_subdir='mozilla',
