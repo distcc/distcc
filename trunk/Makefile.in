@@ -356,6 +356,7 @@ HEADERS = src/stats.h							\
 	src/rslave.h							\
 	src/dotd.h src/include_server_if.h				\
 	src/emaillog.h \
+	src/va_copy.h \
 	src/zeroconf.h
 
 conf_dir = packaging/RedHat/conf
