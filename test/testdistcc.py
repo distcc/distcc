@@ -908,7 +908,11 @@ class Compilation_Case(WithDaemon_Case):
     def linkCmd(self):
         """Return command to link object files"""
         return self.distcc() + \
-               _gcc + " -o testtmp testtmp.o"
+               _gcc + " -o testtmp testtmp.o " + self.libraries()
+
+    def libraries(self):
+        """Returns any '-l' options needed to link the program."""
+        return ""
 
     def checkCompileMsgs(self, msgs):
         if msgs <> '':
@@ -965,61 +969,57 @@ int main(void) {
 """
 
 
-class ObjectiveC_Case(Compilation_Case):
-    """Test building an Objective-C program."""
-
+class LanguageSpecific_Case(Compilation_Case):
+    """Abstract base class to test building non-C programs."""
     def runtest(self):
-        # Don't try to run the test if GNU Objective C is not installed
+        # Don't try to run the test if the language's compiler is not installed
+        source = self.sourceFilename()
+        lang = self.languageGccName()
         error_rc, _, _ = self.runcmd_unchecked(
-            "touch testtmp.m; " +
+            "touch " + source + "; " +
             "rm -f testtmp.o; " +
-            _gcc + " -x objective-c -c testtmp.m -o /dev/null && " +
+            _gcc + " -x " + lang + " -c " + source + " " +
+                self.libraries() + " && " +
             "test -f testtmp.o" )
         if error_rc != 0:
-            raise comfychair.NotRunError ('GNU Objective C not installed')
+            raise comfychair.NotRunError ('GNU ' + self.languageName() +
+                                          ' not installed')
         else:
             Compilation_Case.runtest (self)
 
     def sourceFilename(self):
-      return "testtmp.m"
+      return "testtmp" + self.extension()
+
+    def languageGccName(self):
+      """Language name suitable for use with 'gcc -x'"""
+      raise NotImplementedError
+
+    def languageName(self):
+      """Human-readable language name."""
+      raise NotImplementedError
+
+    def extension(self):
+      """Filename extension, with leading '.'."""
+      raise NotImplementedError
+
+class CPlusPlus_Case(LanguageSpecific_Case):
+    """Test building a C++ program."""
+
+    def languageName(self):
+      return "C++"
+
+    def languageGccName(self):
+      return "c++"
+
+    def extension(self):
+      return ".cpp"  # Could also use ".cc", ".cxx", etc.
+
+    def libraries(self):
+      return "-lstdc++"
 
     def headerSource(self):
         return """
-#define HELLO_WORLD "hello world"
-"""
-
-    def source(self):
-        return """
-#import <stdio.h>
-#import "testhdr.h"
-
-int main(void) {
-    puts(HELLO_WORLD);
-    return 0;
-}
-"""
-
-class ObjectiveCPlusPlus_Case(Compilation_Case):
-    """Test building an Objective-C++ program."""
-
-    def runtest(self):
-        # Don't try to run the test if GNU Objective C++ is not installed
-        error_rc, _, _ = self.runcmd_unchecked(
-            "touch testtmp.mm; " +
-            "rm -f testtmp.o; " +
-            _gcc + " -x objective-c++ -c testtmp.mm -o /dev/null && " +
-            "test -f testtmp.o" )
-        if error_rc != 0:
-            raise comfychair.NotRunError ('GNU Objective C++ not installed')
-        else:
-            Compilation_Case.runtest (self)
-
-    def sourceFilename(self):
-      return "testtmp.mm"
-
-    def headerSource(self):
-        return """
-#define HELLO_WORLD "hello world"
+#define MESSAGE "hello c++"
 """
 
     def source(self):
@@ -1028,14 +1028,80 @@ class ObjectiveCPlusPlus_Case(Compilation_Case):
 #import "testhdr.h"
 
 int main(void) {
-    std::cout << HELLO_WORLD << endl;
+    std::cout << MESSAGE << std::endl;
     return 0;
 }
 """
 
     def checkBuiltProgramMsgs(self, msgs):
-        self.assert_equal(msgs, "hello world\n")
+        self.assert_equal(msgs, "hello c++\n")
 
+
+class ObjectiveC_Case(LanguageSpecific_Case):
+    """Test building an Objective-C program."""
+
+    def languageName(self):
+      return "Objective-C"
+
+    def languageGccName(self):
+      return "objective-c"
+
+    def extension(self):
+      return ".m"
+
+    def headerSource(self):
+        return """
+#define MESSAGE "hello objective-c"
+"""
+
+    def source(self):
+        return """
+#import <stdio.h>
+#import "testhdr.h"
+
+/* TODO: use objective-c features. */
+
+int main(void) {
+    puts(MESSAGE);
+    return 0;
+}
+"""
+
+class ObjectiveCPlusPlus_Case(LanguageSpecific_Case):
+    """Test building an Objective-C++ program."""
+
+    def languageName(self):
+      return "Objective-C++"
+
+    def languageGccName(self):
+      return "objective-c++"
+
+    def extension(self):
+      return ".mm"
+
+    def libraries(self):
+      return "-lstdc++"
+
+    def headerSource(self):
+        return """
+#define MESSAGE "hello objective-c++"
+"""
+
+    def source(self):
+        return """
+#import <iostream>
+#import "testhdr.h"
+
+/* TODO: use Objective-C features. */
+
+int main(void) {
+    std::cout << MESSAGE << std::endl;
+    return 0;
+}
+"""
+
+    def checkBuiltProgramMsgs(self, msgs):
+        self.assert_equal(msgs, "hello objective-c++\n")
 
 class Gdb_Case(CompileHello_Case):
     """Test that distcc generates correct debugging information."""
@@ -1890,9 +1956,10 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
-         SystemIncludeDirectories_Case,
+         CPlusPlus_Case,
          ObjectiveC_Case,
          ObjectiveCPlusPlus_Case,
+         SystemIncludeDirectories_Case,
          Gdb_Case,
          GdbOpt1_Case,
          GdbOpt2_Case,
