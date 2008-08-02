@@ -903,7 +903,12 @@ class Compilation_Case(WithDaemon_Case):
     def compileCmd(self):
         """Return command to compile source"""
         return self.distcc_without_fallback() + \
-               _gcc + " -o testtmp.o -c %s" % (self.sourceFilename())
+               _gcc + " -o testtmp.o " + self.compileOpts() + \
+               " -c %s" % (self.sourceFilename())
+
+    def compileOpts(self):
+        """Returns any extra options to pass when compiling"""
+        return ""
 
     def linkCmd(self):
         """Return command to link object files"""
@@ -951,24 +956,6 @@ int main(void) {
         self.assert_equal(msgs, "hello world\n")
 
 
-class SystemIncludeDirectories_Case(CompileHello_Case):
-    """Test -I/usr/include/sys"""
-    def compileCmd(self):
-        return self.distcc_without_fallback() + _gcc + \
-               " -I/usr/include/sys -o testtmp.o -c %s" \
-               % (self.sourceFilename())
-    def source(self):
-        return """
-#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
-#include <stdio.h>
-#include "testhdr.h"
-int main(void) {
-    puts(HELLO_WORLD);
-    return 0;
-}
-"""
-
-
 class LanguageSpecific_Case(Compilation_Case):
     """Abstract base class to test building non-C programs."""
     def runtest(self):
@@ -978,8 +965,8 @@ class LanguageSpecific_Case(Compilation_Case):
         error_rc, _, _ = self.runcmd_unchecked(
             "touch " + source + "; " +
             "rm -f testtmp.o; " +
-            _gcc + " -x " + lang + " -c " + source + " " +
-                self.libraries() + " && " +
+            _gcc + " -x " + lang + " " + self.compileOpts() +
+                " -c " + source + " " + self.libraries() + " && " +
             "test -f testtmp.o" )
         if error_rc != 0:
             raise comfychair.NotRunError ('GNU ' + self.languageName() +
@@ -1001,6 +988,7 @@ class LanguageSpecific_Case(Compilation_Case):
     def extension(self):
       """Filename extension, with leading '.'."""
       raise NotImplementedError
+
 
 class CPlusPlus_Case(LanguageSpecific_Case):
     """Test building a C++ program."""
@@ -1102,6 +1090,58 @@ int main(void) {
 
     def checkBuiltProgramMsgs(self, msgs):
         self.assert_equal(msgs, "hello objective-c++\n")
+
+
+class SystemIncludeDirectories_Case(Compilation_Case):
+    """Test -I/usr/include/sys"""
+
+    def compileOpts(self):
+        return "-I/usr/include/sys"
+
+    def headerSource(self):
+        return """
+#define HELLO_WORLD "hello world"
+"""
+
+    def source(self):
+        return """
+#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include <stdio.h>
+#include "testhdr.h"
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+    def checkBuiltProgramMsgs(self, msgs):
+        self.assert_equal(msgs, "hello world\n")
+
+
+class CPlusPlus_SystemIncludeDirectories_Case(CPlusPlus_Case):
+    """Test -I/usr/include/sys for a C++ program"""
+
+    def compileOpts(self):
+        return "-I/usr/include/sys"
+
+    def headerSource(self):
+        return """
+#define MESSAGE "hello world"
+"""
+
+    def source(self):
+        return """
+#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include "testhdr.h"
+#include <stdio.h>
+int main(void) {
+    puts(MESSAGE);
+    return 0;
+}
+"""
+    def checkBuiltProgramMsgs(self, msgs):
+        self.assert_equal(msgs, "hello world\n")
+
 
 class Gdb_Case(CompileHello_Case):
     """Test that distcc generates correct debugging information."""
@@ -1437,22 +1477,19 @@ int main(void) {
 }
 """
 
-    def compileCmd(self):
+    def compileOpts(self):
         # quoting is hairy because this goes through the shell
-        return self.distcc() + _gcc + \
-               " -c -o testtmp.o '-DMESSAGE=\"hello world\"' testtmp.c"
+        return "'-DMESSAGE=\"hello DashD\"'"
 
     def checkBuiltProgramMsgs(self, msgs):
-        self.assert_equal(msgs, "hello world\n")
+        self.assert_equal(msgs, "hello DashD\n")
 
 
 class DashMD_DashMF_DashMT_Case(CompileHello_Case):
     """Test -MD -MFfoo -MTbar"""
 
-    def compileCmd(self):
-        return self.distcc_without_fallback() + _gcc + \
-               " -MD -MFdotd_filename -MTtarget_name_42 -o testtmp.o -c %s" % \
-                      (self.sourceFilename())
+    def compileOpts(self):
+        return "-MD -MFdotd_filename -MTtarget_name_42"
 
     def runtest(self):
         try:
@@ -1467,9 +1504,8 @@ class DashMD_DashMF_DashMT_Case(CompileHello_Case):
 class DashWpMD_Case(CompileHello_Case):
     """Test -Wp,-MD,depfile"""
 
-    def compileCmd(self):
-        return self.distcc_without_fallback() + _gcc + \
-               " -c -Wp,-MD,depsfile -o testtmp.o testtmp.c"
+    def compileOpts(self):
+        return "-Wp,-MD,depsfile"
 
     def runtest(self):
         try:
@@ -1960,6 +1996,7 @@ tests = [
          ObjectiveC_Case,
          ObjectiveCPlusPlus_Case,
          SystemIncludeDirectories_Case,
+         CPlusPlus_SystemIncludeDirectories_Case,
          Gdb_Case,
          GdbOpt1_Case,
          GdbOpt2_Case,
