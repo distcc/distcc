@@ -1,4 +1,12 @@
-distcc-3.0rc3 "Third time lucky."   2008-07-31
+distcc-3.0rc4 "Pump up the volume"   2008-08-04
+
+  BUG FIXES:
+
+   * Fixed a bug in 3.0rc3 that broke pump mode for C++ compilations
+     that use -I options that refer to a subdirectory of one of the
+     default system include directories, e.g. -I/usr/include/foo.
+
+distcc-3.0rc3 "Third time lucky?"   2008-07-31
 
   FEATURES:
 
