@@ -149,6 +149,16 @@ The default is to measure a few reasonable scenarios.
 ######################################################################
 def main():
     """Run the benchmark per arguments"""
+
+    # Ensure that stdout and stderr are line buffered, rather than
+    # block buffered, as might be the default when running with
+    # stdout/stderr redirected to a file; this ensures that the
+    # output is prompt, even when the script takes a long time for
+    # a single step, and it also avoids confusing intermingling of
+    # stdout and stderr.
+    sys.stdout = os.fdopen(1, "w", 1)
+    sys.stderr = os.fdopen(2, "w", 1)
+
     sum = Summary()
     options, args = getopt(sys.argv[1:], 'a:c:n:f:',
                            ['list-projects', 'actions=', 'help', 'compiler=',
