@@ -1996,8 +1996,7 @@ tests = [
          ObjectiveC_Case,
          ObjectiveCPlusPlus_Case,
          SystemIncludeDirectories_Case,
-         # FIXME The following test is disabled for now, because it fails.
-         # CPlusPlus_SystemIncludeDirectories_Case,
+         CPlusPlus_SystemIncludeDirectories_Case,
          Gdb_Case,
          GdbOpt1_Case,
          GdbOpt2_Case,
