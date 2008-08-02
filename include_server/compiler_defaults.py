@@ -113,9 +113,20 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
   if real_prefix == rooted_system_dir:
     # rooted_system_dir already exists as a real (non-symlink) path.
     # Make rooted_system_dir a link.
-    # TODO(fergus): do we need to delete anything from system_links
-    # in this case?
+    #
+    # For example, this could happen if /usr/include/c++/4.0 and
+    # /usr/include are both default system directories.
+    # First we'd call this function with /usr/include/c++/4.0,
+    # and it would call os.mkdirdirs() to create
+    # /dev/shm/tmpX.include_server-X-1/usr/include/c++,
+    # and then it would create a symlink named 4.0 within that.
+    # Then we'd call this function again with /usr/include.
+    # In this case, we can replace the whole subtree with a single symlink
+    # at /dev/shm/tmpX.include_server-X-1/usr/include.
     shutil.rmtree(rooted_system_dir)
+    system_links[:] = filter(lambda path :
+                             not path.startswith(rooted_system_dir),
+                             system_links)
   elif real_prefix == parent:
     # The really constructed path does not extend beyond the parent directory,
     # so we're all set to create the link if it's not already there.
