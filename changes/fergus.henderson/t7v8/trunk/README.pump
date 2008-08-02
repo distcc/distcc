@@ -1,0 +1,52 @@
+See README for basic information on distcc.
+
+Distcc's "pump" mode improves on plain distcc by distributing not only
+compilation but also preprocessing to distcc servers.
+
+The pump mode uses an "include server" process that runs during
+the build. The include server parses and analyzes source (including
+header) files. It runs on the workstation that initiates the build.
+The include server analyzes each header file only a few times during a build,
+sometimes just once. In contrast, during ordinary distcc operation,
+the preprocessor examines each header file multiple times, even hundreds of 
+times for a large build.
+
+In pump mode, a static analysis algorithm inspects each #include directive
+and computes a superset of the possible values of its argument.
+The resulting dependency graph among header files persists during
+the lifetime of the include server, which then acts as a cache for include
+analysis.
+
+The include server compresses source files into a temporary directory
+as they are encountered. In this way, a given source file is
+compressed only once during the build.
+
+It may happen that a header file is included via an absolutely
+specified include directory such as -I/absolute/path. But on the
+compilation server the path -I/absolute/path does not exist; instead
+the server places foo.h under /server_temporary_path/absolute/path for
+some /server_temporary_path root directory. This directory has no
+meaning on the workstation. Before compressing foo.h, the include
+server therefore inserts a #line directive in foo.h, to inform the
+preprocessor that the real location is /absolute/path.
+
+The distcc client asks the include server for the list of
+compressed files that constitute the transitive closure of the source
+file to be compiled. It then spools these files to a distcc
+server. The distcc server unpacks these files in the
+/server_temporary_path directory before preprocessing and compiling.
+The server also rewrites include options, such as -I's, to reflect the
+new locations of the files on the server. The .d and the .o files are
+both rewritten as necessary to refer to client-side filenames and 
+returned to the pump-mode client.
+
+Pump mode is able to distribute compilations up to 10X faster than
+plain distcc. But because building also involves linking and perhaps
+generation of source files, the overall speed-up of the build time is
+variable.
+
+The pump mode was developed to be used with large clusters of distcc
+servers, providing hundreds of CPUs. With versions of gcc >= 4.1.1,
+pump mode will probably not show major performance gains using
+clusters of less than ten CPUs. The preprocessor running on the
+workstation is fast enough to keep that many machines busy.
