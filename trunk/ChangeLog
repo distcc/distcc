@@ -1,3 +1,68 @@
+## distcc 3.0rc4.
+
+2008-08-02 19:49  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Add C++ version of the SystemIncludeDirectories test.
+	  
+	  Also, reduce code duplication a little by adding a compileOpts()
+	  function to
+	  the CompilationCase class, and overriding that, rather than
+	  compileCmd(),
+	  in various derived classes.
+
+2008-08-02 17:50  Fergus Henderson <opensource@google.com>
+
+	* include_server/compiler_defaults.py:
+	  
+	  Fix a TODO in compiler_defaults.py that was responsible for a bug
+	  that broke pump mode when one of the default system include
+	  directories
+	  was a subdirectory of another, as turns out to be the case for GNU
+	  C++.
+	  
+	  The CPlusPlus_SystemIncludeDirectories_Case, which was failing before
+	  this
+	  change, now passes. (TODO: re-enable it.)
+	  
+	  Reviewers: Craig Silverstein
+
+2008-08-02 01:30  Fergus Henderson <opensource@google.com>
+
+	* bench/benchmark.py:
+	  
+	  Make the benchmarking script's stdout and stderr line buffered.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-08-02 01:27  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Add a test of C++ compilation, and refactor the tests of Objective-C
+	  and Objective-C++ to share the common code.
+	  
+	  Also, fix some bugs in the tests of Objective-C and Objective-C++.
+	  These tests were never being activated, even when the right compiler
+	  is
+	  installed, because in the test compilation (not using distcc) it was
+	  compiling with "-o /dev/null" and then testing that testtmp.o exists,
+	  which it never did. There was also a missing "std::" in the
+	  Objective-C++
+	  test. I still haven't run the Objective-C++ test, because I still
+	  haven't
+	  figured out how to install Objective-C++, but it's pretty similar to
+	  the C++ and Objective-C tests, and both of those now run and pass.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-08-01 20:59  Fergus Henderson <opensource@google.com>
+
+	* bench/ProjectDefs.py:
+	  
+	  Update a stale URL.
+
 ## distcc 3.0rc3.
 
 2008-08-01 03:42  Fergus Henderson <opensource@google.com>
