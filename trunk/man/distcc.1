@@ -26,7 +26,8 @@ pump mode or distcc-pump.
 For each job, distcc in plain mode sends the complete preprocessed source code
 and compiler arguments across the network from the client to a compilation
 server.  In pump mode, distcc sends the source code and recursively included
-header files, so that both preprocessing and compilation can take place on the
+header files (excluding those from the default system header directories),
+so that both preprocessing and compilation can take place on the
 compilation servers. This speeds up the delivery of compilations by up to an
 order of magnitude over plain distcc.
 .PP
@@ -68,7 +69,9 @@ concurrency settings must be adjusted.
 
 The
 .B -j
-setting, especially for large values of -j, must take into account the CPU load
+setting, especially for large values of
+.B -j,
+must take into account the CPU load
 on the client.  Additional measures may be needed to curtail the client load.
 For example, concurrent linking should be severely curtailed using auxiliary
 locks.  The effect of other build activity, such as Java compilation when
@@ -190,15 +193,19 @@ Because distcc in pump mode is able to push out files up to about ten
 times faster, build speed may increase 3X or more for large builds
 compared to plain distcc mode.
 
+.SH "RESTRICTIONS FOR PUMP MODE"
+
 Using pump mode requires both client and servers to use release 3.0 or
 later of distcc and distccd (respectively).  
 
-Note that the incremental include analysis of distc-pump mode rests on
+The incremental include analysis of distc-pump mode rests on
 the fundamental assumption that source and header files do not change
 during the build process.  A few complex build systems, such as that
 for Linux kernel 2.6, do not quite satisfy this requirement.  To
 overcome such issues, and other corner cases such as absolute
-filepaths in includes, see the include_server(1) man page.
+filepaths in includes, see the
+.BR include_server(1)
+man page.
 
 Another important assumption is that the include configuration of all machines
 must be identical.  Thus the headers under the default system path must be the
@@ -211,12 +218,10 @@ subdirectories of either.
 If this assumption does not hold, then it is possible to break builds with
 distcc-pump mode, or worse, to get wrong results without warning.  Presently
 this condition is not verified, and it is on our TODO list to address this
-issue. Also, currently, explicit include specifications that resolve to something
-under the default system search path such as -I/usr/include/foolib do not work
-except if this directory is specified with -isystem.
+issue.
 
 An easy way to guarantee that the include configurations are identical is to use
-a crosscompiler that defines a default system search path restricted to
+a cross-compiler that defines a default system search path restricted to
 directories of the compiler installation.
 
 See the \fBinclude_server\fR(1) manual for more information on symptoms and
@@ -418,8 +423,9 @@ Finally there is the host entry
 .PP
 Performance depends on the details of the source and makefiles used
 for the project, and the machine and network speeds.  Experimenting
-with different settings for the host list and -j factor may improve
-performance.
+with different settings for the host list and
+.B -j
+factor may improve performance.
 .PP
 The syntax is
 .PP
@@ -788,11 +794,8 @@ what would have been produced by compiling on the local client (due to different
 padding, etc), they should be functionally identical.
 .PP
 In distcc-pump mode, the include server is unable to handle certain very complicated computed
-includes as found in parts of the boost library. The include server will time
+includes as found in parts of the Boost library. The include server will time
 out and distcc will revert to plain mode.
-.PP
-In distcc-pump mode, includes of the form -I/usr/include/foolib do not usually
-work, see discussion in section HOW DISTCC-PUMP MODE WORKS above.
 .PP
 In distcc-pump mode, certain assumptions are made that source and header files
 do not change during the build.  See discussion in section DISTCC DISCREPANCY
