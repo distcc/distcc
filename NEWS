@@ -1,3 +1,9 @@
+distcc-3.0 "The moment has arrived"   2008-08-06
+
+  DOCUMENTATION:
+
+   * Minor improvements to the man pages.
+
 distcc-3.0rc4 "Pump up the volume"   2008-08-04
 
   BUG FIXES:

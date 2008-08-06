@@ -1,4 +1,31 @@
+## distcc 3.0.
+
+2008-08-06 15:37  Fergus Henderson <opensource@google.com>
+
+	* man/distcc.1, man/pump.1:
+	  
+	  Some final documentation updates before 3.0.
+	  
+	  In the distcc man page:
+	  - remove description of a bug that's been fixed now (distcc issue 7)
+	  - make it a little clearer that in pump mode we don't ship the header
+	  files from the default system header directories to the server
+	  - add a new section header "RESTRICTIONS OF PUMP MODE"
+	  - some typographical corrections.
+	  
+	  In the pump man page:
+	  - add a prominent pointer to the distcc man page,
+	  in particular to the "RESTRICTIONS OF PUMP MODE" section.
+	  
+	  Reviewers: Craig Silverstein
+
 ## distcc 3.0rc4.
+
+2008-08-02 19:54  Fergus Henderson <opensource@google.com>
+
+	* ChangeLog, NEWS, configure.ac:
+	  
+	  Time for another release candidate.
 
 2008-08-02 19:49  Fergus Henderson <opensource@google.com>
 
