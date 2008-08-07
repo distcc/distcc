@@ -31,39 +31,41 @@ Table of Contents
 <LI>
 <A HREF=#TOC_7> HOW DISTCC-PUMP MODE WORKS</A>
 <LI>
-<A HREF=#TOC_8> OPTION SUMMARY</A>
+<A HREF=#TOC_8> RESTRICTIONS FOR PUMP MODE</A>
 <LI>
-<A HREF=#TOC_9> INSTALLING DISTCC</A>
+<A HREF=#TOC_9> OPTION SUMMARY</A>
 <LI>
-<A HREF=#TOC_10> MASQUERADING</A>
+<A HREF=#TOC_10> INSTALLING DISTCC</A>
 <LI>
-<A HREF=#TOC_11> USING DISTCC WITH CCACHE</A>
+<A HREF=#TOC_11> MASQUERADING</A>
 <LI>
-<A HREF=#TOC_12> HOST SPECIFICATIONS</A>
+<A HREF=#TOC_12> USING DISTCC WITH CCACHE</A>
 <LI>
-<A HREF=#TOC_13> COMPRESSION</A>
+<A HREF=#TOC_13> HOST SPECIFICATIONS</A>
 <LI>
-<A HREF=#TOC_14> SEARCH PATHS</A>
+<A HREF=#TOC_14> COMPRESSION</A>
 <LI>
-<A HREF=#TOC_15> TIMEOUTS</A>
+<A HREF=#TOC_15> SEARCH PATHS</A>
 <LI>
-<A HREF=#TOC_16> DIAGNOSTICS</A>
+<A HREF=#TOC_16> TIMEOUTS</A>
 <LI>
-<A HREF=#TOC_17> EXIT CODES</A>
+<A HREF=#TOC_17> DIAGNOSTICS</A>
 <LI>
-<A HREF=#TOC_18> FILES</A>
+<A HREF=#TOC_18> EXIT CODES</A>
 <LI>
-<A HREF=#TOC_19> ENVIRONMENT VARIABLES</A>
+<A HREF=#TOC_19> FILES</A>
 <LI>
-<A HREF=#TOC_20> CROSS COMPILING</A>
+<A HREF=#TOC_20> ENVIRONMENT VARIABLES</A>
 <LI>
-<A HREF=#TOC_21> BUGS</A>
+<A HREF=#TOC_21> CROSS COMPILING</A>
 <LI>
-<A HREF=#TOC_22> AUTHOR</A>
+<A HREF=#TOC_22> BUGS</A>
 <LI>
-<A HREF=#TOC_23> LICENCE</A>
+<A HREF=#TOC_23> AUTHOR</A>
 <LI>
-<A HREF=#TOC_24> SEE ALSO</A>
+<A HREF=#TOC_24> LICENCE</A>
+<LI>
+<A HREF=#TOC_25> SEE ALSO</A>
 </UL>
 <!-- TOC END -->
 <BR>
@@ -98,10 +100,11 @@ called pump mode or distcc-pump.<BR>
 For each job, distcc in plain mode sends the complete preprocessed
 source code and compiler arguments across the network from the
 client to a compilation server.  In pump mode, distcc sends the
-source code and recursively included header files, so that both
-preprocessing and compilation can take place on the compilation
-servers. This speeds up the delivery of compilations by up to
-an order of magnitude over plain distcc.<BR>
+source code and recursively included header files (excluding those
+from the default system header directories), so that both preprocessing
+and compilation can take place on the compilation servers. This
+speeds up the delivery of compilations by up to an order of magnitude
+over plain distcc.<BR>
 <P>
 Compilation is driven by a client machine, which is typically
 the developer's workstation or laptop.  The distcc client runs
@@ -135,12 +138,12 @@ waiting for disk or network IO. Note that distcc can also work
 with other build control tools, such as SCons, where similar concurrency
 settings must be adjusted.<BR>
 <P>
-The <B> -j</B> setting, especially for large values of -j, must
-take into account the CPU load on the client.  Additional measures
-may be needed to curtail the client load. For example, concurrent
-linking should be severely curtailed using auxiliary locks.  The
-effect of other build activity, such as Java compilation when
-building mixed code, should be considered.  The <B> --localslots_cpp</B>
+The <B> -j</B> setting, especially for large values of <B> -j,</B>
+must take into account the CPU load on the client.  Additional
+measures may be needed to curtail the client load. For example,
+concurrent linking should be severely curtailed using auxiliary
+locks.  The effect of other build activity, such as Java compilation
+when building mixed code, should be considered.  The <B> --localslots_cpp</B>
 parameter is by default set to 16. This limits the number of concurrent
 processes that do preprocessing in plain distcc (non-pump) mode.
 Therefore, larger <B> -j</B> values than 16 may be used without
@@ -283,15 +286,21 @@ Because distcc in pump mode is able to push out files up to about
 ten times faster, build speed may increase 3X or more for large
 builds compared to plain distcc mode.<BR>
 <P>
+<H2>
+<A NAME=TOC_8>
+RESTRICTIONS FOR PUMP MODE</A>
+</H2>
+<BR>
+<P>
 Using pump mode requires both client and servers to use release
 3.0 or later of distcc and distccd (respectively).<BR>
 <P>
-Note that the incremental include analysis of distc-pump mode
-rests on the fundamental assumption that source and header files
-do not change during the build process.  A few complex build systems,
-such as that for Linux kernel 2.6, do not quite satisfy this requirement.
+The incremental include analysis of distc-pump mode rests on the
+fundamental assumption that source and header files do not change
+during the build process.  A few complex build systems, such as
+that for Linux kernel 2.6, do not quite satisfy this requirement.
 To overcome such issues, and other corner cases such as absolute
-filepaths in includes, see the include_server(1) man page.<BR>
+filepaths in includes, see the <B>include_server(1)</B> man page.<BR>
 <P>
 Another important assumption is that the include configuration
 of all machines must be identical.  Thus the headers under the
@@ -305,20 +314,17 @@ subdirectories of either.<BR>
 If this assumption does not hold, then it is possible to break
 builds with distcc-pump mode, or worse, to get wrong results without
 warning.  Presently this condition is not verified, and it is
-on our TODO list to address this issue. Also, currently, explicit
-include specifications that resolve to something under the default
-system search path such as -I/usr/include/foolib do not work except
-if this directory is specified with -isystem.<BR>
+on our TODO list to address this issue.<BR>
 <P>
 An easy way to guarantee that the include configurations are identical
-is to use a crosscompiler that defines a default system search
+is to use a cross-compiler that defines a default system search
 path restricted to directories of the compiler installation.<BR>
 <P>
 See the <B>include_server</B>(1) manual for more information on
 symptoms and causes of violations of distcc-pump mode assumptions.<BR>
 <P>
 <H2>
-<A NAME=TOC_8>
+<A NAME=TOC_9>
 OPTION SUMMARY</A>
 </H2>
 Most options passed to distcc are interpreted as compiler options.
@@ -355,7 +361,7 @@ the host list. See the Host Specifications section.<BR>
 </DD>
 </DL>
 <H2>
-<A NAME=TOC_9>
+<A NAME=TOC_10>
 INSTALLING DISTCC</A>
 </H2>
 There are three different ways to call distcc, to suit different
@@ -387,7 +393,7 @@ If you're not using a masquerade directory, you'll need to either
 change CC and/or CXX, or modify the makefile(s) to call distcc
 explicitly.<BR>
 <H2>
-<A NAME=TOC_10>
+<A NAME=TOC_11>
 MASQUERADING</A>
 </H2>
 The basic idea is to create a &quot;masquerade directory&quot;
@@ -442,7 +448,7 @@ real gcc by investigating the PATH variable. Instead, the compiler
 location is explicitly provided.<BR>
 <P>
 <H2>
-<A NAME=TOC_11>
+<A NAME=TOC_12>
 USING DISTCC WITH CCACHE</A>
 </H2>
 ccache is a program that speeds software builds by caching the
@@ -484,7 +490,7 @@ distcc to be any use.<BR>
 <P>
 distcc's pump mode is not compatible with ccache.<BR>
 <H2>
-<A NAME=TOC_12>
+<A NAME=TOC_13>
 HOST SPECIFICATIONS</A>
 </H2>
 A &quot;host list&quot; tells distcc which machines to use for
@@ -544,8 +550,8 @@ Finally there is the host entry<BR>
 <P>
 Performance depends on the details of the source and makefiles
 used for the project, and the machine and network speeds.  Experimenting
-with different settings for the host list and -j factor may improve
-performance.<BR>
+with different settings for the host list and <B> -j</B> factor
+may improve performance.<BR>
 <P>
 The syntax is<BR>
 <P>
@@ -680,7 +686,7 @@ a hash/pound sign (<B>#</B>) and run to the end of the line.<BR>
 If a host in the list is not reachable distcc will emit a warning
 and ignore that host for about one minute.<BR>
 <H2>
-<A NAME=TOC_13>
+<A NAME=TOC_14>
 COMPRESSION</A>
 </H2>
 The <B> lzo</B> host option specifies that LZO compression should
@@ -700,7 +706,7 @@ server always responds with compressed replies to compressed requests.<BR>
 <P>
 Pump mode requires the servers to have the lzo host option on.<BR>
 <H2>
-<A NAME=TOC_14>
+<A NAME=TOC_15>
 SEARCH PATHS</A>
 </H2>
 <BR>
@@ -719,7 +725,7 @@ directory, only the base name of the compiler is used.  The client's
 PATH is used only to run the preprocessor and has no effect on
 the server's path.<BR>
 <H2>
-<A NAME=TOC_15>
+<A NAME=TOC_16>
 TIMEOUTS</A>
 </H2>
 <BR>
@@ -732,7 +738,7 @@ timeout expires, the job will be re-run locally.<BR>
 <P>
 The timeouts are not configurable at present.<BR>
 <H2>
-<A NAME=TOC_16>
+<A NAME=TOC_17>
 DIAGNOSTICS</A>
 </H2>
 Error messages or warnings from local or remote compilers are
@@ -744,7 +750,7 @@ environment variable on the client, and the <B> --verbose</B>
 option on the server.  For troubleshooting, examine both the client
 and server error messages.<BR>
 <H2>
-<A NAME=TOC_17>
+<A NAME=TOC_18>
 EXIT CODES</A>
 </H2>
 The exit code of distcc is normally that of the compiler: zero
@@ -798,7 +804,7 @@ No hosts defined and fallbacks disabled.<BR>
 <P>
 (Others are listed in exitcode.h.)<BR>
 <H2>
-<A NAME=TOC_18>
+<A NAME=TOC_19>
 FILES</A>
 </H2>
 If $DISTCC_HOSTS is not set, distcc reads a host list from either
@@ -809,7 +815,7 @@ at compile time.  The file locations are shown in the output from
 distcc creates a number of temporary and lock files underneath
 the temporary directory.<BR>
 <H2>
-<A NAME=TOC_19>
+<A NAME=TOC_20>
 ENVIRONMENT VARIABLES</A>
 </H2>
 distcc's behaviour is controlled by a number of environment variables.
@@ -913,7 +919,7 @@ The email address for discrepancy email; the default is &quot;distcc-pump-errors
 </DD>
 </DL>
 <H2>
-<A NAME=TOC_20>
+<A NAME=TOC_21>
 CROSS COMPILING</A>
 </H2>
 Cross compilation means building programs to run on a machine
@@ -946,7 +952,7 @@ native, <I> gcc-VERSION</I> and <I> gcc</I> .<BR>
 The compiler must be installed under the same name on the client
 and on every volunteer machine.<BR>
 <H2>
-<A NAME=TOC_21>
+<A NAME=TOC_22>
 BUGS</A>
 </H2>
 If you think you have found a  distcc bug, please see the file
@@ -968,11 +974,6 @@ without changing the version number.  distcc does not protect
 against using incompatible versions.  Compiler errors about link
 problems or declarations in system header files are usually due
 to mismatched or incorrectly installed compilers.<BR>
-<P>
-Due to limitations in gcc, gdb may not be able to automatically
-find the source files for programs built using distcc in some
-circumstances.  The gdb <B> directory</B> command can be used.
-This should be fixed in gcc 3.4.<BR>
 <P>
 gcc's <B> -MD</B> option can produce output in the wrong directory
 if the source and object files are in different directories and
@@ -998,6 +999,15 @@ distcc-pump mode reverts to plain distcc mode for source files
 that contain includes with absolute paths (either directly or
 in an included file).<BR>
 <P>
+Due to limitations in gcc, gdb may not be able to automatically
+find the source files for programs built using distcc in some
+circumstances.  The gdb <B> directory</B> command can be used.
+For distcc's plain (non-pump) mode, this is fixed in gcc 3.4 and
+later.  For pump mode, the fix in gcc 3.4 does not suffice; we've
+worked around the gcc limitation by rewriting the object files
+that gcc produces, but this is only done for ELF object files,
+but not for other object file formats.<BR>
+<P>
 The .o files produced by discc in pump mode will be different
 from those produced locally: for non-ELF files, the debug information
 will specify compile directories of the server.  The code itself
@@ -1010,13 +1020,9 @@ on the local client (due to different padding, etc), they should
 be functionally identical.<BR>
 <P>
 In distcc-pump mode, the include server is unable to handle certain
-very complicated computed includes as found in parts of the boost
+very complicated computed includes as found in parts of the Boost
 library. The include server will time out and distcc will revert
 to plain mode.<BR>
-<P>
-In distcc-pump mode, includes of the form -I/usr/include/foolib
-do not usually work, see discussion in section HOW DISTCC-PUMP
-MODE WORKS above.<BR>
 <P>
 In distcc-pump mode, certain assumptions are made that source
 and header files do not change during the build.  See discussion
@@ -1024,7 +1030,7 @@ in section DISTCC DISCREPANCY SYMPTOMS of <B>include_server</B>(1().<BR>
 <P>
 Other known bugs may be documented on <I> http://code.google.com/p/distcc/</I><BR>
 <H2>
-<A NAME=TOC_22>
+<A NAME=TOC_23>
 AUTHOR</A>
 </H2>
 distcc was written by Martin Pool &lt;mbp@sourcefrog.net&gt;,
@@ -1033,7 +1039,7 @@ Frerich Raabe, Dimitri Papadopoulos and others noted in the NEWS
 file.  Please report bugs to &lt;distcc@lists.samba.org&gt;. 
 See <B>pump</B>(1) for the authors of pump mode.<BR>
 <H2>
-<A NAME=TOC_23>
+<A NAME=TOC_24>
 LICENCE</A>
 </H2>
 You are free to use distcc.  distcc (including this manual) may
@@ -1042,7 +1048,7 @@ GNU General Public Licence version 2 or later.  distcc comes with
 absolutely no warrany.  A copy of the GPL is included in the file
 COPYING.<BR>
 <H2>
-<A NAME=TOC_24>
+<A NAME=TOC_25>
 SEE ALSO</A>
 </H2>
 <B>distccd</B>(1), <B>pump</B>(1), <B>include_server</B>(1), <B>gcc</B>(1),
