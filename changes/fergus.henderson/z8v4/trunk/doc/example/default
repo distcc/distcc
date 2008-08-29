@@ -1,0 +1,2 @@
+# This should go in the file /etc/default/distcc.
+STARTDISTCC=true
