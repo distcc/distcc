@@ -429,7 +429,7 @@ int dcc_get_protover_from_features(enum dcc_compress compr,
     }
 
     if (compr == DCC_COMPRESS_NONE && cpp_where == DCC_CPP_ON_SERVER) {
-        rs_log_error("pump mode (',cpp') requires compression (',zlo')");
+        rs_log_error("pump mode (',cpp') requires compression (',lzo')");
     }
 
     return *protover;

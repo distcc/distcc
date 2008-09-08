@@ -732,7 +732,7 @@ include-server-maintainer-check: include-server
 # Do distcc-maintainer-check in pump-mode, if possible.
 pump-maintainer-check: pump include-server check_programs
 	@if [ -d "$(include_server_builddir)" ]; then \
-	  DISTCC_HOSTS='<invalid>,cpp' \
+	  DISTCC_HOSTS='<invalid>,cpp,lzo' \
 	    "$(builddir)/pump" \
 	        $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -776,7 +776,7 @@ single-test: check_programs
 
 # Run a single test in pump-mode.
 pump-single-test: pump include-server check_programs
-	DISTCC_HOSTS='<invalid>,cpp' \
+	DISTCC_HOSTS='<invalid>,cpp,lzo' \
 	    "$(builddir)/pump" \
 	        $(MAKE) \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
@@ -817,7 +817,7 @@ distcc-installcheck: $(check_PROGRAMS)
 pump-installcheck:
 	which_loc=`which which`; \
 	pump_loc=`PATH="$(DISTCC_INSTALLATION)" "$$which_loc" pump`; \
-	DISTCC_HOSTS='<invalid>,cpp' \
+	DISTCC_HOSTS='<invalid>,cpp,lzo' \
 	  "$$pump_loc" \
             $(MAKE) DISTCC_INSTALLATION="$(DISTCC_INSTALLATION)" \
 	      RESTRICTED_PATH="$(RESTRICTED_PATH)" \
