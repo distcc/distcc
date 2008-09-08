@@ -248,22 +248,25 @@ static int dcc_parse_options(const char **psrc,
             rs_trace("got LZO option");
             host->compr = DCC_COMPRESS_LZO1X;
             p += 3;
-    } else if (str_startswith("down", p)) {
-        /* if "hostid,down", mark it down, and strip down from hostname */
+        } else if (str_startswith("down", p)) {
+            /* if "hostid,down", mark it down, and strip down from hostname */
             host->is_up = 0;
-        p += 4;
+            p += 4;
         } else if (str_startswith("cpp", p)) {
             rs_trace("got CPP option");
             host->cpp_where = DCC_CPP_ON_SERVER;
             p += 3;
         } else {
-            rs_log_warning("unrecognized option in host specification %s",
-                           started);
+            rs_log_error("unrecognized option in host specification: %s",
+                         started);
             return EXIT_BAD_HOSTSPEC;
         }
     }
-    dcc_get_protover_from_features(host->compr, host->cpp_where,
-                                   &host->protover);
+    if (dcc_get_protover_from_features(host->compr, host->cpp_where,
+                                       &host->protover) == -1) {
+        rs_log_error("invalid host options: %s", started);
+        return EXIT_BAD_HOSTSPEC;
+    }
 
     *psrc = p;
 
@@ -413,18 +416,20 @@ int dcc_get_protover_from_features(enum dcc_compress compr,
 {
     *protover = -1;
 
-    if (compr == DCC_COMPRESS_NONE &&
-        cpp_where == DCC_CPP_ON_CLIENT) {
+    if (compr == DCC_COMPRESS_NONE && cpp_where == DCC_CPP_ON_CLIENT) {
         *protover = DCC_VER_1;
     }
 
-    if (compr == DCC_COMPRESS_LZO1X &&
-        cpp_where == DCC_CPP_ON_SERVER) {
+    if (compr == DCC_COMPRESS_LZO1X && cpp_where == DCC_CPP_ON_SERVER) {
         *protover = DCC_VER_3;
     }
-    if (compr == DCC_COMPRESS_LZO1X &&
-        cpp_where == DCC_CPP_ON_CLIENT) {
+
+    if (compr == DCC_COMPRESS_LZO1X && cpp_where == DCC_CPP_ON_CLIENT) {
         *protover = DCC_VER_2;
+    }
+
+    if (compr == DCC_COMPRESS_NONE && cpp_where == DCC_CPP_ON_SERVER) {
+        rs_log_error("pump mode (',cpp') requires compression (',lzo')");
     }
 
     return *protover;
