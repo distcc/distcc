@@ -22,9 +22,17 @@
 # 'pump': a script for using distcc-pump with build commands.
 
 # This file is processed by configure, which substitutes in the right
-# value for @PYTHON@ and @PYTHON_RELATIVE_LIB@.
+# value for @PYTHON@, @prefix@, etc.
+# NOTE: do we need to do the expansion of these variables by using sed
+# in Makefile.in rather than by having configure process this file?
+# The autoconf manual suggests that we do.  Right now it doesn't seem
+# to be needed in practice, though.
 
 PYTHON=@PYTHON@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sysconfdir=@sysconfdir@
+srcdir=@srcdir@
 
 # This is where include_server.py lives.  It's set to the empty string
 # before pump is installed into its final location.  At install-time,
@@ -220,7 +228,7 @@ StartIncludeServer() {
     # directory. 
     #
     # Calculate the location of the source directory.
-    distcc_srcdir=`cd $DISTCC_LOCATION; cd @srcdir@; pwd`
+    distcc_srcdir=`cd "$DISTCC_LOCATION"; cd "$srcdir"; pwd`
     # The source tree location must be passed.
     include_server="$distcc_srcdir/include_server/include_server.py"
     # Now locate the single directory containing the .so file from the build
@@ -430,13 +438,13 @@ StartIncludeServerAndDetermineHosts() {
     if [ -z "$DISTCC_HOSTS" ] &&
        [ -z "$DISTCC_DIR" -o ! -f "$DISTCC_DIR/hosts" ] &&
        [ -z "$HOME" -o ! -f "$HOME/.distcc/hosts" ] &&
-       [ ! -f "/etc/distcc/hosts" ]
+       [ ! -f "$sysconfdir/distcc/hosts" ]
     then
       echo "$program_name:" \
               "expected environment variables \"DISTCC_HOSTS\" or" \
               "\"DISTCC_POTENTIAL_HOSTS\" to be set, or to find a" \
               "distcc hosts file in \"\$DISTCC_DIR/hosts\"," \
-              "\"\$HOME/.distcc/hosts\", or \"/etc/distcc/hosts\"." \
+              "\"\$HOME/.distcc/hosts\", or \"$sysconfdir/distcc/hosts\"." \
               1>&2
       exit 1
     else
