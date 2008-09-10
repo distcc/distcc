@@ -1,0 +1,80 @@
+#! /bin/sh
+#
+# chkconfig: - 60 20
+# description: The distcc deamon
+#              http://code.google.com/p/distcc/
+#
+# processname: distccd
+
+# This is a Red Hat init.d file to start distccd.  To install it, copy
+# it into /etc/init.d/distccd, and add appropriate links into the
+# rc?.d directories.
+
+# It may need to be tweaked for other distributions or versions.
+
+# You may wish to accept parameters from the user to set access
+# control options.
+
+
+
+# Get config.
+. /etc/sysconfig/network
+
+# Get functions
+. /etc/init.d/functions
+
+# Check that networking is up.
+if [ ${NETWORKING} = "no" ] ; then
+	exit 0
+fi
+
+RETVAL=0
+SERVICE=distccd
+
+start() {
+ 	echo -n $"Starting $SERVICE: "
+	daemon /usr/local/bin/$SERVICE --daemon
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$SERVICE
+	return $RETVAL
+}	
+
+stop() {
+	echo -n $"Stopping $SERVICE: "
+	killproc $SERVICE
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$SERVICE
+	return $RETVAL
+}	
+
+restart() {
+	stop
+	start
+}	
+
+# See how we were called.
+case "$1" in
+ start)
+ 	start
+	;;
+ stop)
+ 	stop
+	;;
+ status)
+ 	status $SERVICE
+	;;
+ restart)
+ 	restart
+	;;
+ condrestart)
+ 	[ -f /var/lock/subsys/$SERVICE ] && restart || :
+	;;
+ *)
+	echo $"Usage: $0 {start|stop|status|restart}"
+	exit 1
+	;;
+esac
+
+exit $?
