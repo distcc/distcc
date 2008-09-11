@@ -17,10 +17,11 @@
  * USA.
 */
 
-/* Author: Manos Renieris */
+/* Authors: Manos Renieris, Fergus Henderson */
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -36,7 +37,12 @@
 #include "clinet.h"
 #include "exitcode.h"
 #include "util.h"
+#include "hosts.h"
 #include "include_server_if.h"
+
+static int dcc_count_slashes(const char *path);
+static int dcc_count_leading_dotdots(const char *path);
+static int dcc_categorize_file(const char *include_server_filename);
 
 /* The include server puts all files in its own special directory,
  * which is n path components long, where n = INCLUDE_SERVER_DIR_DEPTH
@@ -161,4 +167,115 @@ int dcc_get_original_fname(const char *fname, char **original_fname)
     }
     free(alloced_work);
     return 0;
+}
+
+/**
+ * This implements the --scan_includes option.
+ * Talks to the include server, and prints the results to stdout.
+ */
+int
+dcc_approximate_includes(struct dcc_hostdef *host, char **argv)
+{
+    char **files;
+    int i;
+    int ret;
+
+    if (host->cpp_where != DCC_CPP_ON_SERVER) {
+        rs_log_error("'--scan_includes' specified, "
+                     "but distcc wouldn't have used include server "
+                     "(make sure hosts list includes ',cpp' option?)");
+        return EXIT_DISTCC_FAILED;
+        //return 0;
+    }
+
+    if ((ret = dcc_talk_to_include_server(argv, &files))) {
+        rs_log_error("failed to get includes from include server");
+        return ret;
+    }
+
+    for (i = 0; files[i]; i++) {
+        if ((ret = dcc_categorize_file(files[i])))
+            return ret;
+    }
+
+    return 0;
+}
+
+/*
+ * A subroutine of dcc_approximate_includes().
+ * Take a filename output from the include server,
+ * convert the filename back so that it refers to the original source tree
+ * (as opposed to the include server's mirror tree),
+ * categorize it as SYSTEMDIR, DIRECTORY, SYMLINK, or FILE,
+ * and print the category and original name to stdout.
+ * For SYMLINKs, also print out what the symlink points to.
+ */
+static int
+dcc_categorize_file(const char *include_server_filename) {
+    char *filename;
+    int is_symlink = 0;
+    int is_forced_directory = 0;
+    int is_system_include_directory = 0;
+    char link_target[MAXPATHLEN + 1];
+    int ret;
+
+    if ((ret = dcc_is_link(include_server_filename, &is_symlink)))
+        return ret;
+
+    if (is_symlink)
+        if ((ret = dcc_read_link(include_server_filename, link_target)))
+            return ret;
+
+    if ((ret = dcc_get_original_fname(include_server_filename, &filename))) {
+        rs_log_error("dcc_get_original_fname failed");
+        return ret;
+    }
+
+    if (str_endswith("/forcing_technique_271828", filename)) {
+        /* Replace "<foo>/forcing_technique_271818" with "<foo>". */
+        filename[strlen(filename) - strlen("/forcing_technique_271828")]
+            = '\0';
+        is_forced_directory = 1;
+    }
+
+    if (is_symlink) {
+        int leading_dotdots = dcc_count_leading_dotdots(link_target);
+        is_system_include_directory =
+            leading_dotdots > 0 &&
+            leading_dotdots > dcc_count_slashes(filename) &&
+            strcmp(link_target + 3 * leading_dotdots - 1, filename) == 0;
+    }
+
+    printf("%-9s %s\n", is_system_include_directory ? "SYSTEMDIR" :
+                        is_forced_directory         ? "DIRECTORY" :
+                        is_symlink                  ? "SYMLINK" :
+                                                      "FILE",
+                        filename);
+
+    return 0;
+}
+
+/* Count the number of slashes in a path. */
+static int
+dcc_count_slashes(const char *path)
+{
+    int i;
+    int count = 0;
+    for (i = 0; path[i]; i++) {
+        if (path[i] == '/')
+            count++;
+    }
+    return count;
+}
+
+/* Count the number of leading "../" references in a path. */
+static int
+dcc_count_leading_dotdots(const char *path)
+{
+    int count = 0;
+    while (str_startswith("../", path)) {
+        path += 3;
+        count++;
+    }
+    return count;
 }

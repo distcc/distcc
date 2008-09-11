@@ -55,7 +55,6 @@
 /* Name of this program, for trace.c */
 const char *rs_program_name = "distcc";
 
-
 /**
  * @file
  *
@@ -239,6 +238,11 @@ int main(int argc, char **argv)
             dcc_concurrency_level();
             ret = 0;
             goto out;
+        }
+
+        if (!strcmp(argv[1], "--scan-includes")) {
+            dcc_scan_includes = 1;
+            argv++;
         }
 
         if ((ret = dcc_find_compiler(argv, &compiler_args)) != 0) {

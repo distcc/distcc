@@ -313,8 +313,10 @@ class IncludeAnalyzer(object):
     """
 
     must_exist_dirs = self.mirror_path.MustExistDirs()
-    random_name = 'forcing_technique_271828'
-    forcing_files = [d + '/' + random_name
+    # Note: distcc's --scan-includes option needs to
+    # know about this name; see ../src/compile.c.
+    special_name = 'forcing_technique_271828'
+    forcing_files = [d + '/' + special_name
                      for d in must_exist_dirs]
     for forcing_file in forcing_files:
       # If for extremly obscure reasons the file already exists and is useful,

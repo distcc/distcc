@@ -87,7 +87,7 @@ void dcc_exit(int exitcode)
 
 int str_endswith(const char *tail, const char *tiger)
 {
-        size_t len_tail = strlen(tail);
+    size_t len_tail = strlen(tail);
     size_t len_tiger = strlen(tiger);
 
     if (len_tail > len_tiger)

@@ -229,22 +229,62 @@ causes of violations of distcc-pump mode assumptions.
 
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
-The following options are understood by distcc itself:
-.TP 
+The following options are understood by distcc itself.
+If any of these options are specified, distcc will not invoke the
+compiler.
+
+.TP
 .B --help
 Displays summary instructions.
+
 .TP
 .B --version
 Displays the distcc client version.
+
 .TP
 .B --show-hosts
 Displays the host list that distcc would use.
 See the Host Specifications section.
+
+.TP
+.B --scan-includes
+Displays the list of files that distcc would send to the
+remote machine, as computed by the include server.  This is a conservative
+(over-)approximation of the files that would be read by the C compiler.
+This option only works in pump mode.  See the "How Distcc-pump Mode Works"
+section for details on how this is computed.
+
+The list output by \fBdistcc --scan-includes\fR will
+contain one entry per line.  Each line contains a category followed by a path.
+The category is one of FILE, SYMLINK, DIRECTORY, or SYSTEMDIR:
+
+.RS
+.B FILE
+indicates a source file or header file that would
+be sent to the distcc server host.
+
+.B SYMLINK
+indicates a symbolic link that would be sent to
+the distcc server host.
+
+.B DIRECTORY
+indicates a directory that may be needed in order to
+compile the source file.  For example, a directory "foo" may be needed
+because of an include of the form #include "foo/../bar.h".
+Such directories would be created on the distcc server host.
+
+.B SYSTEMDIR
+indicates a system include directory, i.e. a directory
+which is on the compiler's default include path, such as "/usr/include";
+such directories are assumed to be present on the distcc server host,
+and so would not be sent to the distcc server host.
+.RE
+
 .TP
 .B -j
 Displays distcc's concurrency level, as calculated from the host list;
-it is the maximum number of outstanding jobs issued by this client 
-to all servers
+it is the maximum number of outstanding jobs issued by this client
+to all servers.
 By default this will be four times the number of hosts in the host list,
 unless the /LIMIT option was used in the host list.
 See the Host Specifications section.
