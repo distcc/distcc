@@ -210,7 +210,7 @@ int dcc_retrieve_results(int net_fd,
 }
 
 /* points_to must be at least MAXPATHLEN + 1 long */
-static int dcc_read_link(const char* fname, char *points_to)
+int dcc_read_link(const char* fname, char *points_to)
 {
     int len;
     if ((len = readlink(fname, points_to, MAXPATHLEN)) == -1) {
@@ -221,7 +221,7 @@ static int dcc_read_link(const char* fname, char *points_to)
     return 0;
 }
 
-static int dcc_is_link(const char *fname, int *is_link)
+int dcc_is_link(const char *fname, int *is_link)
 {
     struct stat buf;
 

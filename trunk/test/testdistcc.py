@@ -1521,6 +1521,58 @@ class DashWpMD_Case(CompileHello_Case):
         #       Pump mode is treating -MD as if it was -MMD.
         # self.assert_re_search(r"stdio.h", deps);
 
+class ScanIncludes_Case(CompileHello_Case):
+    """Test --scan-includes"""
+
+    def createSource(self):
+      CompileHello_Case.createSource(self)
+      self.runcmd("mv testhdr.h test_header.h")
+      self.runcmd("ln -s test_header.h testhdr.h")
+      self.runcmd("mkdir test_subdir")
+      self.runcmd("touch test_another_header.h")
+
+    def headerSource(self):
+        return """
+#define HELLO_WORLD "hello world"
+#include "test_subdir/../test_another_header.h"
+"""
+
+    def compileCmd(self):
+        return self.distcc_without_fallback() + "--scan-includes " + \
+               _gcc + " -o testtmp.o " + self.compileOpts() + \
+               " -c %s" % (self.sourceFilename())
+
+    def runtest(self):
+        cmd = self.compileCmd()
+        rc, out, err = self.runcmd_unchecked(cmd)
+        log = open('distcc.log').read()
+        pump_mode = _server_options.find('cpp') != -1
+        if pump_mode:
+          if err != '':
+              self.fail("distcc command %s produced stderr:\n%s" % (`cmd`, err))
+          if rc != 0:
+              self.fail("distcc command %s failed:\n%s" % (`cmd`, rc))
+          self.assert_re_search(
+              r"FILE      /.*/ScanIncludes_Case/testtmp.c", out);
+          self.assert_re_search(
+              r"FILE      /.*/ScanIncludes_Case/test_header\.h", out);
+          self.assert_re_search(
+              r"FILE      /.*/ScanIncludes_Case/test_another_header\.h", out);
+          self.assert_re_search(
+              r"SYMLINK   /.*/ScanIncludes_Case/testhdr\.h", out);
+          self.assert_re_search(
+              r"DIRECTORY /.*/ScanIncludes_Case/test_subdir", out);
+          self.assert_re_search(
+              r"SYSTEMDIR /.*", out);
+        else:
+          self.assert_re_search(r"ERROR: '--scan_includes' specified, but "
+                                "distcc wouldn't have used include server "
+                                ".make sure hosts list includes ',cpp' option",
+                                log)
+          self.assert_equal(rc, 100)
+          self.assert_equal(out, '')
+          self.assert_equal(err, '')
+
 class AbsSourceFilename_Case(CompileHello_Case):
     """Test remote compilation of files with absolute names."""
 

@@ -22,6 +22,7 @@
  */
 
 /* remote.c */
+
 int dcc_compile_remote(char **argv,
                        char *input_fname,
                        char *cpp_fname,
@@ -33,6 +34,10 @@ int dcc_compile_remote(char **argv,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
                        int *status);
+
+/* compile.c */
+
+extern int dcc_scan_includes;
 
 int dcc_build_somewhere_timed(char *argv[],
                               int sg_level,

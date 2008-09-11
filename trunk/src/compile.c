@@ -60,10 +60,17 @@
 #include "emaillog.h"
 #include "dotd.h"
 
+/**
+ * This boolean is true iff --scan-includes option is enabled.
+ * If so, distcc will just run the source file through the include server,
+ * and print out the list of header files that might be #included,
+ * rather than actually compiling the sources.
+ */
+int dcc_scan_includes = 0;
 
 /* TODO(klarlund)Warning: this constant should have the same value as in the
  * pump.in script! Make it configurable and user changeable.*/
- static const int max_discrepancies_before_demotion = 1;
+static const int max_discrepancies_before_demotion = 1;
 
 static const char *const include_server_port_suffix = "/socket";
 static const char *const discrepancy_suffix = "/discrepancy_counter";
@@ -544,6 +551,10 @@ dcc_build_somewhere(char *argv[],
         dcc_perhaps_adjust_cpp_where_and_protover(input_fname, host,
                                                   discrepancy_filename);
     }
+    if (dcc_scan_includes) {
+        ret = dcc_approximate_includes(host, argv);
+        goto unlock_and_clean_up;
+    }
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
         if ((ret = dcc_talk_to_include_server(argv, &files))) {
             /* Fallback to doing cpp locally */
@@ -719,9 +730,15 @@ dcc_build_somewhere(char *argv[],
             discrepancy_filename);
     }
 
+  unlock_and_clean_up:
     if (cpu_lock_fd != -1) {
         dcc_unlock(cpu_lock_fd);
         cpu_lock_fd = -1; /* Not really needed, just for consistency. */
+    }
+    /* For the --scan_includes case. */
+    if (local_cpu_lock_fd != -1) {
+        dcc_unlock(local_cpu_lock_fd);
+        local_cpu_lock_fd = -1; /* Not really needed, just for consistency. */
     }
 
   clean_up:

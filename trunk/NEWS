@@ -1,3 +1,12 @@
+New since distcc-3.0:
+
+  FEATURES:
+
+   * New "--scan-includes" option to distcc shows which headers
+     it would send to the remote machine in pump mode, without
+     actually compiling anything.  This provides a simple interface
+     to the include server.
+
 distcc-3.0 "The moment has arrived"   2008-08-06
 
   DOCUMENTATION:
