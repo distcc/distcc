@@ -328,19 +328,23 @@ symptoms and causes of violations of distcc-pump mode assumptions.<BR>
 OPTION SUMMARY</A>
 </H2>
 Most options passed to distcc are interpreted as compiler options.
-The following options are understood by distcc itself:<BR>
+The following options are understood by distcc itself. If any
+of these options are specified, distcc will not invoke the compiler.<BR>
+<P>
 <DL>
 <DT>
 <B>--help</B>
 </DT>
 <DD>
 Displays summary instructions.<BR>
+<P>
 </DD>
 <DT>
 <B>--version</B>
 </DT>
 <DD>
 Displays the distcc client version.<BR>
+<P>
 </DD>
 <DT>
 <B>--show-hosts</B>
@@ -348,16 +352,54 @@ Displays the distcc client version.<BR>
 <DD>
 Displays the host list that distcc would use. See the Host Specifications
 section.<BR>
+<P>
 </DD>
+<DT>
+<B>--scan-includes</B>
+</DT>
+<DD>
+Displays the list of files that distcc would send to the remote
+machine, as computed by the include server.  This is a conservative
+(over-)approximation of the files that would be read by the C
+compiler. This option only works in pump mode.  See the &quot;How
+Distcc-pump Mode Works&quot; section for details on how this is
+computed.<BR>
+<P>
+The list output by <B>distcc --scan-includes</B> will contain
+one entry per line.  Each line contains a category followed by
+a path. The category is one of FILE, SYMLINK, DIRECTORY, or SYSTEMDIR:<BR>
+<P>
+</DD>
+</DL>
+<UL>
+<B>FILE</B> indicates a source file or header file that would
+be sent to the distcc server host.<BR>
+<P>
+<B>SYMLINK</B> indicates a symbolic link that would be sent to
+the distcc server host.<BR>
+<P>
+<B>DIRECTORY</B> indicates a directory that may be needed in order
+to compile the source file.  For example, a directory &quot;foo&quot;
+may be needed because of an include of the form #include &quot;foo/../bar.h&quot;.
+Such directories would be created on the distcc server host.<BR>
+<P>
+<B>SYSTEMDIR</B> indicates a system include directory, i.e. a
+directory which is on the compiler's default include path, such
+as &quot;/usr/include&quot;; such directories are assumed to be
+present on the distcc server host, and so would not be sent to
+the distcc server host.<BR>
+</UL>
+<P>
+<DL>
 <DT>
 <B>-j</B>
 </DT>
 <DD>
 Displays distcc's concurrency level, as calculated from the host
 list; it is the maximum number of outstanding jobs issued by this
-client to all servers By default this will be four times the number
-of hosts in the host list, unless the /LIMIT option was used in
-the host list. See the Host Specifications section.<BR>
+client to all servers. By default this will be four times the
+number of hosts in the host list, unless the /LIMIT option was
+used in the host list. See the Host Specifications section.<BR>
 </DD>
 </DL>
 <H2>
@@ -775,10 +817,58 @@ In particular<BR>
 General distcc failure.<BR>
 </DD>
 <DT>
+101
+</DT>
+<DD>
+Bad arguments.<BR>
+</DD>
+<DT>
+102
+</DT>
+<DD>
+Bind failed.<BR>
+</DD>
+<DT>
+103
+</DT>
+<DD>
+Connect failed.<BR>
+</DD>
+<DT>
+104
+</DT>
+<DD>
+Compiler crashed.<BR>
+</DD>
+<DT>
 105
 </DT>
 <DD>
 Out of memory.<BR>
+</DD>
+<DT>
+106
+</DT>
+<DD>
+Bad Host SPEC<BR>
+</DD>
+<DT>
+107
+</DT>
+<DD>
+I/O Error<BR>
+</DD>
+<DT>
+108
+</DT>
+<DD>
+Truncated.<BR>
+</DD>
+<DT>
+109
+</DT>
+<DD>
+Protocol Error.<BR>
 </DD>
 <DT>
 110
@@ -795,14 +885,42 @@ on the search path for distccd.<BR>
 Recursive call to distcc.<BR>
 </DD>
 <DT>
+112
+</DT>
+<DD>
+Failed to discard privileges.<BR>
+</DD>
+<DT>
+113
+</DT>
+<DD>
+Network access denied.<BR>
+</DD>
+<DT>
+114
+</DT>
+<DD>
+In use by another process.<BR>
+</DD>
+<DT>
+115
+</DT>
+<DD>
+No such file.<BR>
+</DD>
+<DT>
 116
 </DT>
 <DD>
 No hosts defined and fallbacks disabled.<BR>
 </DD>
+<DT>
+118
+</DT>
+<DD>
+Timeout.<BR>
+</DD>
 </DL>
-<P>
-(Others are listed in exitcode.h.)<BR>
 <H2>
 <A NAME=TOC_19>
 FILES</A>

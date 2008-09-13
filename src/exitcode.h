@@ -37,7 +37,8 @@
  * are fairly high so that they're not confused with the real error code from
  * gcc.
  *
- * TODO: Put more of these into the manpage.
+ * WARNING: ANY CHANGES HERE NEED TO BE DUPLICATED IN THE MAN PAGE
+ * (../man/distcc.1).
  **/
 enum dcc_exitcode {
     EXIT_DISTCC_FAILED            = 100, /**< General failure */

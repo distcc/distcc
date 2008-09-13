@@ -636,20 +636,57 @@ particular
 .TP
 100
 General distcc failure.
+.TP
+101
+Bad arguments.
+.TP
+102
+Bind failed.
+.TP
+103
+Connect failed.
+.TP
+104
+Compiler crashed.
 .TP 
 105
 Out of memory.
+.TP
+106
+Bad Host SPEC
+.TP
+107
+I/O Error
+.TP
+108
+Truncated.
+.TP
+109
+Protocol Error.
 .TP 
 110
 The given compiler was not found on the remote host.  Check that $CC is set appropriately and that it's installed in a directory on the search path for distccd.
 .TP
 111
 Recursive call to distcc.
+.TP
+112
+Failed to discard privileges.
+.TP
+113
+Network access denied.
+.TP
+114
+In use by another process.
+.TP
+115
+No such file.
 .TP 
 116
 No hosts defined and fallbacks disabled.
-.PP
-(Others are listed in exitcode.h.)
+.TP
+118
+Timeout.
 .SH "FILES"
 If $DISTCC_HOSTS is not set, distcc reads a host list from either 
 .B $DISTCC_DIR/hosts
