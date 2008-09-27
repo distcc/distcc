@@ -176,24 +176,4 @@ class ParseCommandUnitTest(unittest.TestCase):
         'third_party/zlib'),
        'third_party/libxml/threads.c'))
 
-  def test_time_ParseCommandArgs(self):
-    """Time ParseCommandArgs."""
-    fd = open("test_data/gws-main.o.cmd", "r")
-    whopper = fd.read()
-    fd.close()
-    # TODO(klarlund): make this into a fail/pass test as well.
-    t = time.time()
-    for unused_i in range(100):
-      (quote_dirs, angle_dirs, include_files, filepath,
-       _include_closure_file, _d_opts) = (
-          parse_command.ParseCommandArgs(
-            parse_command.ParseCommandLine(whopper),
-                                           os.getcwd(),
-                                           self.includepath_map,
-                                           self.directory_map,
-                                           self.compiler_defaults))
-    print "100 iterations of ParseCommandArgs takes %3.1fs" % (time.time() - t)
-    return True
-
-
 unittest.main()
