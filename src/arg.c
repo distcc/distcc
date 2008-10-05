@@ -453,7 +453,7 @@ static int copy_extra_args(char **dest_argv, char *dash_Wp_option,
         dest_argv[i] = strdup(opt);
         if (!dest_argv[i]) return EXIT_OUT_OF_MEMORY;
         i++;
-        if (strcmp(opt, "-MD") == 0 || strcmp(opt, "-MMD")) {
+        if (strcmp(opt, "-MD") == 0 || strcmp(opt, "-MMD") == 0) {
             char *filename;
             if (!comma) {
                 rs_log_warning("'-Wp,-MD' or '-Wp,-MMD' option is missing "
