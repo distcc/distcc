@@ -114,7 +114,7 @@ dist_files =							\
 	$(dist_extra)						\
 	$(gnome_data)
 
-dist_dirs = include_server/test_data
+dist_dirs = m4 include_server/test_data
 
 dist_lzo = lzo/minilzo.c lzo/minilzo.h lzo/lzoconf.h lzo/.stamp-conf.in
 
