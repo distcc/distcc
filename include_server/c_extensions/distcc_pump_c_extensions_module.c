@@ -23,17 +23,18 @@
 
 #include "Python.h"
 
-static char *version = ".01";
+static const char *version = ".01";
 
 /* To suppress compiler warnings */
 #define UNUSED(v) ((void)&v)
 
-char *rs_program_name = "distcc_include_server";
+const char *rs_program_name = "distcc_include_server";
 
 #include "distcc.h"
 #include "rpc.h"
 
 static PyObject *distcc_pump_c_extensionsError;
+void initdistcc_pump_c_extensions(void);
 
 
 /***********************************************************************
@@ -385,7 +386,7 @@ void initdistcc_pump_c_extensions(void) {
   PyObject *module;
   PyObject *py_str;
   distcc_pump_c_extensionsError = PyErr_NewException(
-      "distcc_pump_c_extensions.Error", NULL, NULL);
+      (char *)"distcc_pump_c_extensions.Error", NULL, NULL);
   
   module = Py_InitModule4("distcc_pump_c_extensions", 
                           methods, 
