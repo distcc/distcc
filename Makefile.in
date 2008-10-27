@@ -561,6 +561,7 @@ include-server:
 	  mkdir -p "$(include_server_builddir)" &&      \
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR="$(srcdir)"                            \
+	  CFLAGS="$(CFLAGS)"                            \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
@@ -919,6 +920,7 @@ clean-include-server:
 	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR="$(srcdir)"                            \
+	  CFLAGS="$(CFLAGS)"                            \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      clean	\
