@@ -1,11 +1,36 @@
-New since distcc-3.0:
+distcc-3.1 "Humming along"  2008-11-21
 
   FEATURES:
 
-   * New "--scan-includes" option to distcc shows which headers
-     it would send to the remote machine in pump mode, without
-     actually compiling anything.  This provides a simple interface
-     to the include server.
+   * New "--scan-includes" option to distcc.  This shows which
+     headers distcc would send to the remote machine in pump mode,
+     without actually compiling anything.  This provides a simple
+     interface to the include server.
+
+  DOCUMENTATION:
+
+   * Document all of the exit codes in the man page
+     (Carsten Wolff <carsten@wolffcarsten.de>, via Debian).
+
+  BUG FIXES:
+
+   * Handle "-Wp,-MMD,...".
+
+   * Report a better error message if a host specification contains ",cpp"
+     but not ",lzo".
+
+   * Fix a bug where the "m4" directory wasn't included in the
+     source distribution tarball, which caused it to stop working
+     if you ran autogen.sh.
+
+  PORTABILITY:
+
+   * Fixed a bug where the pump script was hard-coding /etc/distcc/hosts
+     rather than using the prefix specified to configure.
+
+   * Fixed build errors on Gentoo Linux and some other systems
+     (Matsuu Takuto).
+
 
 distcc-3.0 "The moment has arrived"   2008-08-06
 
