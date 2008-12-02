@@ -7,6 +7,11 @@ distcc-3.1 "Humming along"  2008-11-21
      without actually compiling anything.  This provides a simple
      interface to the include server.
 
+   * New "--disable-Werror" option to configure.
+     This disables the use of gcc's -Werror option when building
+     distcc, allowing compilation of distcc to succeed even if
+     gcc issues warnings.
+
   DOCUMENTATION:
 
    * Document all of the exit codes in the man page

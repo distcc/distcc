@@ -115,6 +115,8 @@ then
     CFLAGS="$CFLAGS -pg -g"
 fi
 
+AC_ARG_ENABLE(Werror,
+        AC_HELP_STRING([--disable-Werror], [don't use gcc's -Werror option when building]))
 
 # Now get the package configuration information for whatever packages
 # we need.  It's faster to just do it once during configuration.
@@ -160,31 +162,57 @@ AC_SUBST(UNINSTALL_GNOME)
 
 dnl Checks for programs
 AC_PROG_CC
-POPT_CFLAGS=""
 WERROR_CFLAGS=""
-if test x"$GCC" = xyes 
+POPT_CFLAGS=""
+PYTHON_CFLAGS=""
+if test x"$GCC" = xyes
 then
     CFLAGS="$CFLAGS -MD \
--W -Wall -Wimplicit -Wuninitialized \
+-W -Wall -Wimplicit \
 -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
 -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes \
 -Wnested-externs -Wmissing-declarations"
+
+    # -Wuninitialized requires -O
+    case "$CFLAGS" in "-O"*|*" -O"*)
+        CFLAGS="$CFLAGS -Wuninitialized"
+        ;;
+    esac
     # Would like -Wunreachable-code here, but it generates too many false
     # positives.
 
-    # We want warnings to be treated as errors.
+    # We want warnings to be treated as errors,
+    # unless the --disable-Werror configure option was used.
     # Note that we can't include this in CFLAGS,
     # because that would affect the configure tests,
     # causing some of the tests to fail when they should succeed.
-    WERROR_CFLAGS="-Werror"
+    if test x"$enable_Werror" != xno
+    then
+      WERROR_CFLAGS="-Werror"
+    fi
+
+    # Additional flags for compiling Python extension modules.
+    # We disable -Wmissing-prototypes and -Wmissing-declarations,
+    # which don't apply to python extensions (it exports global fns via a
+    # pointer), and -Wwrite-strings, which just had too many false
+    # positives (for Python 2.2, anyway; looks like these may be fixed
+    # in Python 2.5).
+    # -Wp,-U_FORTIFY_SOURCE is to turn off _FORTIFY_SOURCE on systems where
+    # it's in the Python Makefile (and hence inherited by us).
+    # _FORTIFY_SOURCE gives compiler errors for some distcc routines that
+    # ignore the return value from libc functions (like getcwd).
+    # That would cause this code to not compile, which is no good.
+    PYTHON_CFLAGS="-Wno-missing-prototypes -Wno-missing-declarations \
+-Wno-write-strings -Wp,-U_FORTIFY_SOURCE"
 
     # For popt/*.c, we disable unused variable warnings.
     POPT_CFLAGS="-Wno-unused"
 
     AC_MSG_NOTICE([Adding gcc options: $CFLAGS])
 fi
-AC_SUBST(POPT_CFLAGS)
 AC_SUBST(WERROR_CFLAGS)
+AC_SUBST(POPT_CFLAGS)
+AC_SUBST(PYTHON_CFLAGS)
 AC_ISC_POSIX
 
 
