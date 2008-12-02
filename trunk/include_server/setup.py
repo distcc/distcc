@@ -109,6 +109,11 @@ if not cpp_flags_env:
 # in order to identify the include directory options.
 cpp_flags_includes = GetIncludes(cpp_flags_env)
 
+python_cflags_env = os.getenv('PYTHON_CFLAGS', '')
+if not python_cflags_env:
+  # Don't quit; perhaps the user is asking for help using '--help'.
+  print >> sys.stderr, 'setup.py: PYTHON_CFLAGS must be defined.'
+
 # SRCDIR checking.
 if not os.getenv('SRCDIR'):
   # Don't quit; perhaps the user is asking for help using '--help'.
@@ -160,24 +165,7 @@ ext = distutils.extension.Extension(
     libraries=[],
     runtime_library_dirs=[],
     extra_objects=[],
-    # This is the same list as is in configure.ac, except we leave out
-    # -Wmissing-prototypes and -Wmissing-declarations, which don't
-    # apply to python extensions (it exports global fns via a
-    # pointer), and -Wwrite-strings, which just had too many false
-    # positives.
-    extra_compile_args=(('-W -Wall -Wimplicit -Wuninitialized '
-                         '-Wshadow -Wpointer-arith -Wcast-align '
-                         '-Waggregate-return -Wstrict-prototypes '
-                         '-Wnested-externs -Werror').split()
-                        # -Wp,-U_FORTIFY_SOURCE is to turn off
-                        # _FORTIFY_SOURCE on systems where it's in the
-                        # Python Makefile (and hence inherited by us).
-                        # _FORTIFY_SOURCE gives compiler errors for
-                        # some distcc routines that ignore the return
-                        # value from libc functions (like getcwd).
-                        # That would cause this code to not compile,
-                        # which is no good.
-                        + ['-Wp,-U_FORTIFY_SOURCE'])
+    extra_compile_args=python_cflags_env.split()
     )
 
 args = {

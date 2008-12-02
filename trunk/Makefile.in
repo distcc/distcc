@@ -17,6 +17,7 @@ SHELL = @SHELL@
 
 CFLAGS = @CFLAGS@
 WERROR_CFLAGS = @WERROR_CFLAGS@
+PYTHON_CFLAGS = @PYTHON_CFLAGS@
 POPT_CFLAGS = @POPT_CFLAGS@
 POPT_INCLUDES = @POPT_INCLUDES@
 
@@ -561,7 +562,7 @@ include-server:
 	  mkdir -p "$(include_server_builddir)" &&      \
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR="$(srcdir)"                            \
-	  CFLAGS="$(CFLAGS)"                            \
+	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
@@ -920,7 +921,7 @@ clean-include-server:
 	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR="$(srcdir)"                            \
-	  CFLAGS="$(CFLAGS)"                            \
+	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      clean	\
@@ -1041,6 +1042,7 @@ install-include-server: include-server pump
 	  DESTDIR=`cd "$(DESTDIR)/" && pwd` &&            \
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR="$(srcdir)"                            \
+	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
 	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
