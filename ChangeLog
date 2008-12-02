@@ -1,3 +1,49 @@
+2008-12-02 21:44  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, NEWS, configure.ac, include_server/setup.py:
+	  
+	  1. Fix some compilation errors arising from the use of
+	  -Wwrite-strings when compiling the python extension module,
+	  due to lack of const correctness in the Python 2.2
+	  "Python.h" header file.
+	  This problem was introduced by the fix for distcc issue 26
+	  <http://code.google.com/p/distcc/issues/detail?id=26>.
+	  The solution was to explicitly disable these warnings
+	  with -Wno-write-strings.
+	  
+	  2. Centralize the use of gcc-specific compilation options
+	  in conditional code in configure.ac that is only executed
+	  if we're using gcc. Previously include_server/setup.py
+	  was hard-coding gcc-specific options, regardless of
+	  whether we're using gcc.
+	  
+	  3. Don't use -Wuninitialized if CFLAGS doesn't contain "-O*",
+	  because -Wuninitialized only works if optimization is enabled.
+	  This avoids a gcc warning (and hence an error with -Werror)
+	  about -Wuninitialized not having any effect
+	  when distcc is configured with "CFLAGS=-g ./configure".
+	  
+	  4. Add a new configure option "--disable-Werror".
+	  
+	  For the 3.0 release of distcc, some people porting distcc
+	  resorted to patching distcc to remove the -Werror option.
+	  -Werror is useful, so I want to keep it enabled by default,
+	  but I'd prefer that people are able to port distcc easily,
+	  hence the configure option.
+	  
+	  This addresses distcc issue 20
+	  <http://code.google.com/p/distcc/issues/detail?id=20>.
+	  
+	  Reviewers: Craig Silverstein
+
+2008-12-01 23:44  Fergus Henderson <opensource@google.com>
+
+	* ChangeLog, NEWS, configure.ac:
+	  
+	  Bump version number to 3.1, and update the NEWS file and ChangeLog.
+	  
+	  Reviewed by Craig Silverstein.
+
 2008-10-27 22:11  Fergus Henderson <opensource@google.com>
 
 	* Makefile.in:
