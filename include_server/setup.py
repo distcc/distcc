@@ -109,11 +109,6 @@ if not cpp_flags_env:
 # in order to identify the include directory options.
 cpp_flags_includes = GetIncludes(cpp_flags_env)
 
-python_cflags_env = os.getenv('PYTHON_CFLAGS', '')
-if not python_cflags_env:
-  # Don't quit; perhaps the user is asking for help using '--help'.
-  print >> sys.stderr, 'setup.py: PYTHON_CFLAGS must be defined.'
-
 # SRCDIR checking.
 if not os.getenv('SRCDIR'):
   # Don't quit; perhaps the user is asking for help using '--help'.
@@ -165,7 +160,7 @@ ext = distutils.extension.Extension(
     libraries=[],
     runtime_library_dirs=[],
     extra_objects=[],
-    extra_compile_args=python_cflags_env.split()
+    extra_compile_args=[]
     )
 
 args = {
