@@ -12,6 +12,10 @@ Please report any problems to distcc@lists.samba.com.
 QUICK SUMMARY
 =============
 
+0. Install prerequisites.  For example, on Debian or Ubuntu, you could use
+
+      sudo apt-get install gcc make python python-dev
+
 1. Build and install
 
       ./autogen.sh       # If "configure" does not already exist.
@@ -54,6 +58,9 @@ It is also highly desireable to have
 
      To use "pump" mode, or to run the full test suite with "make check",
      or to run the benchmarks.
+
+If you have any version of Python installed, then you need to have
+the corresponding Python.h file installed (e.g. sudo apt-get install python-dev).
 
 You can optionally have
 
