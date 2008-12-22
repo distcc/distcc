@@ -49,11 +49,13 @@ DEBUG_DATA = basics.DEBUG_DATA
 NotCoveredError = basics.NotCoveredError
 
   
-def _RealPrefix(path):
-  """Determine longest directory prefix and whether path contains a symlink.
+def _RealPrefixWithinClientRoot(client_root, path):
+  """Determine longest directory prefix of PATH and whether PATH contains a symlink.
 
-  Given an absolute path PATH, figure out the longest prefix of PATH where
-  every component of the prefix is a directory -- not a file or symlink.
+  Given an absolute path CLIENT_ROOT and an absolute path PATH that is
+  interpreted as relative to CLIENT_ROOT, figure out the longest prefix
+  of PATH such that every component of the prefix is a directory -- not
+  a file or symlink -- when interpreted relative to CLIENT_ROOT.
 
   Args:
     path: a string starting with '/'
@@ -68,9 +70,9 @@ def _RealPrefix(path):
     part = parts.pop(0)
     last_prefix = prefix
     prefix = os.path.join(prefix, part)
-    if os.path.islink(prefix):
+    if os.path.islink(client_root + prefix):
       return last_prefix, True
-    if not os.path.isdir(prefix):
+    if not os.path.isdir(client_root + prefix):
       return last_prefix, False
   return path, False
 
@@ -105,12 +107,13 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
   if os.path.realpath(system_dir) != system_dir:
     raise NotCoveredError(
         "Default compiler search path '%s' must be a realpath." %s)
-  rooted_system_dir = client_root + system_dir
   # Typical values for rooted_system_dir:
   #  /dev/shm/tmpX.include_server-X-1/usr/include
-  real_prefix, is_link = _RealPrefix(rooted_system_dir)
-  parent = os.path.dirname(rooted_system_dir)
-  if real_prefix == rooted_system_dir:
+  real_prefix, is_link = _RealPrefixWithinClientRoot(client_root, system_dir)
+  parent = os.path.dirname(system_dir)
+  rooted_system_dir = client_root + system_dir
+  rooted_parent = client_root + parent
+  if real_prefix == system_dir:
     # rooted_system_dir already exists as a real (non-symlink) path.
     # Make rooted_system_dir a link.
     #
@@ -134,11 +137,11 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
       assert os.path.islink(rooted_system_dir)
       return
   elif not is_link:
-    os.makedirs(parent)
+    os.makedirs(rooted_parent)
   else:
     # A link above real_prefix has already been created with this routine.
     return
-  assert _RealPrefix(parent) == (parent, False), parent
+  assert _RealPrefixWithinClientRoot(client_root, parent) == (parent, False), (client_root, parent)
   depth = len([c for c in system_dir if c == '/'])
   # The more directories on the path system_dir, the more '../' need to
   # appended. We add enough '../' to get to the root directory. It's OK
