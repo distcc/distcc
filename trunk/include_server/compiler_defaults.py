@@ -236,8 +236,26 @@ def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
              + "couldn't parse output of '%s'.\nReceived:\n%s") %
              (compiler, language, command, out))
   return [ canonical_lookup(directory)
-           for directory in match_obj.group(1).split() ]
-
+           for line in match_obj.group(1).split("\n")
+           for directory in line.split()
+           # Ignore Apple-modified MacOS gcc's "framework" directories.
+           if not line.endswith(" (framework directory)")
+           ]
+           # TODO: Rather than just ignoring framework directories, we
+           # should handle them properly, fully emulating the search
+           # algorithm used by Apple's modified GCC.
+           # The search algorithm used for framework directories is not very
+           # well documented, as far as I can tell, but the source code is in
+           # gcc/config/darwin-c.c in the Apple GCC sources.
+           # From a quick glance, I think it looks like this:
+           # - For each #include of the form Foo/bar.h,
+           #        For each framework directory Baz,
+           #            Look in Baz/Foo.framework/Headers/bar.h
+           #            and in Baz/Foo.framework/PrivateHeaders/bar.h
+           # - If the regular search fails, look for subframeworks.
+           #     For each #include of the form Foo/bar.h
+           #       from Baz/Quux.framework/Headers/whatever.h
+           #            Look in Baz/Quux.framework/Frameworks/Foo/Headers/bar.h.
 
 class CompilerDefaults(object):
   """Records and caches the default search dirs and creates symlink farm.
