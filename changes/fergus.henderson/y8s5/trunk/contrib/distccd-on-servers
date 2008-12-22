@@ -1,0 +1,145 @@
+#! /bin/bash 
+
+
+# Copyright 2007 Google Inc. All Rights Reserved.
+#
+# A script for installing and controlling distccd on servers. 
+#
+# This script allows for easy testing of distcc. It does not depend on 
+# RPM, debian or other packaging techniques.
+
+
+function Usage {
+  printf "Usage: server-test {start|stop|restart|install|ps|status}\n\
+Obligatory environment variables:\n\
+  DISTCC_LOC         Location of distcc, a path of the form ../distcc.\n\
+  DISTCCD_MACHINES   Hostnames of compiler servers.\n\
+  DISTCCD_REMOTE_LOC Path where distcc_pump/distcc resides on servers.\n\
+  DISTCCD_ARGS       Arguments and options for distccd command on server.\n\
+  DISTCCD_TMPDIR     Exported to server as TMPDIR before start.\n\
+See script for details.\n\
+"
+}
+
+trap "Usage" EXIT
+: ${DISTCC_LOC:?}
+: ${DISTCCD_MACHINES:?}
+: ${DISTCCD_REMOTE_LOC:?}
+: ${DISTCCD_ARGS:?}
+: ${DISTCCD_TMPDIR:?}
+trap EXIT
+
+
+function Doing {
+  printf "\nDOING $1\n"
+}
+
+
+function Install {
+  bad_server=0
+  for SERVER in $DISTCCD_MACHINES; do
+    Doing $SERVER
+    ssh $SERVER "mkdir --parents $DISTCCD_REMOTE_LOC"\
+      || { bad_server=$SERVER; continue; }
+    ssh $SERVER "rm -rf $DISTCCD_REMOTE_LOC/distcc" \
+      || { bad_server=$SERVER; continue; }
+    scp -r -q $DISTCC_LOC $SERVER:$DISTCCD_REMOTE_LOC/distcc \
+      || { bad_server=$SERVER:; continue; }
+  done
+  if [ "$bad_server" != 0 ]; then
+    echo "ERROR: installation on $bad_server failed (and maybe others)" 1>&2
+    return 1
+  fi
+  return 0
+}
+
+
+function Start {
+  bad_server=0
+  for SERVER in $DISTCCD_MACHINES; do
+    Doing $SERVER
+    ssh $SERVER \
+      "TMPDIR=$DISTCCD_TMPDIR; $DISTCCD_REMOTE_LOC/distcc/distccd $DISTCCD_ARGS"\
+      || { bad_server=$SERVER; continue; }
+  done
+  if [ $bad_server != 0 ]; then
+    echo "ERROR: starting distccd on $bad_server failed (and maybe others)" 1>&2
+    return 1
+  fi
+  return 0
+}
+
+
+function Psing {
+  for SERVER in $DISTCCD_MACHINES; do
+    Doing $SERVER
+    ssh $SERVER \
+      "ps ux | grep \"$DISTCCD_REMOTE_LOC.*[d]istccd\""
+  done
+}
+
+
+function Status {
+  for SERVER in $DISTCCD_MACHINES; do
+    Doing $SERVER
+    # The [d] construct prevents the grep command itself from being recognized.
+    ssh $SERVER \
+      "if ps ux | grep -q \" $DISTCCD_REMOTE_LOC/distcc/distcc[d] \"; then\
+         echo $SERVER is running distccd;\
+       fi;\
+      "
+  done
+}
+
+
+function Stop {
+  for SERVER in $DISTCCD_MACHINES; do
+    Doing $SERVER
+    ssh $SERVER \
+      "while grep Stopping \
+         <(ps ux | grep \"$DISTCCD_REMOTE_LOC.*[d]istcc\" | \
+          (read X PID Z; \
+           if [ -n \"\$PID\" ]; then\
+             echo \"Stopping process\" \$PID; kill \$PID;\
+           fi)); do\
+         :;\
+       done; "
+  done
+}
+
+
+
+case "$1" in
+  start)
+	echo "Start"
+	Start
+	;;
+  stop)
+	echo "Stop"
+	Stop
+	;;
+  restart)
+	echo "Restart"
+	Stop
+	sleep 1
+	Start
+	;;
+  install)
+	echo "Install"
+	Install
+	;;
+  status)
+	echo "Status"
+	Status
+	;;
+  ps)
+	echo "Run 'ps'"
+	Psing
+	;;
+  *)
+	Usage
+	exit 1
+	;;
+esac
+
+
