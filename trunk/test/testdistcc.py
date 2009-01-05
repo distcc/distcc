@@ -1122,7 +1122,11 @@ class CPlusPlus_SystemIncludeDirectories_Case(CPlusPlus_Case):
     """Test -I/usr/include/sys for a C++ program"""
 
     def compileOpts(self):
-        return "-I/usr/include/sys"
+        if os.path.exists("/usr/include/sys/types.h"):
+          return "-I/usr/include/sys"
+        else:
+          raise comfychair.NotRunError (
+              "This test requires /usr/include/sys/types.h")
 
     def headerSource(self):
         return """
@@ -1131,7 +1135,7 @@ class CPlusPlus_SystemIncludeDirectories_Case(CPlusPlus_Case):
 
     def source(self):
         return """
-#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include "types.h"    /* Should resolve to /usr/include/sys/types.h. */
 #include "testhdr.h"
 #include <stdio.h>
 int main(void) {
