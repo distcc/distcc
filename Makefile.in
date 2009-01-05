@@ -718,8 +718,7 @@ include-server-maintainer-check: include-server
 	  cd "$(srcdir)/include_server"; \
 	  for p in $(check_include_server_PY); do \
 	    p_base=`basename "$$p"`; \
-	    echo -n "Running: "; \
-	    echo \
+	    echo "Running:" \
               "PYTHONPATH=$$CURDIR/$$include_server_loc:$$PYTHONPATH $(INCLUDESERVER_PYTHON) $$p_base"; \
 	    if PYTHONPATH="$$CURDIR/$$include_server_loc:$$PYTHONPATH" $(INCLUDESERVER_PYTHON) "$$p_base" \
 		 > "$$CURDIR/$(tempdir)/$$p_base.out" 2>&1; then \
@@ -793,10 +792,10 @@ pump-single-test: pump include-server check_programs
 
 # Verify that DISTCC_INSTALLATION contains the expected set of binaries.
 verify-binaries-installcheck:
-	@echo -n "Locating binaries in DISTCC_INSTALLATION="
-	@echo "'$(DISTCC_INSTALLATION)'"
-	@echo -n "To use installation in @bindir@, remake with"
-	@echo " argument 'DISTCC_INSTALLATION=@bindir@'."
+	@echo "Locating binaries in" \
+	      "DISTCC_INSTALLATION='$(DISTCC_INSTALLATION)'"
+	@echo "To use installation in @bindir@, remake with" \
+	       "argument 'DISTCC_INSTALLATION=@bindir@'."
 	@echo "Make sure all paths below are where you expect them to be:"
 	@echo "**********************************************************"
 	@for p in $(bin_PROGRAMS); do \
