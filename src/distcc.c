@@ -221,11 +221,21 @@ int main(int argc, char **argv)
 
     if (strstr(compiler_name, "distcc") != NULL) {
         /* Either "distcc -c hello.c" or "distcc gcc -c hello.c" */
-        if (argc <= 1 || !strcmp(argv[1], "--help")) {
+        if (argc <= 1) {
+            fprintf (stderr,
+                     "%s: missing option/operand\n"
+                     "Try `%s --help' for more information.\n",
+                     argv[0], argv[0]);
+            ret = EXIT_BAD_ARGUMENTS;
+            goto out;
+        }
+
+        if (!strcmp(argv[1], "--help")) {
             dcc_show_usage();
             ret = 0;
             goto out;
         }
+
         if (!strcmp(argv[1], "--version")) {
             dcc_show_version("distcc");
             ret = 0;
@@ -245,6 +255,14 @@ int main(int argc, char **argv)
         }
 
         if (!strcmp(argv[1], "--scan-includes")) {
+            if (argc <= 2) {
+                fprintf (stderr,
+                         "%s: missing operand\n"
+                         "Try `%s --help' for more information.\n",
+                         argv[0], argv[0]);
+                ret = EXIT_BAD_ARGUMENTS;
+                goto out;
+            }
             dcc_scan_includes = 1;
             argv++;
         }
