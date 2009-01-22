@@ -322,8 +322,21 @@ static int dcc_parse_tcp_host(struct dcc_hostdef *hostdef,
     int ret;
     const char *token = token_start;
 
-    if ((ret = dcc_dup_part(&token, &hostdef->hostname, "/: \t\n\r\f,")))
-        return ret;
+    if (token[0] == '[') {
+	/* We have an IPv6 Address */
+	if ((ret = dcc_dup_part(&token, &hostdef->hostname, "/] \t\n\r\f,")))
+	    return ret;
+	if(token[0] != ']') {
+	    rs_log_error("IPv6 Hostname requires closing ']'");
+	    return EXIT_BAD_HOSTSPEC;
+	}
+	token++;
+
+    } else {
+	/* Parse IPv4 address */
+	if ((ret = dcc_dup_part(&token, &hostdef->hostname, "/: \t\n\r\f,")))
+	    return ret;
+    }
 
     if (!hostdef->hostname) {
         rs_log_error("hostname is required in tcp host specification \"%s\"",

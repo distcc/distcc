@@ -158,8 +158,10 @@ static int write_hosts(struct daemon_data *d) {
         if (h->resolver)
             /* Not yet fully resolved */
             continue;
-
-        snprintf(t, sizeof(t), "%s:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
+	if (h->address.proto == AVAHI_PROTO_INET6)
+	    snprintf(t, sizeof(t), "[%s]:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
+	else
+	    snprintf(t, sizeof(t), "%s:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
 
         if (dcc_writex(d->fd, t, strlen(t)) != 0) {
             rs_log_crit("write() failed: %s\n", strerror(errno));
