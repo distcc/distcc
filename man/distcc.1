@@ -480,7 +480,7 @@ The syntax is
   SSH_HOST = [USER]@HOSTID[/LIMIT][:COMMAND][OPTIONS]
   TCP_HOST = HOSTID[:PORT][/LIMIT][OPTIONS]
   OLDSTYLE_TCP_HOST = HOSTID[/LIMIT][:PORT][OPTIONS]
-  HOSTID = HOSTNAME | IPV4
+  HOSTID = HOSTNAME | IPV4 | IPV6
   OPTIONS = ,OPTION[OPTIONS]
   OPTION = lzo | cpp
   GLOBAL_OPTION = --randomize
@@ -495,6 +495,10 @@ compilations to be directly executed, rather than passed to a daemon
 on the local machine.  If you do want to connect to a daemon on the
 local machine for testing, then give the machine's IP address or real
 hostname.  (This will be slower.)
+.TP
+.B IPV6
+A literal IPv6 address enclosed in square brackets, such as
+.B [::1]
 .TP
 .B IPV4
 A literal IPv4 address, such as 
