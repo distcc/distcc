@@ -239,7 +239,7 @@ StartIncludeServer() {
   fi
 
   # Create a temporary directory $socket_dir.
-  socket_dir=`MakeTmpFile "distcc-pump" -d`
+  socket_dir=`MakeTmpFile "distcc-pump" -d` || exit 1
 
   # The socket file on which the include server accepts connections.
   socket="$socket_dir/socket"
@@ -254,7 +254,7 @@ StartIncludeServer() {
   include_server_stderr="$socket_dir/stderr"
 
   # File for the include server process id.
-  tmp_pid_file=`MakeTmpFile "distcc-pump-pid"`
+  tmp_pid_file=`MakeTmpFile "distcc-pump-pid"` || exit 1
 
   # Start include server in optimized mode (no assertions) and with
   # debug level 1 for tracing warnings.
@@ -423,7 +423,7 @@ StartIncludeServerAndDetermineHosts() {
     # activities happen in parallel. 
 
     # First, the lsdistcc command goes in the background.
-    available_hosts_file=`MakeTmpFile "distcc-pump-hosts"`
+    available_hosts_file=`MakeTmpFile "distcc-pump-hosts"` || exit 1
     AvailableHosts "$available_hosts_file" &
 
     # Second, the include server goes in the foreground so variables can be set.
