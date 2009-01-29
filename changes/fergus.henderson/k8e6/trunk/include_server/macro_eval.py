@@ -166,7 +166,7 @@ def _SubstituteSymbolInString(x, y, str):
   Debug(DEBUG_TRACE2,
         """_SubstituteSymbolInString: x: "%s", y: "%s", str:"%s" """,
         x, y, str)
-  result = re.sub(r"\b%s\b" % re.escape(x), lambda _ : y, str)
+  result = re.sub(r"\b%s\b" % re.escape(x), y.replace('\\', '\\\\'), str)
   Debug(DEBUG_TRACE2, """_SubstituteSymbolInString (result): "%s" """, result)
   return result
 
