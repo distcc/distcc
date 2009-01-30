@@ -956,6 +956,67 @@ int main(void) {
         self.assert_equal(msgs, "hello world\n")
 
 
+class ComputedInclude_Case(CompileHello_Case):
+
+    def source(self):
+        return """
+#include <stdio.h>
+#define MAKE_HEADER(header_name) STRINGIZE(header_name.h)
+#define STRINGIZE(x) STRINGIZE2(x)
+#define STRINGIZE2(x) #x
+#define HEADER MAKE_HEADER(testhdr)
+#include HEADER
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+class BackslashInMacro_Case(ComputedInclude_Case):
+    def source(self):
+        return """
+#if FALSE
+  #include <stdio.h>
+  #define HEADER MAKE_HEADER(testhdr)
+  #define MAKE_HEADER(header_name) STRINGIZE(foobar\)
+  #define STRINGIZE(x) STRINGIZE2(x)
+  #define STRINGIZE2(x) #x
+#else
+  #define HEADER "testhdr.h"
+#endif
+#include HEADER
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+class BackslashInFilename_Case(ComputedInclude_Case):
+
+    def headerFilename(self):
+      # On Windows, this filename will be in a subdirectory.
+      # On Unix, it will be a filename with an embedded backslash.
+      try:
+        os.mkdir("subdir")
+      except:
+        pass
+      return 'subdir\\testhdr.h'
+
+    def source(self):
+        return """
+#include <stdio.h>
+#define HEADER MAKE_HEADER(testhdr)
+#define MAKE_HEADER(header_name) STRINGIZE(subdir\header_name.h)
+#define STRINGIZE(x) STRINGIZE2(x)
+#define STRINGIZE2(x) #x
+#include HEADER
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+
 class LanguageSpecific_Case(Compilation_Case):
     """Abstract base class to test building non-C programs."""
     def runtest(self):
@@ -2048,6 +2109,9 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
+         ComputedInclude_Case,
+         BackslashInMacro_Case,
+         BackslashInFilename_Case,
          CPlusPlus_Case,
          ObjectiveC_Case,
          ObjectiveCPlusPlus_Case,
