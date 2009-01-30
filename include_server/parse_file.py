@@ -111,8 +111,8 @@ DIRECTIVE_RE = re.compile(r"""
 INCLUDE_STRING_RE = re.compile(r"""
   ^
   \s*
-  ( "\s*(?P<quote> (\w|[_/.+-])*)\s*"            |
-    <\s*(?P<angle> (\w|[_/.+-])*)\s*>
+  ( "\s*(?P<quote> (\w|[\\_/.+-])*)\s*"            |
+    <\s*(?P<angle> (\w|[\\_/.+-])*)\s*>
   )
   \s*
   $
