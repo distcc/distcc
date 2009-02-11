@@ -1,0 +1,8 @@
+### See distcc(1) manual page for more information on these options.
+###
+
+#OPTIONS="--nice 5 --jobs 5 --allow 10.0.0.0/24 --port 1234"
+#USER="distcc"
+
+### Set this if don't want distccd to use gcc or g++ by accident.
+#DISTCCPATH="/usr/lib/distcc/bin"
