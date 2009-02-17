@@ -20,6 +20,8 @@
 
 /* don't blame me, I was in a hurry */
 
+#include <config.h>
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
