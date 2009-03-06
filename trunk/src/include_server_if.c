@@ -85,8 +85,8 @@ int dcc_talk_to_include_server(char **argv, char ***files)
     }
 
     if (strlen(include_server_port) >= ((int)sizeof(sa.sun_path) - 1)) {
-        rs_log_warning("$INCLUDE_SERVER_PORT is longer than %d characters",
-                       (sizeof(sa.sun_path) - 1));
+        rs_log_warning("$INCLUDE_SERVER_PORT is longer than %ld characters",
+                       ((long) sizeof(sa.sun_path) - 1));
         return 1;
     }
 
