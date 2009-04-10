@@ -390,16 +390,16 @@ int dcc_spawn_child(char **argv, pid_t *pidptr,
         return EXIT_OUT_OF_MEMORY; /* probably */
     } else if (pid == 0) {
         /* If this is a remote compile,
-     * put the child in a new group, so we can
-     * kill it and all its descendents without killing distccd
-     * FIXME: if you kill distccd while it's compiling, and
-     * the compiler has an infinite loop bug, the new group
-     * will run forever until you kill it.
-     */
-    if (stdout_file != NULL) {
-        if (dcc_new_pgrp() != 0)
-            rs_trace("Unable to start a new group\n");
-    }
+         * put the child in a new group, so we can
+         * kill it and all its descendents without killing distccd
+         * FIXME: if you kill distccd while it's compiling, and
+         * the compiler has an infinite loop bug, the new group
+         * will run forever until you kill it.
+         */
+        if (stdout_file != NULL) {
+            if (dcc_new_pgrp() != 0)
+                rs_trace("Unable to start a new group\n");
+        }
         dcc_inside_child(argv, stdin_file, stdout_file, stderr_file);
         /* !! NEVER RETURN FROM HERE !! */
     } else {
