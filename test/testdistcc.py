@@ -1269,11 +1269,14 @@ class Gdb_Case(CompileHello_Case):
         f.close()
         out, errs = self.runcmd("gdb --batch --command=gdb_commands "
                                 "link/%s </dev/null" % testtmp_exe)
-        # Apparently, due to a gdb bug, gdb can produce the (harmless) error
-        # message "Failed to read a valid object file" on some systems.
-        error_message = 'Failed to read a valid object file image from memory.\n'
-        if errs:
-            self.assert_equal(errs, error_message)
+        # Normally we expect the stderr output to be empty.
+        # But, due two gdb bugs, some versions of gdb will produce a
+        # (harmless) error or warning message.
+        # In both of these cases, we can safely ignore the message.
+        error_message1 = 'Failed to read a valid object file image from memory.\n'
+        error_message2 = 'warning: Lowest section in system-supplied DSO at 0xffffe000 is .hash at ffffe0b4\n'
+        if errs and errs != error_message1 and errs != error_message2:
+            self.assert_equal(errs, '')
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
         self.assert_re_search('testtmp.c:[45]', out)
 
@@ -1296,8 +1299,8 @@ class Gdb_Case(CompileHello_Case):
           or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
-            if errs:
-                self.assert_equal(errs, error_message)
+            if errs and errs != error_message1 and errs != error_message2:
+                self.assert_equal(errs, '')
             self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
             self.assert_re_search('testtmp.c:[45]', out)
         os.chdir('..')
