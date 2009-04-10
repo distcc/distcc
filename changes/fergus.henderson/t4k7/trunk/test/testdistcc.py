@@ -1299,8 +1299,8 @@ class Gdb_Case(CompileHello_Case):
           or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
-            if errs:
-                self.assert_equal(errs, error_message)
+            if errs and errs != error_message1 and errs != error_message2:
+                self.assert_equal(errs, '')
             self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
             self.assert_re_search('testtmp.c:[45]', out)
         os.chdir('..')

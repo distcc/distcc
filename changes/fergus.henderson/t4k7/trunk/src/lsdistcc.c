@@ -75,8 +75,6 @@
  *  Added -v option
 --------------------------------------------------------------------------*/
 
-#include <config.h>
-
 #include <netdb.h>
 #include <assert.h>
 #include <stdio.h>

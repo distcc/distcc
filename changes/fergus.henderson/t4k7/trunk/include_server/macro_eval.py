@@ -166,9 +166,10 @@ def _SubstituteSymbolInString(x, y, str):
   Debug(DEBUG_TRACE2,
         """_SubstituteSymbolInString: x: "%s", y: "%s", str:"%s" """,
         x, y, str)
-  result = re.sub(r"\b%s\b" % re.escape(x), y.replace('\\', '\\\\'), str)
-  Debug(DEBUG_TRACE2, """_SubstituteSymbolInString (result): "%s" """, result)
-  return result
+  sub_re = re.compile(r"\b%s\b" % re.escape(x))
+  Debug(DEBUG_TRACE2,
+        """_SubstituteSymbolInString (result): "%s" """, sub_re.sub(y, str))
+  return sub_re.sub(y, str)
 
 def _ParseArgs(string, pos):
   """Split stuff according to commas at outer level in parenthesized string.
