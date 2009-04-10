@@ -601,7 +601,7 @@ class DotD_Case(SimpleDistCC_Case):
             class TempCompile_Case(Compilation_Case):
                 def source(self):
                       return """
-int main(char **argv) {};
+int main(void) { return 0; }
 """
                 def sourceFilename(self):
                     return args.split()[0]
