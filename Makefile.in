@@ -593,7 +593,7 @@ dist:
 	$(BZIP2_BIN) --help 2>/dev/null && \
 		$(BZIP2_BIN) -vfc "$(tarball)" > "$(tarball_bz2)"
 	rm -f "$(tarball)"
-	rm -r "$(distdir)"
+	rm -fr "$(distdir)"
 	cp "$(srcdir)/NEWS" "$(distnews)"
 
 # We create two new directories: one for the build and one to install,
