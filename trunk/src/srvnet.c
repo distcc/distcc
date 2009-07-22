@@ -252,35 +252,9 @@ int dcc_check_client(struct sockaddr *psa,
     }
 
     for (l = allowed; l; l = l->next) {
-        if (psa->sa_family == AF_INET) {
-            in_addr_t cli_inaddr;
-            /* The double-cast here avoids warnings from -Wcast-align. */
-            cli_inaddr = ((struct sockaddr_in *) (void *) psa)->sin_addr.s_addr;
-
-            if ((ret = dcc_check_address(cli_inaddr, l->addr, l->mask)) == 0)
-                break;
-#ifdef ENABLE_RFC2553
-        } else if (psa->sa_family == AF_INET6) {
-            const struct sockaddr_in6 *sa6 = (const struct sockaddr_in6 *) psa;
-            const struct in6_addr *a6 = &sa6->sin6_addr;
-            const in_addr_t *a4;
-
-            if (IN6_IS_ADDR_V4MAPPED(a6) || IN6_IS_ADDR_V4COMPAT(a6)) {
-                a4 = (const in_addr_t *) &a6->s6_addr[12];
-                if ((ret = dcc_check_address(*a4, l->addr, l->mask)) == 0)
-                    break;
-            } else {
-                rs_log_notice("ipv6 ACLs not implemented");
-                free(client_ip);
-                return EXIT_ACCESS_DENIED;
-            }
-#endif
-        } else {
-            ret = EXIT_ACCESS_DENIED;
-            rs_log_notice("access denied from unknown address family %d",
-                          psa->sa_family);
+        ret = dcc_check_address(psa, &l->addr, &l->mask);
+        if (ret != EXIT_ACCESS_DENIED)
             break;
-        }
     }
 
     if (ret != 0) {
