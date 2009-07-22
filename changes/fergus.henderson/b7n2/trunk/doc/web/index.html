@@ -1,0 +1,191 @@
+<html>
+<head><title>distcc: a fast, free distributed C/C++ compiler</title>
+    <link rel="SHORTCUT ICON" href="favicon.ico">
+    <link type="text/css" rel="stylesheet" href="distcc-green.css">
+    <link type="text/html" rel="top" href="index.html">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+   <body vlink="#003300" text="#000000" link="#003300" bgcolor="#ffffff" alink="#336633"><p><table width="100%"><tr><td valign="top"><div class="navbar"><ul>
+          <li><a href="index.html"><b>distcc</b></a></li>
+          <li><a href="http://code.google.com/p/distcc/source/browse/trunk">source</a>
+          <li><a href="http://code.google.com/p/distcc/downloads/list">binaries</a></li>
+          <li><a href="http://distcc.googlecode.com/svn/trunk/NEWS">news</a></li>
+          <li><a href="scenarios.html">scenarios</a></li>
+	  <li><a href="results.html">testimonials</a></li>
+	  <li><a href="benchmark.html">benchmarks</a></li>
+	  <li><a href="security.html">security</a></li>
+	  <li><a href="distcc-lca-2004.html">whitepaper</a></li>
+	  <li><a href="http://distcc.googlecode.com/svn/trunk/doc/web/man/">Man pages</a></li>
+	  <li><a href="faq.html">FAQ</a></li>
+
+	  <p>
+	  <li><a href="http://code.google.com/p/distcc/issues/list">report a bug</a></li>
+	  <li><a href="https://lists.samba.org/mailman/listinfo/distcc">mailing list</a>
+           <ul><li><a href="mailto:distcc@lists.samba.org">post</a></li>
+            <li><a href="http://lists.samba.org/archive/distcc/">archive</a></li>
+            <li><a href="news://news.gmane.org/gmane.comp.compilers.distcc">newsgroup</a></li></ul>
+	  </li>
+          <li><a href="http://freshmeat.net/projects/distcc">Freshmeat</a>
+            <ul><li><a href="http://freshmeat.net/subscribe/28140">be notified</a></li></ul>
+	  </li>
+
+	  <p>
+	  <li>related:</li>
+	  <ul>
+	      <li><a title="How to use distcc and Gentoo" href="http://www.gentoo.org/doc/en/distcc.xml">Gentoo</a></li>
+	      <li><a title="Script to ease building cross-compilers and toolchains" href="http://kegel.com/crosstool/">crosstool</a></li>
+	      <li><a title="Cache compiler results" href="http://ccache.samba.org/">ccache</a></li>
+	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
+	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
+	  </ul>
+       <p><p></td>                                      
+       <td valign="top">
+       <div class="body">
+       <h1 class="title">distcc: a fast, free distributed C/C++ compiler</h1>
+
+<p align="right"><em>Speed, it seems to me, provides the one genuinely modern pleasure.</em><br> &mdash; Aldous Huxley
+<p>
+      distcc is a program to distribute builds of C, C++,
+      Objective C or Objective C++ code across several machines on a
+      network.  distcc should always generate the same results as a
+      local build, is simple to install and use, and is usually
+      much faster than a local compile.
+
+      <p>
+      distcc does not require all machines to share a filesystem, have
+      synchronized clocks, or to have the same libraries or header
+      files installed.  They can even have different processors or
+      operating systems, if cross-compilers are installed.
+
+
+      <blockquote class="quoted"><p>
+Just wanted to drop you a line to say that we are now using distcc at work and
+it is excellent.  We have a rack of opteron machines that we use for
+computational tasks and we are now using them as a compile farm to compile
+our ~1MLOC C++ tree (which can take an hour on a single CPU to recompile if
+we change certain header files).  We tried using Sun's grid engine to do this
+(we already use it to schedule our computational jobs), but the combination
+of its polled operation and the overhead of NFS led to little improvement
+(and greatly stressed our network).  With distcc compile times are way down
+and my productivity has greatly improved; the two best features for me are
+its low impact on the network and its simplicity.
+
+<p>
+Thanks a lot for a great tool!  &mdash; Jeremy Barnes
+</blockquote>
+
+
+<p><b>60-second instructions:</b></p>
+
+<ol>
+<li> For each machine, <a href="http://code.google.com/p/distcc/downloads/list">download distcc</a>
+	  unpack, and do
+	  <br><tt>./configure &amp;&amp; make &amp;&amp; sudo make install</tt>
+     <li> On each of the servers, run <tt>distccd --daemon</tt>, with 
+        <tt>--allow</tt> options to restrict access.
+     <li> Put the names of the servers in your environment:<br>
+          <tt>export DISTCC_POTENTIAL_HOSTS='localhost red green blue'</tt><br>
+      <li> Build! <br>
+      Wrap your build command in the "pump" script
+      and use "distcc" as your C compiler:
+      <br><tt>cd ~/work/myproject; pump make -j8 CC=distcc</tt>
+</ol>
+
+<p>
+For more detailed installation instructions, see the
+<a href="http://code.google.com/p/distcc/source/browse/trunk/INSTALL">INSTALL</a> file.
+
+<p align="center">
+<img alt="Picture of distcc monitor window" 
+     src="distccmon-gnome-2003-09-23-01.png"
+     align="center">
+
+     <p>
+
+      distcc is developed on GNU/Linux, but has been reported to work
+      on other systems including FreeBSD, NetBSD, Darwin, Solaris,
+      HP-UX, IRIX, Cygwin and BSD/OS.
+
+     <p>
+      distcc sends the complete preprocessed source code across the
+      network for each job, so all it requires of the volunteer
+      machines is that they be running the <tt>distccd</tt> daemon,
+      and that they have an appropriate compiler installed.
+
+     <p>
+      distcc is not itself a compiler, but rather a front-end to the
+      <a href="http://gcc.gnu.org/">GNU C/C++ compiler (gcc)</a>.  (There
+      is preliminary support for some other compilers but the main focus is
+      gcc.)  Almost all gcc options and features work as normal.
+
+     <p>
+      distcc is designed to be used with the <tt>-j</tt> parallel-build
+      feature in <a href="http://www.gnu.org/software/make/make.html">GNU Make</a>
+      or <a href="http://www.scons.org/">SCons</a>,
+      or other build tools.
+      Shipping files across the network takes
+      time, but few cycles on the client machine.  Any files that can
+      be built remotely are essentially "for free" in terms of client
+      CPU.
+
+     <p>
+      distcc has been under development since early 2002.  It reliably
+      and successfully compiles large, complex free and proprietary
+      software systems.  Programs known to build correctly with distcc
+      include
+      the <a href="http://kernel.org/">Linux kernel</a>, 
+      <a href="http://rsync.samba.org/">rsync</a>,
+      <a href="http://www.kde.org/">KDE</a>,
+      <a href="http://www.gnome.org">GNOME</a> (via 
+      <a href="http://www.gnome.org/~jdub/garnome/">GARNOME</a>),
+      <a href="http://www.samba.org/">Samba</a> and 
+      <a href="http://www.ethereal.com/">Ethereal</a>.  
+
+     <p>
+      distcc is nearly linearly scalable for small numbers of
+      machines: Building Linux 2.4.19 on a single 1700MHz Pentium IV
+      machine with distcc 0.15 takes 6 minutes, 45 seconds.  Using
+      distcc across three such machines on a 100Mbps switch takes only
+      2 minutes, 30 seconds: <b>2.6x faster</b>.  The (unreachable)
+      theoretical maximum speedup is 3.0x, so in this case distcc
+      scales with 89% efficiency.
+
+     <p>
+      You don't need a lot of machines to benefit: <a href="scenarios.html">a laptop and a single desktop is much faster than a laptop alone</a>.
+
+     <p>
+     There are several tools available separately that 
+     enhance or complement distcc:
+
+     <ul>
+       <li>
+         <a href="http://ccache.samba.org/">ccache</a>
+	 caches compiler output to accelerate builds.
+      <li>
+       <a href="http://dmucs.sourceforge.net/">dmucs</a> helps distcc select
+       appropriate servers.
+
+      <li>
+        <a href="http://ccontrol.ozlabs.org/">ccontrol</a>  
+	gives centralized control of parallelism, caching and distribution 
+	even while the build is running.
+
+
+      <li>
+        <a href="http://kegel.com/crosstool/">crosstool</a>
+        automates building cross-compilation toolchains.
+       
+    <li><a href="http://research.edm.uhasselt.be/tvanlaerhoven/#distccWebView">distccWebView</a> is a CGI to show which of your
+  servers are up and running.
+
+  <li>
+<a href="http://www.snookles.com/erlang/tcpbalance/">tcpbalance</a>
+   is a load-balancing TCP proxy written in Erlang that works well with
+   distcc.
+
+    </ul>
+
+</tr></table>
+    <div class="thanks">Copyright &copy; 2002&ndash;2004, 2006 Martin Pool.
+     <p>Send comments to <tt>distcc(at)lists.samba.org</tt>
+</html>
