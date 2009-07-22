@@ -390,16 +390,16 @@ int dcc_spawn_child(char **argv, pid_t *pidptr,
         return EXIT_OUT_OF_MEMORY; /* probably */
     } else if (pid == 0) {
         /* If this is a remote compile,
-     * put the child in a new group, so we can
-     * kill it and all its descendents without killing distccd
-     * FIXME: if you kill distccd while it's compiling, and
-     * the compiler has an infinite loop bug, the new group
-     * will run forever until you kill it.
-     */
-    if (stdout_file != NULL) {
-        if (dcc_new_pgrp() != 0)
-            rs_trace("Unable to start a new group\n");
-    }
+         * put the child in a new group, so we can
+         * kill it and all its descendents without killing distccd
+         * FIXME: if you kill distccd while it's compiling, and
+         * the compiler has an infinite loop bug, the new group
+         * will run forever until you kill it.
+         */
+        if (stdout_file != NULL) {
+            if (dcc_new_pgrp() != 0)
+                rs_trace("Unable to start a new group\n");
+        }
         dcc_inside_child(argv, stdin_file, stdout_file, stderr_file);
         /* !! NEVER RETURN FROM HERE !! */
     } else {
@@ -468,70 +468,75 @@ int dcc_collect_child(const char *what, pid_t pid,
 
     while (!dcc_job_lifetime || wait_timeout_sec-- >= 0) {
 
-    /* If we're called with a socket, break out of the loop if the socket disconnects.
-     * To do that, we need to block in select, not in sys_wait4.
-     * (Only waitpid uses WNOHANG to mean don't block ever, so I've modified
-     *  sys_wait4 above to preferentially call waitpid.)
-     */
-    int flags = (in_fd == timeout_null_fd) ? 0 : WNOHANG;
+        /* If we're called with a socket, break out of the loop if the socket
+         * disconnects. To do that, we need to block in select, not in
+         * sys_wait4.  (Only waitpid uses WNOHANG to mean don't block ever,
+         * so I've modified sys_wait4 above to preferentially call waitpid.)
+         */
+        int flags = (in_fd == timeout_null_fd) ? 0 : WNOHANG;
         ret_pid = sys_wait4(pid, wait_status, flags, &ru);
 
-    if (ret_pid == -1) {
-        if (errno == EINTR) {
-            rs_trace("wait4 was interrupted; retrying");
-        } else {
-            rs_log_error("sys_wait4(pid=%d) borked: %s", (int) pid, strerror(errno));
-            return EXIT_DISTCC_FAILED;
+        if (ret_pid == -1) {
+            if (errno == EINTR) {
+                rs_trace("wait4 was interrupted; retrying");
+            } else {
+                rs_log_error("sys_wait4(pid=%d) borked: %s", (int) pid,
+                             strerror(errno));
+                return EXIT_DISTCC_FAILED;
+            }
+        } else if (ret_pid != 0) {
+            /* This is not the main user-visible message; that comes from
+             * critique_status(). */
+            rs_trace("%s child %ld terminated with status %#x",
+                     what, (long) ret_pid, *wait_status);
+            rs_log_info("%s times: user %ld.%06lds, system %ld.%06lds, "
+                        "%ld minflt, %ld majflt",
+                        what,
+                        ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
+                        ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
+                        ru.ru_minflt, ru.ru_majflt);
+
+            return 0;
         }
-    } else if (ret_pid != 0) {
-        /* This is not the main user-visible message; that comes from
-         * critique_status(). */
-        rs_trace("%s child %ld terminated with status %#x",
-                 what, (long) ret_pid, *wait_status);
-        rs_log_info("%s times: user %ld.%06lds, system %ld.%06lds, "
-                    "%ld minflt, %ld majflt",
-                    what,
-                    ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
-                    ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
-                    ru.ru_minflt, ru.ru_majflt);
 
-        return 0;
-    }
-
-    /* check timeout */
-    if (in_fd != timeout_null_fd){
+        /* check timeout */
+        if (in_fd != timeout_null_fd) {
             struct timeval timeout;
 
-        /* If client disconnects, the socket will become readable,
-         * and a read should return -1 and set errno to EPIPE.
-         */
-        fds = readfds;
+            /* If client disconnects, the socket will become readable,
+             * and a read should return -1 and set errno to EPIPE.
+             */
+            fds = readfds;
             timeout.tv_sec = 1;
             timeout.tv_usec = 0;
-        ret = select(in_fd+1,&fds,NULL,NULL,&timeout);
-        if (ret == 1) {
-            char buf;
-            int nread = read(in_fd, &buf, 1);
-            if ((nread == -1) && (errno == EWOULDBLOCK)) {
-                /* spurious wakeup, ignore */
-                ;
-            } else if (nread == 0) {
-                rs_log_error("Client fd disconnected, killing job");
-                /* If killpg fails, it might means the child process is not
-                 * in a new group, so, just kill the child process */
-                if (killpg(pid,SIGTERM)!=0)
-                    kill(pid, SIGTERM);
-                return EXIT_IO_ERROR;
-            } else if (nread == 1) {
-                rs_log_error("Bug!  Read from fd succeeded when checking whether client disconnected!");
-            } else
-                rs_log_error("Bug!  nread %d, errno %d checking whether client disconnected!", nread, errno);
+            ret = select(in_fd+1,&fds,NULL,NULL,&timeout);
+            if (ret == 1) {
+                char buf;
+                int nread = read(in_fd, &buf, 1);
+                if ((nread == -1) && (errno == EWOULDBLOCK)) {
+                    /* spurious wakeup, ignore */
+                    ;
+                } else if (nread == 0) {
+                    rs_log_error("Client fd disconnected, killing job");
+                    /* If killpg fails, it might means the child process is not
+                     * in a new group, so, just kill the child process */
+                    if (killpg(pid,SIGTERM)!=0)
+                        kill(pid, SIGTERM);
+                    return EXIT_IO_ERROR;
+                } else if (nread == 1) {
+                    rs_log_error("Bug!  Read from fd succeeded when checking "
+                                 "whether client disconnected!");
+                } else {
+                    rs_log_error("Bug!  nread %d, errno %d checking whether "
+                                 "client disconnected!", nread, errno);
+                }
+            }
+        } else {
+            poll(NULL, 0, 1000);
         }
-    } else
-        poll(NULL, 0, 1000);
     }
     /* If timeout, also kill the child process */
-    if (killpg(pid,SIGTERM) !=0 )
+    if (killpg(pid, SIGTERM) != 0)
         kill(pid, SIGTERM);
     rs_log_error("Compilation takes too long, timeout.");
 
@@ -570,7 +575,7 @@ int dcc_critique_status(int status,
     if (WIFSIGNALED(status)) {
 #ifdef HAVE_STRSIGNAL
         rs_log(logmode,
-               "%s %s on %s:%s %s",
+               "%s %s on %s: %s%s",
                command, input_fname, host->hostdef_string,
                strsignal(WTERMSIG(status)),
                WCOREDUMP(status) ? " (core dumped)" : "");

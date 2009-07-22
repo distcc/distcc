@@ -601,7 +601,7 @@ class DotD_Case(SimpleDistCC_Case):
             class TempCompile_Case(Compilation_Case):
                 def source(self):
                       return """
-int main(char **argv) {};
+int main(void) { return 0; }
 """
                 def sourceFilename(self):
                     return args.split()[0]
@@ -956,6 +956,67 @@ int main(void) {
         self.assert_equal(msgs, "hello world\n")
 
 
+class ComputedInclude_Case(CompileHello_Case):
+
+    def source(self):
+        return """
+#include <stdio.h>
+#define MAKE_HEADER(header_name) STRINGIZE(header_name.h)
+#define STRINGIZE(x) STRINGIZE2(x)
+#define STRINGIZE2(x) #x
+#define HEADER MAKE_HEADER(testhdr)
+#include HEADER
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+class BackslashInMacro_Case(ComputedInclude_Case):
+    def source(self):
+        return """
+#if FALSE
+  #include <stdio.h>
+  #define HEADER MAKE_HEADER(testhdr)
+  #define MAKE_HEADER(header_name) STRINGIZE(foobar\)
+  #define STRINGIZE(x) STRINGIZE2(x)
+  #define STRINGIZE2(x) #x
+#else
+  #define HEADER "testhdr.h"
+#endif
+#include HEADER
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+class BackslashInFilename_Case(ComputedInclude_Case):
+
+    def headerFilename(self):
+      # On Windows, this filename will be in a subdirectory.
+      # On Unix, it will be a filename with an embedded backslash.
+      try:
+        os.mkdir("subdir")
+      except:
+        pass
+      return 'subdir\\testhdr.h'
+
+    def source(self):
+        return """
+#include <stdio.h>
+#define HEADER MAKE_HEADER(testhdr)
+#define MAKE_HEADER(header_name) STRINGIZE(subdir\header_name.h)
+#define STRINGIZE(x) STRINGIZE2(x)
+#define STRINGIZE2(x) #x
+#include HEADER
+int main(void) {
+    puts(HELLO_WORLD);
+    return 0;
+}
+"""
+
+
 class LanguageSpecific_Case(Compilation_Case):
     """Abstract base class to test building non-C programs."""
     def runtest(self):
@@ -1122,7 +1183,11 @@ class CPlusPlus_SystemIncludeDirectories_Case(CPlusPlus_Case):
     """Test -I/usr/include/sys for a C++ program"""
 
     def compileOpts(self):
-        return "-I/usr/include/sys"
+        if os.path.exists("/usr/include/sys/types.h"):
+          return "-I/usr/include/sys"
+        else:
+          raise comfychair.NotRunError (
+              "This test requires /usr/include/sys/types.h")
 
     def headerSource(self):
         return """
@@ -1131,7 +1196,7 @@ class CPlusPlus_SystemIncludeDirectories_Case(CPlusPlus_Case):
 
     def source(self):
         return """
-#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include "types.h"    /* Should resolve to /usr/include/sys/types.h. */
 #include "testhdr.h"
 #include <stdio.h>
 int main(void) {
@@ -1204,11 +1269,14 @@ class Gdb_Case(CompileHello_Case):
         f.close()
         out, errs = self.runcmd("gdb --batch --command=gdb_commands "
                                 "link/%s </dev/null" % testtmp_exe)
-        # Apparently, due to a gdb bug, gdb can produce the (harmless) error
-        # message "Failed to read a valid object file" on some systems.
-        error_message = 'Failed to read a valid object file image from memory.\n'
-        if errs:
-            self.assert_equal(errs, error_message)
+        # Normally we expect the stderr output to be empty.
+        # But, due two gdb bugs, some versions of gdb will produce a
+        # (harmless) error or warning message.
+        # In both of these cases, we can safely ignore the message.
+        error_message1 = 'Failed to read a valid object file image from memory.\n'
+        error_message2 = 'warning: Lowest section in system-supplied DSO at 0xffffe000 is .hash at ffffe0b4\n'
+        if errs and errs != error_message1 and errs != error_message2:
+            self.assert_equal(errs, '')
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
         self.assert_re_search('testtmp.c:[45]', out)
 
@@ -1231,8 +1299,8 @@ class Gdb_Case(CompileHello_Case):
           or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
-            if errs:
-                self.assert_equal(errs, error_message)
+            if errs and errs != error_message1 and errs != error_message2:
+                self.assert_equal(errs, '')
             self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
             self.assert_re_search('testtmp.c:[45]', out)
         os.chdir('..')
@@ -2044,6 +2112,9 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
+         ComputedInclude_Case,
+         BackslashInMacro_Case,
+         BackslashInFilename_Case,
          CPlusPlus_Case,
          ObjectiveC_Case,
          ObjectiveCPlusPlus_Case,

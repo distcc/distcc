@@ -57,6 +57,11 @@ struct context {
 static void publish_reply(AvahiEntryGroup *g, AvahiEntryGroupState state, void *userdata);
 
 static void register_stuff(struct context *ctx) {
+#ifndef ENABLE_RFC2553
+    static const AvahiProtocol dcc_proto = AVAHI_PROTO_INET;
+#else
+    static const AvahiProtocol dcc_proto = AVAHI_PROTO_UNSPEC;
+#endif
 
     if (!ctx->group) {
 
@@ -79,7 +84,7 @@ static void register_stuff(struct context *ctx) {
         if (avahi_entry_group_add_service(
                     ctx->group,
                     AVAHI_IF_UNSPEC,
-                    AVAHI_PROTO_UNSPEC,
+                    dcc_proto,
                     0,
                     ctx->name,
                     DCC_DNS_SERVICE_TYPE,

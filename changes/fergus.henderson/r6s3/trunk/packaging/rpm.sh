@@ -59,7 +59,7 @@ fi
 RPM_SOURCE_DIR="/tmp/rpmsource-$fullname"
 RPM_BUILD_DIR="/tmp/rpmbuild-$fullname"
 
-trap 'rm -rf $RPM_SOURCE_DIR $RPM_BUILD_DIR; exit $?' EXIT SIGHUP SIGINT SIGTERM
+trap 'rm -rf $RPM_SOURCE_DIR $RPM_BUILD_DIR; exit $?' EXIT HUP INT TERM
 
 rm -rf "$RPM_SOURCE_DIR" "$RPM_BUILD_DIR"
 mkdir "$RPM_SOURCE_DIR"

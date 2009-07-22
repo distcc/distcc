@@ -129,6 +129,8 @@ static time_t fd_last_used(int fd, time_t clip_time) {
     return now - ft;
 }
 
+static void remove_duplicate_services(struct daemon_data *d);
+
 /* Write host data to host file */
 static int write_hosts(struct daemon_data *d) {
     struct host *h;
@@ -152,14 +154,18 @@ static int write_hosts(struct daemon_data *d) {
         return -1;
     }
 
+    remove_duplicate_services(d);
+
     for (h = d->hosts; h; h = h->next) {
         char t[256], a[AVAHI_ADDRESS_STR_MAX];
 
         if (h->resolver)
             /* Not yet fully resolved */
             continue;
-
-        snprintf(t, sizeof(t), "%s:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
+	if (h->address.proto == AVAHI_PROTO_INET6)
+	    snprintf(t, sizeof(t), "[%s]:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
+	else
+	    snprintf(t, sizeof(t), "%s:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
 
         if (dcc_writex(d->fd, t, strlen(t)) != 0) {
             rs_log_crit("write() failed: %s\n", strerror(errno));
@@ -186,6 +192,26 @@ static void free_host(struct host *h) {
     free(h->service);
     free(h->domain);
     free(h);
+}
+
+/* Remove hosts with duplicate service names from the host list.
+ * Hosts with multiple IP addresses show up more than once, but
+ * should all have the same service name: "distcc@hostname" */
+static void remove_duplicate_services(struct daemon_data *d) {
+    struct host *host1, *host2, *prev;
+    assert(d);
+    for (host1 = d->hosts; host1; host1 = host1->next) {
+        assert(host1->service);
+        for (host2 = host1->next, prev = host1; host2; host2 = prev->next) {
+            assert(host2->service);
+            if (!strcmp(host1->service, host2->service)) {
+                prev->next = host2->next;
+                free_host(host2);
+            } else {
+                prev = host2;
+            }
+        }
+    }
 }
 
 /* Remove a service from the host list */

@@ -20,16 +20,31 @@
  * USA.
  */
 
-/* access.c */
-int dcc_parse_mask(const char *mask_spec,
-                   in_addr_t *value,
-                   in_addr_t *mask);
+#include <config.h>
 
-int dcc_check_address(in_addr_t client,
-                      in_addr_t value,
-                      in_addr_t mask);
+/* access.c */
+
+#ifndef ENABLE_RFC2553
+typedef struct in_addr dcc_address_t;
+#else
+typedef struct dcc_address {
+    sa_family_t family;
+    union {
+        struct in_addr inet;
+        struct in6_addr inet6;
+    } addr;
+} dcc_address_t;
+#endif
+
+int dcc_parse_mask(const char *mask_spec,
+                   dcc_address_t *value,
+                   dcc_address_t *mask);
+
+int dcc_check_address(const struct sockaddr *client,
+                      const dcc_address_t *value,
+                      const dcc_address_t *mask);
 
 struct dcc_allow_list {
-    in_addr_t           addr, mask;
+    dcc_address_t addr, mask;
     struct dcc_allow_list *next;
 };
