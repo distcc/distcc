@@ -947,11 +947,13 @@ distclean: distclean-autoconf clean
 ######################################################################
 ## MAINTAINER targets
 
-.PHONY: upload-man upload-dist rpm deb install-deb
+.PHONY: man-html upload-man upload-dist rpm deb install-deb
 
-upload-man: $(man_HTML)
+man-html: $(man_HTML)
 	mkdir -p doc/web/man
 	cp -f $(man_HTML) doc/web/man
+
+upload-man: man-html
 	svn commit doc/web/man
 
 # When uploading the package, we try to update the website as well.
