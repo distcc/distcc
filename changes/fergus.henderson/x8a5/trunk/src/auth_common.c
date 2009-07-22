@@ -24,7 +24,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,7 +123,7 @@ int dcc_gssapi_compare_flags(OM_uint32 req_flags, OM_uint32 ret_flags) {
             rs_log_info("Mutual authentication requested and granted.");
         } else {
             rs_log_crit("Requested security services don't match those returned.");
-            return EXIT_FLAG_MISMATCH_ERROR;
+            return EXIT_GSSAPI_FAILED;
         }
     }
 
@@ -133,7 +132,7 @@ int dcc_gssapi_compare_flags(OM_uint32 req_flags, OM_uint32 ret_flags) {
             rs_log_info("Replay detection requested and granted.");
         } else {
             rs_log_crit("Requested security services don't match those returned.");
-            return EXIT_FLAG_MISMATCH_ERROR;
+            return EXIT_GSSAPI_FAILED;
         }
     }
 
@@ -142,7 +141,7 @@ int dcc_gssapi_compare_flags(OM_uint32 req_flags, OM_uint32 ret_flags) {
             rs_log_info("Out of sequence detection requested and granted.");
         } else {
             rs_log_crit("Requested security services don't match those returned.");
-            return EXIT_FLAG_MISMATCH_ERROR;
+            return EXIT_GSSAPI_FAILED;
         }
     }
 
@@ -202,7 +201,7 @@ int send_token(int sd, gss_buffer_t token) {
  */
 int recv_token(int sd, gss_buffer_t token) {
     int ret;
-    uint32_t length;
+    unsigned length;
 
     if ((ret = dcc_r_token_int(sd, "TLEN", &length)) != 0) {
         return ret;
@@ -217,9 +216,8 @@ int recv_token(int sd, gss_buffer_t token) {
     token->value = malloc(length);
 
     if (token->value == NULL && length != 0) {
-	rs_log_error("malloc failed : %lu bytes: %s.",
-					(unsigned long) length,
-					strerror(errno));
+	    rs_log_error("malloc failed : %lu bytes: out of memory.",
+	                                    (unsigned long) length);
         return EXIT_OUT_OF_MEMORY;
     }
 

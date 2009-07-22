@@ -56,7 +56,7 @@ int opt_niceness = 5;           /* default */
 int arg_max_jobs = 0;
 
 #ifdef HAVE_GSSAPI
-/*If true perform GSS-API based authentication.*/
+/* If true perform GSS-API based authentication. */
 int opt_auth_enabled = 0;
 #endif
 
@@ -244,14 +244,14 @@ int distccd_parse_options(int argc, const char **argv)
             break;
 
 #ifdef HAVE_GSSAPI
-	/*Set the flag to indicate that authentication is requested.*/
+	/* Set the flag to indicate that authentication is requested. */
         case 'A': {
-	    if (opt_auth_enabled < 0) {
-		opt_auth_enabled = 0;
+	        if (opt_auth_enabled < 0) {
+		        opt_auth_enabled = 0;
             }
 
-	    dcc_auth_enabled = opt_auth_enabled;
-	    break;
+	        dcc_auth_enabled = opt_auth_enabled;
+	        break;
         }
 #endif
 
@@ -272,8 +272,8 @@ int distccd_parse_options(int argc, const char **argv)
 
 #ifdef HAVE_GSSAPI
         case 'P': {
-	    dcc_gssapi_show_principal();
-	    exitcode = 0;
+	        dcc_gssapi_show_principal();
+	        exitcode = 0;
             goto out_exit;
         }
 #endif

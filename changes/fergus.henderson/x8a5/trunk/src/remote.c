@@ -52,8 +52,8 @@
 #ifdef HAVE_GSSAPI
 #include "auth.h"
 
-/*Global security context in case confidentiality/integrity*/
-/*services are needed in the future.*/
+/* Global security context in case confidentiality/integrity */
+/* type services are needed in the future. */
 extern gss_ctx_id_t distcc_ctx_handle;
 #endif
 
@@ -227,19 +227,21 @@ int dcc_compile_remote(char **argv,
         goto out;
 
 #ifdef HAVE_GSSAPI
-    /*Perform requested security.*/
-    ret = dcc_gssapi_perform_requested_security(to_net_fd, from_net_fd);
+    /* Perform requested security. */
+    if(host->authenticate) {
+        rs_log_info("Performing authentication.");
 
-    if (ret == NO_OPTIONS_SPECIFIED) {
+        if ((ret = dcc_gssapi_perform_requested_security(to_net_fd, from_net_fd)) != 0) {
+            rs_log_crit("Failed to perform authentication.");
+            goto out;
+        }
+
+        /* Context deleted here as we no longer need it.  However, we have it available */
+        /* in case we want to use confidentiality/integrity type services in the future. */
+        dcc_gssapi_delete_ctx(&distcc_ctx_handle);
+    } else {
         rs_log_info("No authentication requested.");
-    } else if (ret != 0) {
-	rs_log_crit("Failed to perform authentication.");
-        goto out;
     }
-
-    /*Context deleted here as we no longer need it.  However, we have it available*/
-    /*in case we want to use confidentiality/integrity type services in the future.*/
-    dcc_gssapi_delete_ctx(&distcc_ctx_handle);
 #endif
 
     dcc_note_state(DCC_PHASE_SEND, NULL, NULL);

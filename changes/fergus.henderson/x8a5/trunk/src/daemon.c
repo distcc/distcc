@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
         goto out;
 
 #ifdef HAVE_GSSAPI
-    /*Obtain credentials if authentication is requested.*/
+    /* Obtain credentials if authentication is requested. */
     if (dcc_auth_enabled) {
         if ((ret = dcc_gssapi_acquire_credentials()) != 0) {
             goto out;

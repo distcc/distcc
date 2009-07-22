@@ -24,7 +24,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,7 +158,7 @@ static int dcc_gssapi_accept_secure_context(int to_net_sd,
                     rs_log_error("Failed to release buffer.");
                 }
 
-	            return EXIT_FAILED_TO_ACCEPT_SEC_CXT;
+	            return EXIT_GSSAPI_FAILED;
             }
 
             if (output_tok.length > 0) {
@@ -197,9 +196,8 @@ static int dcc_gssapi_accept_secure_context(int to_net_sd,
     rs_log_info("Successfully authenticated %s.", (char *) name_buffer.value);
 
     if ((*principal = malloc(strlen((char *) name_buffer.value) + 1 )) == NULL) {
-        rs_log_error("malloc failed : %ld bytes: %s.",
-                                        (long) (strlen((char *) name_buffer.value) + 1),
-		                                strerror(errno));
+        rs_log_error("malloc failed : %ld bytes: out of memory.",
+                                        (long) (strlen((char *) name_buffer.value) + 1));
         return EXIT_OUT_OF_MEMORY;
     }
 
@@ -233,7 +231,7 @@ static int dcc_gssapi_recv_handshake(int from_net_sd, int to_net_sd) {
 
     if (auth != HANDSHAKE) {
 	rs_log_crit("No client handshake - did the client require authentication?");
-	return EXIT_NO_PEER_AUTH;
+	return EXIT_GSSAPI_FAILED;
     }
 
     rs_log_info("Sending handshake.");
@@ -286,7 +284,7 @@ int dcc_gssapi_acquire_credentials(void) {
 
     if (princ_env_val == NULL) {
         rs_log_error("No principal name specified.");
-        return EXIT_NO_PRINCIPAL_NAME;
+        return EXIT_GSSAPI_FAILED;
     }
 
     if (strchr(princ_env_val, '@') != NULL) {
@@ -308,7 +306,7 @@ int dcc_gssapi_acquire_credentials(void) {
 				       &int_princ_name)) != GSS_S_COMPLETE) {
 	rs_log_error("Failed to import princ name (%s) to internal GSS-API format.",
 							(char *) name_buffer.value);
-        return EXIT_IMPORT_NAME_ERROR;
+        return EXIT_GSSAPI_FAILED;
     }
 
     major_status = gss_acquire_cred(&minor_status,
@@ -330,7 +328,7 @@ int dcc_gssapi_acquire_credentials(void) {
 	        rs_log_error("Failed to release GSS-API buffer.");
         }
 
-        return EXIT_ACQUIRE_CREDS_FAILED;
+        return EXIT_GSSAPI_FAILED;
     }
 
     if ((major_status = gss_release_name(&minor_status,

@@ -90,7 +90,6 @@ static void dcc_show_usage(void)
 "   --scan-includes            Show the files that distcc would send to the\n"
 "                              remote machine, and exit.  (Pump mode only.)\n"
 #ifdef HAVE_GSSAPI
-"   --security-settings        Show current authentication settings and exit.\n"
 "   --show-principal           Show current distccd GSS-API principal and exit.\n"
 #endif
 "\n"
@@ -101,7 +100,6 @@ static void dcc_show_usage(void)
 "   DISTCC_SSH                 Command to run to open SSH connections.\n"
 "   DISTCC_DIR                 Directory for host list and locks.\n"
 #ifdef HAVE_GSSAPI
-"   DISTCC_AUTH=1	      Enable GSS-API based mutual authenticaton.\n"
 "   DISTCC_PRINCIPAL	      The name of the server principal to connect to.\n"
 #endif
 "\n"
@@ -117,6 +115,7 @@ static void dcc_show_usage(void)
 "   USER@HOST                  SSH connection to specified username at host.\n"
 "   HOSTSPEC,lzo               Enable compression.\n"
 "   HOSTSPEC,cpp,lzo           Use pump mode (remote preprocessing).\n"
+"   HOSTSPEC,gssapi            Enable GSS-API based mutual authenticaton.\n"
 "   --randomize                Randomize the server list before execution.\n"
 "\n"
 "distcc distributes compilation jobs across volunteer machines running\n"
@@ -195,30 +194,13 @@ static void dcc_concurrency_level(void) {
 
 #ifdef HAVE_GSSAPI
 /*
- * Print out the current security settings.
- */
-static void dcc_gssapi_show_security_settings(void) {
-    char *auth_env_val = NULL;
-
-    if ((auth_env_val = getenv("DISTCC_AUTH"))) {
-	if (*auth_env_val == '1') {
-	    printf("Authentication\t: Enabled.\n");
-	} else {
-	    printf("Authentication\t: Disabled.\n");
-	}
-    } else {
-        printf("Authentication\t: Not Set.\n");
-    }
-}
-
-/*
  * Print out the name of the principal.
  */
 static void dcc_gssapi_show_principal(void) {
     char *princ_env_val = NULL;
 
     if((princ_env_val = getenv("DISTCC_PRINCIPAL"))) {
-	printf("Principal is\t: %s\n", princ_env_val);
+	    printf("Principal is\t: %s\n", princ_env_val);
     } else {
         printf("Principal\t: Not Set.\n");
     }
@@ -308,17 +290,11 @@ int main(int argc, char **argv)
         }
 
 #ifdef HAVE_GSSAPI
-	if (!strcmp(argv[1], "--security-settings")) {
-	    dcc_gssapi_show_security_settings();
-	    ret = 0;
-	    goto out;
-	}
-
-	if (!strcmp(argv[1], "--show-principal")) {
-	    dcc_gssapi_show_principal();
-	    ret = 0;
-	    goto out;
-	}
+	    if (!strcmp(argv[1], "--show-principal")) {
+	        dcc_gssapi_show_principal();
+	        ret = 0;
+	        goto out;
+	    }
 #endif
 
         if ((ret = dcc_find_compiler(argv, &compiler_args)) != 0) {

@@ -93,9 +93,13 @@
 #ifdef HAVE_GSSAPI
 #include "auth.h"
 
-/*Global security context in case confidentiality/integrity*/
-/*services are needed in the future.*/
+/* Global security context in case confidentiality/integrity */
+/* type services are needed in the future. */
 extern gss_ctx_id_t distccd_ctx_handle;
+
+/* Simple boolean, with a non-zero value indicating that the */
+/* --auth option was specified. */
+int dcc_auth_enabled = 0;
 #endif
 
 /**
@@ -103,9 +107,6 @@ extern gss_ctx_id_t distccd_ctx_handle;
  * compiler errors there, so they're visible to the client.
  **/
 static int dcc_compile_log_fd = -1;
-#ifdef HAVE_GSSAPI
-int dcc_auth_enabled = 0;
-#endif
 
 static int dcc_run_job(int in_fd, int out_fd);
 
@@ -175,19 +176,19 @@ int dcc_service_job(int in_fd,
         goto out;
 
 #ifdef HAVE_GSSAPI
-    /*If requested perform authentication.*/
+    /* If requested perform authentication. */
     if (dcc_auth_enabled) {
-	rs_log_info("Performing authentication.");
+	    rs_log_info("Performing authentication.");
 
         if ((ret = dcc_gssapi_check_client(in_fd, out_fd)) != 0) {
             goto out;
         }
     } else {
-	rs_log_info("No authentication requested.");
+	    rs_log_info("No authentication requested.");
     }
 
-    /*Context deleted here as we no longer need it.  However, we have it available*/
-    /*in case we want to use confidentiality/integrity type services in the future.*/
+    /* Context deleted here as we no longer need it.  However, we have it available */
+    /* in case we want to use confidentiality/integrity type services in the future. */
     if (dcc_auth_enabled) {
         dcc_gssapi_delete_ctx(&distccd_ctx_handle);
     }

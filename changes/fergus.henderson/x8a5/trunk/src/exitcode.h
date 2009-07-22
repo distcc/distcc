@@ -61,13 +61,7 @@ enum dcc_exitcode {
     EXIT_GONE                     = 117, /**< No longer relevant */
 #ifdef HAVE_GSSAPI
     EXIT_TIMEOUT                  = 118,
-    EXIT_IMPORT_NAME_ERROR        = 119, /**< GSS-API - Failed to import name to internal format*/
-    EXIT_FAILED_TO_INIT_SEC_CXT   = 120, /**< GSS-API - Client failed to initiate a secure context*/
-    EXIT_FAILED_TO_ACCEPT_SEC_CXT = 121, /**< GSS-API - Server failed to accept a secure context*/
-    EXIT_FLAG_MISMATCH_ERROR      = 122, /**< GSS-API - Requested flags don't match those returned/supported*/
-    EXIT_ACQUIRE_CREDS_FAILED	  = 123, /**< GSS-API - Failed to acquire principal credentials for Server*/
-    EXIT_NO_PEER_AUTH		  = 124, /**< GSS-API - Peer not providing authentication handshake*/
-    EXIT_NO_PRINCIPAL_NAME	  = 125  /**< GSS-API - No principal name specified for Server*/
+    EXIT_GSSAPI_FAILED            = 119 /**< GSS-API - Catchall error code for GSS-API related errors. */
 #else
     EXIT_TIMEOUT                  = 118
 #endif

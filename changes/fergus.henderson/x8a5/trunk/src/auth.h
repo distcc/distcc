@@ -20,8 +20,6 @@
 
 #include <gssapi/gssapi.h>
 
-/* No authentication requested. */
-#define NO_OPTIONS_SPECIFIED 1
 /* Handshake exchange character. */
 #define HANDSHAKE '*'
 /* Notification of server access. */

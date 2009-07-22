@@ -35,7 +35,6 @@
 #include "netutil.h"
 #include "trace.h"
 
-static int dcc_gssapi_get_services_from_env_and_build_flags(OM_uint32 *req_flags);
 static int dcc_gssapi_establish_secure_context(int to_net_sd,
 					       int from_net_sd,
 					       OM_uint32 req_flags,
@@ -49,7 +48,7 @@ gss_ctx_id_t distcc_ctx_handle = GSS_C_NO_CONTEXT;
 
 /*
  * Perform any requested security.  Message replay and out of sequence
- * detection are given in adition to those specified by the user.
+ * detection are given in adition to mutual authentication.
  *
  * @param to_net_sd.	Socket to write to.
  *
@@ -62,11 +61,7 @@ int dcc_gssapi_perform_requested_security(int to_net_sd,
     int ret;
     OM_uint32 req_flags, ret_flags;
 
-    req_flags = GSS_C_REPLAY_FLAG | GSS_C_SEQUENCE_FLAG;
-
-    if ((ret = dcc_gssapi_get_services_from_env_and_build_flags(&req_flags)) != 0) {
-        return ret;
-    }
+    req_flags = GSS_C_MUTUAL_FLAG | GSS_C_REPLAY_FLAG | GSS_C_SEQUENCE_FLAG;
 
     if ((ret = dcc_gssapi_establish_secure_context(to_net_sd,
 						  from_net_sd,
@@ -86,33 +81,6 @@ int dcc_gssapi_perform_requested_security(int to_net_sd,
     }
 
     rs_log_info("Authentication complete - happy compiling!");
-
-    return 0;
-}
-
-/*
- * Extract the desired security services from the environment and
- * build a corresponding flag.  Only interested in mutual authentication
- * for now but this could be extended in the future.
- *
- * @param req_flags.	A representation of the requested services to
- *			be returned to the invoking function.
- *
- * Returns 0 on success, otherwise no options specified.
- */
-static int dcc_gssapi_get_services_from_env_and_build_flags(OM_uint32 *req_flags) {
-    char *auth_env_val = NULL;
-
-    if ((auth_env_val = getenv("DISTCC_AUTH"))) {
-        if (*auth_env_val == '1') {
-	    rs_log_info("Performing authentication.");
-	    *req_flags |= GSS_C_MUTUAL_FLAG;
-	} else {
-	    return NO_OPTIONS_SPECIFIED;
-	}
-    } else {
-        return NO_OPTIONS_SPECIFIED;
-    }
 
     return 0;
 }
@@ -183,9 +151,8 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
                                                 inet_ntoa(addr.sin_addr));
 
     if ((full_name = malloc(strlen(hp->h_name) + 1)) == NULL) {
-        rs_log_error("malloc failed : %ld bytes: %s.",
-                                        (long) (strlen(hp->h_name) + 1),
-					                    strerror(errno));
+        rs_log_error("malloc failed : %ld bytes: out of memory.",
+                                        (long) (strlen(hp->h_name) + 1));
         return EXIT_OUT_OF_MEMORY;
     }
 
@@ -216,7 +183,7 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
 				       name_type,
 				       &int_serv_name)) != GSS_S_COMPLETE) {
 	rs_log_error("Failed to import service name to internal GSS-API format.");
-        return EXIT_IMPORT_NAME_ERROR;
+        return EXIT_GSSAPI_FAILED;
     }
 
     input_tok.value = NULL;
@@ -248,7 +215,7 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
 	    rs_log_crit("Failed to initiate a secure context.");
 	    dcc_gssapi_status_to_log(major_status, GSS_C_GSS_CODE);
 	    dcc_gssapi_status_to_log(minor_status, GSS_C_MECH_CODE);
-	    return EXIT_FAILED_TO_INIT_SEC_CXT;
+	    return EXIT_GSSAPI_FAILED;
 	}
 
 	if (output_tok.length > 0) {
@@ -341,7 +308,7 @@ static int dcc_gssapi_send_handshake(int to_net_sd, int from_net_sd) {
 
     if (auth != HANDSHAKE) {
         rs_log_crit("No server handshake.");
-        return EXIT_NO_PEER_AUTH;
+        return EXIT_GSSAPI_FAILED;
     }
 
     return 0;

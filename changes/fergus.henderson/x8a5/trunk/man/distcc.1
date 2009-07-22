@@ -138,17 +138,17 @@ $ pump make -j20 CC=distcc
 .RE
 
 .SH "QUICKSTART FOR DISTCC-GSSAPI MODE"
-Proceed as per
+Proceed as per the
 .B QUICKSTART
-but execute the following command to perform mutual authentication prior
-to step 4:
+but in Step 3, specify that the remote hosts are to mutually
+authenticate with the client:
 
 .RS
-export DISTCC_AUTH=1
+$ export DISTCC_HOSTS='--randomize localhost red,gssapi green,gssapi blue,gssapi'
 .RE
 
 If distccd runs under a specific principal name then execute the
-following command:
+following command prior to step 4:
 
 .RS
 export DISTCC_PRINICIPAL=<name>
@@ -314,14 +314,11 @@ unless the /LIMIT option was used in the host list.
 See the Host Specifications section.
 
 .TP
-.B --security-settings
-Displays the current security settings extracted from the environment.
-Currently only mutual authentication is supported.
-
-.TP
 .B --show-principal
 Displays the name of the distccd security principal extracted from the
 environment.
+.B This option is only available if distcc was compiled with
+.B the --with-auth configure option.
 
 .SH "INSTALLING DISTCC"
 There are three different ways to call distcc, to suit different
@@ -517,7 +514,7 @@ The syntax is
   OLDSTYLE_TCP_HOST = HOSTID[/LIMIT][:PORT][OPTIONS]
   HOSTID = HOSTNAME | IPV4 | IPV6
   OPTIONS = ,OPTION[OPTIONS]
-  OPTION = lzo | cpp
+  OPTION = lzo | cpp | gssapi
   GLOBAL_OPTION = --randomize
   ZEROCONF = +zeroconf
 .fi
@@ -574,6 +571,9 @@ Enables LZO compression for this TCP or SSH host.
 .B ,cpp
 Enables distcc-pump mode for this host.  Note: the build command must be 
 wrapped in the pump script in order to start the include server.
+.TP
+.B ,gssapi
+Enables mutual authentication for this host.
 .TP
 .B --randomize
 Randomize the order of the host list before execution.
@@ -728,16 +728,7 @@ No hosts defined and fallbacks disabled.
 Timeout.
 .TP
 119
-GSS-API - Failed to import name to internal format.
-.TP
-120
-GSS-API - Client failed to initiate a secure context.
-.TP
-122
-GSS-API - Requested flags don't match those returned/supported.
-.TP
-124
-GSS-API - Peer not providing authentication handshake.
+GSS-API - Catchall error code for GSS-API related errors.
 
 .SH "FILES"
 If $DISTCC_HOSTS is not set, distcc reads a host list from either 
@@ -812,14 +803,11 @@ and the succeeding local compilation.
 .B "DCC_EMAILLOG_WHOM_TO_BLAME"
 The email address for discrepancy email; the default is "distcc-pump-errors".
 .TP
-.B "DISTCC_AUTH"
-If set to 1, peform GSS-API based mutual authentication.
-.B This option is only available if distcc was compiled with
-.B the --with-auth configure option.
-.TP
 .B "DISTCC_PRINCIPAL"
 If set, specifies the name of the principal that distccd runs under, and is used
 to authenticate the server to the client.
+.B This environment variable is only used if distcc was compiled with
+.B the --with-auth configure option and the gssapi per host option is specified.
 .SH "CROSS COMPILING"
 Cross compilation means building programs to run on a
 machine with a different processor, architecture, or
