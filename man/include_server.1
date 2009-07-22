@@ -220,10 +220,13 @@ The build system rewrites a file.  For Linux kernel 2.6, this happens
 for 'include/linux/compile.h' and 'include/asm/asm-offsets.h'. This condition is
 fixed by letting the include server know that it must reset its caches when a
 stat of any of the files changes. Practically, this is done by gathering the
-files in a colon-separated list and then setting the INCLUDE_SERVER_ARGS command
-as in:
+files in a colon-separated list and then setting the INCLUDE_SERVER_ARGS
+environment variable when invoking the pump script, so that it passes
+the
+.B --stat_reset_triggers
+option; for example,
 
-   include_server_args="--stat_reset_triggers=include/linux/compile.h:include/asm/asm-offsets.h"
+   INCLUDE_SERVER_ARGS="--stat_reset_triggers=include/linux/compile.h:include/asm/asm-offsets.h"
 
 .TP
 .B A header file is potentially included, but does not exist, and is then later included.
