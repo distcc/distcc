@@ -837,6 +837,6 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     *lineptr = buffer;
     *n = size;
 
-    return bytes_read == 0 ? -1 : bytes_read;
+    return bytes_read == 0 ? -1 : (ssize_t) bytes_read;
 }
 #endif

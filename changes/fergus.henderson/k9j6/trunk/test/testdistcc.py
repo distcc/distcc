@@ -185,7 +185,7 @@ EXIT_BAD_HOSTSPEC            = 106
 EXIT_COMPILER_MISSING        = 110
 EXIT_ACCESS_DENIED           = 113
 
-DISTCC_TEST_PORT             = 44000
+DISTCC_TEST_PORT             = 42000
 
 _gcc                         = None     # full path to gcc
 _valgrind_command            = "" # Command to invoke valgrind (or other
