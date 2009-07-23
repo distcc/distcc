@@ -42,13 +42,15 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
 static int dcc_gssapi_send_handshake(int to_net_sd, int from_net_sd);
 static int dcc_gssapi_recv_notification(int sd);
 
-/*Global security context in case other services*/
-/*are implemented in the future.*/
+/**
+ * Global security context in case other services are implemented in the
+ * future.
+ */
 gss_ctx_id_t distcc_ctx_handle = GSS_C_NO_CONTEXT;
 
 /*
  * Perform any requested security.  Message replay and out of sequence
- * detection are given in adition to mutual authentication.
+ * detection are given in addition to mutual authentication.
  *
  * @param to_net_sd.	Socket to write to.
  *
@@ -358,4 +360,3 @@ static int dcc_gssapi_recv_notification(int sd) {
     rs_log_info("Access granted by server.");
     return 0;
 }
-
