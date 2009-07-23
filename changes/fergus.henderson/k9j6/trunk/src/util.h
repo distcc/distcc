@@ -22,6 +22,7 @@
  */
 
 #include <setjmp.h>
+#include <stdio.h>
 
 /* util.c */
 int dcc_getcurrentload(void);

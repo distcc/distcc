@@ -801,7 +801,7 @@ int dcc_tokenize_string(const char *input, char ***argv_ptr)
 ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     char *buffer;
     size_t size;
-    char *ptr;
+    size_t bytes_read;
     int c;
     char *new_buffer;
 
@@ -814,15 +814,15 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     buffer = *lineptr;
     size = *n;
 
-    ptr = buffer;
+    bytes_read = 0;
     do {
         /* Ensure that we have space for next character or '\0'. */
-        if ((size_t) (ptr - buffer) + 1 > size) {
-            size += 200;
+        if (bytes_read + 1 > size) {
+            size += 100;
             new_buffer = realloc(buffer, size);
             if (new_buffer == NULL) {
                 /* Out of memory. */
-                *n = size - 200;
+                *n = size - 100;
                 *lineptr = buffer;
                 return -1;
             }
@@ -830,13 +830,13 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
         }
         if ((c = fgetc(stream)) == EOF)
             break;
-        *ptr++ = c;
+        buffer[bytes_read++] = c;
     } while (c != '\n');
-    *ptr = '\0';
+    buffer[bytes_read] = '\0';
 
     *lineptr = buffer;
     *n = size;
 
-    return ptr - buffer == 0 ? -1 : ptr - buffer;
+    return bytes_read == 0 ? -1 : bytes_read;
 }
 #endif
