@@ -36,7 +36,7 @@
 #include "netutil.h"
 #include "trace.h"
 
-/*Maximum lengh of principal name in black/white list.*/
+/*Maximum length of principal name in black/white list.*/
 #define MAX_NAME_LENGTH 50
 /*Key not found during binary search*/
 #define KEY_NOT_FOUND -1
@@ -513,6 +513,9 @@ int dcc_gssapi_obtain_list(int mode) {
 
     if ((ret = fseek(file, 0, SEEK_SET)) != 0) {
         rs_log_error("fseek failed: %s.", strerror(errno));
+
+        /* If seeking to the start of the file fails,
+         * try achieving the same effect by closing and reopening the file. */
 
 	    if ((ret = fclose(file)) != 0) {
             rs_log_error("fclose failed: %s.", strerror(errno));
