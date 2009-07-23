@@ -90,6 +90,17 @@
 #include "stringmap.h"
 #include "dotd.h"
 #include "fix_debug_info.h"
+#ifdef HAVE_GSSAPI
+#include "auth.h"
+
+/* Global security context in case confidentiality/integrity */
+/* type services are needed in the future. */
+extern gss_ctx_id_t distccd_ctx_handle;
+
+/* Simple boolean, with a non-zero value indicating that the */
+/* --auth option was specified. */
+int dcc_auth_enabled = 0;
+#endif
 
 /**
  * We copy all serious distccd messages to this file, as well as sending the
@@ -163,6 +174,25 @@ int dcc_service_job(int in_fd,
      * allowed. */
     if ((ret = dcc_check_client(cli_addr, cli_len, opt_allowed)) != 0)
         goto out;
+
+#ifdef HAVE_GSSAPI
+    /* If requested perform authentication. */
+    if (dcc_auth_enabled) {
+	    rs_log_info("Performing authentication.");
+
+        if ((ret = dcc_gssapi_check_client(in_fd, out_fd)) != 0) {
+            goto out;
+        }
+    } else {
+	    rs_log_info("No authentication requested.");
+    }
+
+    /* Context deleted here as we no longer need it.  However, we have it available */
+    /* in case we want to use confidentiality/integrity type services in the future. */
+    if (dcc_auth_enabled) {
+        dcc_gssapi_delete_ctx(&distccd_ctx_handle);
+    }
+#endif
 
     ret = dcc_run_job(in_fd, out_fd);
 

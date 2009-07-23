@@ -491,6 +491,32 @@ if test x"$with_avahi" != xno; then
     AC_SUBST(ZEROCONF_DISTCCD_OBJS)
 fi
 
+AUTH_COMMON_OBJS=""
+AUTH_DISTCC_OBJS=""
+AUTH_DISTCCD_OBJS=""
+
+#check for GSS-API
+AC_ARG_WITH([auth],
+	    [AS_HELP_STRING([--with-auth],
+	    [provide mutual authentication services via the GSS-API])])
+
+if test x"$with_auth" = xyes; then
+        AC_SEARCH_LIBS([gss_init_sec_context],
+                        [gssapi gssapi_krb5],
+	                AC_DEFINE(HAVE_GSSAPI, 1, [Define if the GSS_API is available])
+	                AUTH_COMMON_OBJS="src/auth_common.o"
+	                AUTH_DISTCC_OBJS="src/auth_distcc.o"
+	                AUTH_DISTCCD_OBJS="src/auth_distccd.o",
+	                AC_MSG_FAILURE([--with-auth was given but no GSS-API library found])
+	                AUTH_COMMON_OBJS=""
+                        AUTH_DISTCC_OBJS=""
+                        AUTH_DISTCCD_OBJS="")
+fi
+
+AC_SUBST(AUTH_COMMON_OBJS)
+AC_SUBST(AUTH_DISTCC_OBJS)
+AC_SUBST(AUTH_DISTCCD_OBJS)
+
 ACX_PTHREAD
 LIBS="$PTHREAD_LIBS $LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"

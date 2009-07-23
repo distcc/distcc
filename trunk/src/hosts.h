@@ -59,6 +59,11 @@ struct dcc_hostdef {
     /** Where are we doing preprocessing? */
     enum dcc_cpp_where cpp_where;
 
+#ifdef HAVE_GSSAPI
+    /* Are we autenticating with this host? */
+    int authenticate;
+#endif
+
     struct dcc_hostdef *next;
 };
 

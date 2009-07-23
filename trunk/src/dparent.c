@@ -71,6 +71,9 @@
 #include "daemon.h"
 #include "netutil.h"
 #include "zeroconf.h"
+#ifdef HAVE_GSSAPI
+#include "auth.h"
+#endif
 
 static void dcc_nofork_parent(int listen_fd) NORETURN;
 static void dcc_detach(void);
@@ -258,6 +261,12 @@ static void dcc_nofork_parent(int listen_fd)
             ;
         }  else if (acc_fd == -1) {
             rs_log_error("accept failed: %s", strerror(errno));
+
+#ifdef HAVE_GSSAPI
+            if (dcc_auth_enabled) {
+                dcc_gssapi_release_credentials();
+            }
+#endif
             dcc_exit(EXIT_CONNECT_FAILED);
         } else {
             dcc_service_job(acc_fd, acc_fd, (struct sockaddr *) &cli_addr, cli_len);
