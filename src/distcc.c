@@ -89,6 +89,9 @@ static void dcc_show_usage(void)
 "                              the host list, and exit.\n"
 "   --scan-includes            Show the files that distcc would send to the\n"
 "                              remote machine, and exit.  (Pump mode only.)\n"
+#ifdef HAVE_GSSAPI
+"   --show-principal           Show current distccd GSS-API principal and exit.\n"
+#endif
 "\n"
 "Environment variables:\n"
 "   See the manual page for a complete list.\n"
@@ -96,6 +99,9 @@ static void dcc_show_usage(void)
 "   DISTCC_LOG                 Send messages to file, not stderr.\n"
 "   DISTCC_SSH                 Command to run to open SSH connections.\n"
 "   DISTCC_DIR                 Directory for host list and locks.\n"
+#ifdef HAVE_GSSAPI
+"   DISTCC_PRINCIPAL	      The name of the server principal to connect to.\n"
+#endif
 "\n"
 "Server specification:\n"
 "A list of servers is taken from the environment variable $DISTCC_HOSTS, or\n"
@@ -109,6 +115,7 @@ static void dcc_show_usage(void)
 "   USER@HOST                  SSH connection to specified username at host.\n"
 "   HOSTSPEC,lzo               Enable compression.\n"
 "   HOSTSPEC,cpp,lzo           Use pump mode (remote preprocessing).\n"
+"   HOSTSPEC,auth              Enable GSS-API based mutual authenticaton.\n"
 "   --randomize                Randomize the server list before execution.\n"
 "\n"
 "distcc distributes compilation jobs across volunteer machines running\n"
@@ -184,6 +191,21 @@ static void dcc_concurrency_level(void) {
 
     printf("%i\n", nslots);
 }
+
+#ifdef HAVE_GSSAPI
+/*
+ * Print out the name of the principal.
+ */
+static void dcc_gssapi_show_principal(void) {
+    char *princ_env_val = NULL;
+
+    if((princ_env_val = getenv("DISTCC_PRINCIPAL"))) {
+	    printf("Principal is\t: %s\n", princ_env_val);
+    } else {
+        printf("Principal\t: Not Set.\n");
+    }
+}
+#endif
 
 /**
  * distcc client entry point.
@@ -266,6 +288,14 @@ int main(int argc, char **argv)
             dcc_scan_includes = 1;
             argv++;
         }
+
+#ifdef HAVE_GSSAPI
+	    if (!strcmp(argv[1], "--show-principal")) {
+	        dcc_gssapi_show_principal();
+	        ret = 0;
+	        goto out;
+	    }
+#endif
 
         if ((ret = dcc_find_compiler(argv, &compiler_args)) != 0) {
             goto out;

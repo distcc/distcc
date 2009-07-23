@@ -47,3 +47,7 @@ extern int opt_niceness;
 #ifdef HAVE_AVAHI
 extern int opt_zeroconf;
 #endif
+
+#ifdef HAVE_GSSAPI
+extern int dcc_auth_enabled;
+#endif

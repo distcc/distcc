@@ -68,6 +68,9 @@ int dcc_show_version(const char *prog)
 #ifdef HAVE_AVAHI
 "\nBuilt with Zeroconf support.\n"
 #endif
+#ifdef HAVE_GSSAPI
+"\nBuilt with GSS-API support for mutual authentication.\n"
+#endif
 "\n"
 "Please report bugs to %s\n"
 "\n"

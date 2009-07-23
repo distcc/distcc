@@ -58,6 +58,9 @@
 #include "dopt.h"
 #include "exec.h"
 #include "daemon.h"
+#ifdef HAVE_GSSAPI
+#include "auth.h"
+#endif
 
 
 /* This stores the pid of the parent daemon.  It's used to make sure
@@ -135,4 +138,10 @@ static RETSIGTYPE dcc_daemon_terminate(int whichsig)
     }
 
     raise(whichsig);
+
+#ifdef HAVE_GSSAPI
+    if (dcc_auth_enabled) {
+        dcc_gssapi_release_credentials();
+    }
+#endif
 }

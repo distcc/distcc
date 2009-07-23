@@ -55,6 +55,11 @@ int opt_niceness = 5;           /* default */
  **/
 int arg_max_jobs = 0;
 
+#ifdef HAVE_GSSAPI
+/* If true perform GSS-API based authentication. */
+int opt_auth_enabled = 0;
+#endif
+
 int arg_port = DISTCC_DEFAULT_PORT;
 int arg_stats = DISTCC_DEFAULT_STATS_ENABLED;
 int arg_stats_port = DISTCC_DEFAULT_STATS_PORT;
@@ -108,6 +113,9 @@ int opt_zeroconf = 0;
 
 const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
+#ifdef HAVE_GSSAPI
+    { "auth", 0,	 POPT_ARG_NONE, &opt_auth_enabled, 'A', 0, 0 },
+#endif
     { "jobs", 'j',       POPT_ARG_INT, &arg_max_jobs, 'j', 0, 0 },
     { "daemon", 0,       POPT_ARG_NONE, &opt_daemon_mode, 0, 0, 0 },
     { "help", 0,         POPT_ARG_NONE, 0, '?', 0, 0 },
@@ -124,6 +132,9 @@ const struct poptOption options[] = {
     { "no-fork", 0,      POPT_ARG_NONE, &opt_no_fork, 0, 0, 0 },
     { "pid-file", 'P',   POPT_ARG_STRING, &arg_pid_file, 0, 0, 0 },
     { "port", 'p',       POPT_ARG_INT, &arg_port, 0, 0, 0 },
+#ifdef HAVE_GSSAPI
+    { "show-principal", 0,	 POPT_ARG_NONE, 0, 'P', 0, 0 },
+#endif
     { "user", 0,         POPT_ARG_STRING, &opt_user, 'u', 0, 0 },
     { "verbose", 0,      POPT_ARG_NONE, 0, 'v', 0, 0 },
     { "version", 0,      POPT_ARG_NONE, 0, 'V', 0, 0 },
@@ -147,6 +158,9 @@ static void distccd_show_usage(void)
 "Options:\n"
 "    --help                     explain usage and exit\n"
 "    --version                  show version and exit\n"
+#ifdef HAVE_GSSAPI
+"    --show-principal           show current GSS-API principal and exit\n"
+#endif
 "    -P, --pid-file FILE        save daemon process id to file\n"
 "    -N, --nice LEVEL           lower priority, 20=most nice\n"
 "    --user USER                if run by root, change to this persona\n"
@@ -156,6 +170,9 @@ static void distccd_show_usage(void)
 "    -p, --port PORT            TCP port to listen on\n"
 "    --listen ADDRESS           IP address to listen on\n"
 "    -a, --allow IP[/BITS]      client address access control\n"
+#ifdef HAVE_GSSAPI
+"    --auth                     enable GSS-API based mutual authenticaton\n"
+#endif
 "    --stats                    enable statistics reporting via HTTP server\n"
 "    --stats-port PORT          TCP port to listen on for statistics requests\n"
 #ifdef HAVE_AVAHI
@@ -180,6 +197,20 @@ static void distccd_show_usage(void)
 );
 }
 
+#ifdef HAVE_GSSAPI
+/*
+ * Print out the name of the principal.
+ */
+static void dcc_gssapi_show_principal(void) {
+    char *princ_env_val = NULL;
+
+    if ((princ_env_val = getenv("DISTCCD_PRINCIPAL"))) {
+	printf("Principal is\t: %s\n", princ_env_val);
+    } else {
+        printf("Principal\t: Not Set\n");
+    }
+}
+#endif
 
 int distccd_parse_options(int argc, const char **argv)
 {
@@ -212,6 +243,18 @@ int distccd_parse_options(int argc, const char **argv)
         }
             break;
 
+#ifdef HAVE_GSSAPI
+	/* Set the flag to indicate that authentication is requested. */
+        case 'A': {
+	        if (opt_auth_enabled < 0) {
+		        opt_auth_enabled = 0;
+            }
+
+	        dcc_auth_enabled = opt_auth_enabled;
+	        break;
+        }
+#endif
+
         case 'j':
             if (arg_max_jobs < 1 || arg_max_jobs > 200) {
                 rs_log_error("--jobs argument must be between 1 and 200");
@@ -226,6 +269,14 @@ int distccd_parse_options(int argc, const char **argv)
             }
             dcc_job_lifetime = opt_job_lifetime;
             break;
+
+#ifdef HAVE_GSSAPI
+        case 'P': {
+	        dcc_gssapi_show_principal();
+	        exitcode = 0;
+            goto out_exit;
+        }
+#endif
 
         case 'u':
             if (getuid() != 0 && geteuid() != 0) {

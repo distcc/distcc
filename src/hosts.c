@@ -241,6 +241,9 @@ static int dcc_parse_options(const char **psrc,
 
     host->compr = DCC_COMPRESS_NONE;
     host->cpp_where = DCC_CPP_ON_CLIENT;
+#ifdef HAVE_GSSAPI
+    host->authenticate = 0;
+#endif
 
     while (p[0] == ',') {
         p++;
@@ -256,6 +259,12 @@ static int dcc_parse_options(const char **psrc,
             rs_trace("got CPP option");
             host->cpp_where = DCC_CPP_ON_SERVER;
             p += 3;
+#ifdef HAVE_GSSAPI
+        } else if (str_startswith("auth", p)) {
+            rs_trace("got GSSAPI option");
+            host->authenticate = 1;
+            p += 4;
+#endif
         } else {
             rs_log_error("unrecognized option in host specification: %s",
                          started);

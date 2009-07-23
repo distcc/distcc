@@ -239,7 +239,8 @@ common_obj = src/arg.o src/argutil.o					\
 	src/hosts.o src/hostfile.o					\
 	src/implicit.o src/loadfile.o					\
 	lzo/minilzo.o                                                   \
-	@ZEROCONF_COMMON_OBJS@
+	@ZEROCONF_COMMON_OBJS@						\
+	@AUTH_COMMON_OBJS@
 
 distcc_obj = src/backoff.o						\
 	src/climasq.o src/clinet.o src/clirpc.o				\
@@ -251,6 +252,7 @@ distcc_obj = src/backoff.o						\
 	src/include_server_if.o						\
 	src/where.o							\
 	@ZEROCONF_DISTCC_OBJS@						\
+	@AUTH_DISTCC_OBJS@						\
 	src/emaillog.o							\
 	$(common_obj)
 
@@ -263,6 +265,7 @@ distccd_obj = src/access.o						\
 	src/stats.o							\
 	src/fix_debug_info.o						\
 	@ZEROCONF_DISTCCD_OBJS@						\
+	@AUTH_DISTCCD_OBJS@						\
 	$(common_obj) @BUILD_POPT@
 
 lsdistcc_obj = src/lsdistcc.o 						\
@@ -305,6 +308,7 @@ h_compile_obj = src/h_compile.o $(common_obj) src/compile.o src/timefile.o \
 # All source files, for the purposes of building the distribution
 SRC =	src/stats.c							\
 	src/access.c src/arg.c src/argutil.c				\
+	src/auth_common.c src/auth_distcc.c src/auth_distccd.c		\
 	src/backoff.c src/bulk.c					\
 	src/cleanup.c							\
 	src/climasq.c src/clinet.c src/clirpc.c src/compile.c		\
@@ -339,6 +343,7 @@ SRC =	src/stats.c							\
 
 HEADERS = src/stats.h							\
 	src/access.h							\
+	src/auth.h							\
 	src/bulk.h							\
 	src/clinet.h src/compile.h					\
 	src/daemon.h							\
@@ -356,8 +361,8 @@ HEADERS = src/stats.h							\
 	src/exec.h src/lock.h src/where.h src/srvnet.h			\
 	src/rslave.h							\
 	src/dotd.h src/include_server_if.h				\
-	src/emaillog.h \
-	src/va_copy.h \
+	src/emaillog.h 							\
+	src/va_copy.h 							\
 	src/zeroconf.h
 
 conf_dir = packaging/RedHat/conf

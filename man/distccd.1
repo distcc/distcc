@@ -217,6 +217,17 @@ name or IP address in their distcc host list: the distcc clients can
 just use "+zeroconf" in their distcc host lists.
 .B This option is only available if distccd was compiled with
 .B Avahi support enabled.
+.TP
+.B --auth
+Peform GSS-API based mutual authentication.
+.B This option is only available if distccd was compiled with
+.B the --with-auth configure option.
+.TP
+.B --show-principal
+Displays the name of the distccd security principal extracted from the
+environment.
+.B This option is only available if distccd was compiled with
+.B the --with-auth configure option.
 .SH "SEARCH PATHS"
 .PP
 distcc can pass either a relative or an absolute name for the compiler
@@ -278,6 +289,12 @@ On Linux, turn on the TCP_DEFER_ACCEPT socket option.  Defaults to on.
 .B "TMPDIR"
 Directory for temporary files such as preprocessor output.  By default
 /tmp/ is used.
+.TP
+.B "DISTCCD_PRINCIPAL"
+If set, specifies the name of the principal that distccd runs under, and is used
+to authenticate with the client.
+.B This environment variable is only used if distccd was compiled with
+.B the --with-auth configure option and if distccd is run with the --auth option.
 .SH "SEE ALSO"
 \fBdistcc\fR(1), \fBpump\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1),
 \fBmake\fR(1), and  \fBccache\fR(1)

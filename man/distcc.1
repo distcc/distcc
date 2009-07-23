@@ -136,6 +136,24 @@ Wrap your build inside the pump command, here assuming 10 servers:
 .RS
 $ pump make -j20 CC=distcc
 .RE
+
+.SH "QUICKSTART FOR DISTCC-GSSAPI MODE"
+Proceed as per the
+.B QUICKSTART
+but in Step 3, specify that the remote hosts are to mutually
+authenticate with the client:
+
+.RS
+$ export DISTCC_HOSTS='--randomize localhost red,auth green,auth blue,auth'
+.RE
+
+If distccd runs under a specific principal name then execute the
+following command prior to step 4:
+
+.RS
+export DISTCC_PRINICIPAL=<name>
+.RE
+
 .SH "HOW PLAIN (NON-PUMP) DISTCC WORKS"
 distcc only ever runs the compiler and assembler remotely.  With plain distcc,
 the preprocessor must always run locally because it needs to access various
@@ -227,6 +245,12 @@ directories of the compiler installation.
 See the \fBinclude_server\fR(1) manual for more information on symptoms and
 causes of violations of distcc-pump mode assumptions.
 
+.SH "HOW DISTCC-GSSAPI MODE WORKS"
+
+In this mode distcc will use the GSS-API framework to access the currently
+configured security mechanism and perform mutual authentication with the
+daemon.
+
 .SH "OPTION SUMMARY"
 Most options passed to distcc are interpreted as compiler options.
 The following options are understood by distcc itself.
@@ -288,6 +312,14 @@ to all servers.
 By default this will be four times the number of hosts in the host list,
 unless the /LIMIT option was used in the host list.
 See the Host Specifications section.
+
+.TP
+.B --show-principal
+Displays the name of the distccd security principal extracted from the
+environment.
+.B This option is only available if distcc was compiled with
+.B the --with-auth configure option.
+
 .SH "INSTALLING DISTCC"
 There are three different ways to call distcc, to suit different
 circumstances:
@@ -482,7 +514,7 @@ The syntax is
   OLDSTYLE_TCP_HOST = HOSTID[/LIMIT][:PORT][OPTIONS]
   HOSTID = HOSTNAME | IPV4 | IPV6
   OPTIONS = ,OPTION[OPTIONS]
-  OPTION = lzo | cpp
+  OPTION = lzo | cpp | auth
   GLOBAL_OPTION = --randomize
   ZEROCONF = +zeroconf
 .fi
@@ -539,6 +571,9 @@ Enables LZO compression for this TCP or SSH host.
 .B ,cpp
 Enables distcc-pump mode for this host.  Note: the build command must be 
 wrapped in the pump script in order to start the include server.
+.TP
+.B ,auth
+Enables GSSAPI-based mutual authentication for this host.
 .TP
 .B --randomize
 Randomize the order of the host list before execution.
@@ -691,6 +726,10 @@ No hosts defined and fallbacks disabled.
 .TP
 118
 Timeout.
+.TP
+119
+GSS-API - Catchall error code for GSS-API related errors.
+
 .SH "FILES"
 If $DISTCC_HOSTS is not set, distcc reads a host list from either 
 .B $DISTCC_DIR/hosts
@@ -763,6 +802,12 @@ and the succeeding local compilation.
 .TP
 .B "DCC_EMAILLOG_WHOM_TO_BLAME"
 The email address for discrepancy email; the default is "distcc-pump-errors".
+.TP
+.B "DISTCC_PRINCIPAL"
+If set, specifies the name of the principal that distccd runs under, and is used
+to authenticate the server to the client.
+.B This environment variable is only used if distcc was compiled with
+.B the --with-auth configure option and the ",auth" per host option is specified.
 .SH "CROSS COMPILING"
 Cross compilation means building programs to run on a
 machine with a different processor, architecture, or
