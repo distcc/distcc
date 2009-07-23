@@ -144,7 +144,7 @@ but in Step 3, specify that the remote hosts are to mutually
 authenticate with the client:
 
 .RS
-$ export DISTCC_HOSTS='--randomize localhost red,gssapi green,gssapi blue,gssapi'
+$ export DISTCC_HOSTS='--randomize localhost red,auth green,auth blue,auth'
 .RE
 
 If distccd runs under a specific principal name then execute the
@@ -514,7 +514,7 @@ The syntax is
   OLDSTYLE_TCP_HOST = HOSTID[/LIMIT][:PORT][OPTIONS]
   HOSTID = HOSTNAME | IPV4 | IPV6
   OPTIONS = ,OPTION[OPTIONS]
-  OPTION = lzo | cpp | gssapi
+  OPTION = lzo | cpp | auth
   GLOBAL_OPTION = --randomize
   ZEROCONF = +zeroconf
 .fi
@@ -572,8 +572,8 @@ Enables LZO compression for this TCP or SSH host.
 Enables distcc-pump mode for this host.  Note: the build command must be 
 wrapped in the pump script in order to start the include server.
 .TP
-.B ,gssapi
-Enables mutual authentication for this host.
+.B ,auth
+Enables GSSAPI-based mutual authentication for this host.
 .TP
 .B --randomize
 Randomize the order of the host list before execution.
@@ -807,7 +807,7 @@ The email address for discrepancy email; the default is "distcc-pump-errors".
 If set, specifies the name of the principal that distccd runs under, and is used
 to authenticate the server to the client.
 .B This environment variable is only used if distcc was compiled with
-.B the --with-auth configure option and the gssapi per host option is specified.
+.B the --with-auth configure option and the ",auth" per host option is specified.
 .SH "CROSS COMPILING"
 Cross compilation means building programs to run on a
 machine with a different processor, architecture, or

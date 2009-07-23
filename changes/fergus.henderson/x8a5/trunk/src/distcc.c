@@ -115,7 +115,7 @@ static void dcc_show_usage(void)
 "   USER@HOST                  SSH connection to specified username at host.\n"
 "   HOSTSPEC,lzo               Enable compression.\n"
 "   HOSTSPEC,cpp,lzo           Use pump mode (remote preprocessing).\n"
-"   HOSTSPEC,gssapi            Enable GSS-API based mutual authenticaton.\n"
+"   HOSTSPEC,auth              Enable GSS-API based mutual authenticaton.\n"
 "   --randomize                Randomize the server list before execution.\n"
 "\n"
 "distcc distributes compilation jobs across volunteer machines running\n"

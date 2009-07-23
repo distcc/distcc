@@ -260,10 +260,10 @@ static int dcc_parse_options(const char **psrc,
             host->cpp_where = DCC_CPP_ON_SERVER;
             p += 3;
 #ifdef HAVE_GSSAPI
-        } else if (str_startswith("gssapi", p)) {
+        } else if (str_startswith("auth", p)) {
             rs_trace("got GSSAPI option");
             host->authenticate = 1;
-            p += 6;
+            p += 4;
 #endif
         } else {
             rs_log_error("unrecognized option in host specification: %s",
