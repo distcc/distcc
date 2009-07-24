@@ -49,7 +49,13 @@
 #include "lock.h"
 #include "compile.h"
 #include "bulk.h"
+#ifdef HAVE_GSSAPI
+#include "auth.h"
 
+/* Global security context in case confidentiality/integrity */
+/* type services are needed in the future. */
+extern gss_ctx_id_t distcc_ctx_handle;
+#endif
 
 /*
  * TODO: If cpp finishes early and fails then perhaps break out of
@@ -219,6 +225,24 @@ int dcc_compile_remote(char **argv,
     *status = 0;
     if ((ret = dcc_remote_connect(host, &to_net_fd, &from_net_fd, &ssh_pid)))
         goto out;
+
+#ifdef HAVE_GSSAPI
+    /* Perform requested security. */
+    if(host->authenticate) {
+        rs_log_info("Performing authentication.");
+
+        if ((ret = dcc_gssapi_perform_requested_security(to_net_fd, from_net_fd)) != 0) {
+            rs_log_crit("Failed to perform authentication.");
+            goto out;
+        }
+
+        /* Context deleted here as we no longer need it.  However, we have it available */
+        /* in case we want to use confidentiality/integrity type services in the future. */
+        dcc_gssapi_delete_ctx(&distcc_ctx_handle);
+    } else {
+        rs_log_info("No authentication requested.");
+    }
+#endif
 
     dcc_note_state(DCC_PHASE_SEND, NULL, NULL);
 

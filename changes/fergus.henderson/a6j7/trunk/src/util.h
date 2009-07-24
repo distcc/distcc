@@ -22,6 +22,7 @@
  */
 
 #include <setjmp.h>
+#include <stdio.h>
 
 /* util.c */
 int dcc_getcurrentload(void);
@@ -54,3 +55,7 @@ size_t strlcpy(char *d, const char *s, size_t bufsize);
 #endif
 
 int dcc_tokenize_string(const char *in, char ***argv_ptr);
+
+#ifndef HAVE_GETLINE
+ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+#endif
