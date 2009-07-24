@@ -353,8 +353,9 @@ static int dcc_gssapi_recv_notification(int sd) {
     }
 
     if (notification != ACCESS) {
-	rs_log_crit("Access denied by server.");
-	return EXIT_ACCESS_DENIED;
+	    rs_log_crit("Access denied by server.");
+        rs_log_info("Your principal may be blacklisted or may not be whitelisted.");
+	    return EXIT_ACCESS_DENIED;
     }
 
     rs_log_info("Access granted by server.");

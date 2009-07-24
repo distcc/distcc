@@ -265,6 +265,10 @@ static void dcc_nofork_parent(int listen_fd)
 #ifdef HAVE_GSSAPI
             if (dcc_auth_enabled) {
                 dcc_gssapi_release_credentials();
+
+                if (opt_blacklist_enabled || opt_whitelist_enabled) {
+                    dcc_gssapi_free_list();
+	            }
             }
 #endif
             dcc_exit(EXIT_CONNECT_FAILED);

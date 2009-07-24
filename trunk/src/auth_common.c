@@ -44,7 +44,7 @@
  *
  * @param status_type.	The type of the status code, either GSS_C_GSS_CODE
  *			for a GSS-API status code or GSS_C_MECH_CODE
- *			for a mechanism specific status code.
+ *			for a mechanism-specific status code.
  */
 void dcc_gssapi_status_to_log(OM_uint32 status_code, int status_type) {
     gss_buffer_desc status_string = GSS_C_EMPTY_BUFFER;

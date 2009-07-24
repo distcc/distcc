@@ -212,6 +212,13 @@ int main(int argc, char *argv[])
         if ((ret = dcc_gssapi_acquire_credentials()) != 0) {
             goto out;
         }
+
+        /* Read contents of list file into an array and apply qsort. */
+        if (opt_blacklist_enabled || opt_whitelist_enabled) {
+            if ((ret = dcc_gssapi_obtain_list((opt_blacklist_enabled) ? 1 : 0)) != 0) {
+	            goto out;
+	        }
+        }
     }
 #endif
 
@@ -314,6 +321,10 @@ static int dcc_inetd_server(void)
 #ifdef HAVE_GSSAPI
     if (dcc_auth_enabled) {
         dcc_gssapi_release_credentials();
+
+        if (opt_blacklist_enabled || opt_whitelist_enabled) {
+            dcc_gssapi_free_list();
+	    }
     }
 #endif
 

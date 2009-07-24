@@ -29,6 +29,8 @@
 
 int dcc_gssapi_acquire_credentials(void);
 void dcc_gssapi_release_credentials(void);
+int dcc_gssapi_obtain_list(int mode);
+void dcc_gssapi_free_list(void);
 int dcc_gssapi_check_client(int to_net_fd, int from_net_fd);
 int dcc_gssapi_perform_requested_security(int to_net_fd,
 					  int from_net_fd);

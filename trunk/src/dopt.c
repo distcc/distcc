@@ -58,6 +58,10 @@ int arg_max_jobs = 0;
 #ifdef HAVE_GSSAPI
 /* If true perform GSS-API based authentication. */
 int opt_auth_enabled = 0;
+/* Control access through a specified list file. */
+int opt_blacklist_enabled = 0;
+int opt_whitelist_enabled = 0;
+const char *arg_list_file = NULL;
 #endif
 
 int arg_port = DISTCC_DEFAULT_PORT;
@@ -115,6 +119,7 @@ const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
 #ifdef HAVE_GSSAPI
     { "auth", 0,	 POPT_ARG_NONE, &opt_auth_enabled, 'A', 0, 0 },
+    { "blacklist", 0,    POPT_ARG_STRING, &arg_list_file, 'b', 0, 0 },
 #endif
     { "jobs", 'j',       POPT_ARG_INT, &arg_max_jobs, 'j', 0, 0 },
     { "daemon", 0,       POPT_ARG_NONE, &opt_daemon_mode, 0, 0, 0 },
@@ -138,6 +143,9 @@ const struct poptOption options[] = {
     { "user", 0,         POPT_ARG_STRING, &opt_user, 'u', 0, 0 },
     { "verbose", 0,      POPT_ARG_NONE, 0, 'v', 0, 0 },
     { "version", 0,      POPT_ARG_NONE, 0, 'V', 0, 0 },
+#ifdef HAVE_GSSAPI
+    { "whitelist", 0,    POPT_ARG_STRING, &arg_list_file, 'w', 0, 0 },
+#endif
     { "wizard", 'W',     POPT_ARG_NONE, 0, 'W', 0, 0 },
     { "stats", 0,        POPT_ARG_NONE, &arg_stats, 0, 0, 0 },
     { "stats-port", 0,   POPT_ARG_INT, &arg_stats_port, 0, 0, 0 },
@@ -146,7 +154,6 @@ const struct poptOption options[] = {
 #endif
     { 0, 0, 0, 0, 0, 0, 0 }
 };
-
 
 static void distccd_show_usage(void)
 {
@@ -172,6 +179,8 @@ static void distccd_show_usage(void)
 "    -a, --allow IP[/BITS]      client address access control\n"
 #ifdef HAVE_GSSAPI
 "    --auth                     enable GSS-API based mutual authenticaton\n"
+"    --blacklist=FILE           control client access through a blacklist\n"
+"    --whitelist=FILE           control client access through a whitelist\n"
 #endif
 "    --stats                    enable statistics reporting via HTTP server\n"
 "    --stats-port PORT          TCP port to listen on for statistics requests\n"
@@ -205,7 +214,7 @@ static void dcc_gssapi_show_principal(void) {
     char *princ_env_val = NULL;
 
     if ((princ_env_val = getenv("DISTCCD_PRINCIPAL"))) {
-	printf("Principal is\t: %s\n", princ_env_val);
+	    printf("Principal is\t: %s\n", princ_env_val);
     } else {
         printf("Principal\t: Not Set\n");
     }
@@ -244,7 +253,7 @@ int distccd_parse_options(int argc, const char **argv)
             break;
 
 #ifdef HAVE_GSSAPI
-	/* Set the flag to indicate that authentication is requested. */
+	    /* Set the flag to indicate that authentication is requested. */
         case 'A': {
 	        if (opt_auth_enabled < 0) {
 		        opt_auth_enabled = 0;
@@ -253,6 +262,18 @@ int distccd_parse_options(int argc, const char **argv)
 	        dcc_auth_enabled = opt_auth_enabled;
 	        break;
         }
+
+        case 'b': {
+            if (opt_whitelist_enabled) {
+	            rs_log_error("Can't specify both --whitelist and --blacklist.");
+                exitcode = EXIT_BAD_ARGUMENTS;
+                goto out_exit;
+	        } else {
+		        opt_blacklist_enabled = 1;
+	        }
+
+	        break;
+	    }
 #endif
 
         case 'j':
@@ -311,6 +332,20 @@ int distccd_parse_options(int argc, const char **argv)
             rs_trace_set_level(RS_LOG_DEBUG);
             opt_log_level_num = RS_LOG_DEBUG;
             break;
+
+#ifdef HAVE_GSSAPI
+	    case 'w': {
+            if (opt_blacklist_enabled) {
+	            rs_log_error("Can't specify both --blacklist and --whitelist.");
+                exitcode = EXIT_BAD_ARGUMENTS;
+                goto out_exit;
+	        } else {
+		        opt_whitelist_enabled = 1;
+	        }
+
+	        break;
+	    }
+#endif
 
         case 'W':
             /* catchall for running under gdb */
