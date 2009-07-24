@@ -42,8 +42,8 @@ const char * rs_program_name = "h_parsemask";
 int main(int argc, char **argv)
 {
     int ret;
-    in_addr_t value, mask;
-    struct in_addr client_ia;
+    dcc_address_t value, mask;
+    struct sockaddr_in client_ia;
 
     rs_add_logger(rs_logger_file, RS_LOG_DEBUG, NULL, STDERR_FILENO);
     rs_trace_set_level(RS_LOG_INFO);
@@ -57,10 +57,11 @@ int main(int argc, char **argv)
     if (ret)
         return ret;
 
-    if (!inet_aton(argv[2], &client_ia)) {
+    client_ia.sin_family = AF_INET;
+    if (!inet_aton(argv[2], &client_ia.sin_addr)) {
         rs_log_error("can't parse client address \"%s\"", argv[2]);
         return EXIT_BAD_ARGUMENTS;
     }
 
-    return dcc_check_address(client_ia.s_addr, value, mask);
+    return dcc_check_address((struct sockaddr *) &client_ia, &value, &mask);
 }
