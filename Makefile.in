@@ -304,6 +304,7 @@ h_compile_obj = src/h_compile.o $(common_obj) src/compile.o src/timefile.o \
                 src/backoff.o src/emaillog.o src/remote.o src/clinet.o \
 	        src/clirpc.o src/include_server_if.o src/state.o src/where.o \
 		src/ssh.o src/strip.o src/cpp.o
+h_getline_obj = src/h_getline.o $(common_obj)
 
 # All source files, for the purposes of building the distribution
 SRC =	src/stats.c							\
@@ -318,7 +319,7 @@ SRC =	src/stats.c							\
 	src/h_argvtostr.c						\
 	src/h_exten.c src/h_hosts.c src/h_issource.c src/h_parsemask.c	\
 	src/h_sa2str.c src/h_scanargs.c src/h_strip.c			\
-	src/h_dotd.c src/h_compile.c                                    \
+	src/h_dotd.c src/h_compile.c src/h_getline.c			\
 	src/help.c src/history.c src/hosts.c src/hostfile.c		\
 	src/implicit.c src/io.c						\
 	src/loadfile.c src/lock.c 					\
@@ -422,7 +423,8 @@ check_PROGRAMS = \
 	h_scanargs@EXEEXT@ \
 	h_strip@EXEEXT@ \
 	h_dotd@EXEEXT@ \
-	h_compile@EXEEXT@
+	h_compile@EXEEXT@ \
+	h_getline@EXEEXT@
 
 check_include_server_PY = \
 	include_server/c_extensions_test.py \
@@ -535,6 +537,9 @@ h_fix_debug_info@EXEEXT@: $(h_fix_debug_info)
 
 h_compile@EXEEXT@: $(h_compile_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_compile_obj) $(LIBS)
+
+h_getline@EXEEXT@: $(h_getline_obj)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_getline_obj) $(LIBS)
 
 
 src/h_fix_debug_info.o: src/fix_debug_info.c

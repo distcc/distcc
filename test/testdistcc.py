@@ -2101,6 +2101,42 @@ class Lsdistcc_Case(WithDaemon_Case):
           self.assert_re_search("127.0.0.4:%d\n" % self.server_port, out)
           self.assert_re_search("127.0.0.5:%d\n" % self.server_port, out)
 
+class Getline_Case(comfychair.TestCase):
+    """Test getline()."""
+    values = [
+        # Input, Line, Rest, Retval
+        ('', '', '', -1),
+        ('\n', '\n', '', 1),
+        ('\n\n', '\n', '\n', 1),
+        ('\n\n\n', '\n', '\n\n', 1),
+        ('a', 'a', '', 1),
+        ('a\n', 'a\n', '', 2),
+        ('foo', 'foo', '', 3),
+        ('foo\n', 'foo\n', '', 4),
+        ('foo\nbar\n', 'foo\n', 'bar\n', 4),
+        ('foobar\nbaz', 'foobar\n', 'baz', 7),
+        ('foo bar\nbaz', 'foo bar\n', 'baz', 8),
+        ]
+    def runtest(self):
+        for input, line, rest, retval in Getline_Case.values:
+            for bufsize in [None, 0, 1, 2, 3, 4, 64, 10000]:
+                if bufsize:
+                    cmd = "printf '%s' | h_getline %s | cat -v" % (input,
+                                                                   bufsize)
+                    n = bufsize
+                else:
+                    cmd = "printf '%s' | h_getline | cat -v" % input
+                    n = 0
+                ret, msgs, err = self.runcmd_unchecked(cmd)
+                self.assert_equal(ret, 0);
+                self.assert_equal(err, '');
+                msg_parts = msgs.split(',');
+                self.assert_equal(msg_parts[0], "original n = %s" % n);
+                self.assert_equal(msg_parts[1], " returned %s" % retval);
+                self.assert_equal(msg_parts[2].startswith(" n = "), True);
+                self.assert_equal(msg_parts[3], " line = '%s'" % line);
+                self.assert_equal(msg_parts[4], " rest = '%s'\n" % rest);
+
 # When invoking compiler, use absolute path so distccd can find it
 for path in os.environ['PATH'].split (':'):
     abs_path = os.path.join (path, 'gcc')
@@ -2169,6 +2205,7 @@ tests = [
          EmptySource_Case,
          HostFile_Case,
          AbsSourceFilename_Case,
+         Getline_Case,
          # slow tests below here
          Concurrent_Case,
          HundredFold_Case,
