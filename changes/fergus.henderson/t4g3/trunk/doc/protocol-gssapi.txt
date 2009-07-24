@@ -1,0 +1,83 @@
+description of distcc GSS-API mutual authentication
+protocol
+
+copyright (C) 2009 CERN
+
+disclaimer
+----------
+
+This document is provided as explanation for people developing or
+debugging distcc.  Discrepancies between this document and the distcc
+code are an error in the document.
+
+protocol
+--------
+
+This protocol exists independently of, and occupies a logical
+position beneath, all existing distcc protocols.  Due to this fact it
+should remain compatible with all future version of the distcc
+protocol.
+
+Mutual authentication transpires after the network connection is
+established between the client and server and the clients IP address
+has been evaluated, but before the client transmits a request.
+
+control flow overview
+---------------------
+
+The overall structure of the protocol is very simple:
+
+  1: The client attempts a handshake with the server.
+
+  2: The server responds with a handshake with the client.
+
+  3: The client and server attempt to establish a secure
+     context using the GSS-API framework by exchanging
+     an unspecified number of GSS-API tokens.
+
+  4: After successfully establishing the secure context
+     distcc and distccd function as per the higher level
+     distcc protocol.
+
+handshake
+---------
+
+A client wishing to perform mutual authentication attempts a
+handshake with the server by sending an * (asterisk) character.
+A mutually authenticating server responds by sending back an
+* (asterisk) character.
+
+GSS-API context and tokens
+---------------------------
+
+Applications utilising the GSS-API are required to exchange tokens,
+tokens are opaque to applications and consist of the length of the
+token, and the token data itself.
+
+distcc and distccd now exchange context-level tokens when
+establishing a secure context.  The underlying mechanism can
+require several token exchanges before a secure context is
+established.
+
+When transmitting tokens to the peer both distcc and distccd
+first transmit the token length, followed by the token itself,
+as per the following packet specification.
+
+TLEN <len> <bytes>
+
+Non-authenticating clients and authenticating servers
+-----------------------------------------------------
+
+An authenticating server expects the first character it receives
+from the client to be the handshake character.  A non-authenticating
+client will not transmit this character which will cause the server
+to disconnect.
+
+Authenticating clients and non-authenticating servers
+-----------------------------------------------------
+
+An authenticating client expects to receive the handshake character
+from the server.  If this is not received within a predefined
+time period the client will timeout, close the connection, and
+try to compile locally.
+
