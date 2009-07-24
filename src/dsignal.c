@@ -142,6 +142,10 @@ static RETSIGTYPE dcc_daemon_terminate(int whichsig)
 #ifdef HAVE_GSSAPI
     if (dcc_auth_enabled) {
         dcc_gssapi_release_credentials();
+
+        if (opt_blacklist_enabled || opt_whitelist_enabled) {
+            dcc_gssapi_free_list();
+        }
     }
 #endif
 }

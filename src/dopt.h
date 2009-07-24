@@ -51,3 +51,10 @@ extern int opt_zeroconf;
 #ifdef HAVE_GSSAPI
 extern int dcc_auth_enabled;
 #endif
+
+#ifdef HAVE_GSSAPI
+extern int dcc_auth_enabled;
+extern int opt_blacklist_enabled;
+extern int opt_whitelist_enabled;
+extern const char *arg_list_file;
+#endif
