@@ -606,7 +606,7 @@ int main(void) { return 0; }
                 def sourceFilename(self):
                     return args.split()[0]
                 def compileCmd(self):
-                    return _gcc + " " + args
+                    return _gcc + " -c " + args
                 def runtest(self):
                     self.compile()
                     glob_result = glob.glob(dep_glob)
