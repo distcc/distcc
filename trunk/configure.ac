@@ -381,6 +381,7 @@ AC_CHECK_FUNCS([getaddrinfo getnameinfo inet_ntop inet_ntoa])
 AC_CHECK_FUNCS([strndup strsep mmap strlcpy])
 
 AC_CHECK_FUNCS([getloadavg])
+AC_CHECK_FUNCS([getline])
 
 AC_CHECK_DECLS([snprintf, vsnprintf, vasprintf, asprintf, strndup])
 
