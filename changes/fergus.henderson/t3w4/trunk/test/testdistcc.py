@@ -1672,10 +1672,18 @@ class HundredFold_Case(CompileHello_Case):
 class Concurrent_Case(CompileHello_Case):
     """Try many compilations at the same time"""
     def daemon_lifetime(self):
+        # may take about a minute or so
         return 120
     
     def runtest(self):
-        # may take about a minute or so
+        # First, make sure there are no unwaited-for child processes
+        # hanging around from previous tests.
+        while True:
+          try:
+            os.wait()    # Will eventually fail with ECHILD.
+          except OSError, e: 
+            break
+        # Now run this test...
         pids = {}
         for unused_i in xrange(50):
             kid = self.runcmd_background(self.distcc() +
@@ -2147,9 +2155,13 @@ class ShowPrincipalClient_Case(SimpleDistCC_Case):
         if not re.search("Built with GSS-API support for mutual authentication.", out):
             raise comfychair.NotRunError("distcc/distccd not built with GSS-API support.")
 
+        os.environ['DISTCC_PRINCIPAL'] = 'foo'
         out, err = self.runcmd("distcc --show-principal")
-        self.assert_re_search('Principal', out)
+        self.assert_re_search('Principal is\t: foo', out)
 
+        del os.environ['DISTCC_PRINCIPAL']
+        out, err = self.runcmd("distcc --show-principal")
+        self.assert_re_search('Principal\t: Not Set', out)
 
 class ShowPrincipalDaemon_Case(SimpleDistCC_Case):
     """Test handling of --show-principal daemon option."""
@@ -2159,9 +2171,13 @@ class ShowPrincipalDaemon_Case(SimpleDistCC_Case):
         if not re.search("Built with GSS-API support for mutual authentication.", out):
             raise comfychair.NotRunError("distcc/distccd not built with GSS-API support.")
 
+        os.environ['DISTCCD_PRINCIPAL'] = 'foo'
         out, err = self.runcmd("distccd --show-principal")
-        self.assert_re_search('Principal is', out)
+        self.assert_re_search('Principal is\t: foo', out)
 
+        del os.environ['DISTCCD_PRINCIPAL']
+        out, err = self.runcmd("distccd --show-principal")
+        self.assert_re_search('Principal\t: Not Set', out)
 
 class AuthEnabledClient_Case(CompileHello_Case):
     """Test handling of the gssapi per host option.
@@ -2169,12 +2185,9 @@ class AuthEnabledClient_Case(CompileHello_Case):
     authenticate, however, the client should still attempt
     authentication which should show up in the log."""
 
-    def setup(self):
-        CompileHello_Case.setup(self)
-
     """Override the setupEnv method to use the gssapi per host option."""
     def setupEnv(self):
-        os.environ['DISTCC_HOSTS'] = ('127.0.0.1:%d%s,gssapi' %
+        os.environ['DISTCC_HOSTS'] = ('127.0.0.1:%d%s,auth' %
           (self.server_port, _server_options))
         os.environ['DISTCC_LOG'] = os.path.join(os.getcwd(), 'distcc.log')
         os.environ['DISTCC_VERBOSE'] = '1'
@@ -2211,7 +2224,10 @@ class AuthEnabledDaemon_Case(SimpleDistCC_Case):
                 "--auth --verbose --lifetime=10 --daemon "
                 "--log-file=distccd.log --allow 127.0.0.1")
         log = open("distccd.log").read()
-        self.assert_re_search('Acquiring credentials.', log)
+        self.assert_re_search('(Acquiring credentials'
+                              '|\\(dcc_gssapi_acquire_credentials\\) '
+                                  'ERROR: No principal name specified'
+                              ')', log)
 
 
 class UseBlacklist_Case(WithDaemon_Case):
@@ -2285,9 +2301,6 @@ class MutualAuthentication_Case(CompileHello_Case):
 
     hostname = ""
 
-    def setup(self):
-        CompileHello_Case.setup(self)
-
     def getHostName(self):
         if not self.hostname:
             stdin, stdout, stderr = os.popen3("hostname -f")
@@ -2302,7 +2315,7 @@ class MutualAuthentication_Case(CompileHello_Case):
     variable and to add the hostname to DISTCC_HOSTS to allow for
     proper authentication."""
     def setupEnv(self):
-        os.environ['DISTCC_HOSTS'] = ('%s:%d%s,gssapi' %
+        os.environ['DISTCC_HOSTS'] = ('%s:%d%s,auth' %
           (self.getHostName(), self.server_port, _server_options))
         os.environ['DISTCC_LOG'] = os.path.join(os.getcwd(), 'distcc.log')
         os.environ['DISTCC_VERBOSE'] = '1'
