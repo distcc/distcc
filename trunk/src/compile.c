@@ -68,12 +68,32 @@
  */
 int dcc_scan_includes = 0;
 
-/* TODO(klarlund)Warning: this constant should have the same value as in the
- * pump.in script! Make it configurable and user changeable.*/
-static const int max_discrepancies_before_demotion = 1;
-
 static const char *const include_server_port_suffix = "/socket";
 static const char *const discrepancy_suffix = "/discrepancy_counter";
+
+static int dcc_get_max_discrepancies_before_demotion(void)
+{
+    /* Warning: the default setting here should have the same value as in the
+     * pump.in script! */
+    static const int default_setting = 1;
+    static int current_setting = 0;
+
+    if (current_setting > 0)
+        return current_setting;
+
+    const char *user_setting = getenv("DISTCC_MAX_DISCREPANCY");
+    if (user_setting) {
+        int parsed_user_setting = atoi(user_setting);
+        if (parsed_user_setting <= 0) {
+            rs_log_error("Bad DISTCC_MAX_DISCREPANCY value: %s", user_setting);
+            exit(EXIT_BAD_ARGUMENTS);
+        }
+        current_setting = parsed_user_setting;
+    } else {
+        current_setting = default_setting;
+    }
+    return current_setting;
+}
 
 /**
  * Return in @param filename the name of the file we use as unary counter of
@@ -158,7 +178,7 @@ static int dcc_note_discrepancy(const char *discrepancy_filename)
     assured that exactly one process will take the 'if' branch when
     max_discrepancies_before_demotion failures is reached. */
     if (ftell(discrepancy_file) == 
-        (long int)max_discrepancies_before_demotion) {
+        (long int)dcc_get_max_discrepancies_before_demotion()) {
         rs_log_warning("now using plain distcc, possibly due to "
                        "inconsistent file system changes during build");
     }
@@ -182,7 +202,7 @@ static void dcc_perhaps_adjust_cpp_where_and_protover(
     /* Check whether there has been too much trouble running distcc-pump during
        this build. */
     if (dcc_read_number_discrepancies(discrepancy_filename) >=
-        max_discrepancies_before_demotion) {
+        dcc_get_max_discrepancies_before_demotion()) {
         /* Give up on using distcc-pump */
         host->cpp_where = DCC_CPP_ON_CLIENT;
         dcc_get_protover_from_features(host->compr,

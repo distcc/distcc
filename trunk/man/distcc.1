@@ -800,6 +800,10 @@ locally.  Built-in heuristics prevent some such discrepancy email from being sen
 the problem is that a local file changed between the failing remote compilation
 and the succeeding local compilation.
 .TP
+.B "DISTCC_MAX_DISCREPANCY"
+The maximum number of remote compilation failures allowed in pump mode before
+distcc switches to plain distcc mode. By default set to 1.
+.TP
 .B "DCC_EMAILLOG_WHOM_TO_BLAME"
 The email address for discrepancy email; the default is "distcc-pump-errors".
 .TP
