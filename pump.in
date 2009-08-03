@@ -139,9 +139,19 @@ GetScriptDir() {
 
 # Constants used by this process.
 
-# TODO(klarlund) This value must be the same as that in src/compile.c. See
+# The default value must be the same as that in src/compile.c. See
 # comment there.
 max_discrepancies_before_demotion=1
+if [ -n "$DISTCC_MAX_DISCREPANCY" ] ; then
+  if [ "$DISTCC_MAX_DISCREPANCY" -le 0 ] ; then
+    echo "$0:" \
+            "Bad DISTCC_MAX_DISCREPANCY value: \"$DISTCC_MAX_DISCREPANCY\"." \
+            "Needs to be 1 or greater." \
+            1>&2
+    exit 1
+  fi
+  max_discrepancies_before_demotion="$DISTCC_MAX_DISCREPANCY"
+fi
 
 
 # Variables inherited from the environment of the caller.
