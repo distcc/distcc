@@ -1198,3 +1198,6 @@ uninstall-conf:
 
 tags: $(SRC) $(HEADERS)
 	ctags --defines --globals --typedefs-and-c++ --no-warn $(SRC) $(HEADERS)
+
+TAGS: $(SRC) $(HEADERS)
+	etags --declarations $(SRC) $(HEADERS)
