@@ -103,7 +103,7 @@ chmod 700 $TMPDIR
 
 RETVAL=0
 
-[ -x /usr/bin/distccd ] || exit 0
+[ -x $EXEC ] || exit 0
 
 ALLOWFILE=""
 if test -f $CONFIGDIR/$DOMAIN/clients.allow; then
