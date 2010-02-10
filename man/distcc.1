@@ -763,6 +763,13 @@ variable is set to 0 then fallbacks are disabled and those
 compilations will simply fail.  Note that this does not affect jobs
 which must always be local such as linking.
 .TP
+.B "DISTCC_IO_TIMEOUT"
+Specifies how long (in seconds) distcc will wait before deciding a
+distributed job has timed out.  If a distributed job is expected to
+takes a long time, consider increasing this value so the job does
+not time out and fallback to a local compile.  By default set to
+300 seconds.
+.TP
 .B "DISTCC_SAVE_TEMPS"
 If set to 1, temporary files are not deleted after use.  Good for
 debugging, or if your disks are too empty.
