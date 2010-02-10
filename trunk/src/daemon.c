@@ -222,6 +222,9 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    /* Initialize the distcc io timeout value */
+    dcc_get_io_timeout();
+
     if (dcc_should_be_inetd())
         ret = dcc_inetd_server();
     else

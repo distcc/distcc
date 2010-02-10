@@ -107,7 +107,7 @@ dcc_pump_readwrite(int ofd, int ifd, size_t n)
         r_in = read(ifd, buf, (size_t) wanted);
 
         if (r_in == -1 && errno == EAGAIN) {
-            if ((ret = dcc_select_for_read(ifd, dcc_io_timeout)) != 0)
+            if ((ret = dcc_select_for_read(ifd, dcc_get_io_timeout())) != 0)
                 return ret;
             else
                 continue;
@@ -132,10 +132,12 @@ dcc_pump_readwrite(int ofd, int ifd, size_t n)
             r_out = write(ofd, p, (size_t) r_in);
 
             if (r_out == -1 && errno == EAGAIN) {
-                if ((ret = dcc_select_for_write(ofd, dcc_io_timeout)) != 0)
+                if ((ret = dcc_select_for_write(ofd,
+                                                dcc_get_io_timeout())) != 0) {
                     return ret;
-                else
+                } else {
                     continue;
+                }
             } else if (r_out == -1 && errno == EINTR) {
                 continue;
             } else if (r_out == -1  ||  r_out == 0) {
