@@ -1073,8 +1073,8 @@ class CPlusPlus_Case(LanguageSpecific_Case):
 
     def source(self):
         return """
-#import <iostream>
-#import "testhdr.h"
+#include <iostream>
+#include "testhdr.h"
 
 int main(void) {
     std::cout << MESSAGE << std::endl;
