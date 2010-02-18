@@ -1917,11 +1917,13 @@ msg:
     def setup(self):
         WithDaemon_Case.setup(self)
         open('test2.S', 'wt').write(self.asm_source)
-    
+
     def compile(self):
         if sys.platform == 'linux2':
             self.runcmd(self.distcc()
                         + "-o test2.o -c test2.S")
+        else:
+            raise comfychair.NotRunError ('this test is system-specific')
 
     def runtest(self):
         self.compile()
