@@ -2,7 +2,7 @@
  *
  * distcc -- A simple distributed compiler system
  *
- * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
+ * Copyright (C) 2002, 2003, 2004, 2009 by Martin Pool <mbp@samba.org>
  * Copyright 2004 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
@@ -131,7 +131,8 @@ int dcc_compare_container(const void *a, const void *b);
  *
  * Really this needs to be in util.c, but it's only used here.
  **/
-static char *strndup(const char *src, size_t size)
+char *strndup(const char *src, size_t size);
+char *strndup(const char *src, size_t size)
 {
     char *dst;
 

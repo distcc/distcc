@@ -1,3 +1,9 @@
+2009-09-11  Akim Demaille  <demaille@gostai.com>
+
+	* src/hosts.c (strndup): Use the standard signature (without
+	static), so that we don't conflict with GCC's builtin signature.
+	Now that it is not static, declare it, to avoid warnings.
+
 2008-12-02 21:44  Fergus Henderson <opensource@google.com>
 
 	* Makefile.in, NEWS, configure.ac, include_server/setup.py:
