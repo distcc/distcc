@@ -1871,6 +1871,7 @@ class RemoteAssemble_Case(WithDaemon_Case):
     # We have a rather tricky method for testing assembly code when we
     # don't know what platform we're on.  I think this one will work
     # everywhere, though perhaps not.
+    # We don't use @ because that starts comments for ARM.
     asm_source = """
         .file	"foo.c"
 .globl msg
@@ -1879,7 +1880,7 @@ class RemoteAssemble_Case(WithDaemon_Case):
 	.string	"hello world"
 .data
 	.align 4
-	.type	 msg,@object
+	.type	 msg,object
 	.size	 msg,4
 msg:
 	.long .LC0
@@ -1908,7 +1909,7 @@ gcc2_compiled.:
 	.string	 MSG
 .data
 	.align 4
-	.type	 msg,@object
+	.type	 msg,object
 	.size	 msg,4
 msg:
 	.long .LC0
