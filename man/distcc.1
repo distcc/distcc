@@ -785,6 +785,10 @@ Specifies the command used for opening SSH connections.  Defaults to
 or "tsocks-ssh" that accepts a similar command line.  The command is
 not split into words and is not executed through the shell. 
 .TP
+.B DISTCC_SKIP_LOCAL_RETRY
+If set, when a remote compile fails, distcc will no longer try to
+recompile that file locally. 
+.TP
 .B "DISTCC_DIR"
 Per-user configuration directory to store lock files and state files.
 By default 
