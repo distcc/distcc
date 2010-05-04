@@ -456,6 +456,24 @@ char *dcc_abspath(const char *path, int path_len)
     return buf;
 }
 
+/* Return -1 if a < b, 0 if a == b, and 1 if a > b */
+int dcc_timecmp(struct timeval a, struct timeval b) {
+    if (a.tv_sec < b.tv_sec) {
+        return -1;
+    } else if (a.tv_sec > b.tv_sec) {
+        return 1;
+    } else if (a.tv_usec < b.tv_usec) {
+        /* at this point their tv_sec must be the same */
+        return -1;
+    } else if (a.tv_usec > b.tv_usec) {
+        return 1;
+    } else {
+        /* they must be equal */
+        return 0;
+    }
+}
+
+
 /* Return the current number of running processes. */
 int dcc_getcurrentload(void) {
 #if defined(linux)

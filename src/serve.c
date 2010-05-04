@@ -769,7 +769,7 @@ out_cleanup:
 
     if (job_result == STATS_COMPILE_OK) {
         /* special case, also log compiler, file and time */
-        dcc_stats_compile_ok(argv[0], orig_input, time_ms);
+        dcc_stats_compile_ok(argv[0], orig_input, start, end, time_ms);
     } else {
         dcc_stats_event(job_result);
     }

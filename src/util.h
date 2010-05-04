@@ -23,8 +23,10 @@
 
 #include <setjmp.h>
 #include <stdio.h>
+#include <time.h>
 
 /* util.c */
+int dcc_timecmp(struct timeval a, struct timeval b);
 int dcc_getcurrentload(void);
 void dcc_getloadavg(double loadavg[3]);
 int argv_contains(char **argv, const char *s);
