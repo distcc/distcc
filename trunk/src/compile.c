@@ -686,10 +686,25 @@ dcc_build_somewhere(char *argv[],
            fault, and we should do something about it later.
            (Currently, we send email to an appropriate email address).
         */
-        rs_log_warning("remote compilation of '%s' failed, retrying locally",
-                       input_fname);
-        remote_ret = ret;
-        goto fallback;
+        if (getenv("DISTCC_SKIP_LOCAL_RETRY")) {
+            /* dont retry locally. We'll treat the remote failure as
+               if it was a local one. But if we can't get the failures
+               then we need to retry regardless.
+            */
+            if ((dcc_copy_file_to_fd(server_stderr_fname, STDERR_FILENO))) {
+                rs_log_warning("remote compilation of '%s' failed",\
+                               input_fname);
+                rs_log_warning("Could not show server-side errors, retrying locally");
+                goto fallback;
+            }
+            /* Not retrying */
+            goto clean_up;
+        } else {
+            rs_log_warning("remote compilation of '%s' failed, retrying locally",
+                           input_fname);
+            remote_ret = ret;
+            goto fallback;
+        }
     }
 
 
