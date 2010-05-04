@@ -39,7 +39,8 @@ int  dcc_stats_init(void);
 void dcc_stats_init_kid(void);
 int  dcc_stats_server(int listen_fd);
 void dcc_stats_event(enum stats_e e);
-void dcc_stats_compile_ok(char *compiler, char *filename, int time_usec);
+void dcc_stats_compile_ok(char *compiler, char *filename, struct timeval start,
+     struct timeval stop, int time_usec);
 
 #ifdef __cplusplus
 }
