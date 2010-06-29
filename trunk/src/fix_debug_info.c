@@ -373,7 +373,7 @@ static void update_section(const char *path,
       }
     }
   } else {
-    rs_trace("file %s has no \"%s\" section", desired_section_name, path);
+    rs_trace("file %s has no \"%s\" section", path, desired_section_name);
   }
 }
 
