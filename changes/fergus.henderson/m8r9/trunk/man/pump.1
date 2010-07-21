@@ -1,0 +1,185 @@
+.TH pump 1 "9 June 2008"
+.SH "NAME"
+pump \- accelerate remote compilation with distcc
+.SH "SYNOPSIS"
+.B pump
+.I BUILD-COMMAND [ARGS]
+\& ...
+.BR
+.PP
+eval `
+.B pump
+--startup `;
+.I BUILD-COMMAND [ARGS]
+\& ...
+;
+.B pump
+--shutdown
+.BR
+.SH "DESCRIPTION"
+.B pump
+is part of distcc.
+It is used for distcc's pump mode.
+Distcc's pump mode accelerates remote compilation with distcc
+by also distributing preprocessing to the servers.
+.PP
+For a detailed description of pump mode, including most notably some
+.B important restrictions,
+see the
+.BR distcc(1)
+man page, in particular the
+.B HOW PUMP-MODE WORKS
+section
+and the
+.B RESTRICTIONS ON PUMP MODE
+section.
+.PP
+The simplest usage is the form
+.RS
+.B pump
+.I COMMAND [ARG]
+\& ...
+.RE
+This will start an include server for distcc's "pump" mode;
+optionally run
+.B lsdistcc
+to compute the distcc host list;
+set some auxiliary environment variables;
+change PATH to use the distcc client in the same directory as the "pump"
+script;
+execute
+.I COMMAND
+with the specified
+.I ARG(s)
+\& ;
+and then shut down the include server.
+The
+.I COMMAND
+is typically a parallel build command, such as
+"make -j80", that will do many concurrent invocations of distcc.
+.PP
+An alternative way of invoking
+.B pump
+is to explicitly invoke "pump --startup"
+to start the include server and "pump --shutdown" to stop the include server.
+The "pump --startup" command will start up the include server, and will print
+out some environment variable settings.  These environment variables are used
+to communicate between the pump-mode "distcc" client and the include
+server, and to communicate between "pump --startup" and "pump --shutdown".
+The caller of "pump --startup" is responsible for setting those environment
+variables before invoking "distcc" or "pump --shutdown".
+.PP
+For example:
+.RS
+eval `pump --startup`
+.br
+make -j80
+.br
+pump --shutdown
+.RE
+.PP
+Note that distcc's pump-mode assumes that sources files will not be
+ modified during
+the lifetime of the include server, so modifying source files during a build
+may cause inconsistent results.
+.SH "INVOKING LSDISTCC"
+When invoked in either the simple "
+.B pump
+.I COMMAND [ARG]
+\&... " form,
+or as "
+.B pump --startup
+\&", the
+.B pump
+script will invoke
+.B lsdistcc
+\& whenever DISTCC_POTENTIAL_HOSTS is set and DISTCC_HOSTS isn't.
+It will pass the value of DISTCC_POTENTIAL_HOSTS to
+.B lsdistcc
+and use the output of
+.B lsdistcc
+to set DISTCC_HOSTS.
+.SH "OPTIONS"
+.TP 
+.B --help
+Displays summary instructions.
+.TP
+.B --startup
+Starts an include server, and outputs the environment variable settings
+needed for
+.BR distcc(1)
+or
+.B pump --shutdown
+to access it.
+.TP
+.B --shutdown
+Shuts down an include server started up by
+.B pump --startup.
+.SH "ENVIRONMENT VARIABLES"
+The following environment variables are all optional.
+.TP
+.B DISTCC_LOCATION
+The location of the distcc bin directory, which is
+normally inferred from the link-resolved dirname of
+argv[0]. If this location is in fact the bin directory
+inside an installation (as will be the case when the
+pump script in the installation executes), then
+Python executables and distcc itself will be retrieved
+from the parent directory of the location.
+.TP
+.B "DISTCC_MAX_DISCREPANCY"
+see the
+.BR distcc(1)
+man page.
+.TP
+.B DISTCC_POTENTIAL_HOSTS
+The distcc servers that will be queried by lsdistcc
+in order to produce a value for DISTCC_HOSTS.
+This value may be unset or null. In such
+cases, lsdistcc will not be invoked, and
+distcc will use DISTCC_HOSTS or the distcc hosts
+configuration file, as described in the "Host Specifications"
+section of
+.BR distcc(1).
+.TP
+.B DISTCC_HOSTS
+This variable is passed through to distcc but only if
+DISTCC_POTENTIAL_HOSTS is not set.
+.TP
+.B LSDISTCC_ARGS
+Extra arguments to pass to lsdistcc.  See
+.B lsdistcc --help
+for more details.
+.TP
+.B
+INCLUDE_SERVER_ARGS
+Extra arguments to pass to the include server.
+.TP
+.B
+PYTHONOPTIMIZE
+If set to "", then Python optimization is disabled.
+.SH "EXAMPLE"
+.B pump make -j20
+.SH "BUGS"
+.\" TODO:
+.\" Fix inconsistency between BUGS section and bug reporting instructions
+.\" in the AUTHORS section, both here and in distcc.1 and elsewhere.
+If you think you have found a distcc bug, please see the file
+.I reporting-bugs.txt
+in the documentation directory for information on how to report it.
+.SH "AUTHORS"
+The pump script and distcc's pump mode were written by Nils Klarlund,
+Manos Renieris, Fergus Henderson, and Craig Silverstein. Please report
+bugs to <distcc@lists.samba.org>.
+.SH "LICENCE"
+.B pump
+is part of distcc.
+You are free to use distcc.  distcc (including this manual) may be
+copied, modified or distributed only under the terms of the GNU
+General Public Licence version 2 or later.  distcc comes with
+absolutely no warranty.  A copy of the GPL is included in the file
+COPYING.
+.SH "SEE ALSO"
+.\" TODO: add lsdistcc(1) once we have a man page for lsdistcc.
+\fBdistcc\fR(1), \fBdistccd\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1), and
+\fBmake\fR(1)
