@@ -155,13 +155,14 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
   system_links.append(rooted_system_dir)
 
 
-def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
+def _SystemSearchdirsGCC(compiler, sysroot, language, canonical_lookup):
   """Run gcc on empty file; parse output to figure out default paths.
 
   This function works only for gcc, and only some versions at that.
 
   Arguments:
     compiler: a filepath (the first argument on the distcc command line)
+    sysroot: the --sysroot passed to the compiler ("" to disable)
     language: 'c' or 'c++' or other item in basics.LANGUAGES
     canonical_lookup: a function that maps strings to their realpaths
   Returns:
@@ -184,8 +185,11 @@ def _SystemSearchdirsGCC(compiler, language, canonical_lookup):
   # blah. blah.
   #------------
 
-  command = [compiler, "-x", language, "-v", "-c", "/dev/null", "-o",
-             "/dev/null"]
+  command = [compiler]
+  if sysroot:
+    command += ["--sysroot=" + sysroot]
+  command += ["-x", language, "-v", "-c", "/dev/null", "-o", "/dev/null"]
+  Debug(DEBUG_DATA, "system search dirs command: %s" % command)
 
   try:
     # We clear the environment, because otherwise, directories
@@ -331,11 +335,12 @@ class CompilerDefaults(object):
     self.system_links = []
     self.client_root = client_root
 
-  def SetSystemDirsDefaults(self, compiler, language, timer=None):
+  def SetSystemDirsDefaults(self, compiler, sysroot, language, timer=None):
     """Set instance variables according to compiler, and make symlink farm.
 
     Arguments:
       compiler: a filepath (the first argument on the distcc command line)
+      sysroot: the --sysroot passed to the compiler ("" to disable)
       language: 'c' or 'c++' or other item in basics.LANGUAGES
       timer: a basis.IncludeAnalyzerTimer or None
 
@@ -346,30 +351,35 @@ class CompilerDefaults(object):
     """
     assert isinstance(compiler, str)
     assert isinstance(language, str)
-    Debug(DEBUG_TRACE, "SetSystemDirsDefaults with CC, LANG: %s, %s" %
-                       (compiler, language))
+    Debug(DEBUG_TRACE,
+          "SetSystemDirsDefaults with CC, SYSROOT, LANG: %s, %s, %s" %
+          (compiler, sysroot, language))
     if compiler in self.system_dirs_default:
-      if language in self.system_dirs_default[compiler]:
-        return
+      if sysroot in self.system_dirs_default[compiler]:
+        if language in self.system_dirs_default[compiler][sysroot]:
+          return
+      else:
+        self.system_dirs_default[compiler][sysroot] = {}
     else:
-      self.system_dirs_default[compiler] = {}
+      self.system_dirs_default[compiler] = {sysroot: {}}
     try:
       if timer:
         # We have to disable the timer because the select system call that is
         # executed when calling the compiler through Popen gives up if presented
         # with a SIGALRM.
         timer.Stop()
-      self.system_dirs_default[compiler][language] = (
-        _SystemSearchdirsGCC(compiler, language, self.canonical_lookup))
+      self.system_dirs_default[compiler][sysroot][language] = (
+        _SystemSearchdirsGCC(compiler,
+                             sysroot, language, self.canonical_lookup))
       Debug(DEBUG_DATA,
-            "system_dirs_default[%s][%s]: %s" %
-            (compiler, language,
-             self.system_dirs_default[compiler][language]))
+            "system_dirs_default[%s][%s][%s]: %s" %
+            (compiler, sysroot, language,
+             self.system_dirs_default[compiler][sysroot][language]))
       # Now summarize what we know and add to system_dirs_default_all.
       self.system_dirs_default_all |= (
-          set(self.system_dirs_default[compiler][language]))
+          set(self.system_dirs_default[compiler][sysroot][language]))
       # Construct the symlink farm for the compiler default dirs.
-      for system_dir in self.system_dirs_default[compiler][language]:
+      for system_dir in self.system_dirs_default[compiler][sysroot][language]:
         _MakeLinkFromMirrorToRealLocation(system_dir, self.client_root,
                                           self.system_links)
     finally:
