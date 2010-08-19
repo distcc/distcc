@@ -584,6 +584,7 @@ static int dcc_run_job(int in_fd,
     enum dcc_cpp_where cpp_where;
     char *server_cwd = NULL;
     char *client_cwd = NULL;
+    int changed_directory = 0;
 
     gettimeofday(&start, NULL);
 
@@ -616,10 +617,12 @@ static int dcc_run_job(int in_fd,
 
     dcc_get_features_from_protover(protover, &compr, &cpp_where);
 
-    if (cpp_where == DCC_CPP_ON_SERVER)
+    if (cpp_where == DCC_CPP_ON_SERVER) {
         if ((ret = make_temp_dir_and_chdir_for_cpp(in_fd,
                           &temp_dir, &client_cwd, &server_cwd)))
             goto out_cleanup;
+        changed_directory = 1;
+    }
 
     if ((ret = dcc_r_argv(in_fd, &argv))
         || (ret = dcc_scan_args(argv, &orig_input_tmp, &orig_output_tmp,
@@ -741,6 +744,13 @@ static int dcc_run_job(int in_fd,
     rs_log(RS_LOG_INFO|RS_LOG_NONAME, "job complete");
 
 out_cleanup:
+
+    /* Restore the working directory, if needed. */
+    if (changed_directory) {
+      if (chdir(dcc_daemon_wd) != 0) {
+        rs_log_warning("chdir(%s) failed: %s", dcc_daemon_wd, strerror(errno));
+      }
+    }
 
     switch (ret) {
     case EXIT_BUSY: /* overloaded */
