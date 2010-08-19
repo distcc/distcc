@@ -114,19 +114,19 @@ static inline void set_mask_inet(struct in_addr *addr, int mask_bits) {
 /**
  * Set a v6 address, @p addr, to a mask of @p mask_size bits.
  **/
-static void set_mask_inet6(struct in6_addr *mask, int mask_bits) {
-    uint8_t *iptr = mask->s6_addr;
+static void set_mask_inet6(struct in6_addr *addr, int mask_bits) {
+    uint8_t *s6_addr = addr->s6_addr;
     int allones_count = mask_bits / 8;
     int i;
-    
-    for(i = 0; i < allones_count; ++i, ++iptr)
-        *iptr = allones8;
-    
-    *iptr = ~(allones8 >> (mask_bits % 8));
-    ++iptr;
-    
-    for(i = 16 - allones_count - 1; i > 0; --i, ++iptr)
-        *iptr = 0;
+
+    for (i = 0; i < allones_count; i++)
+        s6_addr[i] = allones8;
+
+    s6_addr[i] = ~(allones8 >> (mask_bits % 8));
+    i++;
+
+    for (; i < 16; i++)
+        s6_addr[i] = 0;
 }
 #endif /* ENABLE_RFC2553 */
 
@@ -163,11 +163,11 @@ int dcc_parse_mask(const char *spec,
     struct addrinfo hints;
     struct addrinfo *res;
 #endif
-    
+
     ret = split_mask(spec, &value_str, &mask_str);
     if (ret == -1)
         return EXIT_OUT_OF_MEMORY;
-    
+
     /* extract and parse value part */
 #ifndef ENABLE_RFC2553
     ret = inet_aton(value_str, &ia);
@@ -177,14 +177,14 @@ int dcc_parse_mask(const char *spec,
         return EXIT_BAD_ARGUMENTS;
     }
     *value = ia;
-    
+
 #else /* ENABLE_RFC2553 */
-    
+
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_NUMERICHOST;
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    
+
     ret = getaddrinfo(value_str, NULL, &hints, &res);
     if (ret != 0) {
         rs_log_error("can't parse internet address \"%s\": %s",
@@ -192,7 +192,7 @@ int dcc_parse_mask(const char *spec,
         free(value_str);
         return EXIT_BAD_ARGUMENTS;
     }
-    
+
     value->family = res->ai_family;
     if (res->ai_family == AF_INET) {
         value->addr.inet = ((struct sockaddr_in *)res->ai_addr)->sin_addr;
@@ -205,12 +205,12 @@ int dcc_parse_mask(const char *spec,
         free(value_str);
         return EXIT_BAD_ARGUMENTS;
     }
-    
+
     freeaddrinfo(res);
-#endif /* !ENABLE_RFC2553 */
+#endif /* ENABLE_RFC2553 */
     free(value_str);
-    
-    
+
+
 #ifdef ENABLE_RFC2553
     mask->family = value->family;
 #endif
@@ -281,14 +281,13 @@ static int compare_address_inet6(const struct in6_addr *client,
                                  const struct in6_addr *mask)
 {
     int i;
-    
+
     for (i = 0; i < 16; ++i)
         if ((client->s6_addr[i] & mask->s6_addr[i]) != (value->s6_addr[i] & mask->s6_addr[i]))
             return 0;
-    
+
     return 1;
 }
-
 
 /**
  * Check whether two v6 addresses match.
@@ -313,18 +312,18 @@ static int check_address_inet6(const struct in6_addr *client,
 }
 
 /**
- * Extract the lower 32-bits of a v6 address
+ * Extract the lower 32-bits of a v6 address.
  **/
 static uint32_t inet_from_inet6(const struct in6_addr *addr)
 {
     uint32_t dest = 0;
     int i;
-    
+
     for (i = 0; i < 4; ++i) {
         uint32_t dest_byte = addr->s6_addr[12 + i];
         dest |= (dest_byte << (8 * (3-i)));
     }
-    
+
     return dest;
 }
 #endif /* ENABLE_RFC2553 */
@@ -351,12 +350,12 @@ int dcc_check_address(const struct sockaddr *client,
             return check_address_inet(cli_addr, &value->addr.inet, &mask->addr.inet);
         else
             return EXIT_ACCESS_DENIED;
-        
-        
+
+
     } else if (client->sa_family == AF_INET6) {
         const struct sockaddr_in6 *sa6 = (const struct sockaddr_in6 *)client;
         const struct in6_addr *a6 = &sa6->sin6_addr;
-        
+
         if (value->family == AF_INET) {
             if (IN6_IS_ADDR_V4MAPPED(a6) || IN6_IS_ADDR_V4COMPAT(a6)) {
                 struct in_addr a4;
