@@ -62,10 +62,29 @@
 
 
 
-/** Timeout for all IO other than opening connections.  Much longer, because
- * compiling files can take a long time. **/
-const int dcc_io_timeout = 300; /* seconds */
+int dcc_get_io_timeout(void)
+{
+    /** Timeout for all IO other than opening connections.  Much longer,
+     * because compiling files can take a long time. **/
+    static const int default_dcc_io_timeout = 300; /* seconds */
+    static int current_timeout = 0;
 
+    if (current_timeout > 0)
+        return current_timeout;
+
+    const char *user_timeout = getenv("DISTCC_IO_TIMEOUT");
+    if (user_timeout) {
+        int parsed_user_timeout = atoi(user_timeout);
+        if (parsed_user_timeout <= 0) {
+          rs_log_error("Bad DISTCC_IO_TIMEOUT value: %s", user_timeout);
+          exit(EXIT_BAD_ARGUMENTS);
+        }
+        current_timeout = parsed_user_timeout;
+    } else {
+        current_timeout = default_dcc_io_timeout;
+    }
+    return current_timeout;
+}
 
 /**
  * @todo Perhaps only apply the timeout for initial connections, not when
@@ -178,7 +197,7 @@ int dcc_readx(int fd, void *buf, size_t len)
         r = read(fd, buf, len);
 
         if (r == -1 && errno == EAGAIN) {
-            if ((ret = dcc_select_for_read(fd, dcc_io_timeout)))
+            if ((ret = dcc_select_for_read(fd, dcc_get_io_timeout())))
                 return ret;
             else
                 continue;
@@ -215,7 +234,7 @@ int dcc_writex(int fd, const void *buf, size_t len)
         r = write(fd, buf, len);
 
         if (r == -1 && errno == EAGAIN) {
-            if ((ret = dcc_select_for_write(fd, dcc_io_timeout)))
+            if ((ret = dcc_select_for_write(fd, dcc_get_io_timeout())))
                 return ret;
             else
                 continue;

@@ -1,6 +1,6 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; tab-width: 4; fill-column: 78 -*-
  *
- * Copyright 2007 Google Inc.
+ * Copyright 2007, 2009 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -112,17 +112,13 @@ void dcc_maybe_send_email(void) {
       == NULL) {
     whom_to_blame = dcc_emaillog_whom_to_blame;
   }
-  char *will_send_message_to;
   char *cant_send_message_to;
 
   if (should_send_email == 0) return;
   if (never_send_email) return;
 
-  asprintf(&will_send_message_to, will_send_message_format, whom_to_blame);
+  rs_log_warning(will_send_message_format, whom_to_blame);
   asprintf(&cant_send_message_to, cant_send_message_format, whom_to_blame);
-
-  rs_log_warning(will_send_message_to);
-  free(will_send_message_to);
 
   if (email_fileno < 0) {
       errno = email_errno;

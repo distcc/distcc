@@ -206,8 +206,10 @@ dcc_pump_sendfile(int ofd, int ifd, size_t size)
         if (sent == -1) {
             if (errno == EAGAIN) {
                 /* Sleep until we're able to write out more data. */
-                if ((ret = dcc_select_for_write(ofd, dcc_io_timeout)) != 0)
+                if ((ret = dcc_select_for_write(ofd,
+                                                dcc_get_io_timeout())) != 0) {
                     return ret;
+                }
                 rs_trace("select() returned, continuing to write");
             } else if (errno == EINTR) {
                 rs_trace("sendfile() interrupted, continuing");

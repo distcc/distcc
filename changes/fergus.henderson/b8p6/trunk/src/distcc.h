@@ -320,6 +320,7 @@ int dcc_r_str_alloc(int fd, unsigned len, char **buf);
 
 int tcp_cork_sock(int fd, int corked);
 int dcc_close(int fd);
+int dcc_get_io_timeout(void);
 int dcc_want_mmap(void);
 
 
@@ -331,7 +332,7 @@ int dcc_load_file_string(const char *filename,
                          char **retbuf);
 
 
-extern const int dcc_connect_timeout, dcc_io_timeout;
+extern const int dcc_connect_timeout;
 
 
 /* pump.c */

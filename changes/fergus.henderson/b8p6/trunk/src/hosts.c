@@ -2,7 +2,7 @@
  *
  * distcc -- A simple distributed compiler system
  *
- * Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
+ * Copyright (C) 2002, 2003, 2004, 2009 by Martin Pool <mbp@samba.org>
  * Copyright 2004 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
@@ -131,7 +131,8 @@ int dcc_compare_container(const void *a, const void *b);
  *
  * Really this needs to be in util.c, but it's only used here.
  **/
-static char *strndup(const char *src, size_t size)
+char *strndup(const char *src, size_t size);
+char *strndup(const char *src, size_t size)
 {
     char *dst;
 
@@ -241,6 +242,9 @@ static int dcc_parse_options(const char **psrc,
 
     host->compr = DCC_COMPRESS_NONE;
     host->cpp_where = DCC_CPP_ON_CLIENT;
+#ifdef HAVE_GSSAPI
+    host->authenticate = 0;
+#endif
 
     while (p[0] == ',') {
         p++;
@@ -256,6 +260,12 @@ static int dcc_parse_options(const char **psrc,
             rs_trace("got CPP option");
             host->cpp_where = DCC_CPP_ON_SERVER;
             p += 3;
+#ifdef HAVE_GSSAPI
+        } else if (str_startswith("auth", p)) {
+            rs_trace("got GSSAPI option");
+            host->authenticate = 1;
+            p += 4;
+#endif
         } else {
             rs_log_error("unrecognized option in host specification: %s",
                          started);

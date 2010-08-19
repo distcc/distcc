@@ -76,6 +76,9 @@
 #include "srvnet.h"
 #include "daemon.h"
 #include "types.h"
+#ifdef HAVE_GSSAPI
+#include "auth.h"
+#endif
 
 
 /* for trace.c */
@@ -203,6 +206,25 @@ int main(int argc, char *argv[])
     if ((ret = dcc_setup_daemon_path()))
         goto out;
 
+#ifdef HAVE_GSSAPI
+    /* Obtain credentials if authentication is requested. */
+    if (dcc_auth_enabled) {
+        if ((ret = dcc_gssapi_acquire_credentials()) != 0) {
+            goto out;
+        }
+
+        /* Read contents of list file into an array and apply qsort. */
+        if (opt_blacklist_enabled || opt_whitelist_enabled) {
+            if ((ret = dcc_gssapi_obtain_list((opt_blacklist_enabled) ? 1 : 0)) != 0) {
+	            goto out;
+	        }
+        }
+    }
+#endif
+
+    /* Initialize the distcc io timeout value */
+    dcc_get_io_timeout();
+
     if (dcc_should_be_inetd())
         ret = dcc_inetd_server();
     else
@@ -298,6 +320,16 @@ static int dcc_inetd_server(void)
     ret = dcc_service_job(STDIN_FILENO, STDOUT_FILENO, psa, len);
 
     close_ret = dcc_close(STDIN_FILENO);
+
+#ifdef HAVE_GSSAPI
+    if (dcc_auth_enabled) {
+        dcc_gssapi_release_credentials();
+
+        if (opt_blacklist_enabled || opt_whitelist_enabled) {
+            dcc_gssapi_free_list();
+	    }
+    }
+#endif
 
     if (ret)
         return ret;

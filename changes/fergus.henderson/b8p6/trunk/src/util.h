@@ -22,8 +22,11 @@
  */
 
 #include <setjmp.h>
+#include <stdio.h>
+#include <time.h>
 
 /* util.c */
+int dcc_timecmp(struct timeval a, struct timeval b);
 int dcc_getcurrentload(void);
 void dcc_getloadavg(double loadavg[3]);
 int argv_contains(char **argv, const char *s);
@@ -54,3 +57,7 @@ size_t strlcpy(char *d, const char *s, size_t bufsize);
 #endif
 
 int dcc_tokenize_string(const char *in, char ***argv_ptr);
+
+#ifndef HAVE_GETLINE
+ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+#endif

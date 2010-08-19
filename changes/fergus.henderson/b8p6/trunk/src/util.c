@@ -456,6 +456,24 @@ char *dcc_abspath(const char *path, int path_len)
     return buf;
 }
 
+/* Return -1 if a < b, 0 if a == b, and 1 if a > b */
+int dcc_timecmp(struct timeval a, struct timeval b) {
+    if (a.tv_sec < b.tv_sec) {
+        return -1;
+    } else if (a.tv_sec > b.tv_sec) {
+        return 1;
+    } else if (a.tv_usec < b.tv_usec) {
+        /* at this point their tv_sec must be the same */
+        return -1;
+    } else if (a.tv_usec > b.tv_usec) {
+        return 1;
+    } else {
+        /* they must be equal */
+        return 0;
+    }
+}
+
+
 /* Return the current number of running processes. */
 int dcc_getcurrentload(void) {
 #if defined(linux)
@@ -796,3 +814,49 @@ int dcc_tokenize_string(const char *input, char ***argv_ptr)
     free(input_copy);
     return 0;
 }
+
+#ifndef HAVE_GETLINE
+ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
+    static const int buffer_size_increment = 100;
+    char *buffer;
+    size_t size;
+    size_t bytes_read;
+    int c;
+    char *new_buffer;
+
+    if (lineptr == NULL || stream == NULL || n == NULL ||
+            (*lineptr == NULL && *n != 0)) {
+        /* Invalid parameters. */
+        return -1;
+    }
+
+    buffer = *lineptr;
+    size = *n;
+
+    bytes_read = 0;
+    do {
+        /* Ensure that we have space for next character or '\0'. */
+        if (bytes_read + 1 > size) {
+            size += buffer_size_increment;
+            new_buffer = realloc(buffer, size);
+            if (new_buffer == NULL) {
+                /* Out of memory. */
+                *lineptr = buffer;
+                *n = size - buffer_size_increment;
+                return -1;
+            }
+            buffer = new_buffer;
+        }
+        if ((c = fgetc(stream)) == EOF)
+            break;
+        buffer[bytes_read++] = c;
+    } while (c != '\n');
+    buffer[bytes_read] = '\0';
+
+    *lineptr = buffer;
+    *n = size;
+
+    /* We return -1 on EOF for compatibility with GNU getline(). */
+    return bytes_read == 0 ? -1 : (ssize_t) bytes_read;
+}
+#endif

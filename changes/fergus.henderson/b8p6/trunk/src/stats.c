@@ -56,18 +56,27 @@ void dcc_manage_kids(int listen_fd);
 
 struct stats_s {
     int counters[STATS_ENUM_MAX];
+    int kids_avg[3]; /* 1, 5, 15m */
     int longest_job_time;
     char longest_job_name[MAX_FILENAME_LEN];
     char longest_job_compiler[MAX_FILENAME_LEN];
     int io_rate; /* read/write sectors per second */
-
     int compile_timeseries[300]; /* 300 3-sec time intervals */
+
+    /*
+     * linked list of statsdata. This is to keep the last
+     * couple of minutes of compile stats for analysis.
+     */
+    struct statsdata *sd_root;
 } dcc_stats;
 
 struct statsdata {
     enum stats_e type;
+    struct statsdata *next;
 
     /* used only for STATS_COMPILE_OK */
+    struct timeval start;
+    struct timeval stop;
     int time;
     char filename[MAX_FILENAME_LEN];
     char compiler[MAX_FILENAME_LEN];
@@ -113,17 +122,137 @@ void dcc_stats_event(enum stats_e e) {
 /**
  * Logs a completed job to stats server
  **/
-void dcc_stats_compile_ok(char *compiler, char *filename, int time_usec) {
+void dcc_stats_compile_ok(char *compiler, char *filename, struct timeval start,
+     struct timeval stop, int time_usec) {
     if (arg_stats) {
         struct statsdata sd;
         memset(&sd, 0, sizeof(sd));
 
         sd.type = STATS_COMPILE_OK;
         /* also send compiler, filename & runtime */
+        memcpy(&(sd.start), &start, sizeof(struct timeval));
+        memcpy(&(sd.stop), &stop, sizeof(struct timeval));
         sd.time = time_usec;
         strncpy(sd.filename, filename, MAX_FILENAME_LEN);
         strncpy(sd.compiler, compiler, MAX_FILENAME_LEN);
         write(dcc_statspipe[1], &sd, sizeof(sd));
+    }
+}
+
+
+/*
+ * tracks the compile times
+ */
+static void dcc_stats_update_compile_times(struct statsdata *sd) {
+    struct statsdata *prev_sd = NULL;
+    struct statsdata *curr_sd = NULL;
+    struct statsdata *new_sd;
+    time_t two_min_ago = time(NULL) - 120;
+
+    /* Record file with longest runtime */
+    if (dcc_stats.longest_job_time < sd->time) {
+        dcc_stats.longest_job_time = sd->time;
+        strncpy(dcc_stats.longest_job_name, sd->filename,
+                MAX_FILENAME_LEN);
+        strncpy(dcc_stats.longest_job_compiler, sd->compiler,
+                MAX_FILENAME_LEN);
+    }
+
+    /* store stats for compile time calcs */
+    new_sd = malloc(sizeof(struct statsdata));
+    memcpy(new_sd, sd, sizeof(struct statsdata));
+    new_sd->next = dcc_stats.sd_root;
+    dcc_stats.sd_root = new_sd;
+
+
+    /* drop elements older than 2min */
+    curr_sd = dcc_stats.sd_root;
+    while (curr_sd != NULL) {
+        if (curr_sd->stop.tv_sec < two_min_ago) {
+            /* delete the stat */
+            if (prev_sd == NULL) {
+                dcc_stats.sd_root = curr_sd->next;
+            } else {
+                prev_sd->next = curr_sd->next;
+            }
+            free(curr_sd);
+            curr_sd = prev_sd->next;
+        } else {
+            /* we didn't delete anyting. move forward by one */
+            prev_sd = curr_sd;
+            curr_sd = curr_sd->next;
+        }
+    }
+}
+
+/* caclulate the avg kids used */
+static void dcc_stats_calc_kid_avg(void) {
+    static int total_5m[5] = {0};
+    static int total_15m[15] = {0};
+    static int pos_5m = 0;
+    static int pos_15m = 0;
+    static time_t last = 0;
+    struct timeval now;
+    struct timeval time_p;
+    struct statsdata *curr_sd;
+    int total_running = 0;
+    int running = 0;
+    int t = 0;
+    int x = 0;
+    int total = 0;
+
+    gettimeofday(&now, NULL);
+    
+    /* calculate average kids used over the last minute */
+    if ((now.tv_sec - 60) >= last) {
+        /* we look at 1min ago back to 2 min ago because we only register
+         * compiles when they complete. If we look right now, we miss all 
+         * the current compiles that haven't completed.
+         */
+        for (t=60; t<120; t++) {
+            time_p.tv_usec = now.tv_usec;
+            time_p.tv_sec = now.tv_sec - t;
+            running = 0;
+            curr_sd = dcc_stats.sd_root;
+
+            while (curr_sd != NULL) {
+                if ((dcc_timecmp(curr_sd->start, time_p) <= 0) &&
+                    (dcc_timecmp(curr_sd->stop, time_p) >= 0)) {
+                    running++;
+                }
+                curr_sd = curr_sd->next;
+            }
+            total_running += running;
+        }
+        dcc_stats.kids_avg[0] = total_running / 60;
+
+
+        /* populate 5m kid avgs */
+        total_5m[pos_5m] = dcc_stats.kids_avg[0];
+        pos_5m++;
+        if (pos_5m >= 5)
+            pos_5m = 0;
+
+        /* calc 5m kid avg */
+        total = 0;
+        for (x=0; x<5; x++)
+            total += total_5m[x];
+        dcc_stats.kids_avg[1] = total/5;
+
+
+        /* populate 15m kid avgs */
+        total_15m[pos_15m] = dcc_stats.kids_avg[0];
+        pos_15m++;
+        if (pos_15m >= 15)
+            pos_15m = 0;
+
+        /* calc 15m kid avg */
+        total = 0;
+        for (x=0; x<15; x++)
+            total += total_15m[x];
+        dcc_stats.kids_avg[2] = total/15;
+
+        last = now.tv_sec;
     }
 }
 
@@ -253,6 +382,9 @@ dcc_longest_job %s\n\
 dcc_longest_job_compiler %s\n\
 dcc_longest_job_time_msecs %d\n\
 dcc_max_kids %d\n\
+dcc_avg_kids1 %d\n\
+dcc_avg_kids2 %d\n\
+dcc_avg_kids3 %d\n\
 dcc_current_load %d\n\
 dcc_load1 %1.2lf\n\
 dcc_load2 %1.2lf\n\
@@ -296,6 +428,9 @@ dcc_free_space %d MB\n\
                                dcc_stats.longest_job_compiler,
                                dcc_stats.longest_job_time,
                                dcc_max_kids,
+                               dcc_stats.kids_avg[0],
+                               dcc_stats.kids_avg[1],
+                               dcc_stats.kids_avg[2],
                                dcc_getcurrentload(),
                                loadavg[0], loadavg[1], loadavg[2],
                                ct[0], ct[1], ct[2],
@@ -331,14 +466,7 @@ static void dcc_stats_process(struct statsdata *sd) {
     case STATS_REJ_OVERLOAD:
         break;
     case STATS_COMPILE_OK:
-        /* Record file with longest runtime */
-        if (dcc_stats.longest_job_time < sd->time) {
-            dcc_stats.longest_job_time = sd->time;
-            strncpy(dcc_stats.longest_job_name, sd->filename,
-                    MAX_FILENAME_LEN);
-            strncpy(dcc_stats.longest_job_compiler, sd->compiler,
-                    MAX_FILENAME_LEN);
-        }
+        dcc_stats_update_compile_times(sd);
     case STATS_COMPILE_ERROR:
     case STATS_COMPILE_TIMEOUT:
     case STATS_CLI_DISCONN:
@@ -389,6 +517,7 @@ int dcc_stats_server(int listen_fd)
 
     while (1) {
         dcc_stats_minutely_update();
+        dcc_stats_calc_kid_avg();
 
         timeout.tv_sec = 60;
         timeout.tv_usec = 0;
