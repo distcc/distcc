@@ -52,7 +52,7 @@ class ParseState:
 
     self.language = 'none'    # equivalent to commandline of '-x none'
     self.isysroot = None
-    self.sysroot = None
+    self.sysroot = ""
     self.output_file = None
     self.iprefix = ""
     self.Dopts = []
@@ -109,8 +109,6 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
   '-imultilib':     lambda ps, arg: _RaiseNotImplemented('-imultilib'),
   '-isystem':       lambda ps, arg: ps.before_system_dirs.append(arg),
   '-iquote':        lambda ps, arg: ps.quote_dirs.append(arg),
-#  '--sysroot=':     lambda ps, arg: ps.set_sysroot(arg),
-  '--sysroot=':     lambda ps, arg: None,
 }
 CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS = ('M', 'i', '-')
 # A "compile-time" check to make sure the first-letter list is up-to-date
@@ -138,6 +136,13 @@ CPP_OPTIONS_ALWAYS_TWO_WORDS = {
 CPP_OPTIONS_TWO_WORDS = {}
 CPP_OPTIONS_TWO_WORDS.update(CPP_OPTIONS_MAYBE_TWO_WORDS)
 CPP_OPTIONS_TWO_WORDS.update(CPP_OPTIONS_ALWAYS_TWO_WORDS)
+
+# These are the cpp options that a) are more than one letter long,
+# b) always take an argument, and c) have that argument separated from
+# the option by '='.
+CPP_OPTIONS_APPEARING_AS_ASSIGNMENTS = {
+  '--sysroot':     lambda ps, arg: ps.set_sysroot(arg)
+}
 
 # These are the cpp options that do not take an argument.
 # (Note, most cpp options do not take an argument, but do not pertain to
@@ -375,6 +380,16 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
         raise NotCoveredError("No argument found for option '%s'" % args[i])
       continue
 
+    # Deal with the have-arg options that appear as if assignments
+    # ("--sysroot=/mumble").
+    if '=' in args[i]:
+      arg, value = args[i].split('=', 1)
+      action = CPP_OPTIONS_APPEARING_AS_ASSIGNMENTS.get(arg)
+      if action:
+        action(parse_state, value)
+        i += 1
+        continue
+
     # Deal with the options that take no arguments ("-nostdinc").
     action = CPP_OPTIONS_ONE_WORD.get(args[i])
     if action:
@@ -432,7 +447,8 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
     parse_state.language = basics.TRANSLATION_UNIT_MAP[suffix]
   assert parse_state.language in basics.LANGUAGES
 
-  compiler_defaults.SetSystemDirsDefaults(compiler, parse_state.language, timer)
+  compiler_defaults.SetSystemDirsDefaults(compiler, parse_state.sysroot,
+                                          parse_state.language, timer)
 
   def IndexDirs(dir_list):
     """Normalize directory names and index.
@@ -450,7 +466,7 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
   if not parse_state.nostdinc:
     angle_dirs.extend(
       IndexDirs(compiler_defaults.system_dirs_default
-                [compiler][parse_state.language]))
+                [compiler][parse_state.sysroot][parse_state.language]))
   angle_dirs.extend(IndexDirs(parse_state.after_system_dirs))
 
   quote_dirs = IndexDirs(parse_state.quote_dirs)
