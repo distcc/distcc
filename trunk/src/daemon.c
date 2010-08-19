@@ -84,6 +84,9 @@
 /* for trace.c */
 char const *rs_program_name = "distccd";
 
+/* for serve.c */
+char const *dcc_daemon_wd;  /* The working directory for the server. */
+
 
 static int dcc_inetd_server(void);
 static void dcc_setup_real_log(void);
@@ -156,7 +159,6 @@ static int dcc_setup_daemon_path(void)
 int main(int argc, char *argv[])
 {
     int ret;
-    const char *tmp;
 
     dcc_setup_startup_log();
 
@@ -189,18 +191,18 @@ int main(int argc, char *argv[])
      * the right ownership. */
     dcc_setup_real_log();
 
-    /* Do everything from root directory.  Allows start directory to be
-     * unmounted, should make accidental writing of local files cause a
-     * failure... */
-    if ((ret = dcc_get_tmp_top(&tmp)))
+    /* Do everything from $TMPDIR directory.  Allows start directory to be
+     * unmounted. */
+    if ((ret = dcc_get_tmp_top(&dcc_daemon_wd)))
         goto out;
 
-    if (chdir(tmp) == -1) {
-        rs_log_error("failed to chdir to %s: %s", tmp, strerror(errno));
+    if (chdir(dcc_daemon_wd) == -1) {
+        rs_log_error("failed to chdir to %s: %s",
+                     dcc_daemon_wd, strerror(errno));
         ret = EXIT_IO_ERROR;
         goto out;
     } else {
-        rs_trace("chdir to %s", tmp);
+        rs_trace("chdir to %s", dcc_daemon_wd);
     }
 
     if ((ret = dcc_setup_daemon_path()))
