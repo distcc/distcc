@@ -1218,6 +1218,14 @@ class Gdb_Case(CompileHello_Case):
           pass
         return "src/testtmp.c"
 
+    def createSource(self):
+        CompileHello_Case.createSource(self)
+        # Create an empty .gdbinit, so that we insulate this test
+        # from the ~/.gdbinit file of the user running it.
+        filename = ".gdbinit"
+        f = open(filename, 'w')
+        f.close()
+
     def compiler(self):
         """Command for compiling and linking."""
         return _gcc + " -g ";
@@ -1270,12 +1278,15 @@ class Gdb_Case(CompileHello_Case):
         out, errs = self.runcmd("gdb --batch --command=gdb_commands "
                                 "link/%s </dev/null" % testtmp_exe)
         # Normally we expect the stderr output to be empty.
-        # But, due two gdb bugs, some versions of gdb will produce a
+        # But, due to gdb bugs, some versions of gdb will produce a
         # (harmless) error or warning message.
-        # In both of these cases, we can safely ignore the message.
-        error_message1 = 'Failed to read a valid object file image from memory.\n'
-        error_message2 = 'warning: Lowest section in system-supplied DSO at 0xffffe000 is .hash at ffffe0b4\n'
-        if errs and errs != error_message1 and errs != error_message2:
+        # In these cases, we can safely ignore the message.
+        ignorable_error_messages = (
+          'Failed to read a valid object file image from memory.\n',
+          'warning: Lowest section in system-supplied DSO at 0xffffe000 is .hash at ffffe0b4\n',
+          'warning: no loadable sections found in added symbol-file /usr/lib/debug/lib/ld-2.7.so\n',
+        )
+        if errs and errs not in ignorable_error_messages:
             self.assert_equal(errs, '')
         self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
         self.assert_re_search('testtmp.c:[45]', out)
@@ -1293,13 +1304,14 @@ class Gdb_Case(CompileHello_Case):
         self.runcmd("cp ../link/%s ./%s" % (testtmp_exe, testtmp_exe))
         pump_mode = _server_options.find('cpp') != -1
         error_rc, _, _ = self.runcmd_unchecked(self.compiler() +
-            " -g -E -I. -c %s | grep `pwd` >/dev/null" % self.sourceFilename())
+            " -g -E -I.. -c ../%s | grep `pwd` >/dev/null" %
+            self.sourceFilename())
         gcc_preprocessing_preserves_pwd = (error_rc == 0);
         if ((pump_mode and _IsElf('./%s' % testtmp_exe))
           or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
             out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
-            if errs and errs != error_message1 and errs != error_message2:
+            if errs and errs not in ignorable_error_messages:
                 self.assert_equal(errs, '')
             self.assert_re_search('puts\\(HELLO_WORLD\\);', out)
             self.assert_re_search('testtmp.c:[45]', out)
