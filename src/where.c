@@ -124,7 +124,9 @@ static void dcc_lock_pause(void)
 
     unsigned pause_time = 1;
 
-    dcc_note_state(DCC_PHASE_BLOCKED, NULL, NULL);
+	/*	This call to dcc_note_state() is made before the host is known, so it
+		does not make sense and does nothing useful as far as I can tell.	*/
+    /*	dcc_note_state(DCC_PHASE_BLOCKED, NULL, NULL, DCC_UNKNOWN);	*/
 
     rs_trace("nothing available, sleeping %us...", pause_time);
 
@@ -159,7 +161,7 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
 
                 if (ret == 0) {
                     *buildhost = h;
-                    dcc_note_state_slot(i_cpu);
+                    dcc_note_state_slot(i_cpu, strcmp(h->hostname, "localhost") == 0 ? DCC_LOCAL : DCC_REMOTE);
                     return 0;
                 } else if (ret == EXIT_BUSY) {
                     continue;
@@ -192,6 +194,6 @@ int dcc_lock_local_cpp(int *cpu_lock_fd)
     int ret;
     struct dcc_hostdef *chosen;
     ret = dcc_lock_one(dcc_hostdef_local_cpp, &chosen, cpu_lock_fd);
-    dcc_note_state(DCC_PHASE_CPP, NULL, chosen->hostname);
+    dcc_note_state(DCC_PHASE_CPP, NULL, chosen->hostname, DCC_LOCAL);
     return ret;
 }

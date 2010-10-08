@@ -162,7 +162,7 @@ int dcc_retrieve_results(int net_fd,
 
     /* We've started to see the response, so the server is done
      * compiling. */
-    dcc_note_state(DCC_PHASE_RECEIVE, NULL, NULL);
+    dcc_note_state(DCC_PHASE_RECEIVE, NULL, NULL, DCC_REMOTE);
 
     if ((ret = dcc_r_cc_status(net_fd, status)))
         return ret;
