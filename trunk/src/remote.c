@@ -105,7 +105,7 @@ static int dcc_wait_for_cpp(pid_t cpp_pid,
     int ret;
 
     if (cpp_pid) {
-        dcc_note_state(DCC_PHASE_CPP, NULL, NULL);
+        dcc_note_state(DCC_PHASE_CPP, NULL, NULL, DCC_LOCAL);
         /* Wait for cpp to finish (if not already done), check the
          * result, then send the .i file */
 
@@ -216,7 +216,7 @@ int dcc_compile_remote(char **argv,
         rs_log_warning("gettimeofday failed");
 
     dcc_note_execution(host, argv);
-    dcc_note_state(DCC_PHASE_CONNECT, input_fname, host->hostname);
+    dcc_note_state(DCC_PHASE_CONNECT, input_fname, host->hostname, DCC_REMOTE);
 
     /* For ssh support, we need to allow for separate fds writing to and
      * reading from the network, because our connection to the ssh client may
@@ -244,7 +244,7 @@ int dcc_compile_remote(char **argv,
     }
 #endif
 
-    dcc_note_state(DCC_PHASE_SEND, NULL, NULL);
+    dcc_note_state(DCC_PHASE_SEND, NULL, NULL, DCC_REMOTE);
 
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
         if ((ret = dcc_send_header(to_net_fd, argv, host))) {
@@ -289,7 +289,7 @@ int dcc_compile_remote(char **argv,
     /* OK, now all of the source has at least made it into the
      * client's TCP transmission queue, sometime soon the server will
      * start compiling it.  */
-    dcc_note_state(DCC_PHASE_COMPILE, NULL, host->hostname);
+    dcc_note_state(DCC_PHASE_COMPILE, NULL, host->hostname, DCC_REMOTE);
 
     /* If cpp failed, just abandon the connection, without trying to
      * receive results. */

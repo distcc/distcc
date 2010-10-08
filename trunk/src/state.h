@@ -46,10 +46,16 @@ enum dcc_phase {
     DCC_PHASE_DONE              /**< MUST be last */
 };
 
+enum dcc_host {
+	DCC_UNKNOWN,
+	DCC_LOCAL,
+	DCC_REMOTE
+};
 
 int dcc_note_state (enum dcc_phase state,
                     const char *file,
-                    const char *host);
+                    const char *host,
+                    enum dcc_host);
 void dcc_remove_state_file (void);
 
 
@@ -83,7 +89,7 @@ struct dcc_task_state {
 
 const char *dcc_get_phase_name(enum dcc_phase);
 
-void dcc_note_state_slot(int slot);
+void dcc_note_state_slot(int slot, enum dcc_host target);
 
 #ifdef __cplusplus
 }

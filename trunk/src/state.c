@@ -43,8 +43,10 @@
 const char *dcc_state_prefix = "binstate_";
 
 
-struct dcc_task_state my_state;
+static struct dcc_task_state *my_state = NULL;
+static struct dcc_task_state local_state, remote_state;
 
+static struct dcc_task_state *direct_my_state(const enum dcc_host target);
 
 /**
  * @file
@@ -182,7 +184,7 @@ static int dcc_write_state(int fd)
     /* Write out as one big blob.  fd is positioned at the start of
      * the file. */
 
-    if ((ret = dcc_writex(fd, &my_state, sizeof my_state)))
+    if ((ret = dcc_writex(fd, my_state, sizeof *my_state)))
         return ret;
 
     return 0;
@@ -199,34 +201,38 @@ static int dcc_write_state(int fd)
  **/
 int dcc_note_state(enum dcc_phase state,
                    const char *source_file,
-                   const char *host)
+                   const char *host, enum dcc_host target)
 {
     int fd;
     int ret;
     char *fname;
     struct timeval tv;
 
-    my_state.struct_size = sizeof my_state;
-    my_state.magic = DCC_STATE_MAGIC;
-    my_state.cpid = (unsigned long) getpid();
+
+	if (!direct_my_state(target))
+		return -1;
+
+    my_state->struct_size = sizeof *my_state;
+    my_state->magic = DCC_STATE_MAGIC;
+    my_state->cpid = (unsigned long) getpid();
 
     if ((ret = dcc_get_state_filename(&fname)))
         return ret;
 
     source_file = dcc_find_basename(source_file);
     if (source_file) {
-        strlcpy(my_state.file, source_file, sizeof my_state.file);
+        strlcpy(my_state->file, source_file, sizeof my_state->file);
     }
 
     if (host) {
-        strlcpy(my_state.host, host, sizeof my_state.host);
+        strlcpy(my_state->host, host, sizeof my_state->host);
     }
 
     if (gettimeofday(&tv, NULL) == -1) {
         rs_log_error("gettimeofday failed: %s", strerror(errno));
         return EXIT_DISTCC_FAILED;
     }
-    my_state.curr_phase = state;
+    my_state->curr_phase = state;
 
     rs_trace("note state %d, file \"%s\", host \"%s\"",
              state,
@@ -251,7 +257,36 @@ int dcc_note_state(enum dcc_phase state,
 }
 
 
-void dcc_note_state_slot(int slot)
+void dcc_note_state_slot(int slot, enum dcc_host target)
 {
-    my_state.slot = slot;
+	if (direct_my_state(target))
+		my_state->slot = slot;
+}
+
+
+/**
+	Point 'my_state' to the local or remote host state information, depending on target.
+
+	Return 'my_state' pointer.
+**/
+static struct dcc_task_state *direct_my_state(const enum dcc_host target)
+{
+	switch (target)
+	{
+		case DCC_LOCAL:
+			my_state = &local_state;
+			break;
+
+		case DCC_REMOTE:
+			my_state = &remote_state;
+			break;
+
+		case DCC_UNKNOWN:
+			break;
+	}
+
+	if (!my_state)
+		rs_log_error("my_state == NULL");
+
+	return my_state;
 }

@@ -375,7 +375,7 @@ static int dcc_compile_local(char *argv[],
     int status;
 
     dcc_note_execution(dcc_hostdef_local, argv);
-    dcc_note_state(DCC_PHASE_COMPILE, input_name, "localhost");
+    dcc_note_state(DCC_PHASE_COMPILE, input_name, "localhost", DCC_LOCAL);
 
     /* We don't do any redirection of file descriptors when running locally,
      * so if for example cpp is being used in a pipeline we should be fine. */
