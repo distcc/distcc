@@ -115,18 +115,18 @@ static inline void set_mask_inet(struct in_addr *addr, int mask_bits) {
  * Set a v6 address, @p addr, to a mask of @p mask_size bits.
  **/
 static void set_mask_inet6(struct in6_addr *addr, int mask_bits) {
-    uint8_t *s6_addr = addr->s6_addr;
+    uint8_t *ip6_addr = addr->s6_addr;
     int allones_count = mask_bits / 8;
     int i;
 
     for (i = 0; i < allones_count; i++)
-        s6_addr[i] = allones8;
+        ip6_addr[i] = allones8;
 
-    s6_addr[i] = ~(allones8 >> (mask_bits % 8));
+    ip6_addr[i] = ~(allones8 >> (mask_bits % 8));
     i++;
 
     for (; i < 16; i++)
-        s6_addr[i] = 0;
+        ip6_addr[i] = 0;
 }
 #endif /* ENABLE_RFC2553 */
 
