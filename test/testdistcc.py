@@ -1234,6 +1234,7 @@ class Gdb_Case(CompileHello_Case):
         """Return command to compile source"""
         os.mkdir("obj")
         return self.distcc_without_fallback() + self.compiler() + \
+               self.build_id + \
                " -o obj/testtmp.o -I. -c %s" % (self.sourceFilename())
 
     def link(self):
@@ -1257,8 +1258,16 @@ class Gdb_Case(CompileHello_Case):
         error_rc, _, _ = self.runcmd_unchecked("gdb --help")
         if error_rc != 0:
             raise comfychair.NotRunError ('gdb could not be found on path')
-        else:
-            CompileHello_Case.runtest (self)
+
+        # Test if the compiler supports --build-id=0xNNN.
+        # If so, we need to use it for this test.
+        self.build_id = " --build-id=0x12345678 "
+        error_rc, _, _ = self.runcmd_unchecked(self.compiler() +
+            (self.build_id + " -o junk %s" % self.sourceFilename()))
+        if error_rc != 0:
+            self.build_id = ""
+
+        CompileHello_Case.runtest (self)
 
     def checkBuiltProgram(self):
         # On windows, the binary may be called testtmp.exe.  Check both
@@ -1328,6 +1337,8 @@ class Gdb_Case(CompileHello_Case):
             self.sourceFilename())
         self.runcmd(self.compiler() + " -o link/testtmp obj/testtmp.o")
         self.runcmd("strip link/%s && strip run/%s" % (testtmp_exe, testtmp_exe))
+        # On newer versions of Linux, this works only because we pass
+        # --build-id=0x12345678.
         # On OS X, the strict bit-by-bit comparison will fail, because
         # mach-o format includes a unique UUID which will differ
         # between the two testtmp binaries.  For Microsoft PE output,
