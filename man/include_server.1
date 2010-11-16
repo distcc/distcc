@@ -203,7 +203,7 @@ distcc invocation exits with the non-zero status of the local compilation. The
 error messages printed are also those of the local compilation.
 
 The fallback behavior for distcc-pump mode to local compilation can be disabled
-by setting the environment variable DISTCC_FALLBACK to 1, which makes the distcc
+by setting the environment variable DISTCC_FALLBACK to 0, which makes the distcc
 command fail as soon as the remote compilation has failed. This setting is very
 useful for debugging why the remote compilation went wrong, because now the
 output from the server will be printed.
