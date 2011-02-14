@@ -142,7 +142,7 @@ NotCoveredError = basics.NotCoveredError
 # REGULAR EXPRESSIONS
 
 SINGLE_POUND_RE = re.compile(r"\B#\s*(\S*)") # \B = here: not at end of word
-DOUBLE_POUND_RE = re.compile(r"##")
+DOUBLE_POUND_RE = re.compile(r"\s*##\s*")
 SYMBOL_RE = re.compile(r"\b\w+\b") # \b = word boundary \w = word constituent
 
 

@@ -60,7 +60,7 @@ class MacroEvalTest(unittest.TestCase):
       "c(b, aa)")
 
   def test_MassageAccordingToPoundSigns(self):
-    self.assertEqual(macro_eval._MassageAccordingToPoundSigns('#aa##bb'),
+    self.assertEqual(macro_eval._MassageAccordingToPoundSigns('#aa ## bb'),
                      '"aabb"')
     self.assertEqual(macro_eval._MassageAccordingToPoundSigns('# a(.)'),
                      '"a(.)"')
