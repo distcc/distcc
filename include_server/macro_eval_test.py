@@ -68,10 +68,10 @@ class MacroEvalTest(unittest.TestCase):
   def test__ParseArgs(self):
 
     self.assertEqual(macro_eval._ParseArgs("(a,m(c, n(d)), c)", 0),
-                     (["a", "m(c, n(d))", " c"], 17))
+                     (["a", "m(c, n(d))", "c"], 17))
 
     self.assertEqual(macro_eval._ParseArgs("""(a","m(c, n(d)), c)""", 0),
-                     (["""a","m(c, n(d))""", " c"], 19))
+                     (["""a","m(c, n(d))""", "c"], 19))
 
 
   def test__PrependToSet(self):
@@ -102,25 +102,42 @@ class MacroEvalTest(unittest.TestCase):
     self.assertEqual(
       macro_eval.EvalExpression("max(2, 4)",
 		      { 'max': [ ( ['x', 'y'], "x < y? y: x") ] }),
-      set(['max(2, 4)', '2 <  4?  4: 2']))
+      set(['max(2, 4)', '2 < 4? 4: 2']))
 
     self.assertEqual(
       macro_eval.EvalExpression("F(2, 4)",
 		      { 'F': ['max'],
 			'max': [ ( ['x', 'y'], "x < y? y: x") ] }),
-      set(['max(2, 4)', 'F(2, 4)', '2 <  4?  4: 2']))
+      set(['max(2, 4)', 'F(2, 4)', '2 < 4? 4: 2']))
 
     self.assertEqual(
       macro_eval.EvalExpression("max(max(1,2), 3)",
 		      { 'max': [ ( ['x', 'y'], "(x < y? y: x)") ] }),
-       set(['((1 < 2? 2: 1) <  3?  3: (1 < 2? 2: 1))',
+       set(['((1 < 2? 2: 1) < 3? 3: (1 < 2? 2: 1))',
             'max(max(1,2), 3)',
-            '(max(1,2) <  3?  3: max(1,2))',
+            '(max(1,2) < 3? 3: max(1,2))',
             'max((1 < 2? 2: 1), 3)']))
 
     self.assertEqual(
       macro_eval.EvalExpression("A", { 'A': ['"a.c"'] }),
       set(['A', '"a.c"']))
+
+
+    self.assertEqual(
+      macro_eval.EvalExpression(
+	"CAT(cfgdir,/)##hdrfile",
+	{ "CAT" : [ ( ['a','b'], "a ## b" ) ],
+	  "hdrfile" : [ "abc.h" ]}),
+      set(["CAT(cfgdir,/)##hdrfile", "CAT(cfgdir,/)##abc.h",
+           "cfgdir/abc.h", "cfgdir/hdrfile"]))
+   
+    self.assertEqual(
+      macro_eval.EvalExpression(
+	"STR(foo)",
+	{ "STR" : [ ( ['text'], "STR_A((text))" ) ],
+	  "STR_A" : [ ( ['arg'], "STR_I arg" ) ],
+	  "STR_I" : [ ( ['text'], "#text" ) ] }),
+      set(["STR(foo)", "STR_A((foo))", "STR_I (foo)", "\"foo\""]))
 
     # The ## operator only works in rhs of function-like macros. Check
     # that it doesn't work stand-alone.
@@ -213,6 +230,10 @@ class MacroEvalTest(unittest.TestCase):
            '"maps/foo.tpl.varnames.h"',
            'AS_STRING(maps/foo.tpl.varnames.h)',
            'AS_STRING_INTERNAL(maps/foo.tpl.varnames.h)']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("MULTI(12, 34, 56)", symbol_table),
+      set(['MULTI(12, 34, 56)', '12 + 34 + 56']))
 
     # Verify that resolving this expression yields one actual file (which we
     # have placed in test_data/map).

@@ -184,6 +184,8 @@ def _ParseArgs(string, pos):
   # occurrences are deemed unlikely at this moment. Fix that so that parentheses
   # inside single quotes are ignored.
   open_parens = 0
+  while pos < len(string) and string[pos].isspace():
+    pos += 1
   if not pos < len(string) or string[pos] != '(':
     return (None, pos)
   # Prepare a list of comma and extremal positions.  The '(' at the left is the
@@ -212,7 +214,7 @@ def _ParseArgs(string, pos):
   commas.append(pos_end)  # the other extremal position
   args_list = []
   for i in range(len(commas) - 1):
-    args_list.append(string[commas[i] + 1 : commas[i + 1]])
+    args_list.append(string[commas[i] + 1 : commas[i + 1]].lstrip())
   return (args_list, pos_end + 1)
 
 
@@ -322,7 +324,8 @@ def _EvalExprHelper(expr, symbol_table, disabled):
                        for arg in args_expand[i] ]
       for expansion in expansions:
         real_expansion = _MassageAccordingToPoundSigns(expansion)
-        _ReEvalRecursivelyForExpansion(real_expansion, expr[args_end:])
+        real_after = _MassageAccordingToPoundSigns(expr[args_end:])
+        _ReEvalRecursivelyForExpansion(real_expansion, real_after)
     else:
       assert False, "Definition '%s' is unexpected." % definition
 
