@@ -292,13 +292,13 @@ def _EvalExprHelper(expr, symbol_table, disabled):
 
     Here definition is either object-like or function-like.
     """
-    # Consider that this symbol goes unevaluated.
-    value_set.update(
-      _PrependToSet(expr[:match.end()],
-                   _EvalExprHelper(expr[match.end():],
-                                   symbol_table,
-                                   disabled)))
     if isinstance(definition, str):
+      # Consider that this symbol goes unevaluated.
+      value_set.update(
+        _PrependToSet(expr[:match.end()],
+                      _EvalExprHelper(expr[match.end():],
+                                      symbol_table,
+                                      disabled)))
       # The expansion is the definition.
       _ReEvalRecursivelyForExpansion(definition, expr[match.end():])
     elif isinstance(definition, tuple):
@@ -355,12 +355,18 @@ def _EvalExprHelper(expr, symbol_table, disabled):
       # Now consider the set of meanings of this symbol.  But first
       # note that the string remaining unexpanded is always a
       # possibility, because we are doing a "forall" analysis.
-      value_set = set([expr])
+
+      defs = symbol_table[symbol]
+      if isinstance(defs[0], str):
+        value_set = set([expr])
+      else:
+        value_set = set()
+
       # Now carry out substitution on expr[match.start():match.end()],
       # the whole stretch of expr that consists of symbol and possibly
       # args with parentheses.
       if symbol not in disabled:
-        defs = symbol_table[symbol]
+        #defs = symbol_table[symbol]
         for definition in defs:
           _EvalMacro(definition, disabled)
       return value_set
