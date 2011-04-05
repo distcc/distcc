@@ -520,23 +520,23 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             continue;
         }
 
-    if(!strncmp(token_start, "--localslots_cpp", 16)) {
+        if(!strncmp(token_start, "--localslots_cpp", 16)) {
             const char *ptr;
             ptr = token_start + 16;
-        if(dcc_parse_multiplier(&ptr, dcc_hostdef_local_cpp) == 0) {
+            if(dcc_parse_multiplier(&ptr, dcc_hostdef_local_cpp) == 0) {
                 where = token_start + token_len;
                 continue;
             }
-    }
+        }
 
-    if(!strncmp(token_start, "--localslots", 12)) {
+        if(!strncmp(token_start, "--localslots", 12)) {
             const char *ptr;
             ptr = token_start + 12;
-        if(dcc_parse_multiplier(&ptr, dcc_hostdef_local) == 0) {
+            if(dcc_parse_multiplier(&ptr, dcc_hostdef_local) == 0) {
                 where = token_start + token_len;
                 continue;
             }
-    }
+        }
 
 #ifdef HAVE_AVAHI
         if (token_len == sizeof(ZEROCONF_MAGIC)-1 &&
@@ -554,8 +554,8 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             return EXIT_OUT_OF_MEMORY;
         }
 
-    /* by default, mark the host up */
-    curr->is_up = 1;
+        /* by default, mark the host up */
+        curr->is_up = 1;
 
         /* Store verbatim hostname */
         if (!(curr->hostdef_string = strndup(token_start, (size_t) token_len))) {
@@ -594,9 +594,9 @@ int dcc_parse_hosts(const char *where, const char *source_name,
                 return ret;
         }
 
-    if (!curr->is_up) {
+        if (!curr->is_up) {
             rs_trace("host %s is down", curr->hostdef_string);
-    }
+        }
 
         (*ret_nhosts)++;
         *ret_prev = curr;
