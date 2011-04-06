@@ -35,6 +35,7 @@
 #include "trace.h"
 #include "bulk.h"
 #include "snprintf.h"
+#include "exitcode.h"
 
 /* if never_send_email is true, we won't send email
    even if should_send_email is true */
@@ -84,21 +85,33 @@ int dcc_add_file_to_log_email(const char *description,
   char end[] = "\nEND ";
   int in_fd = 0;
   off_t fsize;
+  int ret;
 
   if (never_send_email) return 0;
 
-  if (dcc_open_read(fname, &in_fd, &fsize))
-      return 1;
+  ret = dcc_open_read(fname, &in_fd, &fsize);
+  if (ret != 0) return ret;
 
-  write(email_fileno, begin, strlen(begin));
-  write(email_fileno, description, strlen(description));
-  write(email_fileno, "\n", 1);
+  ret = write(email_fileno, begin, strlen(begin));
+  if (ret != (ssize_t) strlen(begin)) return EXIT_IO_ERROR;
 
-  dcc_pump_readwrite(email_fileno, in_fd, fsize);
+  ret = write(email_fileno, description, strlen(description));
+  if (ret != (ssize_t) strlen(description)) return EXIT_IO_ERROR;
 
-  write(email_fileno, end, strlen(end));
-  write(email_fileno, description, strlen(description));
-  write(email_fileno, "\n", 1);
+  ret = write(email_fileno, "\n", 1);
+  if (ret != 1) return EXIT_IO_ERROR;
+
+  ret = dcc_pump_readwrite(email_fileno, in_fd, fsize);
+  if (ret != 0) return ret;
+
+  ret = write(email_fileno, end, strlen(end));
+  if (ret != (ssize_t) strlen(end)) return EXIT_IO_ERROR;
+
+  ret = write(email_fileno, description, strlen(description));
+  if (ret != (ssize_t) strlen(description)) return EXIT_IO_ERROR;
+
+  ret = write(email_fileno, "\n", 1);
+  if (ret != 1) return EXIT_IO_ERROR;
 
   close(in_fd);
 
@@ -113,12 +126,17 @@ void dcc_maybe_send_email(void) {
     whom_to_blame = dcc_emaillog_whom_to_blame;
   }
   char *cant_send_message_to;
+  int ret;
 
   if (should_send_email == 0) return;
   if (never_send_email) return;
 
   rs_log_warning(will_send_message_format, whom_to_blame);
-  asprintf(&cant_send_message_to, cant_send_message_format, whom_to_blame);
+  ret = asprintf(&cant_send_message_to, cant_send_message_format, whom_to_blame);
+  if (ret == -1) {
+      fprintf(stderr, "error sending email: asprintf() failed");
+      return;
+  }
 
   if (email_fileno < 0) {
       errno = email_errno;

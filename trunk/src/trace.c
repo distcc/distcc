@@ -319,6 +319,7 @@ rs_logger_file(int flags, const char *fn, char const *fmt, va_list va,
     /* NOTE NO TRAILING NUL */
     char buf[4090];
     size_t len;
+    ssize_t ret;
 
     rs_format_msg(buf, sizeof buf, flags, fn, fmt, va);
 
@@ -327,7 +328,10 @@ rs_logger_file(int flags, const char *fn, char const *fmt, va_list va,
         len = (int) sizeof buf - 2;
     strcpy(&buf[len], "\n");
 
-    (void) write(log_fd, buf, len+1);
+    ret = write(log_fd, buf, len + 1);
+    if (ret == -1) {
+      ret = write(/* stderr */ 2, buf, len + 1);
+    }
 }
 
 

@@ -177,13 +177,13 @@ int dcc_sockaddr_to_string(struct sockaddr *sa,
             return 0;               /* it's still a valid string */
         }
 
-        asprintf(p_buf, "%s:%s", host, port);
+        checked_asprintf(p_buf, "%s:%s", host, port);
     } else if (sa->sa_family == AF_UNIX) {
         /* NB: The word 'sun' is predefined on Solaris */
         struct sockaddr_un *sa_un = (struct sockaddr_un *) sa;
-        asprintf(p_buf, "UNIX-DOMAIN %s", sa_un->sun_path);
+        checked_asprintf(p_buf, "UNIX-DOMAIN %s", sa_un->sun_path);
     } else {
-        asprintf(p_buf, "UNKNOWN-FAMILY %d", sa->sa_family);
+        checked_asprintf(p_buf, "UNKNOWN-FAMILY %d", sa->sa_family);
     }
 
     return 0;
@@ -200,14 +200,14 @@ int dcc_sockaddr_to_string(struct sockaddr *sa,
         /* The double-cast here suppresses warnings from -Wcast-align. */
         struct sockaddr_in *sain = (struct sockaddr_in *) (void *) sa;
 
-        asprintf(p_buf, "%s:%d", inet_ntoa(sain->sin_addr),
+        checked_asprintf(p_buf, "%s:%d", inet_ntoa(sain->sin_addr),
                  ntohs(sain->sin_port));
     } else if (sa->sa_family == AF_UNIX) {
         /* NB: The word 'sun' is predefined on Solaris */
         struct sockaddr_un *sa_un = (struct sockaddr_un *) sa;
-        asprintf(p_buf, "UNIX-DOMAIN %s", sa_un->sun_path);
+        checked_asprintf(p_buf, "UNIX-DOMAIN %s", sa_un->sun_path);
     } else {
-        asprintf(p_buf, "UNKNOWN-FAMILY %d", sa->sa_family);
+        checked_asprintf(p_buf, "UNKNOWN-FAMILY %d", sa->sa_family);
     }
 
     return 0;

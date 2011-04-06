@@ -36,3 +36,5 @@ int asprintf(char **,const char *, ...) PRINTF_ATTRIBUTE(2,3);
 #if !HAVE_DECL_VSNPRINTF
 int vsnprintf(char *, size_t, const char *, va_list);
 #endif
+
+int checked_asprintf(char **, const char *, ...) PRINTF_ATTRIBUTE(2,3);

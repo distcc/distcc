@@ -424,10 +424,17 @@ char *dcc_abspath(const char *path, int path_len)
     if (*path == '/')
         len = 0;
     else {
+        char *ret;
 #ifdef HAVE_GETCWD
-        getcwd(buf, sizeof buf);
+        ret = getcwd(buf, sizeof buf);
+        if (ret == NULL) {
+          rs_log_crit("getcwd failed: %s", strerror(errno));
+        }
 #else
-        getwd(buf);
+        ret = getwd(buf);
+        if (ret == NULL) {
+          rs_log_crit("getwd failed: %s", strerror(errno));
+        }
 #endif
         len = strlen(buf);
         if (len >= sizeof buf) {
@@ -675,8 +682,14 @@ void dcc_get_disk_io_stats(int *n_reads, int *n_writes) {
         kernel26 = 0;
     }
 
-    if (!kernel26) /* blast away 2 header lines in /proc/partitions */
-        fscanf(f, "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s");
+    if (!kernel26) /* blast away 2 header lines in /proc/partitions */ {
+        retval = fscanf(f,
+            "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s");
+        if (retval == EOF) {
+            fclose(f);
+            return;
+        }
+    }
 
     while (1) {
         if (kernel26)
@@ -707,7 +720,8 @@ void dcc_get_disk_io_stats(int *n_reads, int *n_writes) {
                 break;
 #endif
             /* assume the lines aren't longer that 1024 characters */
-            fgets(tmp, 1024, f);
+            if (fgets(tmp, 1024, f) == NULL)
+              break;
         }
     }
 
