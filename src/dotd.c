@@ -272,9 +272,9 @@ int dcc_get_dotd_info(char **argv, char **dotd_fname,
         }
         else { /* There is no extension (or name ends with a "."). */
           if (tmp_dotd_fname[strlen(tmp_dotd_fname) - 1] == '.')
-            asprintf(dotd_fname, "%s%s", tmp_dotd_fname, "d");
+            checked_asprintf(dotd_fname, "%s%s", tmp_dotd_fname, "d");
           else
-            asprintf(dotd_fname, "%s%s", tmp_dotd_fname, ".d");
+            checked_asprintf(dotd_fname, "%s%s", tmp_dotd_fname, ".d");
           if (*dotd_fname == NULL) {
             return EXIT_OUT_OF_MEMORY;
           }

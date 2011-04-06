@@ -259,7 +259,10 @@ static int dcc_mon_do_file(char *dirname, char *filename,
         return 0;
     }
 
-    asprintf(&fullpath, "%s/%s", dirname, filename);
+    checked_asprintf(&fullpath, "%s/%s", dirname, filename);
+    if (fullpath == NULL) {
+      return EXIT_OUT_OF_MEMORY;
+    }
     rs_trace("process %s", fullpath);
 
     /* Remember that the file might disappear at any time, so open it

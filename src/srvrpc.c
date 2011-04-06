@@ -87,7 +87,7 @@ int dcc_r_cwd(int ifd, char **cwd)
 static int prepend_dir_to_name(const char *dirname, char **path)
 {
     char *buf;
-    asprintf(&buf, "%s%s", dirname, *path);
+    checked_asprintf(&buf, "%s%s", dirname, *path);
     if (buf == NULL) {
             return EXIT_OUT_OF_MEMORY;
     }

@@ -125,16 +125,15 @@
 #include <stdlib.h>
 #endif
 
-#if defined(HAVE_SNPRINTF) && defined(HAVE_VSNPRINTF) && defined(HAVE_C99_VSNPRINTF) \
- && defined(HAVE_VASPRINTF) && defined(HAVE_ASPRINTF)
-/* This ifdef switches on or off basically the whole contents of the file. */
-/* Make the compiler happy with an empty file */
- void dummy_snprintf(void);
- void dummy_snprintf(void) {}
-#else
-
 #include "snprintf.h"
 #include "va_copy.h"
+
+#if !defined(HAVE_SNPRINTF) || \
+    !defined(HAVE_VSNPRINTF) || \
+    !defined(HAVE_C99_VSNPRINTF) || \
+    !defined(HAVE_VASPRINTF) || \
+    !defined(HAVE_ASPRINTF)
+/* Lots of code to define our own vsnprintf(). */
 
 #ifdef HAVE_LONG_DOUBLE
 #define LDOUBLE long double
@@ -863,7 +862,6 @@ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
 }
 #endif /* HAVE_VASPRINTF */
 
-
 #ifndef HAVE_ASPRINTF
  int asprintf(char **ptr, const char *format, ...)
 {
@@ -878,6 +876,26 @@ static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
     return ret;
 }
 #endif /* HAVE_ASPRINTF */
+
+/* Like asprintf(), but on error it sets *ptr to NULL
+ * rather than returning -1. Unlike asprintf(), it
+ * guarantees to always set *ptr.
+ */
+int checked_asprintf(char **ptr, const char *format, ...)
+{
+    va_list ap;
+    int ret;
+
+    *ptr = NULL;
+    va_start(ap, format);
+    ret = vasprintf(ptr, format, ap);
+    va_end(ap);
+
+    if (ret == -1) {
+      *ptr = NULL;
+    }
+    return ret;
+}
 
 #ifdef TEST_SNPRINTF
 

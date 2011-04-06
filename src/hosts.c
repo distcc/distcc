@@ -172,8 +172,8 @@ int dcc_get_hostlist(struct dcc_hostdef **ret_list,
     if ((ret = dcc_get_top_dir(&top)) == 0) {
         /* if we failed to get it, just warn */
 
-        asprintf(&path, "%s/hosts", top);
-        if (access(path, R_OK) == 0) {
+        checked_asprintf(&path, "%s/hosts", top);
+        if (path != NULL && access(path, R_OK) == 0) {
             ret = dcc_parse_hosts_file(path, ret_list, ret_nhosts);
             free(path);
             return ret;
@@ -183,8 +183,8 @@ int dcc_get_hostlist(struct dcc_hostdef **ret_list,
         }
     }
 
-    asprintf(&path, "%s/distcc/hosts", SYSCONFDIR);
-    if (access(path, R_OK) == 0) {
+    checked_asprintf(&path, "%s/distcc/hosts", SYSCONFDIR);
+    if (path != NULL && access(path, R_OK) == 0) {
         ret = dcc_parse_hosts_file(path, ret_list, ret_nhosts);
         free(path);
         return ret;

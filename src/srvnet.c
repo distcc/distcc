@@ -86,6 +86,9 @@ static int dcc_listen_by_addr(int fd,
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &one, sizeof(one));
 
     dcc_sockaddr_to_string(sa, salen, &sa_buf);
+    if (sa_buf == NULL) {
+      return EXIT_OUT_OF_MEMORY;
+    }
 
     /* now we've got a socket - we need to bind it */
     if (bind(fd, sa, salen) == -1) {

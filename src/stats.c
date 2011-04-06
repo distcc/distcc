@@ -114,7 +114,7 @@ void dcc_stats_event(enum stats_e e) {
         struct statsdata sd;
         memset(&sd, 0, sizeof(sd));
         sd.type = e;
-        write(dcc_statspipe[1], &sd, sizeof(sd));
+        dcc_writex(dcc_statspipe[1], &sd, sizeof(sd));
     }
 }
 
@@ -135,7 +135,7 @@ void dcc_stats_compile_ok(char *compiler, char *filename, struct timeval start,
         sd.time = time_usec;
         strncpy(sd.filename, filename, MAX_FILENAME_LEN);
         strncpy(sd.compiler, compiler, MAX_FILENAME_LEN);
-        write(dcc_statspipe[1], &sd, sizeof(sd));
+        dcc_writex(dcc_statspipe[1], &sd, sizeof(sd));
     }
 }
 
@@ -363,6 +363,7 @@ static void dcc_service_stats_request(int http_fd) {
     socklen_t cli_len = sizeof(cli_addr);
     double loadavg[3];
     int free_space_mb;
+    ssize_t ret;
 
     const char replytemplate[] = "\
 HTTP/1.0 200 OK\n\
@@ -438,8 +439,8 @@ dcc_free_space %d MB\n\
                                dcc_stats.io_rate,
                                free_space_mb);
         dcc_set_nonblocking(acc_fd);
-        read(acc_fd, challenge, 1024); /* empty the receive queue */
-        write(acc_fd, reply, reply_len);
+        ret = read(acc_fd, challenge, 1024); /* empty the receive queue */
+        dcc_writex(acc_fd, reply, reply_len);
     }
 
     /* Don't think we need this to prevent RST anymore, since we read() now */

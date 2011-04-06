@@ -431,7 +431,7 @@ static int tweak_include_arguments_for_server(char **argv,
                 if (argv[i] != NULL) {  /* in case of a dangling -I */
                     if (argv[i][index_of_first_filename_char] == '/') {
                         char *buf;
-                        asprintf(&buf, "%s%s%s",
+                        checked_asprintf(&buf, "%s%s%s",
                                  include_option,
                                  root_dir,
                                  argv[i] + index_of_first_filename_char);
@@ -544,7 +544,7 @@ static int make_temp_dir_and_chdir_for_cpp(int in_fd,
         if ((ret = dcc_r_cwd(in_fd, client_side_cwd)))
             return ret;
 
-        asprintf(server_side_cwd, "%s%s", *temp_dir, *client_side_cwd);
+        checked_asprintf(server_side_cwd, "%s%s", *temp_dir, *client_side_cwd);
         if (*server_side_cwd == NULL) {
             ret = EXIT_OUT_OF_MEMORY;
         } else if ((ret = dcc_mk_tmp_ancestor_dirs(*server_side_cwd))) {
@@ -784,8 +784,10 @@ out_cleanup:
         dcc_stats_event(job_result);
     }
 
-    asprintf(&time_str, " exit:%d sig:%d core:%d ret:%d time:%dms ", WEXITSTATUS(status), WTERMSIG(status), WCOREDUMP(status), ret, time_ms);
-    dcc_job_summary_append(time_str);
+    checked_asprintf(&time_str, " exit:%d sig:%d core:%d ret:%d time:%dms ",
+                     WEXITSTATUS(status), WTERMSIG(status), WCOREDUMP(status),
+                     ret, time_ms);
+    if (time_str != NULL) dcc_job_summary_append(time_str);
     free(time_str);
 
     /* append compiler and input file info */

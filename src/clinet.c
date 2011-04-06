@@ -92,6 +92,7 @@ int dcc_connect_by_addr(struct sockaddr *sa, size_t salen,
     int tries = 3;
 
     dcc_sockaddr_to_string(sa, salen, &s);
+    if (s == NULL) return EXIT_OUT_OF_MEMORY;
 
     rs_trace("started connecting to %s", s);
 
