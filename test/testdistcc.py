@@ -1246,8 +1246,8 @@ class Gdb_Case(CompileHello_Case):
         value set by the compilation.
         """
         os.mkdir('link')
-        cmd = self.distcc() + self.compiler() + self.build_id +
-              " -o link/testtmp obj/testtmp.o"
+        cmd = (self.distcc() + self.compiler() + self.build_id +
+               " -o link/testtmp obj/testtmp.o")
         out, err = self.runcmd(cmd)
         if out != '':
             self.fail("command %s produced output:\n%s" % (`cmd`, `out`))
