@@ -678,12 +678,13 @@ static int showShortOptions(const struct poptOption * opt, FILE * fp,
 	/*@globals fileSystem @*/
 	/*@modifies *str, *fp, fileSystem @*/
 {
-    char * s = alloca(300);	/* larger then the ascii set */
+    size_t size = 300;	/* larger then the ascii set */
+    char * s = alloca(size);
 
     s[0] = '\0';
     /*@-branchstate@*/		/* FIX: W2DO? */
     if (str == NULL) {
-	memset(s, 0, sizeof(s));
+	memset(s, 0, size);
 	str = s;
     }
     /*@=branchstate@*/

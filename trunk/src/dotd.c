@@ -103,7 +103,7 @@ int dcc_cleanup_dotd(const char *dotd_fname,
     }
 
     tmp_dotd = fopen(*new_dotd_fname, "w");
-    if ((tmp_dotd == NULL)) {
+    if (tmp_dotd == NULL) {
         fclose(dotd);
         return 1;
     }
