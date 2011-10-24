@@ -347,6 +347,40 @@ the distcc clients can just use &quot;+zeroconf&quot; in their
 distcc host lists. <B> This option is only available if distccd
 was compiled with</B> <B> Avahi support enabled.</B><BR>
 </DD>
+<DT>
+<B>--auth</B>
+</DT>
+<DD>
+Peform GSS-API based mutual authentication. <B> This option is
+only available if distccd was compiled with</B> <B> the --with-auth
+configure option.</B><BR>
+</DD>
+<DT>
+<B>--show-principal</B>
+</DT>
+<DD>
+Displays the name of the distccd security principal extracted
+from the environment. <B> This option is only available if distccd
+was compiled with</B> <B> the --with-auth configure option.</B><BR>
+</DD>
+<DT>
+<B>--blacklist=FILE</B>
+</DT>
+<DD>
+Instruct distccd to reject connections from users whose principal
+names are listed in FILE. <B> This option is only available if
+distccd was compiled with</B> <B> the --with-auth configure option
+and if distccd is run with the</B> <B> --auth option.</B><BR>
+</DD>
+<DT>
+<B>--whitelist=FILE</B>
+</DT>
+<DD>
+Instruct distccd to accept connections only from users whose principal
+names are listed in FILE. <B> This option is only available if
+distccd was compiled with</B> <B> the --with-auth configure option
+and if distccd is run with the</B> <B> --auth option.</B><BR>
+</DD>
 </DL>
 <H2>
 <A NAME=TOC_9>
@@ -435,6 +469,16 @@ to on.<BR>
 <DD>
 Directory for temporary files such as preprocessor output.  By
 default /tmp/ is used.<BR>
+</DD>
+<DT>
+<B>DISTCCD_PRINCIPAL</B>
+</DT>
+<DD>
+If set, specifies the name of the principal that distccd runs
+under, and is used to authenticate with the client. <B> This environment
+variable is only used if distccd was compiled with</B> <B> the
+--with-auth configure option and if distccd is run with the --auth
+option.</B><BR>
 </DD>
 </DL>
 <H2>

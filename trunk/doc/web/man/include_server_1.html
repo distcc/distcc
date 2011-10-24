@@ -86,14 +86,14 @@ The distcc client will pass these files on to a compilation server,
 where they will be uncompressed and mounted temporarily.<BR>
 <P>
 If the include server is not able to process the request, then
-it returns the empty list to the distcc client. There are two
-kinds of failures that relate to the include server. The include
-server may fail to compute the includes or fail in other ways,
-see section <B>INCLUDE SERVER SYMPTOMS</B>.  Also, the compilation
-on the remove server may fail due to inadequacy of the calculated
-include closure, but then succeed when locally retried, see section
-<B>DISTCC DISCREPANCY SYMPTOMS</B>.<BR>
+it returns the empty list to the distcc client.<BR>
 <P>
+There are two kinds of failures that relate to the include server.
+The include server may fail to compute the includes or fail in
+other ways, see section <B>INCLUDE SERVER SYMPTOMS</B>.  Also,
+the compilation on the remove server may fail due to inadequacy
+of the calculated include closure, but then succeed when locally
+retried, see section <B>DISTCC DISCREPANCY SYMPTOMS</B>.<BR>
 <H2>
 <A NAME=TOC_4>
 OPTION SUMMARY</A>
@@ -182,14 +182,22 @@ includes.  Thus, this flag is useful for preventing such fallbacks
 when the absolute includes are a false alarm, either because the
 absolute include is discarded during preprocessing or because
 the absolutely included file exists on the compilation servers.<BR>
-<P>
+</DD>
+<DT>
+<BR>
+</DT>
+<DD>
 More precisely, with --unsafe_absolute_includes absolute includes
 are ignored for the purposes of gathering the include closure.
 Using this option may lead to incorrect results because (1) the
 header may actually be included on the compilation server and
 it may not be the same as on the client, (2) the include directives
 of the header are not further analyzed.<BR>
-<P>
+</DD>
+<DT>
+<BR>
+</DT>
+<DD>
 The option is useful for compiling code that has such hardcoded
 absolute locations of header files inside conditional directives
 (e.g. &quot;#ifdef&quot;) that render the includes irrelevant.
@@ -219,7 +227,6 @@ files as calculated by CPP to a .d_exact file.<BR>
 </DT>
 <DD>
 Use CPP instead, do not omit system headers files.<BR>
-<P>
 </DD>
 </DL>
 <H2>
@@ -227,8 +234,6 @@ Use CPP instead, do not omit system headers files.<BR>
 INCLUDE SERVER SYMPTOMS AND ISSUES</A>
 </H2>
 <BR>
-<P>
-<P>
 The most likely messages and warnings to come from the include
 processor are listed below.<BR>
 <P>
@@ -242,8 +247,10 @@ To determine the default system header directories, the include
 server runs the compiler once for each language needed during
 its session. This message indicates that the compiler specified
 to distcc is not present on the client.<BR>
-<P>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>Preprocessing locally. Include server not covering: Bailing
 out because include server spent more than ...s user time handling
@@ -253,8 +260,10 @@ request</B>
 In uncommon situations, the include server fails to analyze very
 complicated macro expressions. The distcc client will use plain
 distcc mode.<BR>
-<P>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>Warning: Filepath must be relative but isn't</B>
 </DT>
@@ -265,12 +274,19 @@ no guarantee that this header on the compilation server machine
 will be the same as that on the client.  The include server gives
 up analyzing the include closure. The distcc client cannot use
 pump-mode.<BR>
-<P>
+</DD>
+<DT>
+<BR>
+</DT>
+<DD>
 To overcome this problem in a not always reliable way, set the
 environment variable INCLUDE_SERVER_ARGS='--unsafe_absolute_includes'
 when invoking the pump script to pass the --unsafe_absolute_includes
 option to the include server.<BR>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>Warning: Absolute filepath ... was IGNORED</B>
 </DT>
@@ -280,6 +296,9 @@ under the same circumstances as when &quot;Filepath must be relative
 but isn't&quot; is issued, but in this case the include will provide
 an answer to the distcc client.<BR>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>Warning: Path '/PATH/FILE' changed/came into existence/no longer
 exists</B>
@@ -292,8 +311,10 @@ analysis invalid. This message can usually be ignored; it does
 signify a somewhat precarious use of files by the build system.
 It is recommended to fix the build system so that files are not
 rewritten.<BR>
-<P>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>Warning: For translation unit ..., lookup of file ... resolved
 to ... whose realpath is ...</B>
@@ -301,8 +322,6 @@ to ... whose realpath is ...</B>
 <DD>
 This warning occurs with --path_observation_re when a new realpath
 matching a source or header file is observed.<BR>
-<P>
-<P>
 </DD>
 </DL>
 <H2>
@@ -310,8 +329,6 @@ matching a source or header file is observed.<BR>
 DISTCC DISCREPANCY SYMPTOMS</A>
 </H2>
 <BR>
-<P>
-<P>
 The interactions between the build system, distcc, and the include
 server is somewhat complex. When a distcc commands receives a
 failing compilation from the remote server it retries the compilation
@@ -347,7 +364,7 @@ the local compilation.<BR>
 <P>
 The fallback behavior for distcc-pump mode to local compilation
 can be disabled by setting the environment variable DISTCC_FALLBACK
-to 1, which makes the distcc command fail as soon as the remote
+to 0, which makes the distcc command fail as soon as the remote
 compilation has failed. This setting is very useful for debugging
 why the remote compilation went wrong, because now the output
 from the server will be printed.<BR>
@@ -360,8 +377,10 @@ Next we discuss the possible causes of discrepancies.<BR>
 </DT>
 <DD>
 This yields inconsistent results of course.<BR>
-<P>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>A source or header file changed during the build.</B>
 </DT>
@@ -371,18 +390,19 @@ happens for 'include/linux/compile.h' and 'include/asm/asm-offsets.h'.
 This condition is fixed by letting the include server know that
 it must reset its caches when a stat of any of the files changes.
 Practically, this is done by gathering the files in a colon-separated
-list and then setting the INCLUDE_SERVER_ARGS command as in:<BR>
-<P>
-include_server_args=&quot;--stat_reset_triggers=include/linux/compile.h:include/asm/asm-offsets.h&quot;<BR>
-<P>
+list and then setting the INCLUDE_SERVER_ARGS environment variable
+when invoking the pump script, so that it passes the <B> --stat_reset_triggers</B>
+option; for example,<BR>
+INCLUDE_SERVER_ARGS=&quot;--stat_reset_triggers=include/linux/compile.h:include/asm/asm-offsets.h&quot;<BR>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>A header file is potentially included, but does not exist,
 and is then later included.</B>
 </DT>
 <DD>
-<BR>
-<P>
 This occurs when some header foo.h includes another header file
 trick.h, but the trick.h file has not yet been generated and the
 inclusion is actually ignored because of preprocessing directives.
@@ -394,8 +414,10 @@ believe that the file still does not exist.  The solution to this
 problem is to make the build system generate trick.h before the
 first time any header file is included that makes a syntactic
 reference to trick.h<BR>
-<P>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>The include server was started with --unsafe_absolute_includes</B>.<B>
 </DT>
@@ -406,15 +428,15 @@ often protected by conditional directives that evaluate so that
 are actually used on only specific and often uncommon platforms.
 If you are not compiling for such a platform, then it may be correct
 to use --unsafe_absolute_include</B>.<BR>
-<P>
 </DD>
+</DL>
+<P>
+<DL>
 <DT>
 <B>The include server has calculated the wrong includes.</B>
 </DT>
 <DD>
 We do not know of such a situation.<BR>
-<P>
-<P>
 </DD>
 </DL>
 <H2>
@@ -424,13 +446,11 @@ EXIT CODES</A>
 The exit code of include_server.py is usually 0. That the include
 server has been started properly is communicated through the existence
 of the pid_file.<BR>
-<P>
 <H2>
 <A NAME=TOC_8>
 ENVIRONMENT VARIABLES</A>
 </H2>
 <BR>
-<P>
 <B>DISTCC_EMAILLOG_WHOM_TO_BLAME</B> The email address to use
 for include server automated emails. The default is 'distcc-pump-errors'
 (which is an email address that probably will not exist in your
@@ -438,8 +458,6 @@ domain).<BR>
 <P>
 Additionally, the invocation of the compiler may use additional
 environment variables.<BR>
-<P>
-<P>
 <H2>
 <A NAME=TOC_9>
 BUGS</A>
@@ -448,14 +466,12 @@ If you think you have found a distcc bug, please see the file
 <I>reporting-bugs.txt</I> in the documentation directory for information
 on how to report it.<BR>
 <P>
-<P>
 In distcc-pump mode, the include server is unable to handle certain
 very complicated computed includes as found in parts of the Boost
 library. The include server will time out and distcc will revert
 to plain mode.<BR>
 <P>
 Other known bugs may be documented on <I> http://code.google.com/p/distcc/</I><BR>
-<P>
 <H2>
 <A NAME=TOC_10>
 AUTHOR</A>
@@ -463,7 +479,6 @@ AUTHOR</A>
 The include server was written by Nils Klarlund, with assistance
 from Fergus Henderson, Manos Renieris, and Craig Silverstein.
 Please report bugs to &lt;distcc@lists.samba.org&gt;.<BR>
-<P>
 <H2>
 <A NAME=TOC_11>
 LICENCE</A>
@@ -473,7 +488,6 @@ be copied, modified or distributed only under the terms of the
 GNU General Public Licence version 2 or later.  distcc comes with
 absolutely no warrany.  A copy of the GPL is included in the file
 COPYING.<BR>
-<P>
 <H2>
 <A NAME=TOC_12>
 SEE ALSO</A>

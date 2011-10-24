@@ -66,7 +66,7 @@ CPUs but subject to client limitations.  This setting allows for maximal
 interleaving of tasks being blocked waiting for disk or network IO. Note that
 distcc can also work with other build control tools, such as SCons, where similar
 concurrency settings must be adjusted.
-
+.PP
 The
 .B -j
 setting, especially for large values of
@@ -86,7 +86,7 @@ values than 16 may be used without overloading a single-CPU
 client due to preprocessing.  Such large values may speed up parts of the build
 that do not involve C compilations, but they may not be useful to distcc
 efficiency in plain mode.
-
+.PP
 In contrast, using pump mode and say 40 servers, a setting of
 .B -j80
 or larger may be appropriate even for single-CPU clients.
@@ -180,11 +180,11 @@ preprocessor must have access to all the files that it would have accessed if
 had been running locally.  In pump mode, therefore, distcc gathers all of the
 recursively included headers, except the ones that are default system headers,
 and sends them along with the source file to the compilation server.
-
+.PP
 In distcc-pump mode, the server unpacks the set of all source files in a
 temporary directory, which contains a directory tree that mirrors the part of
 the file system that is relevant to preprocessing, including symbolic links.
-
+.PP
 The compiler is then run from the path in the temporary directory that
 corresponds to the current working directory on the client.  To find and
 transmit the many hundreds of files that are often part of a single compilation,
@@ -192,13 +192,13 @@ pump mode uses an incremental include analysis algorithm.  The include server is
 a Python program that implements this algorithm.  The pump command starts the
 include server so that throughout the build it can answer include queries by
 distcc commands.
-
+.PP
 The include server uses static analysis of the macro language to deal
 with conditional compilation and computed includes.  It uses the
 property that when a given header file has already been analyzed for
 includes, it is not necessary to do so again if all the include
 options (-I's) are unchanged (along with other conditions).
-
+.PP
 For large builds, header files are included, on average, hundreds of
 times each. With distcc-pump mode each such file is analyzed only a
 few times, perhaps just once, instead of being preprocessed hundreds
@@ -206,7 +206,7 @@ of times.  Also, each source or header file is now compressed only
 once, because the include server memoizes the compressed files.  As a
 result, the time used for preparing compilations may drop by up to an
 order of magnitude over the preprocessing of plain distcc.
-
+.PP
 Because distcc in pump mode is able to push out files up to about ten
 times faster, build speed may increase 3X or more for large builds
 compared to plain distcc mode.
@@ -215,7 +215,7 @@ compared to plain distcc mode.
 
 Using pump mode requires both client and servers to use release 3.0 or
 later of distcc and distccd (respectively).  
-
+.PP
 The incremental include analysis of distc-pump mode rests on
 the fundamental assumption that source and header files do not change
 during the build process.  A few complex build systems, such as that
@@ -224,7 +224,7 @@ overcome such issues, and other corner cases such as absolute
 filepaths in includes, see the
 .BR include_server(1)
 man page.
-
+.PP
 Another important assumption is that the include configuration of all machines
 must be identical.  Thus the headers under the default system path must be the
 same on all servers and all clients.  If a standard GNU compiler installation
@@ -232,16 +232,16 @@ is used, then this requirement applies to all libraries whose header files are
 installed under /usr/include or /usr/local/include/.  Note that installing
 software packages often lead to additional headers files being placed in
 subdirectories of either.
-
+.PP
 If this assumption does not hold, then it is possible to break builds with
 distcc-pump mode, or worse, to get wrong results without warning.  Presently
 this condition is not verified, and it is on our TODO list to address this
 issue.
-
+.PP
 An easy way to guarantee that the include configurations are identical is to use
 a cross-compiler that defines a default system search path restricted to
 directories of the compiler installation.
-
+.PP
 See the \fBinclude_server\fR(1) manual for more information on symptoms and
 causes of violations of distcc-pump mode assumptions.
 
@@ -260,16 +260,16 @@ compiler.
 .TP
 .B --help
 Displays summary instructions.
-
+.PP
 .TP
 .B --version
 Displays the distcc client version.
-
+.PP
 .TP
 .B --show-hosts
 Displays the host list that distcc would use.
 See the Host Specifications section.
-
+.PP
 .TP
 .B --scan-includes
 Displays the list of files that distcc would send to the
@@ -277,33 +277,32 @@ remote machine, as computed by the include server.  This is a conservative
 (over-)approximation of the files that would be read by the C compiler.
 This option only works in pump mode.  See the "How Distcc-pump Mode Works"
 section for details on how this is computed.
-
+.RS
+.P
 The list output by \fBdistcc --scan-includes\fR will
 contain one entry per line.  Each line contains a category followed by a path.
 The category is one of FILE, SYMLINK, DIRECTORY, or SYSTEMDIR:
-
-.RS
+.IP
 .B FILE
 indicates a source file or header file that would
 be sent to the distcc server host.
-
+.IP
 .B SYMLINK
 indicates a symbolic link that would be sent to
 the distcc server host.
-
+.IP
 .B DIRECTORY
 indicates a directory that may be needed in order to
 compile the source file.  For example, a directory "foo" may be needed
 because of an include of the form #include "foo/../bar.h".
 Such directories would be created on the distcc server host.
-
+.IP
 .B SYSTEMDIR
 indicates a system include directory, i.e. a directory
 which is on the compiler's default include path, such as "/usr/include";
 such directories are assumed to be present on the distcc server host,
 and so would not be sent to the distcc server host.
 .RE
-
 .TP
 .B -j
 Displays distcc's concurrency level, as calculated from the host list;
@@ -312,7 +311,7 @@ to all servers.
 By default this will be four times the number of hosts in the host list,
 unless the /LIMIT option was used in the host list.
 See the Host Specifications section.
-
+.PP
 .TP
 .B --show-principal
 Displays the name of the distccd security principal extracted from the
