@@ -1,3 +1,42 @@
+distcc-3.2 "Back in black"  2011-10-11
+
+  FEATURES:
+
+   * IPv6 support (adshea, Benjamin R. Haskell, Bob Ham).
+
+   * Optional support for GSS-API authentication (Ian Baker at CERN)
+
+   * Added an environment variable DISTCC_SKIP_LOCAL_RETRY for skipping
+     the local retry in case of a remote compilation failure (Ryan Burns).
+
+   * Some constants that were previously hard-coded in the
+     sources are now configurable via environment variables:
+     DISTCC_MAX_DISCREPANCY, DISTCC_IO_TIMEOUT (Lei Zhang).
+
+  BUG FIXES:
+
+   * Fixed the following 20 issues <http://code.google.com/p/distcc/issues/list>:
+
+     30: 3.0 on OSX: ValueError: Expected absolute path, but got '(framework'.
+     33: distcc --scan-includes dumps core
+     34: Zeroconf fails if avahi supports IPv6
+     35: Include server internal error: '<class 'sre_constants.error'>: ('bogus escape (end of line)',)'
+     36: distcc-mon-gnome displays multiple rows for same host/slot
+     39: build with gcc 4.1 snprintf.h error "expected declaration specifiers"
+     42: distcc --show-hosts fails when using Avahi with IPv6 support and +zeroconf for distcc.
+     43: Remove duplicate hosts from zeroconf list
+     44: Failed tests on make check (gentoo gcc-4.3.3)
+     46: Add TAGS target to Makefile.in
+     49: make check fails on PreprocessAsm_Case
+     57: Fix warnings
+     58: PUMP mode can`t PARSE the HOSTS
+     60: CPlusPlus test case fails with GCC 4.4.1
+     61: Gdb tests fail in pumped mode on Ubuntu 9.10 amd64
+     66: pump mode fails to compile certain KDE-4 packages, finds/looks for incorrect headers
+     70: variable overlapping causing errors..
+     75: include_server documentation, distcc_fallback flag incorrect
+     81: distcc 3.1 will not compile correctly with current version of gcc
+
 distcc-3.1 "Humming along"  2008-11-21
 
   FEATURES:

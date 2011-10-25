@@ -1,8 +1,740 @@
-2009-09-11  Akim Demaille  <demaille@gostai.com>
+2011-10-24 23:26  Fergus Henderson <opensource@google.com>
 
-	* src/hosts.c (strndup): Use the standard signature (without
-	static), so that we don't conflict with GCC's builtin signature.
-	Now that it is not static, declare it, to avoid warnings.
+	* doc/web/man/distcc_1.html, doc/web/man/distccd_1.html,
+	  doc/web/man/distccmon_text_1.html, doc/web/man/include_server_1.html,
+	  doc/web/man/pump_1.html, man/distcc.1, man/include_server.1:
+	  
+	  Regenerate the checked-in HTML for the man pages.
+	  
+	  The HTML files were generated automatically using
+	  
+	  sudo apt-get install troffcvt
+	  make man-html
+	  
+	  But I have also changed the man source files to ensure that
+	  the generated output still looks nice. The changes were
+	  mainly replacing blank lines with ".PP", but there were a
+	  few other tweaks needed too.
+	  
+	  Tested by viewing the output on both Chrome and Safari,
+	  and using "man" and (equivalently) "nroff -man" and
+	  examining the changes.
+	  
+	  Reviewed by Craig Silverstein.
+
+2011-10-24 00:57  Fergus Henderson <opensource@google.com>
+
+	* man/distccd.1:
+	  
+	  Apply a suggestion from Craig Silverstein: update the documentation
+	  for the --whitelist option to make it clear that distcc will accept
+	  connections *only* from users on the list.
+
+2011-10-21 01:26  Fergus Henderson <opensource@google.com>
+
+	* popt/popthelp.c, src/dotd.c:
+	  
+	  Fix a couple of compiler warnings.
+	  
+	  Reviewed by Craig Silverstein.
+
+2011-06-28 20:13  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Apply patch from Ihor Kaharlichenko <madkinder> to fix issue 81
+	  <http://code.google.com/p/distcc/issues/detail?id=81>:
+	  SyntaxError_Case was failing with recent versions of gcc,
+	  due to the error message format having changed to now
+	  include the column number.
+	  
+	  Also remove an old "XXX" comment that no longer applies.
+
+2011-04-06 14:49  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix a syntax error in my last change.
+
+2011-04-06 14:36  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Update Makefile.in for compatibility with autoconf >= 2.60.
+	  This avoids the following warning
+	  config.status: WARNING: 'Makefile.in' seems to ignore the
+	  --datarootdir setting
+	  and ensures that our configure script supports that --datarootdir
+	  flag.
+	  
+	  Reviewed by Craig Silverstein.
+
+2011-04-06 14:35  Fergus Henderson <opensource@google.com>
+
+	* src/clinet.c, src/dotd.c, src/emaillog.c, src/hosts.c, src/mon.c,
+	  src/netutil.c, src/serve.c, src/snprintf.c, src/snprintf.h,
+	  src/srvnet.c, src/srvrpc.c, src/stats.c, src/trace.c, src/util.c:
+	  
+	  Fix warnings about unused return values. This includes some code
+	  changes
+	  to do a better job of error checking.
+
+2011-04-06 14:11  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix some issues that caused the gdb-related tests to fail:
+	  
+	  1. Recent gcc versions want us to use -Wl,--build-id
+	  rather than --build-id.
+	  
+	  2. We had missed one of the places where we need to be passing
+	  that flag in.
+	  
+	  3. With recent gcc/gdb versions, "break main; run"
+	  will sometimes stop at the first statement inside of main
+	  rather than on the function declaration.
+	  So "break main; run; step" may end up inside the code to
+	  puts() rather than in the code for main().
+	  My fix was to use "break main; run; next" instead.
+	  It is inderminate (varies based on whether you use "-O", for example)
+	  whether we end up at the call to puts() or after the call to puts(),
+	  but either way the call to puts() should be in the gdb output log.
+	  
+	  Reviewed by Craig Silverstein.
+
+2011-04-06 14:09  Fergus Henderson <opensource@google.com>
+
+	* configure.ac:
+	  
+	  Support Python 2.6.
+	  
+	  Reviewed by Craig Silverstein.
+
+2011-04-05 18:57  Fergus Henderson <opensource@google.com>
+
+	* src/hosts.c:
+	  
+	  Fix indentation (layout changes only, no code changes).
+
+2010-11-16 19:05  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix for <http://code.google.com/p/distcc/issues/detail?id=61>
+	  "Gdb tests fail in pumped mode on Ubuntu 9.10 amd64":
+	  pass --build-id to gcc versions that support it.
+	  (See <http://fedoraproject.org/wiki/RolandMcGrath/BuildID>
+	  for a description of the --build-id switch.)
+	  
+	  Reviewed by Craig Silverstein.
+
+2010-11-16 18:51  Fergus Henderson <opensource@google.com>
+
+	* man/include_server.1:
+	  
+	  Fix error in manual: to disable fallback, set DISTCC_FALLBACK to 0 not
+	  1.
+	  Resolves <http://code.google.com/p/distcc/issues/detail?id=75>.
+
+2010-10-08 19:33  Fergus Henderson <opensource@google.com>
+
+	* src/access.c:
+	  
+	  Apply patch from Ian Kumlien <Ian.Kumlien@gmail.com>,
+	  to fix <http://code.google.com/p/distcc/issues/detail?id=70>.
+	  This patch fixes a compile error on Gentoo Linux due to "s6_addr"
+	  being #defined by a system header file and thus not available for
+	  use as a local variable name.
+
+2010-10-08 18:29  Fergus Henderson <opensource@google.com>
+
+	* src/clirpc.c, src/compile.c, src/remote.c, src/state.c, src/state.h,
+	  src/where.c:
+	  
+	  Apply patch from Jeremy Murphy <jeremy.william.murphy@gmail.com>,
+	  tested and reviewed by cheepero@gmail.com, to address
+	  <http://code.google.com/p/distcc/issues/detail?id=36>
+	  "distcc-mon-gnome displays multiple rows for same host/slot".
+
+2010-09-10 22:09  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix failures of the Gdb_* test cases:
+	  
+	  1. These tests were failing if you have anything in your ~/.gdbinit
+	  file that causes gdb to issue an error message. The fix here is
+	  to create an empty .gdbinit in the test directory; gdb will
+	  read that one in preference to the one in $HOME.
+	  
+	  2. These tests were failing due to a new spurious warning from gdb.
+	  
+	  3. There were a bug in the code for the Gdb_Case test which previously
+	  caused part of the test to be executed only in pump mode. When
+	  invoking gcc to check whether preprocessing preserves the pwd info,
+	  the command line had not been updated to reflect the fact that this
+	  command is run in a subdirectory; as a consequence,
+	  gcc_preprocessing_preserves_pwd was always set to false.
+	  
+	  Reviewed by Craig Silverstein.
+
+2010-08-19 22:51  Fergus Henderson <opensource@google.com>
+
+	* src/access.c:
+	  
+	  Some minor stylistic improvements:
+	  use array indexing rather than pointer arithmetic;
+	  simplify for loops;
+	  change a parameter name to match comment describing it;
+	  eliminate trailing whitespace.
+	  
+	  Reviewed by Bob Ham
+
+2010-08-19 20:07  Fergus Henderson <opensource@google.com>
+
+	* src/daemon.c, src/daemon.h, src/serve.c:
+	  
+	  Change directory back to the original server working directory after
+	  each
+	  distcc-pump compilation. This fixes a bug where distcc-pump was
+	  changing
+	  to a directory and then deleting that directory and not changing back
+	  to the original directory. That caused problems when you used a server
+	  first in distcc-pump mode and then in distcc mode, and the compiler
+	  invoked a shell script. The compilation would succeed, but the shell
+	  would
+	  report a confusing warning ("shell-init: error retrieving current
+	  directory:
+	  getcwd: cannot access parent directories: No such file or directory").
+
+2010-08-19 19:23  Fergus Henderson <opensource@google.com>
+
+	* include_server/compiler_defaults.py, include_server/parse_command.py,
+	  include_server/parse_command_test.py:
+	  
+	  Apply --sysroot patch from Simon Baldwin <simonb@google.com>:
+	  
+	  2010-08-18 Simon Baldwin <simonb@google.com>
+	  
+	  * include_server/compiler_defaults.py (_SystemSearchdirsGCC):
+	  Add a 'sysroot' parameter. Add --sysroot, if needed, to the gcc
+	  invocation that identifies search directories and default paths.
+	  Add debugging output.
+	  (SetSystemDirsDefaults): Add 'sysroot' parameter. Add another
+	  dictionary level to system_dirs_default for sysroot values.
+	  Add debugging output.
+	  * include_server/parse_command.py (ParseCommandArgs): Identify
+	  and handle arguments of the form '--opt=value'. Pass any
+	  --sysroot value to compiler_defaults.SetSystemDirsDefaults, use
+	  it in compiler_defaults.system_dirs_default lookups.
+	  (CPP_OPTIONS_APPEARING_AS_ASSIGNMENTS): New.
+	  * include_server/parse_command_test.py (Mock_SetSystemDirsDefaults):
+	  Add sysroot parameter, verify it on function calls.
+	  (ParseCommandUnitTest): Add --sysroot to mock gcc invocations.
+
+2010-06-29 15:51  Fergus Henderson <opensource@google.com>
+
+	* src/fix_debug_info.c:
+	  
+	  Trivial fix for slight mistake in distccd debug message.
+	  
+	  Reviewed by Craig Silverstein.
+
+2010-05-04 20:09  Fergus Henderson <opensource@google.com>
+
+	* src/serve.c, src/stats.c, src/stats.h, src/util.c, src/util.h:
+	  
+	  Apply patch from Ryan Burns <rburns@pixar.com>:
+	  add 1, 3, 5 minute averages of the number of children
+	  used on a server to the statistics collected by the
+	  stats server.
+
+2010-05-04 19:52  Fergus Henderson <opensource@google.com>
+
+	* man/distcc.1, src/compile.c:
+	  
+	  Apply patch from Ryan Burns <rburns@pixar.com>:
+	  add an environment variable DISTCC_SKIP_LOCAL_RETRY for skipping
+	  the local retry in case of a remote compilation failure.
+
+2010-03-02 08:24  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Apply slightly cleaned up version of patch from perezdiez@gmail.com
+	  to fix failure of PreprocessAsm_Case on ARM.
+
+2010-03-02 08:13  Fergus Henderson <opensource@google.com>
+
+	* src/emaillog.c:
+	  
+	  Apply patch from Akim Demaille <demaille@gostai.com>:
+	  
+	  * src/emaillog.c (dcc_maybe_send_email): Pacify GCC's warnings
+	  about format strings by getting rid of a useless temporary
+	  string.
+
+2010-03-02 08:10  Fergus Henderson <opensource@google.com>
+
+	* ChangeLog, src/hosts.c:
+	  
+	  Apply patch from Akim Demaille <demaille@gostai.com>:
+	  
+	  * src/hosts.c (strndup): Use the standard signature (without
+	  static), so that we don't conflict with GCC's builtin signature.
+	  Now that it is not static, declare it, to avoid warnings.
+
+2010-02-18 23:40  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Apply patch from madkinder: use #include rather than #import in C++
+	  test case.
+	  This fixes a test case failure with gcc 4.4.1, which warns about use
+	  of #import.
+	  
+	  (The use of #import was an accidental cut-and-paste error resulting
+	  from copying
+	  the C++ test case from the Objective-C/C++ test case.)
+
+2010-02-18 23:33  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Change the PreprocessAsm_Case so that it reports NOTRUN
+	  rather than PASS for systems where it is not run.
+
+2010-02-10 03:31  Lei Zhang <opensource@google.com>
+
+	* man/distcc.1, src/daemon.c, src/distcc.h, src/io.c, src/pump.c,
+	  src/sendfile.c:
+	  
+	  Add support for $DISTCC_IO_TIMEOUT.
+	  
+	  Reviewed by Fergus Henderson.
+
+2009-12-30 04:25  Fergus Henderson <opensource@google.com>
+
+	* packaging/RedHat/init.d/distcc:
+	  
+	  Apply patch from Tal <tal.bav@gmail.com>:
+	  
+	  In packaging/RedHat/init.d/distcc the executable is once refereed to
+	  using the variable EXEC, and once as with the explicit expected name.
+	  Change it to always use the EXEC variable.
+
+2009-12-01 04:46  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Apply patch from <avassalotti@gmail.com>:
+	  
+	  This is a simple patch that adds the standard TAGS target for Emacs
+	  users.
+
+2009-08-03 23:33  Lei Zhang <opensource@google.com>
+
+	* man/distcc.1, man/pump.1, pump.in, src/compile.c:
+	  
+	  Make max_discrepancies_before_demotion configurable via
+	  DISTCC_MAX_DISCREPANCY environment variable.
+
+2009-07-24 17:30  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Pass "-c" to gcc for the Dotd_Case tests.
+	  
+	  This fixes a problem where this test was failing on some systems
+	  due to link errors when compiling C++ source files with "gcc foo.cpp".
+	  To link C++ code, you now need to use "g++ foo.cpp" or "gcc foo.cpp
+	  -lstdc++",
+	  even if the C++ code in question doesn't use any C++ library features.
+	  Rather than changing the code to use "g++" or "-lstdc++", I though it
+	  was
+	  better to avoid the link step entirely, since it is not needed for the
+	  things
+	  this test is testing, and removing it will speed up the test.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-07-24 16:59  Fergus Henderson <opensource@google.com>
+
+	* man/distccd.1, src/auth.h, src/auth_common.c, src/auth_distcc.c,
+	  src/auth_distccd.c, src/daemon.c, src/dopt.c, src/dopt.h,
+	  src/dparent.c, src/dsignal.c:
+	  
+	  Apply patch from Ian.Baker@cern.ch:
+	  
+	  Optional Black/Whitelist Functionality.
+	  
+	  This patch is used to implement optional server-side access control
+	  through a specified black or whitelist file. This option is specified
+	  through a command line option.
+	  
+	  Revised by me (Fergus Henderson):
+	  fixed spelling error, added a comment.
+
+2009-07-24 16:31  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, configure.ac, src/h_getline.c[ADD], src/util.c,
+	  src/util.h, test/testdistcc.py:
+	  
+	  Define a GNU-compatible getline() implementation,
+	  in case we don't have getline() available.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-07-24 01:32  Fergus Henderson <opensource@google.com>
+
+	* src/h_parsemask.c:
+	  
+	  Fix compile errors for "make check" caused by distcc-v6-acl-2.patch.
+
+2009-07-23 02:16  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, configure.ac, man/distcc.1, man/distccd.1,
+	  src/auth.h[ADD], src/auth_common.c[ADD], src/auth_distcc.c[ADD],
+	  src/auth_distccd.c[ADD], src/clirpc.c, src/daemon.c, src/distcc.c,
+	  src/dopt.c, src/dopt.h, src/dparent.c, src/dsignal.c, src/exitcode.h,
+	  src/help.c, src/hosts.c, src/hosts.h, src/lock.c, src/remote.c,
+	  src/serve.c:
+	  
+	  Apply patch from Ian.Baker@cern.ch:
+	  
+	  Optional GSS-API Functionality.
+	  
+	  This patch implements mutual authentication, out of sequence and
+	  replay detection using the GSS-API. The changes implemented are
+	  optional and are turned off by default.
+	  
+	  This option is specified to the client through an environment variable
+	  as is the name of the server principal to authenticate. Currently
+	  the server principal can be left unspecified and a default based on
+	  the host keytab will be used.
+	  
+	  This option is specified to the daemon through a command line option,
+	  with the name of the principal whose credentials the daemon should
+	  use specified as an environment variable. A simple handshake is
+	  exchanged between the client and server in order to prevent
+	  unecessary delays and protocol derailments when mixing authenticating
+	  and non-authenticating clients and servers.
+	  
+	  Revised based on review comments.
+	  GSS-API authentication is now implemented as a per host option.
+	  
+	  Revised further by me (Fergus Henderson) to fix a spelling error
+	  and to rename the per host option from ",gssapi" to ",auth".
+
+2009-07-23 02:15  Fergus Henderson <opensource@google.com>
+
+	* doc/protocol-gssapi.txt[ADD]:
+	  
+	  Apply patch from Ian.Baker@cern.ch:
+	  
+	  Protocol Documentation for GSSAPI extension.
+
+2009-07-22 21:39  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Add Makefile target "man-html" for rebuilding the (checked-in) HTML
+	  versions of the man pages. This allows you to view the changes with
+	  "svn diff" before running "make upload-man" which commits them.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-07-22 17:29  Fergus Henderson <opensource@google.com>
+
+	* src/access.c, src/access.h, src/srvnet.c, src/zeroconf-reg.c:
+	  
+	  Apply distcc-v6-acl-2.patch from Bob Ham <rah@bash.sh>:
+	  - Implements IPv6 support for access control.
+	  - Restrict zeroconf advertisements to IPv4 if
+	  RFC2553 support isn't enabled.
+	  - Modifies the non-RFC2553 code to use inet_aton()
+	  instead of the RFC2553-specific inet_pton().
+
+2009-07-22 17:22  Fergus Henderson <opensource@google.com>
+
+	* man/include_server.1:
+	  
+	  Improve some slightly misleading documentation.
+
+2009-06-30 21:37  Fergus Henderson <opensource@google.com>
+
+	* gnome/distccmon-gnome.desktop:
+	  
+	  Swedish translation, from Nille <nille.kungen@gmail.com>.
+
+2009-04-18 00:03  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  Apply patch from Assar <assar@permabit.com>:
+	  
+	  If any of the files in the source directory are not writable, running
+	  "make dist" will prompt you if you want to remove those files in the
+	  temporary distribution directory (distcc-3.1).
+	  
+	  The following tiny patch fixes that.
+
+2009-04-14 03:10  benizi
+
+	* src/zeroconf.c:
+	  
+	  Remove duplicate hosts from the zeroconf list.
+	  
+	  Fixes issue 43 <http://code.google.com/p/distcc/issues/detail?id=43>.
+	  As mentioned in issue 34
+	  <http://code.google.com/p/distcc/issues/detail?id=34>,
+	  hosts with both IPv4 and IPv6 addresses showed up twice if avahi is
+	  IPv6-enabled. So, filter out duplicates using the service name.
+
+2009-04-10 20:26  Fergus Henderson <opensource@google.com>
+
+	* src/exec.c:
+	  
+	  (1) Layout/whitespace changes; the layout of this file
+	  seems to have gotten mixed up when we changed from
+	  using tabs to using spaces.
+	  
+	  (2) Fix spacing in a log message.
+	  
+	  Reviewers: Craig Silverstein
+
+2009-04-10 19:26  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Fix a distcc test that was failing on modern kernels:
+	  ignore a spurious warning from gdb.
+	  
+	  According to Paul Pluzhnikov, the warning is gone from current GDB,
+	  fixed by the following patch:
+	  
+	  2008-04-21 Pedro Alves <pedro@codesourcery.com>
+	  
+	  * symfile.c (syms_from_objfile): Don't warn if lowest loadable
+	  section is not a code section.
+	  
+	  But since there are going to be some versions of gdb in the wild that
+	  don't have that patch, we still need to work around it in the distcc
+	  tests.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-04-10 17:37  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  A fix for distcc issue 44 "Failed tests on make check (gentoo
+	  gcc-4.3.3)"
+	  <http://code.google.com/p/distcc/issues/detail?id=44>.
+	  We were using an invalid signature for main(), and newer versions of
+	  gcc
+	  are stricter about checking this.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-03-06 13:55  IanRichardBaker
+
+	* src/include_server_if.c:
+	  
+	  Fixed a portability issue that causes compilation to fail on 64 bit
+	  boxes.
+
+2009-02-17 23:10  Fergus Henderson <opensource@google.com>
+
+	* src/dotd.c, src/emaillog.c, src/include_server_if.c, src/lsdistcc.c,
+	  src/rslave.c, src/stringmap.c, src/timeval.c:
+	  
+	  Ensure that all ".c" files start with "#include <config.h>".
+	  
+	  This will hopefully fix issue 39
+	  <http://code.google.com/p/distcc/issues/detail?id=39>.
+	  Some header files were using #if statements that depended on macros
+	  defined in config.h
+	  without #including config.h first. The result was a compilation error,
+	  because
+	  "#if !HAVE_DECL_SNPRINTF" was evaluating to true because config.h
+	  hadn't been included,
+	  causing us to declare snprintf() when we shouldn't, leading to a
+	  conflict with the
+	  declaration in the standard header files.
+	  
+	  (The alternative solution would have been to add "#include <config.h>"
+	  to every header file that uses '#if'. I decided not to do that, just
+	  for consistency with the existing code.)
+
+2009-02-17 23:10  Fergus Henderson <opensource@google.com>
+
+	* packaging/rpm.sh:
+	  
+	  Fix a non-portability in rpm.sh:
+	  use "trap ... HUP" rather than "trap ... SIGHUP".
+	  
+	  The Posix.1 standard
+	  <http://www.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#trap>
+	  says:
+	  The condition can be EXIT, 0 (equivalent to EXIT), or a signal
+	  specified
+	  using a symbolic name, without the SIG prefix, as listed in the tables
+	  of signal names in the <signal.h> header [...]; for example, HUP, INT,
+	  QUIT, TERM. Implementations may permit names with the SIG prefix or
+	  ignore case in signal names as an extension.
+	  
+	  Previously, the code was relying on this optional extension.
+
+2009-01-30 17:27  Fergus Henderson <opensource@google.com>
+
+	* include_server/macro_eval.py, include_server/parse_file.py,
+	  test/testdistcc.py:
+	  
+	  Fix issue 35 <http://code.google.com/p/distcc/issues/detail?id=35>.
+	  This was a bug where the include server was crashing in certain cases
+	  (when the argument to a macro ended in a backslash) due to an escaping
+	  problem in the use of Python's re.sub() function. The fix was to
+	  replace all occurrences of backslash in the replacement string
+	  with double-backslash, which re.sub() will then translate back to
+	  a single backslash. (I also changed the code to not bother using
+	  re.compile() since we only use the regexp once.)
+	  
+	  Also, fix a bug where we were not allowing backslashes in filenames.
+	  
+	  I added regression tests for both of these bugs
+	  (and I verified that they were true regression tests).
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-01-26 23:50  Fergus Henderson <opensource@google.com>
+
+	* pump.in:
+	  
+	  Handle failure of "mktemp" more gracefully in the pump script.
+	  It was printing an error message, but then it would continue
+	  on even if mktemp had failed (it called "exit 1", but only
+	  in a subshell). It would then go on and try to start the
+	  include server, which would end up hanging.
+	  The fix is to make sure that we call "exit 1" from the main
+	  shell whenever MakeTmpFile fails.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-01-22 05:33  adshea
+
+	* man/distcc.1, src/hosts.c, src/zeroconf.c:
+	  
+	  IPv6 patch for Zeroconf and and IPv6 literals in hosts file.
+	  * Still needs configure flag masking for IPv6 literals
+	  * Needs some fix for zeroconf hosts that have both and IPv6 and IPv4
+	  address
+
+2009-01-20 22:22  Fergus Henderson <opensource@google.com>
+
+	* doc/web/index.html, doc/web/man/index.html[ADD]:
+	  
+	  - Add pointer to the INSTALL file to the main page.
+	  - Create an index.html in doc/web/man to make the
+	  presentation of that page prettier.
+	  Previously it was a rather ugly directory listing
+	  of file names like "distcc_1.html", "distccd_1.html", etc.
+	  - Add links to the INSTALL file and README* files
+	  from that doc/web/man/index.html page.
+	  
+	  Reviewed by Craig Silverstein.
+
+2009-01-09 17:46  Fergus Henderson <opensource@google.com>
+
+	* doc/web/index.html:
+	  
+	  Fix broken link to distccWebView.
+
+2009-01-09 08:54  akim.demaille
+
+	* src/distcc.c:
+	  
+	  "distcc --scan-includes" dumps core.
+	  
+	  * src/distcc.c (main): Don't dump --help on the user on command
+	  line error, rather, return the `Try --help' message on stderr.
+	  Check that --scan-includes is given arguments.
+
+2009-01-05 22:48  Fergus Henderson <opensource@google.com>
+
+	* src/distcc.c:
+	  
+	  Document the --scan-includes option in the output of "distcc --help".
+
+2009-01-05 20:29  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, pump.in:
+	  
+	  Avoid using "echo -n", because it's not portable.
+
+2009-01-05 20:18  Fergus Henderson <opensource@google.com>
+
+	* test/testdistcc.py:
+	  
+	  Portability fix: the CPlusPlus_SystemIncludeDirectories_Case
+	  was assuming that /usr/include/sys/types.h exists, but was
+	  not checking this assumption.
+
+2008-12-22 22:21  Fergus Henderson <opensource@google.com>
+
+	* include_server/compiler_defaults.py:
+	  
+	  Fix a bug where the SystemIncludeDirectories_Case test
+	  was failing on systems where /tmp was a symlink.
+	  This failure indicated a real bug: on such systems,
+	  distcc was not correctly handling -I<dir> where
+	  <dir> is a subdirectory of a system include directory,
+	  e.g. -I/usr/include/foo.
+	  
+	  The code was calling _RealPrefix(client_root + system_dir)
+	  but was implicitly assuming that the answer would always
+	  start with client_root. That is, it was implicitly assuming
+	  that client_root did not contain any symlinks.
+	  
+	  I changed the code to use
+	  _RealPrefixWithinClientRoot(client_root, system_dir)
+	  so that it would find the appropriate prefix of system_dir
+	  rather than looking at the prefixes of client_root.
+
+2008-12-22 21:56  Fergus Henderson <opensource@google.com>
+
+	* include_server/compiler_defaults.py:
+	  
+	  When computing the compiler's default search path by parsing the
+	  output
+	  from "gcc -v", ignore Apple-modified MacOS gcc's "framework"
+	  directories.
+
+2008-12-10 20:22  Fergus Henderson <opensource@google.com>
+
+	* INSTALL:
+	  
+	  Clarify installation instructions; in particular, if you have python
+	  installed, you need to also have Python.h installed before building
+	  distcc.
+	  
+	  Reviewer: Craig Silverstein
+
+2008-12-03 00:54  Fergus Henderson <opensource@google.com>
+
+	* include_server/setup.py:
+	  
+	  Avoid a spurious message 'setup.py: PYTHON_CFLAGS must be defined.'
+	  The top-level Makefile sets CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"
+	  before invoking setup.py, so there's no need for it to set
+	  PYTHON_CFLAGS.
+
+2008-12-02 21:49  Fergus Henderson <opensource@google.com>
+
+	* ChangeLog:
+	  
+	  Update ChangeLog with some more changes for distcc 3.1.
 
 2008-12-02 21:44  Fergus Henderson <opensource@google.com>
 
