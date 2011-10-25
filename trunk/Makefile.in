@@ -1081,26 +1081,34 @@ install-include-server: include-server pump
 
 install-man: $(man1_MEN)
 	$(mkinstalldirs) "$(DESTDIR)$(man1dir)"
-	for p in $(man1_MEN); do				\
-	$(INSTALL_DATA)	"$(srcdir)/$$p" "$(DESTDIR)$(man1dir)" || exit 1; \
+	for p in $(man1_MEN); do \
+	  if $(GZIP_BIN) --help >/dev/null; then \
+	    if [ -e "$(DESTDIR)$(man1dir)$$p" ]; then rm -fv "$(DESTDIR)$(man1dir)$$p"; fi; \
+	    $(GZIP_BIN) < "$(srcdir)/$$p" > "$$p.gz"; \
+	    $(INSTALL_DATA) "$$p.gz" "$(DESTDIR)$(man1dir)" || exit 1; \
+	  else \
+	    echo "Warning: no working gzip, installing man pages uncompressed" 1>&2; \
+	    if [ -e "$(DESTDIR)$(man1dir)$$p.gz" ]; then rm -fv "$(DESTDIR)$(man1dir)$$p.gz"; fi; \
+	    $(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(man1dir)" || exit 1; \
+	  fi; \
 	done
 
 install-doc: $(pkgdoc_DOCS)
 	$(mkinstalldirs) "$(DESTDIR)$(docdir)"
-	for p in $(pkgdoc_DOCS); do				\
-	$(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(docdir)" || exit 1; \
+	for p in $(pkgdoc_DOCS); do \
+	  $(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(docdir)" || exit 1; \
 	done
 
 install-example: $(example_DOCS)
 	$(mkinstalldirs) "$(DESTDIR)$(docdir)/example"
-	for p in $(example_DOCS); do				\
-	$(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(docdir)/example" || exit 1; \
+	for p in $(example_DOCS); do \
+	  $(INSTALL_DATA) "$(srcdir)/$$p" "$(DESTDIR)$(docdir)/example" || exit 1; \
 	done
 
 install-gnome-data: $(gnome_data)
 	$(mkinstalldirs) "$(DESTDIR)$(pkgdatadir)"
-	for p in $(gnome_data); do				\
-	$(INSTALL_DATA) "$$p" "$(DESTDIR)$(pkgdatadir)" || exit 1; \
+	for p in $(gnome_data); do \
+	  $(INSTALL_DATA) "$$p" "$(DESTDIR)$(pkgdatadir)" || exit 1; \
 	done
 
 install-conf: $(conf_files) $(default_files)
@@ -1162,6 +1170,7 @@ uninstall-man:
 	for p in $(man1_MEN); do				\
 	  file="$(DESTDIR)$(man1dir)/`basename $$p`";           \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	  if [ -e "$$file.gz" ]; then rm -fv "$$file.gz"; fi    \
 	done
 	-[ "`basename $(man1dir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(man1dir)"
 
