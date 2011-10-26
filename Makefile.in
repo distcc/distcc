@@ -914,6 +914,7 @@ clean: clean-autoconf clean-lzo clean-include-server
 	rm -f src/*.[od] popt/*.[od]
 	rm -f test/*.pyc
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
+	rm -f `echo $(man1_MEN) | sed -e 's/ /.gz /g' -e 's/$$/.gz/'`
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
 	rm -rf _testtmp  # produced by test/testdistcc.py and daemon-installcheck
@@ -1083,6 +1084,7 @@ install-man: $(man1_MEN)
 	$(mkinstalldirs) "$(DESTDIR)$(man1dir)"
 	for p in $(man1_MEN); do \
 	  if $(GZIP_BIN) --help >/dev/null; then \
+	    mkdir -p "`dirname $$p`"; \
 	    if [ -e "$(DESTDIR)$(man1dir)$$p" ]; then rm -fv "$(DESTDIR)$(man1dir)$$p"; fi; \
 	    $(GZIP_BIN) < "$(srcdir)/$$p" > "$$p.gz"; \
 	    $(INSTALL_DATA) "$$p.gz" "$(DESTDIR)$(man1dir)" || exit 1; \
