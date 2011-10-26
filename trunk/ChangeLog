@@ -1,3 +1,36 @@
+2011-10-26 02:49  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in:
+	  
+	  After my change to gzip the man pages before installing them,
+	  I had to make a couple more changes to get "make distcheck" to pass.
+	  
+	  Reviewed by Craig Silverstein.
+
+2011-10-25 01:49  Fergus Henderson <opensource@google.com>
+
+	* Makefile.in, man:
+	  
+	  Gzip the man pages before installing them.
+	  
+	  This is required by the Debian policy manual
+	  <http://www.debian.org/doc/debian-policy/ch-docs.html>
+	  and is also assumed by our packaging/RedHat/rpm.spec file
+	  which we use for building both RPM and Debian packages.
+	  
+	  Also some whitespaces changes; only the first of the
+	  four segments in this patch has non-whitespace changes.
+
+2011-10-25 00:42  Fergus Henderson <opensource@google.com>
+
+	* ChangeLog, NEWS, configure.ac:
+	  
+	  Update the NEWS and ChangeLog files, and set the version number to
+	  3.2rc1,
+	  in preparation for releasing distcc version 3.2.
+	  
+	  Reviewed by Craig Silverstein.
+
 2011-10-24 23:26  Fergus Henderson <opensource@google.com>
 
 	* doc/web/man/distcc_1.html, doc/web/man/distccd_1.html,
