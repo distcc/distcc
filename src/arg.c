@@ -515,6 +515,8 @@ int dcc_expand_preprocessor_options(char ***argv_ptr) {
             }
             free(argv);
             *argv_ptr = argv = new_argv;
+            i += extra_args - 1;
+            argc += extra_args - 1;
         }
     }
     return 0;
