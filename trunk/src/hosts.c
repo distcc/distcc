@@ -105,6 +105,7 @@
 #include "hosts.h"
 #include "exitcode.h"
 #include "snprintf.h"
+#include "config.h"
 #ifdef HAVE_AVAHI
 #include "zeroconf.h"
 #define ZEROCONF_MAGIC "+zeroconf"
