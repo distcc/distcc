@@ -7,6 +7,7 @@
  */
 
 #include <stdarg.h>
+#include "config.h"
 
 #ifdef __GNUC__
 /** Use gcc attribute to check printf fns.  a1 is the 1-based index of
