@@ -261,7 +261,7 @@ int dcc_writex(int fd, const void *buf, size_t len)
  **/
 int tcp_cork_sock(int POSSIBLY_UNUSED(fd), int POSSIBLY_UNUSED(corked))
 {
-#ifdef TCP_CORK
+#if defined(TCP_CORK) && defined(SOL_TCP)
     if (!dcc_getenv_bool("DISTCC_TCP_CORK", 1))
         return 0;
 
