@@ -189,6 +189,12 @@ then
     if test x"$enable_Werror" != xno
     then
       WERROR_CFLAGS="-Werror"
+	  # -Wp,-U_FORTIFY_SOURCE is to turn off _FORTIFY_SOURCE on systems where
+	  # it's in the Python Makefile (and hence inherited by us).
+	  # -Werror -D_FORTIFY_SOURCE gives compiler errors for some distcc routines that
+	  # ignore the return value from libc functions (like getcwd).
+	  # That would cause this code to not compile, which is no good.
+	  PYTHON_CFLAGS="-Wp,-U_FORTIFY_SOURCE"
     fi
 
     # Additional flags for compiling Python extension modules.
@@ -197,13 +203,8 @@ then
     # pointer), and -Wwrite-strings, which just had too many false
     # positives (for Python 2.2, anyway; looks like these may be fixed
     # in Python 2.5).
-    # -Wp,-U_FORTIFY_SOURCE is to turn off _FORTIFY_SOURCE on systems where
-    # it's in the Python Makefile (and hence inherited by us).
-    # _FORTIFY_SOURCE gives compiler errors for some distcc routines that
-    # ignore the return value from libc functions (like getcwd).
-    # That would cause this code to not compile, which is no good.
-    PYTHON_CFLAGS="-Wno-missing-prototypes -Wno-missing-declarations \
--Wno-write-strings -Wp,-U_FORTIFY_SOURCE"
+    PYTHON_CFLAGS="$PYTHON_CFLAGS -Wno-missing-prototypes -Wno-missing-declarations \
+-Wno-write-strings"
 
     # For popt/*.c, we disable unused variable warnings.
     POPT_CFLAGS="-Wno-unused"
