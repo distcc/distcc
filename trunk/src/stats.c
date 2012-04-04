@@ -440,6 +440,7 @@ dcc_free_space %d MB\n\
                                free_space_mb);
         dcc_set_nonblocking(acc_fd);
         ret = read(acc_fd, challenge, 1024); /* empty the receive queue */
+        if (ret < 0) rs_log_info("read on acc_fd failed");
         dcc_writex(acc_fd, reply, reply_len);
     }
 
