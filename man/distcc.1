@@ -762,6 +762,12 @@ variable is set to 0 then fallbacks are disabled and those
 compilations will simply fail.  Note that this does not affect jobs
 which must always be local such as linking.
 .TP
+.B "DISTCC_BACKOFF_PERIOD"
+Specifies how long (in seconds) distcc will avoid trying to use a
+particular compilation server after that server yields a compile
+failure.  By default set to 60 seconds.  To disable the backoff
+behavior altogether, set this to 0.
+.TP
 .B "DISTCC_IO_TIMEOUT"
 Specifies how long (in seconds) distcc will wait before deciding a
 distributed job has timed out.  If a distributed job is expected to
