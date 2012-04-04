@@ -181,7 +181,7 @@ redirect_io=0      # Redirect include server's I/O streams? (1 means yes.)
 # $2="-d" to make a directory. The name of the created temp file or
 # directory is written to stdout.
 MakeTmpFile() {
-  if mktemp $2 /tmp/$1.XXXXXX; then
+  if mktemp $2 "${TMPDIR-/tmp}/$1.XXXXXX"; then
     :   # mktemp prints the output we want; no need to do more
   else
     echo "$program_name: Could not make temp \"$1\"" 1>&2
