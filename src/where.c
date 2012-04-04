@@ -122,15 +122,20 @@ static void dcc_lock_pause(void)
      * really necessary, and also by making jobs complete very-out-of-order is
      * more likely to find Makefile bugs. */
 
-    unsigned pause_time = 1;
+    unsigned pause_time_ms = 1000;
+
+    char *pt = getenv("DISTCC_PAUSE_TIME_MSEC");
+    if (pt)
+	pause_time_ms = atoi(pt);
 
 	/*	This call to dcc_note_state() is made before the host is known, so it
 		does not make sense and does nothing useful as far as I can tell.	*/
     /*	dcc_note_state(DCC_PHASE_BLOCKED, NULL, NULL, DCC_UNKNOWN);	*/
 
-    rs_trace("nothing available, sleeping %us...", pause_time);
+    rs_trace("nothing available, sleeping %ums...", pause_time_ms);
 
-    sleep(pause_time);
+    if (pause_time_ms > 0)
+	usleep(pause_time_ms * 1000);
 }
 
 
