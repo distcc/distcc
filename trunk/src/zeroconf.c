@@ -598,8 +598,11 @@ int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n
             setsid();
 #endif
 
-            chdir("/");
+            int ret = chdir("/");
             rs_add_logger(rs_logger_syslog, RS_LOG_DEBUG, NULL, 0);
+            if (ret != 0) {
+                rs_log_warning("chdir to '/' failed: %s", strerror(errno));
+            }
             _exit(daemon_proc(host_file, lock_file, n_slots));
         }
 
