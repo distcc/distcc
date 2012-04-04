@@ -341,14 +341,17 @@ ReportDiscrepancies() {
   # failed remotely but succeeded locally.
   num_discrepancies=`(cat $socket_dir/discrepancy_counter 2>/dev/null | wc -c \
                       || echo 0)`
-  if [ $num_discrepancies -ge $max_discrepancies_before_demotion ]; then
-    echo "__________Warning: $num_discrepancies" \
-         'pump-mode compilation(s) failed on server,' \
-         'but succeeded locally.' 1>&2
-    echo '__________Distcc-pump was demoted to plain mode.' \
-         ' See the Distcc Discrepancy Symptoms section in the' \
-         'include_server(1) man page.' 1>&2
+  if [ $num_discrepancies -eq 0 ]; then
+    return 0
   fi
+  echo "__________Warning: $num_discrepancies" \
+       'pump-mode compilation(s) failed on server,' \
+       'but succeeded locally.' 1>&2
+  if [ $num_discrepancies -ge $max_discrepancies_before_demotion ]; then
+    echo '__________Distcc-pump was demoted to plain mode.' 1>&2
+  fi
+  echo 'See the Distcc Discrepancy Symptoms section in the' \
+       'include_server(1) man page.' 1>&2
 }
 
 ShutDown() {
