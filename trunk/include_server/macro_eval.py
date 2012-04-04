@@ -426,10 +426,11 @@ def ResolveExpr(includepath_map_index,
       if match_result.group('quote'):
 	resolved = resolve(includepath_map_index(match_result.group('quote')),
 			   currdir_idx, searchdir_idx, quote_dirs)
+	resolved_files.append(resolved)
       elif match_result.group('angle'):
 	resolved = resolve(includepath_map_index(match_result.group('angle')),
 			   currdir_idx, None, angle_dirs)
-      resolved_files.append(resolved)
+	resolved_files.append(resolved)
     else:
       symbols.extend(SYMBOL_RE.findall(val))
   if __debug__:
