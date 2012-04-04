@@ -769,6 +769,14 @@ takes a long time, consider increasing this value so the job does
 not time out and fallback to a local compile.  By default set to
 300 seconds.
 .TP
+.B "DISTCC_PAUSE_TIME_MSEC"
+Specifies how long (in milliseconds) distcc will pause when all
+compilation servers are in use.
+By default set to 1000 milliseconds (1 second).
+Setting this to a smaller value (e.g. 10 milliconds) may improve
+throughput for some configurations, at the expense of increased CPU
+load on the distcc client machine.
+.TP
 .B "DISTCC_SAVE_TEMPS"
 If set to 1, temporary files are not deleted after use.  Good for
 debugging, or if your disks are too empty.
