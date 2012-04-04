@@ -50,7 +50,7 @@
 #include "hosts.h"
 
 
-const int dcc_backoff_period = 60; /* seconds */
+static int dcc_backoff_period = 60; /* seconds */
 
 
 /**
@@ -61,12 +61,26 @@ const int dcc_backoff_period = 60; /* seconds */
  **/
 int dcc_enjoyed_host(const struct dcc_hostdef *host)
 {
+    char *bp;
+
+    /* special-case: if DISTCC_BACKOFF_PERIOD==0, don't manage backoff files */
+    bp = getenv("DISTCC_BACKOFF_PERIOD");
+    if (bp && (atoi(bp) == 0))
+	return 0;
+
     return dcc_remove_timefile("backoff", host);
 }
 
 int dcc_disliked_host(const struct dcc_hostdef *host)
 {
-    /* i hate you (but only for 60 seconds) */
+    char *bp;
+
+    /* special-case: if DISTCC_BACKOFF_PERIOD==0, don't manage backoff files */
+    bp = getenv("DISTCC_BACKOFF_PERIOD");
+    if (bp && (atoi(bp) == 0))
+	return 0;
+
+    /* i hate you (but only for dcc_backoff_period seconds) */
     return dcc_mark_timefile("backoff", host);
 }
 
@@ -94,6 +108,15 @@ static int dcc_check_backoff(struct dcc_hostdef *host)
 int dcc_remove_disliked(struct dcc_hostdef **hostlist)
 {
     struct dcc_hostdef *h;
+    char *bp;
+
+    bp = getenv("DISTCC_BACKOFF_PERIOD");
+    if (bp)
+	dcc_backoff_period = atoi(bp);
+
+    /* special-case: if DISTCC_BACKOFF_PERIOD==0, don't manage backoff files */
+    if (dcc_backoff_period == 0)
+	return 0;
 
     while ((h = *hostlist) != NULL) {
         if (dcc_check_backoff(h) != 0) {
