@@ -720,6 +720,10 @@ static int one_poll_loop(struct rslave_s* rs, struct state_s states[],
      * and make the program take longer than it should.
      */
     nready = poll(pollfds, (unsigned)nfds, 50);
+    if (nready == -1) {
+	fprintf(stderr, "lsdistcc: poll failed: %s\n", strerror(errno));
+	exit(1);
+    }
     gettimeofday(&now, 0);
 
 
