@@ -92,8 +92,8 @@ DIRECTIVE_RE = re.compile(r"""
   (
    ((?P<include> include_next | include | import)
     \s*
-    ( "(?P<quote> (\w|[_/.+-])*)"            |  # "bar/foo.h"
-      <(?P<angle> (\w|[_/.+-])*)>            |  # <stdio.h>
+    ( "(?P<quote> (\w|[_/.,+-])*)"            |  # "bar/foo.h"
+      <(?P<angle> (\w|[_/.,+-])*)>            |  # <stdio.h>
       (?P<expr>   .*?))                         # expr, match . minimally
     )
    |
@@ -111,8 +111,8 @@ DIRECTIVE_RE = re.compile(r"""
 INCLUDE_STRING_RE = re.compile(r"""
   ^
   \s*
-  ( "\s*(?P<quote> (\w|[\\_/.+-])*)\s*"            |
-    <\s*(?P<angle> (\w|[\\_/.+-])*)\s*>
+  ( "\s*(?P<quote> (\w|[\\_/.,+-])*)\s*"            |
+    <\s*(?P<angle> (\w|[\\_/.,+-])*)\s*>
   )
   \s*
   $
