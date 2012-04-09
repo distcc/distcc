@@ -945,15 +945,21 @@ class CompileHello_Case(Compilation_Case):
     def source(self):
         return """
 #include <stdio.h>
-#include "testhdr.h"
+#include "%s"
 int main(void) {
     puts(HELLO_WORLD);
     return 0;
 }
-"""
+""" % self.headerFilename()
 
     def checkBuiltProgramMsgs(self, msgs):
         self.assert_equal(msgs, "hello world\n")
+
+
+class CommaInFilename_Case(CompileHello_Case):
+
+    def headerFilename(self):
+      return 'foo1,2.h'
 
 
 class ComputedInclude_Case(CompileHello_Case):
@@ -1015,7 +1021,6 @@ int main(void) {
     return 0;
 }
 """
-
 
 class LanguageSpecific_Case(Compilation_Case):
     """Abstract base class to test building non-C programs."""
@@ -2179,6 +2184,7 @@ for path in os.environ['PATH'].split (':'):
 # All the tests defined in this suite
 tests = [
          CompileHello_Case,
+         CommaInFilename_Case,
          ComputedInclude_Case,
          BackslashInMacro_Case,
          BackslashInFilename_Case,
