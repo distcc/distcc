@@ -32,6 +32,10 @@
 #define NULL 0
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 /* Load the given list of strings into the key/value map.
  * The key for each string is the numFinalWordsToMatch of the string;
  * the value for each string is the entire string.

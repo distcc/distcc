@@ -540,7 +540,7 @@ static int get_zeroconf_dir(char **dir_ret) {
 
 /* Get the host list from zeroconf */
 int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n_slots, struct dcc_hostdef **ret_prev) {
-    char host_file[PATH_MAX], lock_file[PATH_MAX], *s = NULL;
+    char *host_file = NULL, *lock_file = NULL, *s = NULL;
     int lock_fd = -1, host_fd = -1;
     int fork_daemon = 0;
     int r = -1;
@@ -552,8 +552,13 @@ int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n
         goto finish;
     }
 
-    snprintf(lock_file, sizeof(lock_file), "%s/lock", dir);
-    snprintf(host_file, sizeof(host_file), "%s/hosts", dir);
+    lock_file = malloc(strlen(dir) + sizeof("/lock"));
+    assert(lock_file);
+    sprintf(lock_file, "%s/lock", dir);
+
+    host_file = malloc(strlen(dir) + sizeof("/hosts"));
+    assert(host_file);
+    sprintf(host_file, "%s/hosts", dir);
 
     /* Open lock file */
     if ((lock_fd = open(lock_file, O_RDWR|O_CREAT, 0666)) < 0) {
@@ -659,6 +664,8 @@ finish:
         close(host_fd);
     }
 
+    free(lock_file);
+    free(host_file);
     free(s);
 
     return r;
