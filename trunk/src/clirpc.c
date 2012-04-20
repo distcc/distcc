@@ -65,9 +65,12 @@ int dcc_x_req_header(int fd,
 
 
 /**
- * Transmit an argv array.
+ * Transmit an argv-type array.
  **/
-int dcc_x_argv(int fd, char **argv)
+int dcc_x_argv(int fd,
+               const char *argc_token,
+               const char *argv_token,
+               char **argv)
 {
     int i;
     int ret;
@@ -75,11 +78,11 @@ int dcc_x_argv(int fd, char **argv)
 
     argc = dcc_argv_len(argv);
 
-    if (dcc_x_token_int(fd, "ARGC", (unsigned) argc))
+    if (dcc_x_token_int(fd, argc_token, (unsigned) argc))
         return EXIT_PROTOCOL_ERROR;
 
     for (i = 0; i < argc; i++) {
-        if ((ret = dcc_x_token_string(fd, "ARGV", argv[i])))
+        if ((ret = dcc_x_token_string(fd, argv_token, argv[i])))
             return ret;
     }
 

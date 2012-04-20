@@ -143,7 +143,7 @@ dcc_send_header(int net_fd,
         if ((ret = dcc_x_cwd(net_fd)))
             return ret;
     }
-    if ((ret = dcc_x_argv(net_fd, argv)))
+    if ((ret = dcc_x_argv(net_fd, "ARGC", "ARGV", argv)))
         return ret;
 
     return 0;

@@ -624,7 +624,7 @@ static int dcc_run_job(int in_fd,
         changed_directory = 1;
     }
 
-    if ((ret = dcc_r_argv(in_fd, &argv))
+    if ((ret = dcc_r_argv(in_fd, "ARGC", "ARGV", &argv))
         || (ret = dcc_scan_args(argv, &orig_input_tmp, &orig_output_tmp,
                                 &tweaked_argv)))
         goto out_cleanup;
