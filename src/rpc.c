@@ -305,9 +305,12 @@ int dcc_r_token_string(int ifd, const char *expect_token,
 }
 
 /**
- * Read an argv[] vector from the network.
+ * Read an argv-type vector from the network.
  **/
-int dcc_r_argv(int ifd, /*@out@*/ char ***argv)
+int dcc_r_argv(int ifd,
+               const char *argc_token,
+               const char *argv_token,
+               /*@out@*/ char ***argv)
 {
     unsigned i;
     unsigned argc;
@@ -316,7 +319,7 @@ int dcc_r_argv(int ifd, /*@out@*/ char ***argv)
 
     *argv = NULL;
 
-    if (dcc_r_token_int(ifd, "ARGC", &argc))
+    if (dcc_r_token_int(ifd, argc_token, &argc))
         return EXIT_PROTOCOL_ERROR;
 
     rs_trace("reading %d arguments from job submission", argc);
@@ -331,7 +334,7 @@ int dcc_r_argv(int ifd, /*@out@*/ char ***argv)
     a[argc] = NULL;
 
     for (i = 0; i < argc; i++) {
-        if ((ret = dcc_r_token_string(ifd, "ARGV", &a[i])))
+        if ((ret = dcc_r_token_string(ifd, argv_token, &a[i])))
             return ret;
 
         rs_trace("argv[%d] = \"%s\"", i, a[i]);

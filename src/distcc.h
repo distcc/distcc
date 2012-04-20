@@ -155,7 +155,10 @@ int dcc_recursion_safeguard(void);
 /* clirpc.c */
 int dcc_x_req_header(int fd,
                      enum dcc_protover protover);
-int dcc_x_argv(int fd, char **argv);
+int dcc_x_argv(int fd,
+               const char *argc_token,
+               const char *argv_token,
+               char **argv);
 int dcc_x_cwd(int fd);
 int dcc_is_link(const char *fname, int *is_link);
 int dcc_read_link(const char* fname, char *points_to);

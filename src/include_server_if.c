@@ -96,12 +96,10 @@ int dcc_talk_to_include_server(char **argv, char ***files)
     if (dcc_connect_by_addr((struct sockaddr *) &sa, sizeof(sa), &fd))
         return 1;
 
-    /* the following code uses dcc_r_arg to receive an array of strings
-     * which are NOT command line arguments. TODO: implement dcc_r_argv
-     * on top a generic array-of-strings function */
+    /* TODO? switch include_server to use more appropriate token names */
     if (dcc_x_cwd(fd) ||
-        dcc_x_argv(fd, argv) ||
-        dcc_r_argv(fd, files)) {
+        dcc_x_argv(fd, "ARGC", "ARGV", argv) ||
+        dcc_r_argv(fd, "ARGC", "ARGV", files)) {
         rs_log_warning("failed to talk to include server '%s'",
                        include_server_port);
         dcc_close(fd);

@@ -45,4 +45,7 @@ int dcc_explain_mismatch(const char *buf, size_t buflen, int ifd);
 
 /* srvrpc.c */
 int dcc_r_request_header(int ifd, enum dcc_protover *);
-int dcc_r_argv(int ifd, /*@out@*/ char ***argv);
+int dcc_r_argv(int ifd,
+               const char *argc_token,
+               const char *argv_token,
+               /*@out@*/ char ***argv);

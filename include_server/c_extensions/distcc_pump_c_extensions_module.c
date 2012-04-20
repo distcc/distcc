@@ -152,7 +152,7 @@ RArgv(PyObject *dummy, PyObject *args) {
   UNUSED(dummy);
   if (!PyArg_ParseTuple(args, "i", &ifd))
     return NULL;
-  if (dcc_r_argv(ifd, &argv)) {
+  if (dcc_r_argv(ifd, "ARGC", "ARGV", &argv)) {
     PyErr_SetString(distcc_pump_c_extensionsError, "Couldn't read that.");
     goto error;
   }
@@ -212,7 +212,7 @@ XArgv(PyObject *dummy, PyObject *args) {
     argv[i] = PyString_AsString(string_object); /* does not increase
 						   ref count */
   }
-  ret = dcc_x_argv(ifd, argv);
+  ret = dcc_x_argv(ifd, "ARGC", "ARGV", argv);
   free(argv);
   if (ret == 0)
     Py_RETURN_TRUE;
