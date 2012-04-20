@@ -271,9 +271,12 @@ class IncludeAnalyzer(object):
     links = self.compiler_defaults.system_links + self.mirror_path.Links()
     files = self.compress_files.Compress(include_closure, client_root_keeper)
 
-    forcing_files = self._ForceDirectoriesToExist()
+    files_and_links = files + links
 
-    files_and_links = files + links + forcing_files
+    # Note that the performance degradation comment above applies especially
+    # to forced include directories, unless disabled with --no_force_dirs
+    if basics.opt_no_force_dirs == False:
+      files_and_links += self._ForceDirectoriesToExist()
 
     realpath_map = self.realpath_map
 

@@ -116,6 +116,12 @@ OPTIONS:
                              gathering the include closure. See the
                              include_server(1) man page for futher information.
                              Using this option may lead to incorrect results.
+
+ --no_force_dirs             Do not force the creation of all directories used
+                             in an include path.  May improve peformance for
+                             some cases, but will break builds which use
+                             include structures like "<foo/../file.h>" without
+                             including other files in foo/.
                              
  -v, --verify                Verify that files in CPP closure are contained in
                              closure calculated by include processor.
@@ -482,6 +488,7 @@ def _ParseCommandLineOptions():
                                 "statistics",
                                 "time",
                                 "unsafe_absolute_includes",
+                                "no_force_dirs",
                                 "verify",
                                 "write_include_closure"])
   except getopt.GetoptError:
@@ -517,6 +524,8 @@ def _ParseCommandLineOptions():
         sys.exit("Not implemented")
       if opt in ("--unsafe_absolute_includes",):
         basics.opt_unsafe_absolute_includes = True
+      if opt in ("--no_force_dirs",):
+        basics.opt_no_force_dirs = True
       if opt in ("-s", "--statistics"):
         basics.opt_statistics = True
       if opt in ("-t", "--time"):
