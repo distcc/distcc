@@ -109,6 +109,13 @@ of existence of the header file is moot and the remote compilation is sound.
 This is often the case if such includes are meant for unusual configurations
 different from the actual configuration.
 .TP
+.B --no_force_dirs
+Do not force the creation of all directories used
+in an include path.  May improve peformance for
+some cases, but will break builds which use
+include structures like "<foo/../file.h>" without
+including other files in foo/.
+.TP
 .B -v, --verify
 Verify that files in CPP closure are contained in
 closure calculated by include processor.

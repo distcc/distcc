@@ -220,6 +220,7 @@ opt_simple_algorithm = False
 opt_stat_reset_triggers = {}
 opt_statistics = False
 opt_unsafe_absolute_includes = False
+opt_no_force_dirs = False
 opt_verify = False     # whether to compare calculated include closure to that
                        # produced by compiler
 opt_write_include_closure = False  # write include closures to file
