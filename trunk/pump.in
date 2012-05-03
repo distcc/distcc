@@ -295,7 +295,7 @@ StartIncludeServer() {
     # of one asterisk) without filename expansion.
     eval \
       "PYTHONOPTIMIZE='$PYTHONOPTIMIZE' " \
-      "PYTHONPATH='$pythonpath::$PYTHONPATH' " \
+      "PYTHONPATH='$pythonpath${PYTHONPATH:+:$PYTHONPATH}' " \
       "'$PYTHON'"                       \
          "'$include_server'"            \
          --port "'$socket'"             \
