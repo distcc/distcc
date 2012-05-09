@@ -1038,6 +1038,15 @@ compilations will simply fail.  Note that this does not affect
 jobs which must always be local such as linking.<BR>
 </DD>
 <DT>
+<B>DISTCC_BACKOFF_PERIOD</B>
+</DT>
+<DD>
+Specifies how long (in seconds) distcc will avoid trying to use
+a particular compilation server after that server yields a compile
+failure.  By default set to 60 seconds.  To disable the backoff
+behavior altogether, set this to 0.<BR>
+</DD>
+<DT>
 <B>DISTCC_IO_TIMEOUT</B>
 </DT>
 <DD>
@@ -1046,6 +1055,16 @@ a distributed job has timed out.  If a distributed job is expected
 to takes a long time, consider increasing this value so the job
 does not time out and fallback to a local compile.  By default
 set to 300 seconds.<BR>
+</DD>
+<DT>
+<B>DISTCC_PAUSE_TIME_MSEC</B>
+</DT>
+<DD>
+Specifies how long (in milliseconds) distcc will pause when all
+compilation servers are in use. By default set to 1000 milliseconds
+(1 second). Setting this to a smaller value (e.g. 10 milliconds)
+may improve throughput for some configurations, at the expense
+of increased CPU load on the distcc client machine.<BR>
 </DD>
 <DT>
 <B>DISTCC_SAVE_TEMPS</B>
