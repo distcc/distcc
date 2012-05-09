@@ -132,6 +132,10 @@ Or, in a Makefile, add the line:
 export DISTCC_HOSTS = $(shell lsdistcc)
 .RE
 
+Or use
+.BR pump (1)
+which automatically invokes lsdistcc if you set DISTCC_POTENTIAL_HOSTS.
+
 .SH "EXIT STATUS"
 The exit status is 0 if any servers were found, and 1 otherwise.
 
@@ -143,6 +147,7 @@ Default format is distcc%d.
 .SH "SEE ALSO"
 .BR distcc (1),
 .BR distccd (1),
+.BR pump (1),
 .BR printf (3)
 
 .I http://code.google.com/p/distcc/
