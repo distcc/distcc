@@ -753,16 +753,23 @@ dcc_build_somewhere(char *argv[],
     /* Either compile locally, after remote failure, or simply do other cc tasks
        as assembling, linking, etc. */
     ret = dcc_compile_local(argv, input_fname);
-    if (remote_ret != 0 && remote_ret != ret) {
-        /* Oops! it seems what we did remotely is not the same as what we did
-          locally. We normally send email in such situations (if emailing is
-          enabled), but we attempt an a time analysis of source files in order
-          to avoid doing so in case source files we changed during the build.
-        */
-        (void) dcc_please_send_email_after_investigation(
-            input_fname,
-            deps_fname,
-            discrepancy_filename);
+    if (remote_ret != 0) {
+        if (remote_ret != ret) {
+            /* Oops! it seems what we did remotely is not the same as what we did
+              locally. We normally send email in such situations (if emailing is
+              enabled), but we attempt an a time analysis of source files in order
+              to avoid doing so in case source files we changed during the build.
+            */
+            (void) dcc_please_send_email_after_investigation(
+                input_fname,
+                deps_fname,
+                discrepancy_filename);
+        } else if (host) {
+            /* Remote compilation failed, but we failed to compile this file too.
+             * Don't punish that server, it's innocent.
+             */
+            dcc_enjoyed_host(host);
+        }
     }
 
   unlock_and_clean_up:
