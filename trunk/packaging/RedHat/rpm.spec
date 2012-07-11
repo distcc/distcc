@@ -83,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc %{_mandir}/man1/distccmon-text.1.gz
 %doc %{_mandir}/man1/pump.1.gz
 %doc %{_mandir}/man1/include_server.1.gz
+%doc %{_mandir}/man1/lsdistcc.1.gz
 %doc %{_docdir}
 
 
