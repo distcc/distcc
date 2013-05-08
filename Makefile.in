@@ -224,8 +224,8 @@ tarball_sig_bz2 = $(tarball_bz2).asc
 tarball_sig_gz = $(tarball_gz).asc
 distnews = $(PACKAGE_TARNAME)-$(VERSION).NEWS
 
-rpm_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.deb
-deb_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.rpm
+rpm_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.rpm
+deb_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.deb
 
 common_obj = src/arg.o src/argutil.o					\
 	src/cleanup.o src/compress.o					\
