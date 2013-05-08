@@ -1162,7 +1162,11 @@ class SystemIncludeDirectories_Case(Compilation_Case):
     """Test -I/usr/include/sys"""
 
     def compileOpts(self):
-        return "-I/usr/include/sys"
+        if os.path.exists("/usr/include/sys/types.h"):
+          return "-I/usr/include/sys"
+        else:
+          raise comfychair.NotRunError (
+              "This test requires /usr/include/sys/types.h")
 
     def headerSource(self):
         return """
