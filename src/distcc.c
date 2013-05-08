@@ -41,6 +41,8 @@
 #include <errno.h>
 #include <signal.h>
 
+#include <libiberty.h>
+
 #include "distcc.h"
 #include "trace.h"
 #include "exitcode.h"
@@ -232,6 +234,9 @@ int main(int argc, char **argv)
     dcc_trace_version();
 
     compiler_name = (char *) dcc_find_basename(argv[0]);
+
+    /* Expand @FILE arguments. */
+    expandargv(&argc, &argv);
 
     /* Ignore SIGPIPE; we consistently check error codes and will
      * see the EPIPE. */
