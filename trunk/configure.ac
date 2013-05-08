@@ -356,6 +356,9 @@ else
     POPT_INCLUDES=''
 fi
 
+AC_CHECK_LIB([iberty], [expandargv],
+             ,
+             AC_MSG_ERROR([Cannot find libiberty]))
 
 
 ########################################################################
