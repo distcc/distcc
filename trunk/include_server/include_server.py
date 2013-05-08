@@ -474,7 +474,7 @@ def _ParseCommandLineOptions():
   """
   try:
     opts, args = getopt.getopt(sys.argv[1:],
-			       "d:estvw",
+			       "d:estvwx",
 			       ["port=",
                                 "pid_file=",
                                 "debug_pattern=",
