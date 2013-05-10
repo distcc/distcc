@@ -199,6 +199,8 @@ int dcc_lock_local_cpp(int *cpu_lock_fd)
     int ret;
     struct dcc_hostdef *chosen;
     ret = dcc_lock_one(dcc_hostdef_local_cpp, &chosen, cpu_lock_fd);
-    dcc_note_state(DCC_PHASE_CPP, NULL, chosen->hostname, DCC_LOCAL);
+    if (ret == 0) {
+        dcc_note_state(DCC_PHASE_CPP, NULL, chosen->hostname, DCC_LOCAL);
+    }
     return ret;
 }
