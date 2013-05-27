@@ -116,7 +116,7 @@ static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
         return -1;
     }
 }
-#elif defined(linux)
+#elif defined(linux) || defined(__GNU__)
 static ssize_t sys_sendfile(int ofd, int ifd, off_t *offset, size_t size)
 {
     return sendfile(ofd, ifd, offset, size);
