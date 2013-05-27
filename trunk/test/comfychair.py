@@ -31,7 +31,7 @@ For more information, see the file README.comfychair.
 To run a test suite based on ComfyChair, just run it as a program.
 """
 
-import sys, re, shutil
+import sys, os, re, shutil
 
 
 class TestCase:
@@ -46,12 +46,15 @@ class TestCase:
         self._enter_rundir()
         self._save_environment()
         self.add_cleanup(self.teardown)
-
+        # Prevent localizations interfering with attempts to parse
+        # program output and error messages.  LC_ALL has higher
+        # priority (see locale(7)), but set both just in case.
+        os.environ['LANG'] = 'C'
+        os.environ['LC_ALL'] = 'C'
 
     # --------------------------------------------------
     # Save and restore directory
     def _enter_rundir(self):
-        import os
         self.basedir = os.getcwd()
         self.add_cleanup(self._restore_directory)
         self.rundir = os.path.join(self.basedir,
@@ -61,21 +64,17 @@ class TestCase:
         shutil.rmtree(self.rundir, ignore_errors=1)
         os.makedirs(self.tmpdir)
         os.chdir(self.rundir)
-	os.environ['LANG'] = 'C'
 
     def _restore_directory(self):
-        import os
         os.chdir(self.basedir)
 
     # --------------------------------------------------
     # Save and restore environment
     def _save_environment(self):
-        import os
         self._saved_environ = os.environ.copy()
         self.add_cleanup(self._restore_environment)
 
     def _restore_environment(self):
-        import os
         os.environ.clear()
         os.environ.update(self._saved_environ)
 
@@ -135,7 +134,6 @@ why."""
 
     def require_root(self):
         """Skip this test unless run by root."""
-        import os
         self.require(os.getuid() == 0,
                      "must be root to run this test")
 
@@ -186,7 +184,6 @@ why."""
 
 
     def assert_no_file(self, filename):
-        import os.path
         assert not os.path.exists(filename), ("file exists but should not: %s" % filename)
 
 
@@ -194,7 +191,6 @@ why."""
     # Methods for running programs
 
     def runcmd_background(self, cmd):
-        import os
         self.test_log = self.test_log + "Run in background:\n" + `cmd` + "\n"
         pid = os.fork()
         if pid == 0:
@@ -227,7 +223,7 @@ stderr:
         Based in part on popen2.py
 
         Returns (waitstatus, stdout, stderr)."""
-        import os, types
+        import types
         pid = os.fork()
         if pid == 0:
             # child
@@ -259,7 +255,6 @@ stderr:
 
     def runcmd_unchecked(self, cmd, skip_on_noexec = 0):
         """Invoke a command; return (exitcode, stdout, stderr)"""
-        import os
         waitstatus, stdout, stderr = self.run_captured(cmd)
         assert not os.WIFSIGNALED(waitstatus), \
                ("%s terminated with signal %d" % (`cmd`, os.WTERMSIG(waitstatus)))
@@ -304,7 +299,6 @@ def _report_error(case, debugger):
       case         TestCase instance
       debugger     if true, a debugger function to be applied to the traceback
 """
-    import sys
     ex = sys.exc_info()
     print "-----------------------------------------------------------------"
     if ex:
@@ -410,7 +404,6 @@ def _test_name(test_class):
 
 def print_help():
     """Help for people running tests"""
-    import sys
     print """%s: software test suite based on ComfyChair
 
 usage:
@@ -449,13 +442,12 @@ by default runs all tests in the suggested order.
 
 Calls sys.exit() on completion.
 """
-    from sys import argv
     import getopt, sys
 
     opt_verbose = 0
     debugger = None
 
-    opts, args = getopt.getopt(argv[1:], 'pv',
+    opts, args = getopt.getopt(sys.argv[1:], 'pv',
                                ['help', 'list', 'verbose', 'post-mortem'])
     for opt, opt_arg in opts:
         if opt == '--help':

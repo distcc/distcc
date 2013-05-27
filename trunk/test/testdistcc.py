@@ -50,8 +50,6 @@ Example:
 # abstract superclasses just provide methods that can be called,
 # rather than establishing default behaviour.
 
-# TODO: Run the server in a different directory from the clients
-
 # TODO: Some kind of direct test of the host selection algorithm.
 
 # TODO: Test host files containing \r.
@@ -84,21 +82,10 @@ Example:
 
 # Check that without DISTCC_SAVE_TEMPS temporary files are cleaned up.
 
-# TODO: Test compiling a really large source file that produces a
-# large object file.  Perhaps need to generate it at run time -- just
-# one big array?
-
 # TODO: Perhaps redirect stdout, stderr to a temporary file while
 # running?  Use os.open(), os.dup2().
 
-# TODO: Test "distcc gcc -c foo.c bar.c".  gcc would actually compile
-# both of them.  We could split it into multiple compiler invocations,
-# but this is so rare that it's probably not worth the complexity.  So
-# at the moment is just handled locally.
-
 # TODO: Test crazy option arguments like "distcc -o -output -c foo.c"
-
-# TODO: Test attempt to compile a nonexistent file.
 
 # TODO: Add test harnesses that just exercise the bulk file transfer
 # routines.
@@ -110,9 +97,6 @@ Example:
 
 # TODO: Run "sleep" as a compiler, then kill the client and make sure
 # that the server and "sleep" promptly terminate.
-
-# TODO: Set umask 0, then check that the files are created with mode
-# 0644.
 
 # TODO: Perhaps have a little compiler that crashes.  Check that the
 # signal gets properly reported back.
@@ -132,11 +116,6 @@ Example:
 
 # TODO: Test a compiler that sleeps for a long time; try killing the
 # server and make sure it goes away.
-
-# TODO: Set LANG=C before running all tests, to try to make sure that
-# localizations don't break attempts to parse error messages.  Is
-# setting LANG enough, or do we also need LC_*?  (Thanks to Oscar
-# Esteban.)
 
 # TODO: Test scheduler.  Perhaps run really slow jobs to make things
 # deterministic, and test that they're dispatched in a reasonable way.
@@ -167,6 +146,9 @@ Example:
 # TODO: Test lzo is parsed properly
 
 # TODO: Test with DISTCC_DIR set, and not set.
+
+# TODO: Using --lifetime does cause sporadic failures.  Ensure that
+# teardown kills all daemon processes and then stop using --lifetime.
 
 
 import time, sys, string, os, glob, re, socket
@@ -237,6 +219,16 @@ def _IsPE(filename):
     '''
     contents = _FirstBytes(filename, 5)    
     return contents.startswith('MZ')
+
+def _Touch(filename):
+    '''Update the access and modification time of the given file,
+    creating an empty file if it does not exist.
+    '''
+    f = open(filename, 'a')
+    try:
+        os.utime(filename, None)
+    finally:
+        f.close()
 
 
 class SimpleDistCC_Case(comfychair.TestCase):
@@ -679,14 +671,6 @@ class Compile_c_Case(SimpleDistCC_Case):
       assert m_obj, line
       return m_obj.group(1)
 
-  def makeFile(self, f):
-      fd = open(f, "w")
-      fd.close()
-
-  def makeFiles(self, files):
-      for f in files:
-          self.makeFile(f)
-      
   def runtest(self):
 
       # Test dcc_discrepancy_filename
@@ -722,7 +706,8 @@ foo_bar""",
                     ]
 
       for dotd_contents, deps in dotd_cases:
-          self.makeFiles(deps)
+          for dep in deps:
+              _Touch(dep)
           # Now postulate the time that is the beginning of build. This time
           # is after that of all the dependencies.
           time_ref = time.time() + 1
@@ -752,12 +737,9 @@ foo_bar""",
 
           # Let's try to touch, say the last dep file. Then, we should expect
           # the name of that very file as the output because there's a fresh
-          # file. We'll have to advance real time beyond time_ref before doing
-          # this.
-          while time.time() <= time_ref:
-              time.sleep(1)
+          # file.
           if deps:
-              self.makeFile(deps[-1])
+              _Touch(deps[-1])
               out, err = self.runcmd(
                   "h_compile dcc_fresh_dependency_exists dotd '' %i" %
                   time_ref)
@@ -1232,8 +1214,7 @@ class Gdb_Case(CompileHello_Case):
         # Create an empty .gdbinit, so that we insulate this test
         # from the ~/.gdbinit file of the user running it.
         filename = ".gdbinit"
-        f = open(filename, 'w')
-        f.close()
+        _Touch(filename)
 
     def compiler(self):
         """Command for compiling and linking."""
@@ -1847,7 +1828,7 @@ class SyntaxError_Case(Compilation_Case):
     def compile(self):
         rc, msgs, errs = self.runcmd_unchecked(self.compileCmd())
         self.assert_notequal(rc, 0)
-        self.assert_re_match(r'testtmp.c:1:.*error', errs)
+        self.assert_re_search(r'testtmp.c:1:.*error', errs)
         self.assert_equal(msgs, '')
 
     def runtest(self):
