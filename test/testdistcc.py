@@ -387,9 +387,12 @@ class HelpOption_Case(SimpleDistCC_Case):
 class BogusOption_Case(SimpleDistCC_Case):
     """Test handling of --bogus-option.
 
-    Now that we support implicit compilers, this is passed to gcc, which returns 1."""
+    Now that we support implicit compilers, this is passed to gcc,
+    which returns a non-zero status."""
     def runtest(self):
-        self.runcmd(self.distcc() + _gcc + " --bogus-option", 1)
+        error_rc, _, _ = self.runcmd_unchecked(_gcc + " --bogus-option")
+        assert error_rc != 0
+        self.runcmd(self.distcc() + _gcc + " --bogus-option", error_rc)
         self.runcmd(self.distccd() + _gcc + " --bogus-option",
                     EXIT_BAD_ARGUMENTS)
 
