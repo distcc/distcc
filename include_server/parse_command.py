@@ -51,7 +51,7 @@ class ParseState:
     self.after_system_dirs = []
 
     self.language = 'none'    # equivalent to commandline of '-x none'
-    self.isysroot = None
+    self.isysroot = ""
     self.sysroot = ""
     self.output_file = None
     self.iprefix = ""
@@ -63,6 +63,8 @@ class ParseState:
   def set_sysroot(self, x): self.sysroot = x
   def set_outputfile(self, x): self.output_file = x
   def set_iprefix(self, x): self.iprefix = x
+  def include_sysroot(self):
+    return self.isysroot if self.isysroot else self.sysroot
 
 def _SplitMacroArg(arg):
   """Split an arg as found in -Darg
@@ -96,6 +98,7 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
   '-MF':            lambda ps, arg: None,
   '-MT':            lambda ps, arg: None,
   '-MQ':            lambda ps, arg: None,
+  '-arch':          lambda ps, arg: None,
   '-include':       lambda ps, arg: ps.include_files.append(arg),
   '-imacros':       lambda ps, arg: ps.include_files.append(arg),
   '-idirafter':     lambda ps, arg: ps.after_system_dirs.append(arg),
@@ -104,13 +107,12 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
                                       os.path.join(ps.iprefix, arg)),
   '-iwithprefixbefore':  lambda ps, arg: ps.i_dirs.append(
                                            os.path.join(ps.iprefix, arg)),
-#  '-isysroot':      lambda ps, arg: ps.set_isysroot(arg),
-  '-isysroot':      lambda ps, arg: _RaiseNotImplemented('-isysroot'),
+  '-isysroot':      lambda ps, arg: ps.set_isysroot(arg),
   '-imultilib':     lambda ps, arg: _RaiseNotImplemented('-imultilib'),
   '-isystem':       lambda ps, arg: ps.before_system_dirs.append(arg),
   '-iquote':        lambda ps, arg: ps.quote_dirs.append(arg),
 }
-CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS = ('M', 'i', '-')
+CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS = ('M', 'i', '-', 'a')
 # A "compile-time" check to make sure the first-letter list is up-to-date
 for key in CPP_OPTIONS_MAYBE_TWO_WORDS.keys():
   assert key[1] in CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS
@@ -447,7 +449,8 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
     parse_state.language = basics.TRANSLATION_UNIT_MAP[suffix]
   assert parse_state.language in basics.LANGUAGES
 
-  compiler_defaults.SetSystemDirsDefaults(compiler, parse_state.sysroot,
+  sysroot = parse_state.include_sysroot()
+  compiler_defaults.SetSystemDirsDefaults(compiler, sysroot,
                                           parse_state.language, timer)
 
   def IndexDirs(dir_list):
@@ -464,9 +467,10 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
   angle_dirs = IndexDirs(parse_state.i_dirs)
   angle_dirs.extend(IndexDirs(parse_state.before_system_dirs))
   if not parse_state.nostdinc:
+    sysroot = parse_state.include_sysroot()
     angle_dirs.extend(
       IndexDirs(compiler_defaults.system_dirs_default
-                [compiler][parse_state.sysroot][parse_state.language]))
+                [compiler][sysroot][parse_state.language]))
   angle_dirs.extend(IndexDirs(parse_state.after_system_dirs))
 
   quote_dirs = IndexDirs(parse_state.quote_dirs)

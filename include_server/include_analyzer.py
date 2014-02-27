@@ -83,7 +83,8 @@ class IncludeAnalyzer(object):
     # Make a compressor for source files.
     self.compress_files = compress_files.CompressFiles(self.includepath_map,
                                                        self.directory_map,
-                                                       self.realpath_map)
+                                                       self.realpath_map,
+                                                       self.mirror_path)
     # A fast cache for avoiding calls into the mirror_path object.
     self.mirrored = set([])
 
@@ -269,7 +270,8 @@ class IncludeAnalyzer(object):
     # handful. We add put the system links first, because there should be very
     # few of them.
     links = self.compiler_defaults.system_links + self.mirror_path.Links()
-    files = self.compress_files.Compress(include_closure, client_root_keeper)
+    files = self.compress_files.Compress(include_closure, client_root_keeper,
+                                         self.currdir_idx)
 
     files_and_links = files + links
 

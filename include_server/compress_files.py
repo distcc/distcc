@@ -27,7 +27,7 @@ import distcc_pump_c_extensions
 
 class CompressFiles(object):
 
-  def __init__(self, includepath_map, directory_map, realpath_map):
+  def __init__(self, includepath_map, directory_map, realpath_map, mirror_path):
     """Constructor.
 
     Arguments:
@@ -38,10 +38,11 @@ class CompressFiles(object):
     self.includepath_map = includepath_map
     self.directory_map = directory_map
     self.realpath_map = realpath_map
+    self.mirror_path = mirror_path
     # The realpath_map indices of files that have been compressed already.
     self.files_compressed = set([])
 
-  def Compress(self, include_closure, client_root_keeper):
+  def Compress(self, include_closure, client_root_keeper, currdir_idx):
     """Copy files in include_closure to the client_root directory, compressing
     them as we go, and also inserting #line directives.
 
@@ -77,7 +78,8 @@ class CompressFiles(object):
         dirname = os.path.dirname(new_filepath)
         try:
           if not os.path.isdir(dirname):
-            os.makedirs(dirname)
+            my_root = client_root_keeper.client_root
+            self.mirror_path.DoPath(realpath, currdir_idx, my_root)
         except (IOError, OSError), why:
           # Kill include server
           sys.exit("Could not make directory '%s': %s" % (dirname, why))
