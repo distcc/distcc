@@ -1993,13 +1993,13 @@ class EmptySource_Case(Compilation_Case):
     def sourceFilename(self):
         return "testtmp.i"
 
-class BadLogFile_Case(SimpleDistCC_Case):
+class BadLogFile_Case(CompileHello_Case):
     def runtest(self):
         self.runcmd("touch distcc.log")
         self.runcmd("chmod 0 distcc.log")
         msgs, errs = self.runcmd("DISTCC_LOG=distcc.log " + \
                                  self.distcc() + \
-                                 _gcc + " -c foo.c", expectedResult=1)
+                                 _gcc + " -c testtmp.c", expectedResult=0)
         self.assert_re_search("failed to open logfile", errs)
 
 
