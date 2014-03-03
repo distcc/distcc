@@ -14,7 +14,10 @@ QUICK SUMMARY
 
 0. Install prerequisites.  For example, on Debian or Ubuntu, you could use
 
-      sudo apt-get install gcc make python python-dev binutils-dev
+      sudo apt-get install gcc make python python-dev libiberty-dev
+
+   Note that past versions of Debian used binutils-dev instead of
+   libiberty-dev.
 
 1. Build and install
 
