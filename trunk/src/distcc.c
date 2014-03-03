@@ -41,7 +41,13 @@
 #include <errno.h>
 #include <signal.h>
 
+#if defined (HAVE_LIBIBERTY_H)
 #include <libiberty.h>
+#elif defined (HAVE_LIBIBERTY_LIBIBERTY_H)
+#include <libiberty/libiberty.h>
+#else
+#error Need libiberty.h
+#endif
 
 #include "distcc.h"
 #include "trace.h"
