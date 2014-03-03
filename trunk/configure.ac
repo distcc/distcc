@@ -86,9 +86,12 @@ AC_ARG_WITH(included-popt,
 	AC_HELP_STRING([--with-included-popt], [use bundled popt library, not from system]))
 
 AC_ARG_ENABLE(rfc2553,
-	AC_HELP_STRING([--enable-rfc2553], [use getaddrinfo, getnameinfo, etc]),
-        AC_DEFINE(ENABLE_RFC2553,1,[Use getaddrinfo(), getnameinfo(), etc]))
+	AC_HELP_STRING([--enable-rfc2553], [use getaddrinfo, getnameinfo, etc]))
 
+if test x"$enable_rfc2553" = xyes
+then
+    AC_DEFINE(ENABLE_RFC2553,1,[use getaddrinfo(), getnameinfo(), etc])
+fi
 
 AC_ARG_WITH(gnome,
         AC_HELP_STRING([--with-gnome], [build GNOME-based monitor]))
