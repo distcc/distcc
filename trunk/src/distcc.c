@@ -41,12 +41,14 @@
 #include <errno.h>
 #include <signal.h>
 
+#if HAVE_LIBIBERTY
 #if defined (HAVE_LIBIBERTY_H)
 #include <libiberty.h>
 #elif defined (HAVE_LIBIBERTY_LIBIBERTY_H)
 #include <libiberty/libiberty.h>
 #else
 #error Need libiberty.h
+#endif
 #endif
 
 #include "distcc.h"
@@ -241,9 +243,11 @@ int main(int argc, char **argv)
 
     compiler_name = (char *) dcc_find_basename(argv[0]);
 
+#if HAVE_LIBIBERTY    
     /* Expand @FILE arguments. */
     expandargv(&argc, &argv);
-
+#endif
+ 
     /* Ignore SIGPIPE; we consistently check error codes and will
      * see the EPIPE. */
     dcc_ignore_sigpipe(1);
