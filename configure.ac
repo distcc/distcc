@@ -359,16 +359,20 @@ else
     POPT_INCLUDES=''
 fi
 
-AC_CHECK_LIB([iberty], [expandargv],
-             ,
-             AC_MSG_ERROR([Cannot find libiberty]))
-AC_CHECK_HEADERS([libiberty.h libiberty/libiberty.h],
-                 [break])
-if (test "$ac_cv_header_libiberty_h" != yes) &&
-   (test "$ac_cv_header_libiberty_libiberty_h" != yes); then
-    AC_MSG_ERROR([Cannot find libiberty.h])
-fi
+AC_ARG_WITH(binutils,
+        AC_HELP_STRING([--without-libiberty], [build without libiberty (no @file support)]))
 
+if test x"$with_libiberty" != xno; then
+    AC_CHECK_LIB([iberty], [expandargv],
+                 ,
+                 AC_MSG_ERROR([Cannot find libiberty]))
+    AC_CHECK_HEADERS([libiberty.h libiberty/libiberty.h],
+                     [break])
+    if (test "$ac_cv_header_libiberty_h" != yes) &&
+       (test "$ac_cv_header_libiberty_libiberty_h" != yes); then
+        AC_MSG_ERROR([Cannot find libiberty.h])
+    fi
+fi
 
 ########################################################################
 # Check for types
