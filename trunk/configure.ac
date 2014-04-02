@@ -359,7 +359,7 @@ else
     POPT_INCLUDES=''
 fi
 
-AC_ARG_WITH(binutils,
+AC_ARG_WITH(libiberty,
         AC_HELP_STRING([--without-libiberty], [build without libiberty (no @file support)]))
 
 if test x"$with_libiberty" != xno; then
