@@ -1212,13 +1212,6 @@ class Gdb_Case(CompileHello_Case):
           pass
         return "src/testtmp.c"
 
-    def createSource(self):
-        CompileHello_Case.createSource(self)
-        # Create an empty .gdbinit, so that we insulate this test
-        # from the ~/.gdbinit file of the user running it.
-        filename = ".gdbinit"
-        _Touch(filename)
-
     def compiler(self):
         """Command for compiling and linking."""
         return _gcc + " -g ";
@@ -1283,7 +1276,7 @@ class Gdb_Case(CompileHello_Case):
         f = open('gdb_commands', 'w')
         f.write('break main\nrun\nnext\n')
         f.close()
-        out, errs = self.runcmd("gdb --batch --command=gdb_commands "
+        out, errs = self.runcmd("gdb -nh --batch --command=gdb_commands "
                                 "link/%s </dev/null" % testtmp_exe)
         # Normally we expect the stderr output to be empty.
         # But, due to gdb bugs, some versions of gdb will produce a
@@ -1317,7 +1310,7 @@ class Gdb_Case(CompileHello_Case):
         gcc_preprocessing_preserves_pwd = (error_rc == 0);
         if ((pump_mode and _IsElf('./%s' % testtmp_exe))
           or ((not pump_mode) and gcc_preprocessing_preserves_pwd)):
-            out, errs = self.runcmd("gdb --batch --command=../gdb_commands "
+            out, errs = self.runcmd("gdb -nh --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
             if errs and errs not in ignorable_error_messages:
                 self.assert_equal(errs, '')
