@@ -123,6 +123,7 @@ dist_lzo = lzo/minilzo.c lzo/minilzo.h lzo/lzoconf.h lzo/.stamp-conf.in
 dist_contrib = contrib/distcc-absolutify	\
 	contrib/distcc.sh		\
 	contrib/distccd-init		\
+	contrib/distccd-on-servers	\
 	contrib/dmake			\
 	contrib/make-j			\
 	contrib/netpwd			\
@@ -151,10 +152,16 @@ pkgdoc_DOCS = AUTHORS COPYING NEWS \
 	TODO \
 	doc/protocol-1.txt doc/status-1.txt \
 	doc/protocol-2.txt \
+	doc/protocol-3.txt doc/protocol-3-impl.txt \
+	doc/protocol-gssapi.txt \
 	doc/reporting-bugs.txt \
 	survey.txt
 
 example_DOCS = \
+	doc/example/README \
+	doc/example/default \
+	doc/example/hosts.allow \
+	doc/example/services \
 	doc/example/init doc/example/init-suse	\
 	doc/example/logrotate				\
 	doc/example/xinetd				\
