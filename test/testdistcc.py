@@ -1286,6 +1286,7 @@ class Gdb_Case(CompileHello_Case):
           'Failed to read a valid object file image from memory.\n',
           'warning: Lowest section in system-supplied DSO at 0xffffe000 is .hash at ffffe0b4\n',
           'warning: no loadable sections found in added symbol-file /usr/lib/debug/lib/ld-2.7.so\n',
+          'warning: Could not load shared library symbols for linux-gate.so.1.\nDo you need "set solib-search-path" or "set sysroot"?\n',
         )
         if errs and errs not in ignorable_error_messages:
             self.assert_equal(errs, '')
