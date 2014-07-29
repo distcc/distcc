@@ -224,6 +224,9 @@ AC_ISC_POSIX
 # variadic macros.  If we can disable it, do so.
 
 
+# This is needed for our included version of lzo.
+CPPFLAGS="$CPPFLAGS -DMINILZO_HAVE_CONFIG_H"
+
 # This is needed for our included version of popt.
 # TODO(csilvers): figure out what that above comment means, and if it's true.
 CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"
