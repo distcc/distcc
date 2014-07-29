@@ -345,6 +345,7 @@ then
     # If not explicitly requested, guess.       
     # People might have the library but not the header, in which case we 
     # still need to use the included copy.
+    AC_CHECK_LIB(popt, poptGetContext, , [with_included_popt=yes])
     AC_CHECK_HEADER(popt.h, , [with_included_popt=yes])
 fi
 AC_CACHE_SAVE
@@ -357,9 +358,10 @@ then
     BUILD_POPT='$(popt_OBJS)'
     POPT_INCLUDES='-I"$(srcdir)/popt"'
 else
-    LIBS="$LIBS -lpopt"
     AC_MSG_RESULT(no)
     POPT_INCLUDES=''
+    AC_CHECK_LIB(popt, poptGetContext, ,
+                 AC_MSG_ERROR([Cannot find system libpopt]))
 fi
 
 AC_ARG_WITH(libiberty,
