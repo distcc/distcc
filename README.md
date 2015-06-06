@@ -1,8 +1,8 @@
 # distcc -- a free distributed C/C++ compiler system
 
-https://github.com/distcc/
+by Martin Pool
 
-by Martin Pool <mbp@sourcefrog.net>
+http://distcc.org/
 
 "pump" functionality added by
 Fergus Henderson, Nils Klarlund, Manos Renieris, and Craig Silverstein (Google Inc.)
@@ -50,4 +50,13 @@ kernel, rsync, KDE, GNOME (via GARNOME), Samba and Ethereal.  distcc
 is nearly linearly scalable for small numbers of machines: for a
 typical case, three machines are 2.6 times faster than one.
 
+## Licence
+
 distcc is distributed under the GNU General Public Licence v2.
+
+## Resources
+
+ * [Mailing list](https://lists.samba.org/mailman/listinfo/distcc)
+
+ * [Stack Overflow questions](http://stackoverflow.com/questions/tagged/distcc)
+
