@@ -1,13 +1,11 @@
+# distcc -- a free distributed C/C++ compiler system
 
-	  distcc -- a free distributed C/C++ compiler system
+https://github.com/distcc/
 
-		   http://code.google.com/p/distcc/
+by Martin Pool <mbp@sourcefrog.net>
 
-		    by Martin Pool <mbp@samba.org>
-
-		    "pump" functionality added by
- Fergus Henderson, Nils Klarlund, Manos Renieris, and Craig Silverstein
-			    (Google Inc.)
+"pump" functionality added by
+Fergus Henderson, Nils Klarlund, Manos Renieris, and Craig Silverstein (Google Inc.)
 
 distcc is a program to distribute compilation of C or C++ code across
 several machines on a network. distcc should always generate the same
