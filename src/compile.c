@@ -747,6 +747,7 @@ dcc_build_somewhere(char *argv[],
     }
 
   lock_local:
+    dcc_read_localslots_configuration();
     dcc_lock_local(&cpu_lock_fd);
 
   run_local:
