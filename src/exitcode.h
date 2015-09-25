@@ -59,12 +59,11 @@ enum dcc_exitcode {
     EXIT_NO_SUCH_FILE             = 115,
     EXIT_NO_HOSTS                 = 116,
     EXIT_GONE                     = 117, /**< No longer relevant */
-#ifdef HAVE_GSSAPI
     EXIT_TIMEOUT                  = 118,
-    EXIT_GSSAPI_FAILED            = 119 /**< GSS-API - Catchall error code for GSS-API related errors. */
-#else
-    EXIT_TIMEOUT                  = 118
+#ifdef HAVE_GSSAPI
+    EXIT_GSSAPI_FAILED            = 119, /**< GSS-API - Catchall error code for GSS-API related errors. */
 #endif
+    EXIT_LOCAL_CPP                = 120
 };
 
 
