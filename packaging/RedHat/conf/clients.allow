@@ -21,5 +21,9 @@
 # (apart from comments) and thus only allow SSH mode rather than TCP mode.
 # However, be aware that SSH mode has poorer performance than TCP mode.
 
+# For RedHat-like distributions using systemd, you should instead look in:
+# /etc/sysconfig/distccd in order to configure the trusted hosts list
+# See: https://bugzilla.redhat.com/show_bug.cgi?id=1187517
+
 # Add your trusted hosts here, e.g. start by uncommented the line below.
 # 127.0.0.1
