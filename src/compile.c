@@ -560,10 +560,12 @@ dcc_build_somewhere(char *argv[],
         goto run_local;
     }
 
-    /* Lock the local CPU, since we're going to be doing preprocessing
-     * or include scanning. */
-    if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
-        goto fallback;
+    if (!dcc_is_preprocessed(input_fname)) {
+        /* Lock the local CPU, since we're going to be doing preprocessing
+         * or include scanning. */
+        if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
+            goto fallback;
+        }
     }
 
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
