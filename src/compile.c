@@ -819,8 +819,8 @@ int dcc_build_somewhere_timed(char *argv[],
         timeval_subtract(&delta, &after, &before);
 
         rs_log(RS_LOG_INFO|RS_LOG_NONAME,
-               "elapsed compilation time %ld.%06lds",
-               delta.tv_sec, (long) delta.tv_usec);
+               "elapsed compilation time %lld.%06lds",
+               (long long) delta.tv_sec, (long) delta.tv_usec);
     }
 
     return ret;
