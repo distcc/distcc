@@ -316,7 +316,7 @@ int poptStuffArgs(poptContext con, /*@keep@*/ const char ** argv)
  * @return		0 on success
  */
 /*@unused@*/
-int poptAddAlias(poptContext con, struct poptAlias alias, int flags)
+int poptAddAlias(poptContext con, struct poptAlias alias)
 	/*@modifies con @*/;
 
 /** \ingroup popt
@@ -346,7 +346,7 @@ int poptReadConfigFile(poptContext con, const char * fn)
  * @param useEnv	(unused)
  * @return		0 on success, POPT_ERROR_ERRNO on failure
  */
-int poptReadDefaultConfig(poptContext con, /*@unused@*/ int useEnv)
+int poptReadDefaultConfig(poptContext con)
 	/*@globals fileSystem, internalState @*/
 	/*@modifies con->execs, con->numExecs,
 		fileSystem, internalState @*/;
@@ -429,7 +429,7 @@ this_is   =   fdsafdas
  * @see			poptParseArgvString
  */
 /*@-fcnuse@*/
-int poptConfigFileToString(FILE *fp, /*@out@*/ char ** argstrp, int flags)
+int poptConfigFileToString(FILE *fp, /*@out@*/ char ** argstrp)
 	/*@globals fileSystem @*/
 	/*@modifies *fp, *argstrp, fileSystem @*/;
 /*@=fcnuse@*/
@@ -459,7 +459,7 @@ void poptSetExecPath(poptContext con, const char * path, int allowAbsolute)
  * @param fp		ouput file handle
  * @param flags		(unused)
  */
-void poptPrintHelp(poptContext con, FILE * fp, /*@unused@*/ int flags)
+void poptPrintHelp(poptContext con, FILE * fp)
 	/*@globals fileSystem @*/
 	/*@modifies *fp, fileSystem @*/;
 
@@ -469,7 +469,7 @@ void poptPrintHelp(poptContext con, FILE * fp, /*@unused@*/ int flags)
  * @param fp		ouput file handle
  * @param flags		(unused)
  */
-void poptPrintUsage(poptContext con, FILE * fp, /*@unused@*/ int flags)
+void poptPrintUsage(poptContext con, FILE * fp)
 	/*@globals fileSystem @*/
 	/*@modifies *fp, fileSystem @*/;
 

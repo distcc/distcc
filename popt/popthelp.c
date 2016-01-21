@@ -21,16 +21,14 @@
  * @param data		(unused)
  */
 static void displayArgs(poptContext con,
-		/*@unused@*/ enum poptCallbackReason foo,
-		struct poptOption * key, 
-		/*@unused@*/ const char * arg, /*@unused@*/ void * data)
+		struct poptOption * key)
 	/*@globals fileSystem@*/
 	/*@modifies fileSystem@*/
 {
     if (key->shortName == '?')
-	poptPrintHelp(con, stdout, 0);
+	poptPrintHelp(con, stdout);
     else
-	poptPrintUsage(con, stdout, 0);
+	poptPrintUsage(con, stdout);
     exit(0);
 }
 
@@ -86,9 +84,8 @@ getTableTranslationDomain(/*@null@*/ const struct poptOption *table)
  * @param translation_domain	translation domain
  */
 /*@observer@*/ /*@null@*/ static const char *
-getArgDescrip(const struct poptOption * opt,
-		/*@-paramuse@*/ /* FIX: i18n macros disabled with lclint */
-		/*@null@*/ const char * translation_domain)
+getArgDescrip(const struct poptOption * opt
+		/*@-paramuse@*/ /* FIX: i18n macros disabled with lclint */)
 		/*@=paramuse@*/
 	/*@*/
 {
@@ -124,9 +121,8 @@ getArgDescrip(const struct poptOption * opt,
  */
 static /*@only@*/ /*@null@*/ char *
 singleOptionDefaultValue(int lineLength,
-		const struct poptOption * opt,
-		/*@-paramuse@*/ /* FIX: i18n macros disabled with lclint */
-		/*@null@*/ const char * translation_domain)
+		const struct poptOption * opt
+		/*@-paramuse@*/ /* FIX: i18n macros disabled with lclint */)
 		/*@=paramuse@*/
 	/*@*/
 {
@@ -203,7 +199,7 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
     int indentLength = maxLeftCol + 5;
     int lineLength = 79 - indentLength;
     const char * help = D_(translation_domain, opt->descrip);
-    const char * argDescrip = getArgDescrip(opt, translation_domain);
+    const char * argDescrip = getArgDescrip(opt);
     int helpLength;
     char * defs = NULL;
     char * left;
@@ -240,7 +236,7 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
 	/* Choose type of output */
 	/*@-branchstate@*/
 	if (opt->argInfo & POPT_ARGFLAG_SHOW_DEFAULT) {
-	    defs = singleOptionDefaultValue(lineLength, opt, translation_domain);
+	    defs = singleOptionDefaultValue(lineLength, opt);
 	    if (defs) {
 		char * t = malloc((help ? strlen(help) : 0) +
 				strlen(defs) + sizeof(" "));
@@ -387,7 +383,7 @@ static int maxArgWidth(const struct poptOption * opt,
 		len += strlen(opt->longName);
 	    }
 
-	    s = getArgDescrip(opt, translation_domain);
+	    s = getArgDescrip(opt);
 	    if (s)
 		len += sizeof("=")-1 + strlen(s);
 	    if (opt->argInfo & POPT_ARGFLAG_OPTIONAL) len += sizeof("[]")-1;
@@ -499,7 +495,7 @@ static int showHelpIntro(poptContext con, FILE * fp)
     return len;
 }
 
-void poptPrintHelp(poptContext con, FILE * fp, /*@unused@*/ int flags)
+void poptPrintHelp(poptContext con, FILE * fp)
 {
     int leftColWidth;
 
@@ -528,7 +524,7 @@ static int singleOptionUsage(FILE * fp, int cursor,
     int len = 4;
     char shortStr[2] = { '\0', '\0' };
     const char * item = shortStr;
-    const char * argDescrip = getArgDescrip(opt, translation_domain);
+    const char * argDescrip = getArgDescrip(opt);
 
     if (opt->shortName != '\0' && opt->longName != NULL) {
 	len += 2;
@@ -707,7 +703,7 @@ static int showShortOptions(const struct poptOption * opt, FILE * fp,
     return strlen(s) + 4;
 }
 
-void poptPrintUsage(poptContext con, FILE * fp, /*@unused@*/ int flags)
+void poptPrintUsage(poptContext con, FILE * fp)
 {
     poptDone done = memset(alloca(sizeof(*done)), 0, sizeof(*done));
     int cursor;

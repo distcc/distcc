@@ -126,7 +126,7 @@ exit:
  * 2== line to long
  * 3== umm.... more?
  */
-int poptConfigFileToString(FILE *fp, char ** argstrp, /*@unused@*/ int flags)
+int poptConfigFileToString(FILE *fp, char ** argstrp)
 {
     char line[999];
     char * argstr;
