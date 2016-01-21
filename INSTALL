@@ -21,6 +21,8 @@ QUICK SUMMARY
 
 1. Build and install
 
+   (see `Build on FreeBSD` below for building on FreeBSD)
+
       ./autogen.sh       # If "configure" does not already exist.
       ./configure
       make
@@ -354,3 +356,10 @@ Complete the survey
 
 Once you have distcc working for your own application, please complete
 and mail in the survey in survey.txt.
+
+Build on FreeBSD
+----------------
+On FreeBSD 10.1 which has `clang` installed by default you might need to
+configure with `./configure --without-libiterty` (and install the
+`devel/binutils` port) and build with
+`gmake CFLAGS='-Wno-error=unused-parameter'`.
