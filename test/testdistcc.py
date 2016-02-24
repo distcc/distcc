@@ -211,13 +211,13 @@ def _IsMachO(filename):
             # 0xfeedface' are also mach-o.
             contents.startswith('\xFF\xED\xFA\xCE') or
             contents.startswith('\xCE\xFA\xED\xFF'))
-    
+
 def _IsPE(filename):
     '''Given a filename, determine if it's a Microsoft PE object file or
     executable.  The magic number used ('MZ') is taken from
     /usr/share/file/magic on an ubuntu machine.
     '''
-    contents = _FirstBytes(filename, 5)    
+    contents = _FirstBytes(filename, 5)
     return contents.startswith('MZ')
 
 def _Touch(filename):
@@ -484,11 +484,11 @@ class ScanArgs_Case(SimpleDistCC_Case):
                  ("gcc -S -c hello.c", "distribute", "hello.c", "hello.s"),
                  ("gcc -M hello.c", "local"),
                  ("gcc -ME hello.c", "local"),
-                 
+
                  ("gcc -MD -c hello.c", "distribute", "hello.c", "hello.o"),
                  ("gcc -MMD -c hello.c", "distribute", "hello.c", "hello.o"),
 
-                 # Assemble to stdout (thanks Alexandre).  
+                 # Assemble to stdout (thanks Alexandre).
                  ("gcc -S foo.c -o -", "local"),
                  ("-S -o - foo.c", "local"),
                  ("-c -S -o - foo.c", "local"),
@@ -554,7 +554,7 @@ class DotD_Case(SimpleDistCC_Case):
         #
         # - The expected target name (or None).
         #
-        
+
         # The dotd_name is thus divined by examination of the compilation
         # directory where we actually run gcc.
 
@@ -588,7 +588,7 @@ class DotD_Case(SimpleDistCC_Case):
                     map_out['needs_dotd'],
                     map_out['sets_dotd_target'],
                     map_out['dotd_target'])
-        
+
         for (args, dep_glob, how_many, target) in cases:
 
             # Determine what gcc says.
@@ -660,7 +660,7 @@ int main(void) { return 0; }
 
 class Compile_c_Case(SimpleDistCC_Case):
   """Unit tests for source file 'compile.c.'
-  
+
   Currently, only the functions dcc_fresh_dependency_exists() and
   dcc_discrepancy_filename() are tested.
   """
@@ -760,7 +760,7 @@ class ImplicitCompilerScan_Case(ScanArgs_Case):
             # NB use "apply" rather than new syntax for compatibility with
             # venerable Pythons.
             apply(self.checkScanArgs, tup)
-            
+
 
 class ExtractExtension_Case(SimpleDistCC_Case):
     def runtest(self):
@@ -787,7 +787,7 @@ class DaemonBadPort_Case(SimpleDistCC_Case):
 class InvalidHostSpec_Case(SimpleDistCC_Case):
     def runtest(self):
         """Test various invalid DISTCC_HOSTS
-        
+
         See also test_parse_host_spec, which tests valid specifications."""
         for spec in ["", "    ", "\t", "  @ ", ":", "mbp@", "angry::", ":4200"]:
             self.runcmd(("DISTCC_HOSTS=\"%s\" " % spec) + self.valgrind()
@@ -966,8 +966,8 @@ int main(void) {
 class BackslashInMacro_Case(ComputedInclude_Case):
     def source(self):
         return """
+#include <stdio.h>
 #if FALSE
-  #include <stdio.h>
   #define HEADER MAKE_HEADER(testhdr)
   #define MAKE_HEADER(header_name) STRINGIZE(foobar\)
   #define STRINGIZE(x) STRINGIZE2(x)
@@ -1266,7 +1266,7 @@ class Gdb_Case(CompileHello_Case):
         if os.path.exists('link/testtmp.exe'):
             testtmp_exe = 'testtmp.exe'
         else:
-            testtmp_exe = 'testtmp'            
+            testtmp_exe = 'testtmp'
 
         # Run gdb and verify that it is able to correctly locate the
         # testtmp.c source file.  We write the gdb commands to a file
@@ -1406,7 +1406,7 @@ class DashONoSpace_Case(CompileHello_Case):
 class WriteDevNull_Case(CompileHello_Case):
     def runtest(self):
         self.compile()
-        
+
     def compileCmd(self):
         return self.distcc_without_fallback() + _gcc + \
                " -c -o /dev/null -c %s" % (self.sourceFilename())
@@ -1425,13 +1425,13 @@ int main(void) {
    return 0;
 }
 """)
-        
+
     def runtest(self):
         self.runcmd(self.distcc()
                     + _gcc + " -c test1.c test2.c")
         self.runcmd(self.distcc()
                     + _gcc + " -o test test1.o test2.o")
-        
+
 
 
 class CppError_Case(CompileHello_Case):
@@ -1500,7 +1500,7 @@ large foo!
     def teardown(self):
         # no daemon is run for this test
         pass
-        
+
 
 class NoDetachDaemon_Case(CompileHello_Case):
     """Test the --no-detach option."""
@@ -1516,7 +1516,7 @@ class NoDetachDaemon_Case(CompileHello_Case):
         self.pid = self.runcmd_background(cmd)
         self.add_cleanup(self.killDaemon)
         # Wait until the server is ready for connections.
-        time.sleep(0.2)   # Give distccd chance to start listening on the port 
+        time.sleep(0.2)   # Give distccd chance to start listening on the port
         sock = socket.socket()
         while sock.connect_ex(('127.0.0.1', self.server_port)) != 0:
             time.sleep(0.2)
@@ -1665,7 +1665,7 @@ class AbsSourceFilename_Case(CompileHello_Case):
                 + _gcc
                 + " -c -o testtmp.o %s/testtmp.c"
                 % _ShellSafe(os.getcwd()))
-    
+
 
 class HundredFold_Case(CompileHello_Case):
     """Try repeated simple compilations.
@@ -1677,7 +1677,7 @@ class HundredFold_Case(CompileHello_Case):
 
     def daemon_lifetime(self):
         return 120
-    
+
     def runtest(self):
         for unused_i in xrange(100):
             self.runcmd(self.distcc()
@@ -1688,7 +1688,7 @@ class Concurrent_Case(CompileHello_Case):
     """Try many compilations at the same time"""
     def daemon_lifetime(self):
         return 120
-    
+
     def runtest(self):
         # may take about a minute or so
         pids = {}
@@ -1715,7 +1715,7 @@ class BigAssFile_Case(Compilation_Case):
         # source.  Picking the size is kind of hard -- something that
         # will properly exercise distcc may be too big for small/old
         # machines.
-        
+
         f.write("int main() {}\n")
         for i in xrange(200000):
             f.write("int i%06d = %d;\n" % (i, i))
@@ -1745,7 +1745,7 @@ class BinFalse_Case(Compilation_Case):
     """
     def createSource(self):
         open("testtmp.i", "wt").write("int main() {}")
-        
+
     def runtest(self):
         # On Solaris and IRIX 6, 'false' returns exit status 255
         if sys.platform == 'sunos5' or \
@@ -1771,7 +1771,7 @@ class BinTrue_Case(Compilation_Case):
     """
     def createSource(self):
         open("testtmp.i", "wt").write("int main() {}")
-        
+
     def runtest(self):
         self.runcmd(self.distcc()
                     + "true -c testtmp.i", 0)
@@ -1791,7 +1791,7 @@ class SBeatsC_Case(CompileHello_Case):
         if not os.path.exists("testtmp.s"):
             self.fail("did not create testtmp.s but should have")
 
-    
+
 class NoServer_Case(CompileHello_Case):
     """Invalid server name"""
     def setup(self):
@@ -1800,15 +1800,15 @@ class NoServer_Case(CompileHello_Case):
         self.distcc_log = 'distcc.log'
         os.environ['DISTCC_LOG'] = self.distcc_log
         self.createSource()
-    
+
     def runtest(self):
         self.runcmd(self.distcc()
                     + _gcc + " -c -o testtmp.o testtmp.c")
         msgs = open(self.distcc_log, 'r').read()
         self.assert_re_search(r'failed to distribute.*running locally instead',
-                              msgs)            
-        
-        
+                              msgs)
+
+
 class ImpliedOutput_Case(CompileHello_Case):
     """Test handling absence of -o"""
     def compileCmd(self):
@@ -1877,7 +1877,7 @@ class MissingCompiler_Case(CompileHello_Case):
                                  + "nosuchcc -c testtmp.i",
                                  expectedResult=EXIT_COMPILER_MISSING)
         self.assert_re_search(r'failed to exec', errs)
-        
+
 
 
 class RemoteAssemble_Case(WithDaemon_Case):
@@ -2015,7 +2015,7 @@ class AccessDenied_Case(CompileHello_Case):
         return self.distcc_with_fallback() + \
                _gcc + " -o testtmp.o -c %s" % (self.sourceFilename())
 
-    
+
     def runtest(self):
         self.compile()
         errs = open('distcc.log').read()
