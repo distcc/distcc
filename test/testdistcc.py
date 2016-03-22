@@ -32,7 +32,7 @@ Options:
   --pump                  Run the server tests with remote preprocessing
                           enabled.
 Example:
-  PATH="repr(pwd):$PATH"
+  PATH="`pwd`:$PATH"
   python test/testdistcc.py --valgrind="valgrind --quiet --num-callers=20"
 """
 
