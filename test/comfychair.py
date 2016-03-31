@@ -105,13 +105,14 @@ class TestCase:
         """
         while self._cleanups:
             try:
-                apply(self._cleanups.pop())
+                clean_task = self._cleanups.pop()
+                clean_task()
             except KeyboardInterrupt:
-                print "interrupted during cleanups"
+                print("interrupted during cleanups")
                 _report_error(self, debugger)
                 return 2
             except:
-                print "error during cleanups"
+                print("error during cleanups")
                 _report_error(self, debugger)
                 return 1
         return 0
@@ -130,7 +131,7 @@ class TestCase:
 If the predicate value is not true, the test is skipped with a message explaining
 why."""
         if not predicate:
-            raise NotRunError, message
+            raise NotRunError(message)
 
     def require_root(self):
         """Skip this test unless run by root."""
@@ -146,11 +147,11 @@ why."""
 
     def assert_equal(self, a, b):
         if not a == b:
-            raise AssertionError("assertEquals failed: %s" % `(a, b)`)
+            raise AssertionError("assertEquals failed: %s %s" % (repr(a), repr(b)))
             
     def assert_notequal(self, a, b):
         if a == b:
-            raise AssertionError("assertNotEqual failed: %s" % `(a, b)`)
+            raise AssertionError("assertNotEqual failed: %s %s" % (repr(a), repr(b)))
 
     def assert_re_match(self, pattern, s):
         """Assert that a string matches a particular pattern
@@ -165,7 +166,7 @@ why."""
         if not re.match(pattern, s):
             raise AssertionError("string does not match regexp\n"
                                  "    string: %s\n"
-                                 "    re: %s" % (`s`, `pattern`))
+                                 "    re: %s" % (repr(s), repr(pattern)))
 
     def assert_re_search(self, pattern, s):
         """Assert that a string *contains* a particular pattern
@@ -180,7 +181,7 @@ why."""
         if not re.search(pattern, s):
             raise AssertionError("string does not contain regexp\n"
                                  "    string: %s\n"
-                                 "    re: %s" % (`s`, `pattern`))
+                                 "    re: %s" % (repr(s), repr(pattern)))
 
 
     def assert_no_file(self, filename):
@@ -191,7 +192,7 @@ why."""
     # Methods for running programs
 
     def runcmd_background(self, cmd):
-        self.test_log = self.test_log + "Run in background:\n" + `cmd` + "\n"
+        self.test_log = self.test_log + "Run in background:\n" + repr(cmd) + "\n"
         pid = os.fork()
         if pid == 0:
             # child
@@ -223,23 +224,22 @@ stderr:
         Based in part on popen2.py
 
         Returns (waitstatus, stdout, stderr)."""
-        import types
         pid = os.fork()
         if pid == 0:
             # child
-            try: 
+            try:
                 pid = os.getpid()
                 openmode = os.O_WRONLY|os.O_CREAT|os.O_TRUNC
 
-                outfd = os.open('%d.out' % pid, openmode, 0666)
+                outfd = os.open('%d.out' % pid, openmode)
                 os.dup2(outfd, 1)
                 os.close(outfd)
 
-                errfd = os.open('%d.err' % pid, openmode, 0666)
+                errfd = os.open('%d.err' % pid, openmode)
                 os.dup2(errfd, 2)
                 os.close(errfd)
 
-                if isinstance(cmd, types.StringType):
+                if isinstance(cmd, str):
                     cmd = ['/bin/sh', '-c', cmd]
 
                 os.execvp(cmd[0], cmd)
@@ -257,7 +257,7 @@ stderr:
         """Invoke a command; return (exitcode, stdout, stderr)"""
         waitstatus, stdout, stderr = self.run_captured(cmd)
         assert not os.WIFSIGNALED(waitstatus), \
-               ("%s terminated with signal %d" % (`cmd`, os.WTERMSIG(waitstatus)))
+               ("%s terminated with signal %d" % (repr(cmd), os.WTERMSIG(waitstatus)))
         rc = os.WEXITSTATUS(waitstatus)
         self.test_log = self.test_log + ("""Run command: %s
 Wait status: %#x (exit code %d, signal %d)
@@ -270,13 +270,13 @@ stderr:
             # Either we could not execute the command or the command
             # returned exit code 127.  According to system(3) we can't
             # tell the difference.
-            raise NotRunError, "could not execute %s" % `cmd`
+            raise NotRunError("could not execute %s" % repr(cmd))
         return rc, stdout, stderr
     
 
     def explain_failure(self, exc_info = None):
-        print "test_log:"
-        print self.test_log
+        print("test_log:")
+        print(self.test_log)
 
 
     def log(self, msg):
@@ -300,12 +300,12 @@ def _report_error(case, debugger):
       debugger     if true, a debugger function to be applied to the traceback
 """
     ex = sys.exc_info()
-    print "-----------------------------------------------------------------"
+    print("-----------------------------------------------------------------")
     if ex:
         import traceback
         traceback.print_exc(file=sys.stdout)
     case.explain_failure()
-    print "-----------------------------------------------------------------"
+    print("-----------------------------------------------------------------")
 
     if debugger:
         tb = ex[2]
@@ -330,12 +330,12 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
     test progress is not printed.  
     """
     if not subtest:
-        print "%-30s" % _test_name(testcase_class),
+        print("%-30s" % _test_name(testcase_class), end=' ')
         def failure_print(message):
-            print message
+            print(message)
     else:
         def failure_print(message):
-            print '[%s %s]' % (_test_name(testcase_class), message)
+            print('[%s %s]' % (_test_name(testcase_class), message))
             
     # flush now so that long running tests are easier to follow
     sys.stdout.flush()
@@ -348,13 +348,13 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
             obj.setup()
             obj.runtest()
             if not subtest:
-                print "OK"
+                print("OK")
         except KeyboardInterrupt:
             failure_print("INTERRUPT")
             if obj:
                 _report_error(obj, debugger)
             raise
-        except NotRunError, msg:
+        except NotRunError as msg:
             failure_print("NOTRUN, %s" % msg.value)
         except:
             failure_print("FAIL")
@@ -399,12 +399,12 @@ def _test_name(test_class):
     try:
         return test_class.__name__
     except:
-        return `test_class`
+        return repr(test_class)
 
 
 def print_help():
     """Help for people running tests"""
-    print """%s: software test suite based on ComfyChair
+    print("""%s: software test suite based on ComfyChair
 
 usage:
     To run all tests, just run this program.  To run particular tests,
@@ -415,13 +415,13 @@ options:
     --list              list available tests
     --verbose, -v       show more information while running tests
     --post-mortem, -p   enter Python debugger on error
-""" % sys.argv[0]
+""" % sys.argv[0])
 
 
 def print_list(test_list):
     """Show list of available tests"""
     for test_class in test_list:
-        print "    %s" % _test_name(test_class)
+        print("    %s" % _test_name(test_class))
 
 
 def main(tests, extra_tests=[]):
@@ -478,4 +478,4 @@ Calls sys.exit() on completion.
 
 
 if __name__ == '__main__':
-    print __doc__
+    print(__doc__)
