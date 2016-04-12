@@ -334,6 +334,9 @@ static int dcc_parse_tcp_host(struct dcc_hostdef *hostdef,
     const char *token = token_start;
 
     if (token[0] == '[') {
+	/* Skip the leading bracket, which is not part of the address */
+	token++;
+
 	/* We have an IPv6 Address */
 	if ((ret = dcc_dup_part(&token, &hostdef->hostname, "/] \t\n\r\f,")))
 	    return ret;
