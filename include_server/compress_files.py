@@ -1,4 +1,4 @@
-#! /usr/bin/python2.4
+#! /usr/bin/env python3
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
- 
+
 """Compress files in an include closure."""
 
 import os
@@ -67,10 +67,10 @@ class CompressFiles(object):
       if len(include_closure[realpath_idx]) > 0:
         # Designate by suffix '.abs' that this file is to become known by an
         # absolute filepath through a #line directive.
-	new_filepath = "%s%s.lzo.abs" % (client_root_keeper.client_root,
+        new_filepath = "%s%s.lzo.abs" % (client_root_keeper.client_root,
                                          realpath)
       else:
-	new_filepath = "%s%s.lzo" % (client_root_keeper.client_root,
+        new_filepath = "%s%s.lzo" % (client_root_keeper.client_root,
                                      realpath)
       files.append(new_filepath)
       if not new_filepath in self.files_compressed:
@@ -80,7 +80,7 @@ class CompressFiles(object):
           if not os.path.isdir(dirname):
             my_root = client_root_keeper.client_root
             self.mirror_path.DoPath(realpath, currdir_idx, my_root)
-        except (IOError, OSError), why:
+        except (IOError, OSError) as why:
           # Kill include server
           sys.exit("Could not make directory '%s': %s" % (dirname, why))
         if new_filepath.endswith('.abs'):
@@ -99,17 +99,17 @@ class CompressFiles(object):
           prefix = ""
         try:
           real_file_fd = open(realpath, "r")
-        except (IOError, OSError), why:
+        except (IOError, OSError) as why:
           sys.exit("Could not open '%s' for reading: %s" % (realpath, why))
         try:
           new_filepath_fd = open(new_filepath, "wb")
-        except (IOError, OSError), why:
+        except (IOError, OSError) as why:
           sys.exit("Could not open '%s' for writing: %s" % (new_filepath, why))
         try:
           new_filepath_fd.write(
             distcc_pump_c_extensions.CompressLzo1xAlloc(
               prefix + real_file_fd.read()))
-        except (IOError, OSError), why:
+        except (IOError, OSError) as why:
           sys.exit("Could not write to '%s': %s" % (new_filepath, why))
         new_filepath_fd.close()
         real_file_fd.close()

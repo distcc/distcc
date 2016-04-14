@@ -1,4 +1,4 @@
-#! /usr/bin/python2.4
+#! /usr/bin/env python3
 
 # Copyright 2007 Google Inc.
 #
@@ -70,9 +70,9 @@ NOT_COMMA_OR_PARENS = "([^(),])"
 #  symbol  (something, ..., something), where something is not ',', '(', or ')'
 MACRO_EXPR = r"""
  (?P<symbol>\w+)                   # the symbol, named 'symbol'
-  ( \s*            
+  ( \s*
     [(] \s*                        # beginning parenthesis
-    (?P<args>                      # a parenthesized expression (with no 
+    (?P<args>                      # a parenthesized expression (with no
                                    # containing expressions -- a limitation)
                                    # named 'args'
     %(NOT_COMMA_OR_PARENS)s*        # the first argument (if it exists)
@@ -184,19 +184,19 @@ class ParseFile(object):
      of symbol is parsed.  The callback allows an include processor to adjust
      its notion of which expressions are still current. If we (the include
      processor) already met
-          
+
              #define A B
-           
+
      and later meet
-          
+
              #define B
-          
+
      whether this is the first definition of B or not, then the possible
      meanings of A have changed.  We set up a callback to identify such
      situations."""
 
     self.define_callback = callback_function
-    
+
   def _ParseFine(self, poundsign_match, includepath_map_index, file_contents,
                  symbol_table, quote_includes, angle_includes, expr_includes,
                  next_includes):
@@ -246,7 +246,7 @@ class ParseFile(object):
             lhs = m.group('lhs')
             rhs = groupdict['rhs'] and groupdict['rhs'] or None
             InsertMacroDefInTable(lhs, rhs, symbol_table, self.define_callback)
-      except NotCoveredError, inst:
+      except NotCoveredError as inst:
         # Decorate this exception with the filename, by recreating it
         # appropriately.
         if not inst.source_file:
@@ -279,7 +279,7 @@ class ParseFile(object):
 
     try:
       fd = open(filepath, "r")
-    except IOError, msg:
+    except IOError as msg:
       # This normally does not happen because the file should be known to
       # exists. Still there might be, say, a permissions issue that prevents it
       # from being read.
@@ -331,7 +331,7 @@ class ParseFile(object):
       poundsign_match = POUND_SIGN_RE.match(file_contents, line_start)
 
       if not poundsign_match:
-	continue
+        continue
 
       self._ParseFine(poundsign_match, includepath_map_index, file_contents,
                       symbol_table, quote_includes, angle_includes,

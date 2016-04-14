@@ -29,6 +29,8 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} \
 	   -Isrc -I"$(srcdir)/src" -I"$(srcdir)/lzo" $(POPT_INCLUDES)
 
+PYTHON = @PYTHON@
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 builddir = @builddir@
@@ -71,14 +73,6 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@ 
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-
-# We use python for two tasks in distcc: running the unittests, and
-# running the include-server.  The latter requires python 2.4 or
-# higher, while the former only requires python 2.2.  So it's possible
-# a particular machine will be able to run one but not the other.
-# Thus we have two variables.
-TEST_PYTHON = @TEST_PYTHON@
-INCLUDESERVER_PYTHON = @INCLUDESERVER_PYTHON@
 
 # RESTRICTED_PATH is a colon separated list of directory names.  It
 # contains the locations of 'make', 'sh', 'gcc', and 'python' for use
@@ -578,7 +572,8 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 # the distcc version, the source location, the CPP flags (for location of the
 # includes), and the build location.
 include-server:
-	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
+	if test -z "$(PYTHON)"; then	\
+		echo "$(PYTHON)" \
 	  echo "Not building $@: No suitable python found"; \
 	else						\
 	  mkdir -p "$(include_server_builddir)" &&      \
@@ -586,7 +581,7 @@ include-server:
 	  SRCDIR="$(srcdir)"                            \
 	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
-	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
+	  $(PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
 	        --build-base="$(include_server_builddir)"  \
 	        --build-temp="$(include_server_builddir)"; \
@@ -711,17 +706,17 @@ TESTDISTCC_OPTS =
 # satisfied w/o actually building an include server (or rather the C extension);
 # this logic needs to be verified or amended.
 maintainer-check-no-set-path:
-	@if ! $(TEST_PYTHON) -c 'import sys; print sys.version'; then \
+	@if ! $(PYTHON) -c 'import sys; print(sys.version)'; then \
 	  echo "WARNING: python not found; tests skipped"; \
 	else \
-	  if ! gcc --version 2>/dev/null; then \
-	    echo "Could not find gcc on the restricted path used to avoid"; \
+	  if ! $(CC) --version 2>/dev/null; then \
+	    echo "Could not find CC on the restricted path used to avoid"; \
 	    echo "confusion caused by distcc masquerades on the normal path."; \
 	    echo "PATH is currently '$$PATH'."; \
 	    echo "Please change RESTRICTED_PATH to change this PATH value."; \
 	    exit 1; \
 	  fi; \
-	  $(TEST_PYTHON) "$(srcdir)/test/testdistcc.py" $(TESTDISTCC_OPTS); \
+	  $(PYTHON) "$(srcdir)/test/testdistcc.py" $(TESTDISTCC_OPTS); \
 	fi
 
 distcc-maintainer-check: check_programs
@@ -744,8 +739,8 @@ include-server-maintainer-check: include-server
 	  for p in $(check_include_server_PY); do \
 	    p_base=`basename "$$p"`; \
 	    echo "Running:" \
-              "PYTHONPATH=$$CURDIR/$$include_server_loc:$$PYTHONPATH $(INCLUDESERVER_PYTHON) $$p_base"; \
-	    if PYTHONPATH="$$CURDIR/$$include_server_loc:$$PYTHONPATH" $(INCLUDESERVER_PYTHON) "$$p_base" \
+              "PYTHONPATH=$$CURDIR/$$include_server_loc:$$PYTHONPATH $(PYTHON) $$p_base"; \
+	    if PYTHONPATH="$$CURDIR/$$include_server_loc:$$PYTHONPATH" $(PYTHON) "$$p_base" \
 		 > "$$CURDIR/$(tempdir)/$$p_base.out" 2>&1; then \
 	      echo "PASS"; \
 	      rm "$$CURDIR/$(tempdir)/$$p_base.out"; \
@@ -773,9 +768,9 @@ maintainer-check: distcc-maintainer-check include-server-maintainer-check \
 	pump-maintainer-check
 
 check:
-	@if test -n "$(INCLUDESERVER_PYTHON)"; then \
+	@if test -n "$(PYTHON)"; then \
 	   $(MAKE) maintainer-check; \
-	elif test -n "$(TEST_PYTHON)"; then \
+	elif test -n "$(PYTHON)"; then \
 	   echo "WARNING: pump-mode not being tested"; \
 	   $(MAKE) distcc-maintainer-check; \
 	else \
@@ -798,7 +793,7 @@ valgrind-check:
 TESTNAME = NoDetachDaemon_Case  # Override this with the desired test.
 single-test: check_programs
 	PATH="`pwd`:$(RESTRICTED_PATH)" \
-	    $(TEST_PYTHON) "$(srcdir)/test/onetest.py" $(TESTDISTCC_OPTS) $(TESTNAME)
+	    $(PYTHON) "$(srcdir)/test/onetest.py" $(TESTDISTCC_OPTS) $(TESTNAME)
 
 # Run a single test in pump-mode.
 pump-single-test: pump include-server check_programs
@@ -861,9 +856,9 @@ maintainer-installcheck: verify-binaries-installcheck distcc-installcheck \
 	pump-installcheck
 
 installcheck:
-	@if test -n "$(INCLUDESERVER_PYTHON)"; then \
+	@if test -n "$(PYTHON)"; then \
 	   $(MAKE) maintainer-installcheck; \
-	elif test -n "$(TEST_PYTHON)"; then \
+	elif test -n "$(PYTHON)"; then \
 	   echo "WARNING: pump-mode not being tested"; \
 	   $(MAKE) distcc-maintainer-installcheck; \
 	else \
@@ -913,7 +908,7 @@ benchmark:
 	@echo "Pass BENCH_ARGS to make to specify which benchmarks to run."
 	@echo
 	@sleep 5
-	cd bench && $(TEST_PYTHON) benchmark.py $(BENCH_ARGS)
+	cd bench && $(PYTHON) benchmark.py $(BENCH_ARGS)
 
 
 ######################################################################
@@ -943,12 +938,12 @@ clean-lzo:
 
 
 clean-include-server:
-	if test -n "$(INCLUDESERVER_PYTHON)"; then	\
+	if test -n "$(PYTHON)"; then	\
 	  DISTCC_VERSION="$(VERSION)"			\
 	  SRCDIR="$(srcdir)"                            \
 	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
-	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
+	  $(PYTHON) "$(srcdir)/include_server/setup.py" \
 	      clean	\
 	         --build-base="$(include_server_builddir)"  \
 	         --build-temp="$(include_server_builddir)"; \
@@ -1062,7 +1057,7 @@ install-programs: $(bin_PROGRAMS)
 # line endings), so we need to convert it from DOS text file format to
 # Unix text file format (LF line endings); we use sed for that too.
 install-include-server: include-server pump
-	if test -z "$(INCLUDESERVER_PYTHON)"; then	\
+	if test -z "$(PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
 	  mkdir -p "$(include_server_builddir)" &&      \
@@ -1071,7 +1066,7 @@ install-include-server: include-server pump
 	  SRCDIR="$(srcdir)"                            \
 	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
-	  $(INCLUDESERVER_PYTHON) "$(srcdir)/include_server/setup.py" \
+	  $(PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
 	        --build-base="$(include_server_builddir)" \
 	        --build-temp="$(include_server_builddir)" \
