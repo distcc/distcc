@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/env python3
 #
 # Copyright 2007 Google Inc.
 #
@@ -56,7 +56,7 @@ class ClientRootKeeper(object):
   invariant.  Some client roots are padded with '/padding' to satisfy the
   invariant.
   """
-  
+
   # This constant is embedded in names of client root directories.
   INCLUDE_SERVER_NAME = 'include_server'
 
@@ -84,7 +84,7 @@ class ClientRootKeeper(object):
     return glob.glob('%s/*.%s-%s-*'
                      % (self.client_tmp, self.INCLUDE_SERVER_NAME,
                         pid_expr))
-  
+
   def ClientRootMakedir(self, generation):
     """Make a new client directory for a generation of compressed files.
 
@@ -104,7 +104,7 @@ class ClientRootKeeper(object):
                           + '/padding' * self.number_missing_levels)
       if not os.path.isdir(self.client_root):
         os.makedirs(self.client_root)
-    except (IOError, OSError), why:
+    except (IOError, OSError) as why:
       sys.exit('Could not create client root directory %s: %s' %
                (self.client_root, why))
 
@@ -204,7 +204,7 @@ ALGORITHMS = [SIMPLE, MEMOIZING]
 # tested on a very large application, where include server time CPU time drops
 # from 151s to 118s (best times out of 10 runs). There was no seeming changes to
 # memory usage.  Trying with 100,000 did not speed up the application further.
-GC_THRESHOLD = 10000  
+GC_THRESHOLD = 10000
 
 
 # FLAGS FOR COMMAND LINE OPTIONS
@@ -287,15 +287,15 @@ def Debug(trigger_pattern, message, *params):
     i = 1
     for unused_j in range(DEBUG_NUM_BITS):
       if i & DEBUG_WARNING & triggered:
-        print >> sys.stderr, 'WARNING include server:', message % params
+        print('WARNING include server:', message % params, file=sys.stderr)
       if i & DEBUG_TRACE & triggered:
-        print >> sys.stderr, 'TRACE:', message % params
+        print('TRACE:', message % params, file=sys.stderr)
       elif i & DEBUG_TRACE1 & triggered:
-        print >> sys.stderr, 'TRACE1:', message % params
+        print(sys.stderr, 'TRACE1:', message % params, file=sys.stderr)
       elif i & DEBUG_TRACE2 & triggered:
-        print >> sys.stderr, 'TRACE2:', message % params
+        print('TRACE2:', message % params, file=sys.stderr)
       elif i & DEBUG_DATA & triggered:
-        print >> sys.stderr, 'DATA:', message % params
+        print('DATA:', message % params, file=sys.stderr)
       i *= 2
     sys.stderr.flush()
 
@@ -342,7 +342,7 @@ class NotCoveredError(Error):
                    % (source_file, line_number, message))
       else:
         message = """File: '%s': %s""" % (source_file, message)
-    # Message, a string, becomes self.args[0]    
+    # Message, a string, becomes self.args[0]
     Error.__init__(self, message)
 
 
@@ -390,8 +390,8 @@ class IncludeAnalyzerTimer(object):
     sys.stdout.flush()
     signal.alarm(0)
     signal.signal(signal.SIGALRM, self.old)
-    
-  
+
+
 class SignalSIGTERM(Error):
   pass
 
@@ -415,7 +415,7 @@ def SafeNormPath(path):
 
   Returns:
     a string
-    
+
   Python's os.path.normpath is an unsafe operation; the result may not point to
   the same file as the argument. Instead, this function just removes
   initial './'s and a final '/'s if present.
