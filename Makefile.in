@@ -165,7 +165,6 @@ example_DOCS = \
 	doc/example/xinetd				\
 
 include_server_PY = \
-	include_server/__init__.py \
 	include_server/basics.py \
 	include_server/cache_basics.py \
 	include_server/compiler_defaults.py \
@@ -573,7 +572,6 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 # includes), and the build location.
 include-server:
 	if test -z "$(PYTHON)"; then	\
-		echo "$(PYTHON)" \
 	  echo "Not building $@: No suitable python found"; \
 	else						\
 	  mkdir -p "$(include_server_builddir)" &&      \

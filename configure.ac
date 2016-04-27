@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script
 
-#		"We are ugly but we have the music" 
+#		"We are ugly but we have the music"
 #			-- Leonard Cohen
 #
 # http://jerkcity.com/jerkcity1335.html
@@ -124,7 +124,7 @@ AC_ARG_ENABLE(Werror,
 # Now get the package configuration information for whatever packages
 # we need.  It's faster to just do it once during configuration.
 if test "x${with_gnome}" = xyes
-then 
+then
     GNOME_PACKAGES="gtk+-2.0 libgnome-2.0 libgnomeui-2.0 pango"
 elif test "x${with_gtk}" = xyes
 then
@@ -140,11 +140,11 @@ do
     then
         AC_MSG_RESULT($gnomevers)
     else
-        AC_MSG_ERROR([$pkg was not found by pkg-config])        
+        AC_MSG_ERROR([$pkg was not found by pkg-config])
     fi
 done
 
-if test x${with_gnome} = xyes -o x${with_gtk} = xyes 
+if test x${with_gnome} = xyes -o x${with_gtk} = xyes
 then
     INSTALL_GNOME="install-gnome-data"
     UNINSTALL_GNOME="uninstall-gnome-data"
@@ -319,8 +319,8 @@ AC_SEARCH_LIBS(inet_aton, [resolv])
 
 if test x"$with_included_popt" != x"yes"  && test x"$with_included_popt" != xno
 then
-    # If not explicitly requested, guess.       
-    # People might have the library but not the header, in which case we 
+    # If not explicitly requested, guess.
+    # People might have the library but not the header, in which case we
     # still need to use the included copy.
     AC_CHECK_LIB(popt, poptGetContext, , [with_included_popt=yes])
     AC_CHECK_HEADER(popt.h, , [with_included_popt=yes])
@@ -430,7 +430,7 @@ AC_CACHE_CHECK([for C99 vsnprintf],rsync_cv_HAVE_C99_VSNPRINTF,[
 AC_TRY_RUN([
 #include <sys/types.h>
 #include <stdarg.h>
-void foo(const char *format, ...) { 
+void foo(const char *format, ...) {
        va_list ap;
        int len;
        char buf[5];
@@ -555,12 +555,12 @@ cat <<EOF
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version 2
     of the License, or (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
