@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4 
 
 # Copyright 2007 Google Inc.
 #
@@ -48,20 +48,20 @@ Examples:
 From anywhere:
   # Start include server.
   /home/distcc/include_server/run.py include_server.py
-
+  
 In the include_server directory:
   # Run include_server tests.
   ./run.py include_server_test.py
   # Pycheck include_server.
-  ./run.py `which pychecker` include_server.py
+  ./run.py `which pychecker` include_server.py  
 
 In installed distcc-pump:
    # See 'pump' script.
-   $include_server_location/run.py --run_in_install include_server.py ..
+   $include_server_location/run.py --run_in_install include_server.py .. 
 """
 
 def usage():
-  print(USAGE)
+  print USAGE
   sys.exit(1)
 
 DEFAULT_PATH = "c_extensions/build/lib.*/*"
@@ -91,7 +91,7 @@ else:
     sys.exit("More than one extension module found. "
              + " Cannot determine which one to use.")
   lib_directory = os.path.dirname(potential_libs[0])
-  print("__________Using Python extension in %s" % lib_directory)
+  print "__________Using Python extension in %s" % lib_directory
 
 # Now, the all important change to PYTHONPATH. Note that we obliterate any
 # environmental setting setting as well. This improves performance in
@@ -101,6 +101,7 @@ os.environ['PYTHONPATH'] = lib_directory
 try:
   os.execv(os.path.join(directory, sys.argv[1]), sys.argv[1:])
 except OSError:
-  print("Could not run: '%s' with arguments: %s" %
+  print >> sys.stderr, (
+    "Could not run: '%s' with arguments: %s" %
     (os.path.join(directory, sys.argv[1]),
-     sys.argv[1:]), file=sys.stderr)
+     sys.argv[1:]))

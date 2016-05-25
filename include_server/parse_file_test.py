@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -67,15 +67,15 @@ class parse_file_Test(unittest.TestCase):
     self.assertEqual(parse_file.MACRO_EXPR_RE.match("random()").group('symbol'),
                      "random")
 
-    self.assertTrue(parse_file.DIRECTIVE_RE.match(
+    self.assert_(parse_file.DIRECTIVE_RE.match(
 	"""  # include <a.c>""").group('angle') == 'a.c')
-    self.assertTrue(parse_file.DIRECTIVE_RE.match(
+    self.assert_(parse_file.DIRECTIVE_RE.match(
 	"""  # include mac(a.c, mic)""").group('expr') == 'mac(a.c, mic)')
-    self.assertTrue(parse_file.DIRECTIVE_RE.match(
+    self.assert_(parse_file.DIRECTIVE_RE.match(
 	"""  # include "a.c" """).group('quote') == 'a.c')
-    self.assertTrue(parse_file.DIRECTIVE_RE.match(
+    self.assert_(parse_file.DIRECTIVE_RE.match(
 	"""  #include "a.c" """).group('quote') == 'a.c')
-    self.assertTrue(parse_file.DIRECTIVE_RE.match(
+    self.assert_(parse_file.DIRECTIVE_RE.match(
 	"""  #include"a.c" """).group('quote') == 'a.c')
 
     self.assertEqual(parse_file.DIRECTIVE_RE.match(
@@ -133,11 +133,9 @@ b
     self.assertEqual(parse_file_obj.Parse(
       "test_data/more_macros.c", symbol_table),
       ([], [], ['TEMPLATE_VARNAME(foo)'], []))
-    symbol_table_keys = list(symbol_table.keys())
-    symbol_table_keys.sort()
-    self.assertEqual(symbol_table_keys,
-                     ['AS_STRING', 'AS_STRING_INTERNAL',
-                      'ILLFORMED', 'TEMPLATE_VARNAME'])
+    self.assertEqual(symbol_table.keys(),
+                     ['ILLFORMED', 'AS_STRING_INTERNAL',
+                      'TEMPLATE_VARNAME', 'AS_STRING'])
     [([arg], val)] = symbol_table['TEMPLATE_VARNAME']
     self.assertEqual(arg, '_filename_')
     self.assertEqual(val, 'AS_STRING(maps/_filename_.tpl.varnames.h)')

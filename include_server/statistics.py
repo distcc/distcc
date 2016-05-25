@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4 
 #
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-#
+# 
 """Statistics gathering for the distcc-pump include server."""
 
 __author__ = "Nils Klarlund"
@@ -38,14 +38,14 @@ min_time = float('Inf')
 max_time = 0.0
 total_time = 0.0
 
-parse_file_total_time = 0.0
+parse_file_total_time = 0.0 
 parse_file_counter = 0 # number of files parsed
 
 parse_file_counter_last = 0 # the number of files parsed after previous
                             # translation unit
 
 quote_path_total = 0 # total length of quote directory lists
-angle_path_total = 0 # total length of angle directory lists
+angle_path_total = 0 # total length of angle directory lists 
 
 len_calculated_closure = 0 # number of all included files
 len_calculated_closure_nonsys =  0 # same, but excluding system files
@@ -54,7 +54,7 @@ len_exact_closure = 0 # number of all files in CPP-calculated closure
 len_surplus_nonsys = 0  # the difference between
                         # len_calculated_closure and number of files
                         # in exact closure that are not known to compiler
-
+                        
 find_node_counter = 0 # number of times FindNode is called
 
 
@@ -78,45 +78,45 @@ def PrintStatistics(include_analyzer):
     # Avoid division by zero in non-interesting case.
     if translation_unit_counter == 0: return
 
-    print("TRANSLATION_UNIT: %s" % include_analyzer.translation_unit)
+    print "TRANSLATION_UNIT: %s" % include_analyzer.translation_unit
     print (("TIME:    last %-2.3fs, min %-2.3fs, "
-            "max %-2.3fs, average %-2.3fs, #: %5d, total: %5.1fs") %
+            "max %-2.3fs, average %-2.3fs, #: %5d, total: %5.1fs") % 
            (translation_unit_time, min_time, max_time,
             total_time/translation_unit_counter,
             translation_unit_counter, total_time))
     print ("PARSING: total %-5.3fs, total count: %4d, new files: %-5d" %
-           (parse_file_total_time, parse_file_counter,
+           (parse_file_total_time, parse_file_counter, 
             parse_file_counter - parse_file_counter_last))
-    print("COUNTER: resolve_expr_counter:      %8d" % resolve_expr_counter)
-    print("COUNTER: master_hit_counter:        %8d" % master_hit_counter)
-    print("COUNTER: master_miss_counter:       %8d" % master_miss_counter)
-    print("SIZE:    master_cache               %8d" % (
-      len(include_analyzer.master_cache)))
-    print("COUNTER: sys_stat_counter:        %10d"  % sys_stat_counter)
-    print("COUNTER: build_stat_counter:      %10d" % build_stat_counter)
+    print "COUNTER: resolve_expr_counter:      %8d" % resolve_expr_counter
+    print "COUNTER: master_hit_counter:        %8d" % master_hit_counter
+    print "COUNTER: master_miss_counter:       %8d" % master_miss_counter
+    print "SIZE:    master_cache               %8d" % (
+      len(include_analyzer.master_cache))
+    print "COUNTER: sys_stat_counter:        %10d"  % sys_stat_counter
+    print "COUNTER: build_stat_counter:      %10d" % build_stat_counter
     if resolve_counter != 0:
-      print("COUNTER: search_counter (average):      %4.1f" % (
-        float(search_counter)/resolve_counter))
-    print("SIZE:    include_dir_pairs:         %8d" % (
-      len(include_analyzer.include_dir_pairs)))
+      print "COUNTER: search_counter (average):      %4.1f" % (
+        float(search_counter)/resolve_counter)
+    print "SIZE:    include_dir_pairs:         %8d" % (
+      len(include_analyzer.include_dir_pairs))
     if 'quote_dirs' in include_analyzer.__dict__:
-        print("SIZE:    quote_path                 %8d" % (
-          len(include_analyzer.quote_dirs)))
+        print "SIZE:    quote_path                 %8d" % (
+          len(include_analyzer.quote_dirs))
     if 'angle_dirs' in include_analyzer.__dict__:
-        print("SIZE:    angle_path                 %8d" % (
-          len(include_analyzer.angle_dirs)))
-    print("SIZE:    quote_path (average)           %4.1f" % (
-      float(quote_path_total)/translation_unit_counter))
-    print("SIZE:    angle_path (average)           %4.1f" % (
-      float(angle_path_total)/translation_unit_counter))
-    print("SIZE:    quote_dirs_set             %8d" % (
-      len(include_analyzer.quote_dirs_set)))
-    print("SIZE:    angle_dirs_set:            %8d" % (
-      len(include_analyzer.angle_dirs_set)))
-    print()
-    print("SIZE:    calculated_closure:        %8d" % len_calculated_closure)
-    print("SIZE:    calculated_closure_nonsys: %8d" % (
-      len_calculated_closure_nonsys))
-    print("SIZE:    exact_closure              %8d" % len_exact_closure)
-    print("SIZE:    surplus_nonsys             %8d" % len_surplus_nonsys)
-    print()
+        print "SIZE:    angle_path                 %8d" % (
+          len(include_analyzer.angle_dirs))
+    print "SIZE:    quote_path (average)           %4.1f" % (
+      float(quote_path_total)/translation_unit_counter)
+    print "SIZE:    angle_path (average)           %4.1f" % (
+      float(angle_path_total)/translation_unit_counter)
+    print "SIZE:    quote_dirs_set             %8d" % (
+      len(include_analyzer.quote_dirs_set))
+    print "SIZE:    angle_dirs_set:            %8d" % (
+      len(include_analyzer.angle_dirs_set))
+    print
+    print "SIZE:    calculated_closure:        %8d" % len_calculated_closure
+    print "SIZE:    calculated_closure_nonsys: %8d" % (
+      len_calculated_closure_nonsys)
+    print "SIZE:    exact_closure              %8d" % len_exact_closure
+    print "SIZE:    surplus_nonsys             %8d" % len_surplus_nonsys
+    print

@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-#
+# 
 
 """Classes enabling definition and composition of caches.
 
@@ -347,7 +347,7 @@ class DirnameCache(object):
       self.cache[(currdir_idx, searchdir_idx, includepath_idx)] = (dir_idx,
                                                                    rp_idx)
       return (dir_idx, rp_idx)
-
+      
 
 class SystemdirPrefixCache(object):
   """A cache of information about whether a file exists in a systemdir.
@@ -389,14 +389,14 @@ class SystemdirPrefixCache(object):
 
     Argument:
      realpath_map: a string-to-int map of canonicalized filepaths we know.
-
+     
     After this function is called, the cache entry is True iff
     realpath.startswith(systemdir) is True for any of the systemdirs
     passed in to our constructor.
     """
     if len(self.cache) >= realpath_map.Length():
       return    # we're already all full
-    for realpath_idx in range(len(self.cache), realpath_map.Length()):
+    for realpath_idx in xrange(len(self.cache), realpath_map.Length()):
       realpath = realpath_map.string[realpath_idx]
       for systemdir in self.systemdirs:
         if realpath.startswith(systemdir):
@@ -560,7 +560,7 @@ class CanonicalMapToIndex(MapToIndex):
     """
     return MapToIndex.Index(self, self.canonicalize(filepath))
 
-
+    
 def RetrieveDirectoriesExceptSys(directory_map, realpath_map,
                                  systemdir_prefix_cache, directory_idxs):
   """Calculate the set of non-system directories of an index list.
@@ -572,7 +572,7 @@ def RetrieveDirectoriesExceptSys(directory_map, realpath_map,
   Returns:
     the corresponding tuple of directories except for those whose
     realpath has a prefix that is a sysdir
-
+    
   The directories in the returned list have their trailing '/'
   stripped.
   """
@@ -725,13 +725,14 @@ class BuildStatCache(object):
       assert searchdir_idx is None or 1 <= searchdir_idx < dir_map.Length()
       for sl_idx in searchlist_idxs:
         assert sl_idx < dir_map.Length()
-      assert os.getcwd() + '/' == dir_map_string[currdir_idx]
+      assert os.getcwd() + '/' == dir_map_string[currdir_idx], (
+	"'%s/' != '%s'" % (os.getcwd(),  dir_map_string[currdir_idx]))
       Debug(DEBUG_TRACE2, "Resolve: includepath: '%s', currdir: '%s', "
             "searchdir: '%s', searchlist: %s" %
-            (includepath,
-             dir_map_string[currdir_idx],
-             searchdir_idx and dir_map_string[searchdir_idx],
-             "  \n".join([dir_map_string[idx] for idx in searchlist_idxs])))
+	    (includepath,
+	     dir_map_string[currdir_idx],
+	     searchdir_idx and dir_map_string[searchdir_idx],
+	     "  \n".join([dir_map_string[idx] for idx in searchlist_idxs])))
     try:
       # Locate the array (list) relative to currdir_idx and includepath_idx
       searchdir_stats = build_stat[currdir_idx][includepath_idx]
@@ -818,7 +819,7 @@ class SetUpCaches(object):
   """
 
   def __init__(self, client_root):
-
+     
     # A memoizing (caching) class to canonicalize a path: mostly by
     # resolving any symlinks in the path-component.
     self.canonical_path = CanonicalPath()

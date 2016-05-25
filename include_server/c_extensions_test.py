@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-#
+# 
 
 """Tests for distcc_pump_c_extensions.
 
@@ -55,11 +55,11 @@ def RunTest(random_filename):
 
   # Pack something and try sending it
   fd = _MakeTempFile('wb')
-  fd.write(b'ARGC       2')
-  fd.write(b'ARGV       6')
-  fd.write(b'tomato')
-  fd.write(b'ARGV       7')
-  fd.write(b'potatos')
+  fd.write('ARGC       2')
+  fd.write('ARGV       6')
+  fd.write('tomato')
+  fd.write('ARGV       7')
+  fd.write('potatos')
   fd.close()
 
   # Now try to read it back with wrong expectations.
@@ -97,24 +97,24 @@ def RunTest(random_filename):
   fd.close()
 
   # Libc functions --- also print out how fast they are compared to
-  # Python built-ins.
+  # Python built-ins.  
   t = time.time()
   f = '/'
   for unused_i in range(10000):
     distcc_pump_c_extensions.OsPathExists(f)
-  print('Stat', time.time() - t)
+  print 'Stat', time.time() - t
   t = time.time()
   for unused_i in range(10000):
     os.path.exists(f)
-  print('os.path.exists', time.time() - t)
+  print 'os.path.exists', time.time() - t
   for unused_i in range(10000):
     distcc_pump_c_extensions.Realpath(f)
-  print('c_realpath', time.time() - t)
+  print 'c_realpath', time.time() - t
   t = time.time()
   for unused_i in range(10000):
     os.path.realpath(f)
-  print('os.path.realpath', time.time() - t)
-  print('c_extenstions_test passed')
+  print 'os.path.realpath', time.time() - t
+  print 'c_extenstions_test passed'
 
 
 def main():
@@ -124,12 +124,12 @@ def main():
   try:
     if os.path.exists(random_testdir):
       os.removedirs(random_testdir)
-    os.mkdir(random_testdir)
-  except (IOError, OSError) as why:
+    os.mkdir(random_testdir, 0700)
+  except (IOError, OSError), why:
     sys.exit('Unable to create test dir %s: %s.' % (random_testdir, why))
   random_filename = os.path.join(random_testdir, 'test')
   assert not os.path.exists(random_filename), random_filename
-
+  
   try:
     RunTest(random_filename)
   finally:

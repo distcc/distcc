@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4 
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-
+ 
 __author__ = "Nils Klarlund"
 
 import os
@@ -31,7 +31,7 @@ import unittest
 NotCoveredError = basics.NotCoveredError
 
 class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
-
+    
   def _ToString(self, include_closure):
     """Translate the indices in an include closure to their denoted strings."""
     return (
@@ -40,7 +40,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
                self.includepath_map.string[ip_idx])
               for (dir_idx, ip_idx) in include_closure[rp_idx] ])
            for rp_idx in include_closure))
-
+  
   def setUp(self):
     basics.opt_debug_pattern = 1
     client_root_keeper = basics.ClientRootKeeper()
@@ -98,8 +98,8 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     dir_idx = directory_map.Index("/dir")
 
     A_children = []
-    A = (realpath_map.Index("/curr/src/a.h"),
-         (src_idx, includepath_map.Index("a.h")),
+    A = (realpath_map.Index("/curr/src/a.h"), 
+         (src_idx, includepath_map.Index("a.h")), 
          A_children)
 
     B_children = []
@@ -121,7 +121,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     D = (None, None, D_children)
 
     E_children = []
-    E = (realpath_map.Index("/dir/e.h"),
+    E = (realpath_map.Index("/dir/e.h"), 
          (root_idx, includepath_map.Index("dir/e.h")),
          E_children)
 
@@ -135,13 +135,13 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     include_closure = {}
     self.include_analyzer._CalculateIncludeClosureExceptSystem(A, include_closure)
     stringified_include_closure = self._ToString(include_closure)
-
+    
     # /curr/src/a.h is not known under absolute pathnames.
     self.assertEqual(stringified_include_closure['/curr/src/a.h'], [])
     # Neither is /curr/src/b.h.
     self.assertEqual(stringified_include_closure['/curr/src/b.h'], [])
     # But, /dir/c.h is known under two different absolute names.
-    self.assertEqual(stringified_include_closure['/dir/c.h'],
+    self.assertEqual(stringified_include_closure['/dir/c.h'], 
                      [('/dirlink/', 'c.h'), ('/', 'dir/c.h')])
     # And, dir/e.h is known under exactly one absolute name.
     self.assertEqual(stringified_include_closure['/dir/e.h'], [('/', 'dir/e.h')])
@@ -160,7 +160,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
             " -Isrc" +
             " -I./lzo" +
             " -include include_me.h " +
-            " -o src/%s.o" +
+            " -o src/%s.o" + 
             " -c src/%s.c") % (src_stem, src_stem)
 
   def test__CalculateIncludeClosureExceptSystem_on_distcc(self):
@@ -180,12 +180,12 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     parsed_command = (
         parse_command.ParseCommandArgs(
           parse_command.ParseCommandLine(cmd),
-          current_dir,
-          include_analyzer.includepath_map,
+          current_dir, 
+          include_analyzer.includepath_map, 
           include_analyzer.directory_map,
           include_analyzer.compiler_defaults))
 
-    (include_analyzer.quote_dirs,
+    (include_analyzer.quote_dirs, 
      include_analyzer.angle_dirs,
      include_analyzer.include_files,
      translation_unit,
@@ -208,7 +208,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
       "src/hosts.h",
       "src/bulk.h",
       "src/emaillog.h"]
-
+    
     include_closure = (
      include_analyzer.ProcessCompilationCommand(current_dir,
                                                 parsed_command))
@@ -228,7 +228,7 @@ class IncludeAnalyzerMemoizingNodeUnitTest(unittest.TestCase):
     # different search path files are reported as absolute. That is,
     # provoke pairs (directory_idx, includepath_idx) to exist in
     # include_closure[rp_idx].
-
+    
   def tearDown(self):
     pass
 

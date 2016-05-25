@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 # Copyright (C) 2002, 2003 by Martin Pool <mbp@samba.org>
 # Copyright (C) 2003 by Tim Potter <tpot@samba.org>

@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -46,7 +46,7 @@ class BasicsTest(unittest.TestCase):
       os_makedirs = os.makedirs
 
       def Mock_tempfile_mkdtemp(pat, dir):
-        self.assertTrue((pat, dir)
+        self.assert_((pat, dir)
                      in
                      [('.%s-%s-%d' %
                        (basics.ClientRootKeeper.INCLUDE_SERVER_NAME,
@@ -56,15 +56,15 @@ class BasicsTest(unittest.TestCase):
                       [(1,'/to/be'), (2, '/to')]])
         return (dir == '/to/be' and '/to/be/xxxxxx'
                 or dir == '/to' and '/to/xxxxxxx')
-
+      
       def Mock_os_makedirs(f, *unused_args):
         if not f.startswith('/to/'):
-          raise Exception(f)
-
+          raise Exception, f
+        
       tempfile.mkdtemp = Mock_tempfile_mkdtemp
       os.makedirs = Mock_os_makedirs
 
-
+      
       os.environ['DISTCC_CLIENT_TMP'] = '/to/be'
       client_root_keeper = basics.ClientRootKeeper()
       client_root_keeper.ClientRootMakedir(1)
@@ -91,13 +91,13 @@ class BasicsTest(unittest.TestCase):
     os.environ['DISTCC_CLIENT_TMP'] = '/tmp'
     client_root_keeper = basics.ClientRootKeeper()
     client_root_keeper.ClientRootMakedir(117)
-    self.assertTrue(os.path.isdir(client_root_keeper._client_root_before_padding))
-    self.assertTrue(os.path.isdir(client_root_keeper.client_root))
-    self.assertTrue(client_root_keeper.client_root.endswith('/padding'))
+    self.assert_(os.path.isdir(client_root_keeper._client_root_before_padding))
+    self.assert_(os.path.isdir(client_root_keeper.client_root))
+    self.assert_(client_root_keeper.client_root.endswith('/padding'))
     client_root_keeper.ClientRootMakedir(118)
     client_root_keeper.CleanOutClientRoots()
     # Directories must be gone now!
-    self.assertTrue(not os.path.isdir(
+    self.assert_(not os.path.isdir(
         client_root_keeper._client_root_before_padding))
     # Test with a two-level value of DISTCC_CLIENT_TMP.
     try:
@@ -105,14 +105,14 @@ class BasicsTest(unittest.TestCase):
                                                          dir='/tmp')
       client_root_keeper = basics.ClientRootKeeper()
       client_root_keeper.ClientRootMakedir(117)
-      self.assertTrue(os.path.isdir(
+      self.assert_(os.path.isdir(
           client_root_keeper._client_root_before_padding))
-      self.assertTrue(os.path.isdir(client_root_keeper.client_root))
+      self.assert_(os.path.isdir(client_root_keeper.client_root))
       client_root_keeper.ClientRootMakedir(118)
       client_root_keeper.CleanOutClientRoots()
-      self.assertTrue(os.path.isdir,
+      self.assert_(os.path.isdir,
                    client_root_keeper._client_root_before_padding)
     finally:
       os.rmdir(os.environ['DISTCC_CLIENT_TMP'])
 
-unittest.main()
+unittest.main()    

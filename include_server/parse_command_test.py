@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -55,11 +55,11 @@ class ParseCommandUnitTest(unittest.TestCase):
 
     def Mock_SetSystemDirsDefaults(compiler, sysroot, language, timer=None):
       if compiler != mock_compiler:
-        raise Exception("compiler: %s, mock_compiler: %s" % (
-          compiler, mock_compiler))
+        raise Exception, "compiler: %s, mock_compiler: %s" % (
+          compiler, mock_compiler)
       if sysroot != mock_sysroot:
-        raise Exception("sysroot: %s, mock_sysroot: %s" % (
-          sysroot, mock_sysroot))
+        raise Exception, "sysroot: %s, mock_sysroot: %s" % (
+          sysroot, mock_sysroot)
 
     self.compiler_defaults = lambda x: x
     self.compiler_defaults.SetSystemDirsDefaults =  Mock_SetSystemDirsDefaults
@@ -141,7 +141,7 @@ class ParseCommandUnitTest(unittest.TestCase):
 
     self.assertEqual(
       (self._RetrieveDirectoriesExceptSys(quote_dirs),
-       self._RetrieveDirectoriesExceptSys(angle_dirs),
+       self._RetrieveDirectoriesExceptSys(angle_dirs), 
        [self.includepath_map.String(i) for i in include_files],
        filepath),
       (('/and', 'mice', '/men', 'system'),
@@ -178,8 +178,8 @@ class ParseCommandUnitTest(unittest.TestCase):
                                      self.directory_map,
                                      self.compiler_defaults))
     self.assertEqual(
-      (self._RetrieveDirectoriesExceptSys(quote_dirs),
-       self._RetrieveDirectoriesExceptSys(angle_dirs),
+      (self._RetrieveDirectoriesExceptSys(quote_dirs), 
+       self._RetrieveDirectoriesExceptSys(angle_dirs), 
        filepath),
       (('',
         'obj/gcc-4.1.0-glibc-2.2.2-piii-linux-g0-dbg/genfiles/third_party/libxml/third_party/libxml',

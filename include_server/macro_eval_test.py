@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-
+ 
 __author__ = "Nils Klarlund"
 
 # See also tests in include_server_test.py.
@@ -140,8 +140,8 @@ class MacroEvalTest(unittest.TestCase):
       macro_eval.EvalExpression("myfile(hello)",
                                 { 'myfile': [(['x'], "myquote(myplace/x)")],
                                   'myquote': [(['y'], """#y""")] }),
-      set(['myfile(hello)',
-           '"myplace/hello"',
+      set(['myfile(hello)', 
+           '"myplace/hello"', 
            'myquote(myplace/hello)']))
 
 
@@ -166,7 +166,7 @@ class MacroEvalTest(unittest.TestCase):
     #   #define PLUS +
     #   #define EMPTY
     #   #define f(x) =x=
-    #
+    # 
     #   +PLUS -EMPTY- PLUS+ f(=)
     #     ==> + + - - + + = = =
     #
@@ -177,7 +177,7 @@ class MacroEvalTest(unittest.TestCase):
                                 { 'PLUS':['+'],
                                   'EMPTY':[""],
                                   'f':[(['x'], '=x=')] }),
-      set(['++ -EMPTY- ++ ===',
+      set(['++ -EMPTY- ++ ===', 
            '++ -EMPTY- PLUS+ ===',
            '+PLUS -- ++ f(=)',
            '+PLUS -EMPTY- ++ ===',
@@ -233,5 +233,5 @@ class MacroEvalTest(unittest.TestCase):
                           'AS_STRING', 'AS_STRING_INTERNAL',
                           'tpl', 'varnames', 'h', 'foo']))
 
-
+                     
 unittest.main()

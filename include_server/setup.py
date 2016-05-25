@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -58,7 +58,7 @@ def GetIncludes(flags):
   In the doctests below, note that a single quoted backslash takes four
   backslashes to represent if it is inside a single quoted string inside this
   present triple-quoted string.
-
+    
   >>> GetIncludes('-I x -X -I"y" -Y')
   ['x', 'y']
   >>> GetIncludes('-Ix -Dfoo -Iy')
@@ -103,7 +103,7 @@ cpp_flags_env = os.getenv('CPPFLAGS', '')
 if not cpp_flags_env:
   # Don't quit; perhaps the user is asking for help using '--help'.
   # CPPFLAGS checking.
-  print('setup.py: CPPFLAGS must be defined.', sys.stderr)
+  print >> sys.stderr, 'setup.py: CPPFLAGS must be defined.'
 # CPPFLAGS is passed to us as it's used in the Makefile: a string that the shell
 # will interpret.  GetInclude uses shlex to do the same kind of interpretation
 # in order to identify the include directory options.
@@ -112,7 +112,7 @@ cpp_flags_includes = GetIncludes(cpp_flags_env)
 # SRCDIR checking.
 if not os.getenv('SRCDIR'):
   # Don't quit; perhaps the user is asking for help using '--help'.
-  print('setup.py: SRCDIR must be defined.', sys.stderr)
+  print >> sys.stderr, 'setup.py: SRCDIR must be defined.'
   srcdir = 'UNDEFINED'
   srcdir_include_server = 'UNDEFINED'
 else:

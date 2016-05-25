@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
 
-
+ 
 """Divination of built-in system directories used by compiler installation.
 
 It is undesirable for the distcc-pump to send header files that reside
@@ -48,7 +48,7 @@ DEBUG_TRACE = basics.DEBUG_TRACE
 DEBUG_DATA = basics.DEBUG_DATA
 NotCoveredError = basics.NotCoveredError
 
-
+  
 def _RealPrefixWithinClientRoot(client_root, path):
   """Determine longest directory prefix of PATH and whether PATH contains a symlink.
 
@@ -215,9 +215,9 @@ def _SystemSearchdirsGCC(compiler, sysroot, language, canonical_lookup):
                          stdin=None,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT,
-                         env=trimmed_env,universal_newlines=True)
+                         env=trimmed_env)
     out = p.communicate()[0]
-  except (IOError, OSError) as why:
+  except (IOError, OSError), why:
     raise NotCoveredError (
              ( "Couldn't determine default system include directories\n"
              + "for compiler '%s', language '%s':\n"
@@ -232,7 +232,7 @@ def _SystemSearchdirsGCC(compiler, sysroot, language, canonical_lookup):
              (compiler, language, command, p.returncode, out))
 
   match_obj = re.search(
-    "%s\n(.*?)\n%s"  # don't ask
+    r"%s\n(.*?)\n%s"  # don't ask
     % ("#include <...> search starts here:", "End of search list"),
     out,
     re.MULTILINE + re.DOTALL)

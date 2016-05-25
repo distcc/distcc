@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-
+ 
 __author__ = "Nils Klarlund"
 
 import os
@@ -108,7 +108,7 @@ class MirrorPathTest(unittest.TestCase):
       # Mirror the link /a/link.
       self.mirror_path.DoPath('/a/link', 117, '/root')
       self.assertEqual(self.mirror_path.Links(),  ['/root/a/link'])
-      self.assertTrue(self.simple_build_stat.Lookup('/root/a'))
+      self.assert_(self.simple_build_stat.Lookup('/root/a'))
 
       # Check that symlink function is not called again, by verifying
       # that mirror_path.Links() doesn't grow.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-
+ 
 """Exercise include server handler with respect to exceptions and email.
 
 To do this, we mock out socket servers, c_extensions, email handling, and even
@@ -69,7 +69,7 @@ class IncludeServerTest(unittest.TestCase):
     old_XArgv = distcc_pump_c_extensions.XArgv
     distcc_pump_c_extensions.XArgv = lambda _, __: None
     old_StreamRequestHandler = (
-      include_server.socketserver.StreamRequestHandler)
+      include_server.SocketServer.StreamRequestHandler)
 
     class Mock_StreamRequestHandler(object):
       def __init__(self):
@@ -78,7 +78,7 @@ class IncludeServerTest(unittest.TestCase):
         self.wfile = lambda: None
         self.wfile.fileno = lambda: 27
 
-    include_server.socketserver.StreamRequestHandler = (
+    include_server.SocketServer.StreamRequestHandler = (
       Mock_StreamRequestHandler)
 
     include_analyzer = (
@@ -111,7 +111,7 @@ class IncludeServerTest(unittest.TestCase):
     distcc_pump_c_extensions.RCwd = lambda self: os.getcwd()
 
     def Expect1(txt, force, never):
-      self_test.assertTrue(
+      self_test.assert_(
         "Include server not covering: " +
         "Could not find translation unit 'parse.c'" in txt, txt)
       self_test.assertEqual(never, True)
@@ -123,7 +123,6 @@ class IncludeServerTest(unittest.TestCase):
       pass
     else:
       raise AssertionError
-
 
     # Exercise 2: provoke assertion error in cache_basics by providing an
     # entirely false value of current directory as provided in RCwd.
@@ -137,16 +136,17 @@ class IncludeServerTest(unittest.TestCase):
     # mock out, in a sense, the provoked assertion exception that we
     # expect. The variable got_here allows us to filter the provoked exception
     # away from unexpected ones.
-    got_here = []
+    got_here = []  
 
     def Expect2(txt, force, never):
-      got_here.append(True)
-      self_test.assertTrue("Include server internal error" in txt, txt)
-      self_test.assertTrue("exceptions.AssertionError" in txt, txt)
-      self_test.assertTrue("for translation unit 'parse.c'" in txt, txt)
+      self_test.assert_("Include server internal error" in txt, txt)
+      self_test.assert_("exceptions.AssertionError" in txt, txt)
+      self_test.assert_("for translation unit 'parse.c'" in txt, txt)
 
       # This email should be sent.
       self_test.assertEqual(never, False)
+
+      got_here.append(True)
 
     mock_email_sender.expect = Expect2
     try:
@@ -155,7 +155,7 @@ class IncludeServerTest(unittest.TestCase):
       os.chdir(oldcwd)
       # Make sure that we're catching the induced AssertionError, not one
       # produced in Except2.
-      self.assertTrue(got_here)
+      self.assert_(got_here)
     else:
       raise AssertionError
 
@@ -166,7 +166,7 @@ class IncludeServerTest(unittest.TestCase):
     distcc_pump_c_extensions.RCwd = lambda self: os.getcwd()
 
     def Expect3(txt, force, never):
-      self_test.assertTrue(
+      self_test.assert_(
         "Filepath must be relative but isn't: '/love/of/my/life'."
         in txt, txt)
       # Now check that this email is scheduled to not be sent.
@@ -181,7 +181,7 @@ class IncludeServerTest(unittest.TestCase):
     distcc_pump_c_extensions.RWcd = old_RWcd
     distcc_pump_c_extensions.RArgv = old_RArgv
     distcc_pump_c_extensions.XArgv = old_XArgv
-    include_server.socketserver.StreamRequestHandler = (
+    include_server.SocketServer.StreamRequestHandler = (
       old_StreamRequestHandler)
 
 unittest.main()

@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/python2.4
 
 # Copyright 2007 Google Inc.
 #
@@ -95,7 +95,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
       self.CanonicalPathsForTestData(['test_computed_includes/src.c',
                                       'test_computed_includes/helper.c',
                                       'test_computed_includes/incl.h']))
-
+    
     includes = self.RetrieveCanonicalPaths(
       self.ProcessCompilationCommandLine(
         "gcc test_data/test_computed_includes/srcA.c",
@@ -117,7 +117,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
       def FindNode(self, *_):
         self.count += 1
         if self.count == 2:
-          raise Exception("Did not expect 2 calls of FindNode.")
+          raise Exception, "Did not expect 2 calls of FindNode."
         return old_FindNode(*_)
 
     self.include_analyzer.FindNode = mock_FindNode().FindNode
@@ -145,12 +145,12 @@ class IncludeAnalyzerTest(unittest.TestCase):
                                       'test_computed_includes/inclA.h',
                                       'dfoo/foo2.h']))
 
-
+              
     # Test: functional macros can be passed on the command line.
     includes = self.RetrieveCanonicalPaths(
       self.ProcessCompilationCommandLine(
         """gcc  -D"STR(X)=# X" """
-        + """-D"FINCLUDE(P)=STR(../MY_TEST_DATA/dfoo/P)" """
+        + """-D"FINCLUDE(P)=STR(../MY_TEST_DATA/dfoo/P)" """           
         + """-DMY_TEST_DATA=test_data """
         + "test_data/func_macro.c",
         os.getcwd()))
@@ -207,16 +207,16 @@ class IncludeAnalyzerTest(unittest.TestCase):
     finally:
       basics.opt_unsafe_absolute_includes = opt_unsafe_absolute_includes
       shutil.rmtree(tmp_dir)
-
+      
   def test_StatResetTriggers(self):
-
+    
     """Check that the include analysis of a file is done from scratch after a
     trigger path went from non-existing to existing.
     """
 
     def CheckGeneration(lst, expected):
       for f_name in lst:
-        self.assertTrue(
+        self.failUnless(
             re.match(r"%s/.+[.]include_server[-][0-9]+[-]%s"
                      % (self.include_analyzer.client_root_keeper.client_tmp,
                         expected),
@@ -232,7 +232,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
                 + '/'
                 + f_name.split('/')[-1][:-4]
                 for f_name in lst if f_name.endswith('.lzo') ]
-
+        
     self.include_analyzer.stat_reset_triggers = {"seven*": {},
                                                  "ate": {"ate": (1,111,2)},
                                                  "nine": {} }
@@ -250,7 +250,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
       def Mock_OsStat(f):
         # Return the same as initial value in two cases below.
         if f in ["seven", "nine"]: raise OSError
-        if f == 'ate':
+        if f == 'ate': 
           obj = lambda: None
           obj.st_mtime = 1
           obj.st_ino = 111
@@ -267,7 +267,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
         return f in [ "test_data/stat_triggers.c",
                       "test_data/dfoo/stat_triggers.h"]
       cache_basics._OsPathIsFile = Mock_OsPathIsFile
-
+      
       files_and_links = self.include_analyzer.DoCompilationCommand(
         "gcc -Itest_data/dfoo test_data/stat_triggers.c".split(),
         os.getcwd(),
@@ -307,7 +307,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
       self.assertEqual(self.include_analyzer.generation, 2)
       CheckGeneration(files_and_links, 2)
-
+      
       # Now, check that we picked up the test_data version of the .h file, not
       # the dfoo one!
       self.assertEqual(GetFileNamesFromAbsLzoName(files_and_links),
@@ -328,13 +328,13 @@ class IncludeAnalyzerTest(unittest.TestCase):
           obj = lambda: None
           obj.st_mtime = 1
           obj.st_ino = 111
-          obj.st_dev = 3
+          obj.st_dev = 3  
           return obj
         if f == 'seventy':
           obj = lambda: None
           obj.st_mtime = 2
           obj.st_ino = 222
-          obj.st_dev = 3
+          obj.st_dev = 3  
           return obj
         return real_os_stat(f)
       os.stat = New_New_Mock_OsStat
@@ -351,10 +351,10 @@ class IncludeAnalyzerTest(unittest.TestCase):
       self.assertEqual(GetFileNamesFromAbsLzoName(files_and_links),
                        ['test_data/stat_triggers.c',
                         'dfoo/stat_triggers.h'])
-
+      
       self.assertEqual(self.include_analyzer.generation, 3)
       CheckGeneration(files_and_links, 3)
-
+      
     finally:
       glob.glob = real_glob_glob
       os.stat = real_os_stat
@@ -375,7 +375,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
     #   symlink_farm/sub_farm/link_to_dd_dd_dfoo_include_dotdot_foo
     #
     # which is a link to ../../dfoo/include_dotdot_foo, that is, to
-    #
+    # 
     #   dfoo/include_dotdot_foo
     #
     # which is a file that contains:
@@ -408,7 +408,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
         ['dfoo/include_dotdot_foo', 'symlink_farm/foo'],
         "test_data"))
 
-
+     
   def helper_test_IncludeAnalyzer(self, test_data_dir):
     """Test basic functionality assuming test data is in test_data_dir."""
 
@@ -523,7 +523,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
          'test_include_next/foo/y.h',
          'test_include_next/baz/y.h'],
         test_data_dir))
-
+    
     # Test that a directory that has a name matching an include is not picked.
     # Here the directory is test_data/i_am_perhaps_a_directory.h, which is in
     # the file directory of the translation unit. Instead,
@@ -553,7 +553,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
 
 for algorithm in [ basics.MEMOIZING ]:
   try:
-    print("TESTING ALGORITHM %s" % algorithm)
+    print "TESTING ALGORITHM %s" % algorithm
     unittest.main()
   except:
     raise
