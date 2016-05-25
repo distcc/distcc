@@ -11,6 +11,8 @@
 
 #include <stdio.h>			/* for FILE * */
 
+#define UNUSED(x) {(void)x;}
+
 #define POPT_OPTION_DEPTH	10
 
 /** \ingroup popt
