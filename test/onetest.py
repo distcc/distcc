@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2.4
 #
 # Copyright 2007 Google Inc.
 #
