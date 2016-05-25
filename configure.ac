@@ -242,32 +242,20 @@ AC_PROG_INSTALL
 # We prefer to use the latest Python, but try to find an explicit
 # version to make sure we don't get a really old one.
 #
-# The include server requires python 2.4 or later, but the 'make test'
-# routines only require python 2.2.  Thus we have two separate
-# variables.  Each variable is the empty string if the python that we
-# haven't isn't recent enough for that use, or the path to a python
-# executable if it is recent enough.
-#
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
 AC_PATH_PROGS(PYTHON, [python2.7 python-2.7 python2.6 python-2.6 python2.5 python-2.5 python2.4 python-2.4 python])
 AC_ARG_VAR(PYTHON, [Python interpreter])
 # Python 1 doesn't even support -V
 if ! "$PYTHON" -V 2>&1 | grep "^Python" >/dev/null; then
-  TEST_PYTHON=""
-  INCLUDESERVER_PYTHON=""
-elif "$PYTHON" -V 2>&1 | grep "^Python 2.1" >/dev/null; then
-  TEST_PYTHON=""
-  INCLUDESERVER_PYTHON=""
-elif "$PYTHON" -V 2>&1 | grep "^Python 2.[[23]]" >/dev/null; then
-  TEST_PYTHON="$PYTHON"
-  INCLUDESERVER_PYTHON=""
+  PYTHON=""
+elif "$PYTHON" -V 2>&1 | grep "^Python 2.[[123]]" >/dev/null; then
+  PYTHON=""
+elif "$PYTHON" -V 2>&1 | grep "^Python 3" >/dev/null; then
+  PYTHON=""
 else
-  TEST_PYTHON="$PYTHON"
-  INCLUDESERVER_PYTHON="$PYTHON"
+  PYTHON="$PYTHON"
 fi
-AC_SUBST(TEST_PYTHON)
-AC_SUBST(INCLUDESERVER_PYTHON)
 AC_SUBST(PYTHON_RELATIVE_LIB)
 AC_C_INLINE
 AC_C_BIGENDIAN

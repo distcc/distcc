@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.2
+#! /usr/bin/env python
 
 # Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
 # Copyright 2007 Google Inc.
