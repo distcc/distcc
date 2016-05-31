@@ -35,7 +35,7 @@
 #include "exitcode.h"
 
 
-const char *opt_user = "distcc";
+const char *opt_user = "distccd";
 
 
 /**
