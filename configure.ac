@@ -209,8 +209,8 @@ then
     PYTHON_CFLAGS="$PYTHON_CFLAGS -Wno-missing-prototypes -Wno-missing-declarations \
 -Wno-write-strings"
 
-    # For popt/*.c, we disable unused variable warnings.
-    POPT_CFLAGS="-Wno-unused"
+    # For popt/*.c, we disable unused variable and parameter warnings.
+    POPT_CFLAGS="-Wno-unused -Wno-unused-parameter"
 
     AC_MSG_NOTICE([Adding gcc options: $CFLAGS])
 fi
