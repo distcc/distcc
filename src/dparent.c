@@ -141,7 +141,7 @@ int dcc_standalone_server(void)
 #ifdef HAVE_AVAHI
     /* Zeroconf registration */
     if (opt_zeroconf) {
-        if (!(avahi = dcc_zeroconf_register((uint16_t) arg_port, n_cpus)))
+        if (!(avahi = dcc_zeroconf_register((uint16_t) arg_port, n_cpus, dcc_max_kids)))
             return EXIT_CONNECT_FAILED;
     }
 #endif

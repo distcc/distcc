@@ -52,6 +52,7 @@ struct context {
     AvahiEntryGroup *group;
     uint16_t port;
     int n_cpus;
+    int n_jobs;
 };
 
 static void publish_reply(AvahiEntryGroup *g, AvahiEntryGroupState state, void *userdata);
@@ -73,9 +74,10 @@ static void register_stuff(struct context *ctx) {
     }
 
     if (avahi_entry_group_is_empty(ctx->group)) {
-        char cpus[32], machine[64] = "cc_machine=", version[64] = "cc_version=", *m, *v;
+        char cpus[32], jobs[32], machine[64] = "cc_machine=", version[64] = "cc_version=", *m, *v;
 
         snprintf(cpus, sizeof(cpus), "cpus=%i", ctx->n_cpus);
+        snprintf(jobs, sizeof(jobs), "jobs=%i", ctx->n_jobs);
         v = dcc_get_gcc_version(version+11, sizeof(version)-11);
         m = dcc_get_gcc_machine(machine+11, sizeof(machine)-11);
 
@@ -93,6 +95,7 @@ static void register_stuff(struct context *ctx) {
                     ctx->port,
                     "txtvers=1",
                     cpus,
+                    jobs,
                     "distcc="PACKAGE_VERSION,
                     "gnuhost="GNU_HOST,
                     v ? version : NULL,
@@ -222,8 +225,8 @@ static void client_callback(AvahiClient *client, AvahiClientState state, void *u
     }
 }
 
-/* register a distcc service in DNS-SD/mDNS with the given port and number of CPUs */
-void* dcc_zeroconf_register(uint16_t port, int n_cpus) {
+/* register a distcc service in DNS-SD/mDNS with the given port, number of CPUs, and maximum concurrent jobs */
+void* dcc_zeroconf_register(uint16_t port, int n_cpus, int n_jobs) {
     struct context *ctx = NULL;
     char service[256] = "distcc@";
     int error;
@@ -235,6 +238,7 @@ void* dcc_zeroconf_register(uint16_t port, int n_cpus) {
     ctx->threaded_poll = NULL;
     ctx->port = port;
     ctx->n_cpus = n_cpus;
+    ctx->n_jobs = n_jobs;
 
     /* Prepare service name */
     gethostname(service+7, sizeof(service)-8);
