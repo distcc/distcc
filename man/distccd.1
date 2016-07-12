@@ -215,6 +215,8 @@ DNS Service Discovery (DNS-SD).  This allows distcc clients on the local
 network to access this distccd server without explicitly listing its host
 name or IP address in their distcc host list: the distcc clients can
 just use "+zeroconf" in their distcc host lists.
+Can optionally use -j parameter to specify the maximum number of jobs
+that this server can process concurrently.
 .B This option is only available if distccd was compiled with
 .B Avahi support enabled.
 .TP

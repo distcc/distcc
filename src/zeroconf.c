@@ -77,6 +77,7 @@ struct host {
     AvahiAddress address;
     uint16_t port;
     int n_cpus;
+    int n_jobs;
 
     AvahiServiceResolver *resolver;
 };
@@ -163,9 +164,9 @@ static int write_hosts(struct daemon_data *d) {
             /* Not yet fully resolved */
             continue;
 	if (h->address.proto == AVAHI_PROTO_INET6)
-	    snprintf(t, sizeof(t), "[%s]:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
+	    snprintf(t, sizeof(t), "[%s]:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, h->n_jobs);
 	else
-	    snprintf(t, sizeof(t), "%s:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, d->n_slots * h->n_cpus);
+	    snprintf(t, sizeof(t), "%s:%u/%i\n", avahi_address_snprint(a, sizeof(a), &h->address), h->port, h->n_jobs);
 
         if (dcc_writex(d->fd, t, strlen(t)) != 0) {
             rs_log_crit("write() failed: %s\n", strerror(errno));
@@ -276,6 +277,21 @@ static void resolve_reply(
                 avahi_free(value);
             }
 
+            /* Look for the number of jobs in TXT RRs, and if not found, then set n_jobs = 4 * n_cpus */
+            for (i = txt; i; i = i->next) {
+                char *key, *value;
+
+                if (avahi_string_list_get_pair(i, &key, &value, NULL) < 0)
+                    continue;
+
+                if (!strcmp(key, "jobs"))
+                    if ((h->n_jobs = atoi(value)) <= 0)
+                        h->n_jobs = 4 * h->n_cpus;
+
+                avahi_free(key);
+                avahi_free(value);
+            }
+
             h->address = *a;
             h->port = port;
 
@@ -350,6 +366,7 @@ static void browse_reply(
                 h->protocol = protocol;
                 h->next = d->hosts;
                 h->n_cpus = 1;
+                h->n_jobs = 4;
                 d->hosts = h;
             }
 
