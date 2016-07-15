@@ -19,6 +19,11 @@ QUICK SUMMARY
    Note that past versions of Debian used binutils-dev instead of
    libiberty-dev.
 
+   Note that distcc-pump needs Python 3.x, while the default version of
+   Python on many systems is 2.x, so you may have to be explicit - e.g.
+
+       sudo apt-get install libpython3.5-dev
+
 1. Build and install
 
       ./autogen.sh       # If "configure" does not already exist.
