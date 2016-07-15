@@ -128,7 +128,7 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
 
     addr_len = sizeof(addr);
 
-    if ((ret = getpeername(to_net_sd, &addr, &addr_len)) != 0) {
+    if ((ret = getpeername(to_net_sd, (struct sockaddr *)&addr, &addr_len)) != 0) {
         rs_log_error("Failed to look up peer address using socket \"%d\": %s.",
                      to_net_sd,
                      hstrerror(h_errno));
