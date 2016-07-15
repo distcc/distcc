@@ -502,7 +502,7 @@ AC_ARG_WITH([auth],
 
 if test x"$with_auth" = xyes; then
         AC_SEARCH_LIBS([gss_init_sec_context],
-                        [gssapi gssapi_krb5],
+                        [gssapi gssapi_krb5 gss],
 	                AC_DEFINE(HAVE_GSSAPI, 1, [Define if the GSS_API is available])
 	                AUTH_COMMON_OBJS="src/auth_common.o"
 	                AUTH_DISTCC_OBJS="src/auth_distcc.o"
