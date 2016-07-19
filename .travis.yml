@@ -1,6 +1,6 @@
 before_install: 
  - sudo apt-get update -qq
- - sudo apt-get install -qq make libiberty-dev
+ - sudo apt-get install -qq make binutils-dev gcc-dev
 
 language: cpp
 
