@@ -2,7 +2,8 @@
 
 by Martin Pool
 
-http://distcc.org/
+Current Docuemnts: https://cdn.rawgit.com/distcc/distcc/9a09372bd3f420cdd7021e52eda14fa536a3c10e/doc/web/index.html
+Formally http://distcc.org/
 
 "pump" functionality added by
 Fergus Henderson, Nils Klarlund, Manos Renieris, and Craig Silverstein (Google Inc.)
