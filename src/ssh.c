@@ -178,6 +178,12 @@ static int dcc_run_piped_cmd(char **argv,
  * nice for us to parse it into an argv[] string by splitting on
  * wildcards/quotes, but at the moment this seems redundant.  It can be done
  * adequately using .ssh/config I think.
+ *
+ * @note the ssh command does need to be tokenized as we have hundreds of
+ * users and a corporate requirement that keeps us from modifying the
+ * system ssh config files. We can at the same time set command-line options
+ * through the tool in use one level above this. - prw 08/09/2016
+ *
  **/
 int dcc_ssh_connect(char *ssh_cmd,
                     char *user,
@@ -187,14 +193,22 @@ int dcc_ssh_connect(char *ssh_cmd,
                     pid_t *ssh_pid)
 {
     pid_t ret;
-    char *child_argv[10];
-    int i;
+    int i,j;
+    char *ssh_args[6];
+    int num_ssh_args = 0;
 
     /* We need to cast away constness.  I promise the strings in the argv[]
      * will not be modified. */
 
-    if (!ssh_cmd)
-        ssh_cmd = getenv("DISTCC_SSH");
+    if (!ssh_cmd) {
+        char *ssh_cmd_in = getenv("DISTCC_SSH");
+        ssh_cmd = strtok(ssh_cmd_in, " ");
+        char *token = strtok(NULL, " ");
+        while (token != NULL) {
+            ssh_args[num_ssh_args++] = token;
+            token = strtok(NULL, " ");
+        }
+    }
     if (!ssh_cmd)
         ssh_cmd = (char *) dcc_default_ssh;
 
@@ -205,8 +219,13 @@ int dcc_ssh_connect(char *ssh_cmd,
     if (!path)
         path = (char *) "distccd";
 
+    char *child_argv[10+num_ssh_args];
     i = 0;
     child_argv[i++] = ssh_cmd;
+    for (j=0; j<num_ssh_args; ) {
+        child_argv[i++] = ssh_args[j++];
+    }
+
     if (user) {
         child_argv[i++] = (char *) "-l";
         child_argv[i++] = user;
