@@ -193,8 +193,10 @@ int dcc_ssh_connect(char *ssh_cmd,
                     pid_t *ssh_pid)
 {
     pid_t ret;
+    const int max_ssh_args = 12;
+    char *ssh_args[max_ssh_args];
+    char *child_argv[10+max_ssh_args];
     int i,j;
-    char *ssh_args[6];
     int num_ssh_args = 0;
 
     /* We need to cast away constness.  I promise the strings in the argv[]
@@ -207,6 +209,8 @@ int dcc_ssh_connect(char *ssh_cmd,
         while (token != NULL) {
             ssh_args[num_ssh_args++] = token;
             token = strtok(NULL, " ");
+            if (num_ssh_args == max_ssh_args)
+                break;
         }
     }
     if (!ssh_cmd)
