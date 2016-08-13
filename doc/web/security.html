@@ -48,7 +48,7 @@
 	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
 	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
 	  </ul>
-       <p><p></td>                                      
+       <p><p></td>
        <td valign="top">
        <div class="body">
        <h1 class="title">distcc security notes</h1>
@@ -56,7 +56,7 @@
 
 <p>
 distcc is intended to be quite secure when used according to the
-documentation, but it must be properly configured.  
+documentation, but it must be properly configured.
 <p>
 <b>Anyone who can connect to the distcc server port can run arbitrary
 commands on that machine as the distccd user.  If you are not using
@@ -64,7 +64,7 @@ SSH, you must use the <tt>--allow</tt> rule and/or firewall
 rules to limit access to port 3632.</b>  Since version 3.0, distccd now
 enforces that, refusing to run if the --allow option is not specified.
 <p>
-Someone has written a 
+Someone has written a
 <a href="http://www.metasploit.com/projects/Framework/modules/exploits/distcc_exec.pm">
 program to attack unprotected servers</a>.  To prevent this attack, use
 network access control or SSH (which is much slower).
@@ -151,7 +151,7 @@ Thirdly there would sometimes be false alerts from minor differences
 in gcc patchlevel that are not visible in normal use but that do
 change the output file at a byte level.
 <p>
-For practical advice, see 
+For practical advice, see
 <a href="http://www.debian-administration.org/articles/157">this description of how to secure distcc using chroot and OpenVPN</a>.
 </tr></table>
     <div class="thanks">Copyright &copy; 2002&ndash;2004, 2006 Martin Pool.

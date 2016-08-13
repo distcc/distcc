@@ -51,7 +51,7 @@ A good bug report for distcc should include these details:
        -Wimplicit -Wshadow -Wpointer-arith -Wcast-align \
        -Wwrite-strings -Waggregate-return -Wstrict-prototypes \
        -Wmissing-prototypes -Wnested-externs -o src/clirpc.o \
-       -c src/clirpc.c 
+       -c src/clirpc.c
 
   * Turn on client and server error logging.  On the client, set these
     environment variables, and try to reproduce the problem:

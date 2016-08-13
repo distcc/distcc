@@ -1,5 +1,5 @@
 /* -*- c-file-style: "java"; indent-tabs-mode: nil; fill-column: 78 -*-
- * 
+ *
  * distcc -- A simple distributed compiler system
  *
  * Copyright (C) 2002, 2003, 2004 by Martin Pool
@@ -13,7 +13,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -155,7 +155,7 @@ int dcc_send_job_corked(int net_fd,
                         struct dcc_hostdef *);
 
 int dcc_retrieve_results(int net_fd,
-                         int *status, 
+                         int *status,
                          const char *output_fname,
                          const char *deps_fname,
                          const char *server_stderr_fname,
@@ -215,10 +215,10 @@ int dcc_compress_file_lzo1x(int in_fd,
                             size_t in_len,
                             char **out_buf,
                             size_t *out_len);
-                            
+
 int dcc_compress_lzo1x_alloc(const char *in_buf,
                             size_t in_len,
-                            char **out_buf_ret, 
+                            char **out_buf_ret,
                             size_t *out_len_ret);
 
 

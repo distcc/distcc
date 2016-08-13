@@ -48,7 +48,7 @@
 	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
 	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
 	  </ul>
-       <p><p></td>                                      
+       <p><p></td>
        <td valign="top">
        <div class="body">
        <h1 class="title">distcc frequently asked questions</h1>
@@ -68,7 +68,7 @@
   versions of gcc are thought to work, though later versions tend to work
   better.
 
-  <p>Intel's <em>icc</em> compiler is somewhat compatible with gcc and 
+  <p>Intel's <em>icc</em> compiler is somewhat compatible with gcc and
   works with distcc, but some problems have been reported.
 
   <p>Sun's proprietary C compiler is reported to work with distcc in C
@@ -89,7 +89,7 @@ This could in principle be changed.
 
 
 <h3>How to build gcc with distcc?</h3>
-   
+
 <p>
    gcc uses an unusual three-stage process to verify that the compiler
    can recompile itself with the same results.  Because of bugs in the
@@ -110,14 +110,14 @@ This could in principle be changed.
 
 <p>
    (More information or instructions here would be welcome.)
-   
 
- 
+
+
 <h3>distcc gets slower when I add slow machines to the cluster</h3>
 
-   
 
-   
+
+
 <p>
     Make sure you put the preferred (fastest/closest/least loaded)
     machines at the start of the <tt>DISTCC_HOSTS</tt> list.  This is
@@ -133,11 +133,11 @@ This could in principle be changed.
 
 
   <h3>Restarting distccd on reboot</h3>
-   
+
 
 <p>
    You may have <tt>distccd</tt> installed on a machine where you don't
-   have root, and want it to restart when the machine reboots. 
+   have root, and want it to restart when the machine reboots.
 
 <p>
    One way to do this, <a href="http://lists.samba.org/pipermail/distcc/2002q4/000417.html">suggested by Shane McDaniel</a>,
@@ -158,7 +158,7 @@ This could in principle be changed.
 
 <p>
   It is awesome!  :-)  From distcc 1.1, root can use the <tt>--user</tt>
-  option to cause distcc to start as a particular user.  
+  option to cause distcc to start as a particular user.
 <p>
     <tt># distccd --user nobody </tt>
 
@@ -171,15 +171,15 @@ This could in principle be changed.
 <p>
   If distccd is started by a non-root user then it will continue
   running as that user.
-  
+
 
 
 
       <h3>Why not use a distributed-make-style system?</h3>
 
-      
 
-      
+
+
 
 <p>
   A few people have extended <tt>make</tt> to allow it to distribute jobs
@@ -293,11 +293,11 @@ something not in root's path, then it should be fine.
 
 <p>
 <blockquote>
-i noticed that when you start a make proccess, the remote distccd recieves 
-10-15 connections from my host (which is good) and those proccesses die after 
-a while. this is a long compilation (kdelibs) and after the initial 
+i noticed that when you start a make proccess, the remote distccd recieves
+10-15 connections from my host (which is good) and those proccesses die after
+a while. this is a long compilation (kdelibs) and after the initial
 proccesses die, i cannot see any new one's coming in. is this normal ?
-it seems as if after a while (2-3 minuets) distcc stops working and only my 
+it seems as if after a while (2-3 minuets) distcc stops working and only my
 local gcc is still compiling.
 </blockquote>
 
@@ -307,7 +307,7 @@ local gcc is still compiling.
    If you're running distccd from inetd, then it may be that inetd
    thinks that the service is "looping" because of all the rapid
    connections.  You need to increase the maximum connection rate.
-   See the inetd manual.  
+   See the inetd manual.
 
 <p>
    On traditional BSD inetd, you can do this by changing the word <tt>t</tt> to something like <tt>nowait.1000</tt>
@@ -321,12 +321,12 @@ local gcc is still compiling.
 
 <h3>Running distccd on a firewall?</h3>
 
-    
+
 <p>
 <blockquote>
-another machine i want to add to this "cluster" is my firewall. its not a 
+another machine i want to add to this "cluster" is my firewall. its not a
 very powerfull one, but it can help speed things up a little more ;)
-are there any knows security issues with distcc ? how stupid will it be to run 
+are there any knows security issues with distcc ? how stupid will it be to run
 it on a server that acts as a firewall ?
 </blockquote>
 
@@ -413,7 +413,7 @@ version of gcc ? 2.9.x for example ?
   It is usually best to make sure that every compiler name maps to a
   reasonably similar version on every machine.  You can either make
   sure that <tt>gcc</tt> is the same everywhere, or use a
-  version-qualified compiler name, such as <tt>gcc-3.2</tt> or 
+  version-qualified compiler name, such as <tt>gcc-3.2</tt> or
   <tt>i386-redhat-linux-gcc-3.2.2</tt>.
 <p>
   In particular, object files can be incompatible because:
@@ -422,7 +422,7 @@ version of gcc ? 2.9.x for example ?
 	C++.
 
    <li> Different versions optimize differently.
-   
+
    <li> The header files specifically detect the version of gcc being
 	used, to change optimization or to work around bugs.  The
 	Linux kernel does this.
@@ -438,18 +438,18 @@ version of gcc ? 2.9.x for example ?
    It is also a good idea to have the assembler versions be the same
    too, although the problems there are slightly less complex.
 
-  
+
 
 
  <h3>Shouldn't distcc check gcc versions?</h3>
 
- 
+
 <p>
  It might be a good idea for distcc to check the version of gcc on
  all the volunteer machines.  However this turns out to be hard to do
  completely reliably, because some programs which both call themselves
  "gcc 3.2.1" behave differently, presumably because of vendor
- patches or because vendors have shipped pre-release code.  
+ patches or because vendors have shipped pre-release code.
 <p>
  So since automatic detection would not be a reliable solution, for
  the moment we depend on the user to make sure they have compatible
@@ -483,12 +483,12 @@ Repeat as appropriate for every combination you want to use.
 On Windows, you need to use the  Cygwin  (or perhaps Mingw?)
    software, which provides a Unix-like environment for running gcc.
 <p>
-The easiest way to build a cross compiler is to use 
-Dan Kegel's 
+The easiest way to build a cross compiler is to use
+Dan Kegel's
 <a href="http://kegel.com/crosstool/">crosstool</a>.
 <p>
-Brian Mosher reports that 
-<a href="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/cygwin-to-linux-cross-howto.txt">Mumit Khan's description of building a Cygwin-hosted Linux toolchain</a> works well.  
+Brian Mosher reports that
+<a href="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/cygwin-to-linux-cross-howto.txt">Mumit Khan's description of building a Cygwin-hosted Linux toolchain</a> works well.
 <a href="http://lists.samba.org/pipermail/distcc/2002q4/000469.html">Mike Santy suggests a slightly different approach</a>.
 
 
@@ -498,7 +498,7 @@ Brian Mosher reports that
 <blockquote>
   Do I need to install cross-compilers to distribute builds between
    different operating systems on the same CPU architecture?  For
-   example, <a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;oe=UTF-8&amp;threadm=opro4i72qrekdofe%40news.lysator.liu.se&amp;rnum=3&amp;prev=/groups%3Fq%3Ddistcc%2Bopenbsd%26ie%3DUTF-8%26oe%3DUTF-8%26hl%3Den%26btnG%3DGoogle%2BSearch">OpenBSD i386 and NetBSD i386</a>. 
+   example, <a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;oe=UTF-8&amp;threadm=opro4i72qrekdofe%40news.lysator.liu.se&amp;rnum=3&amp;prev=/groups%3Fq%3Ddistcc%2Bopenbsd%26ie%3DUTF-8%26oe%3DUTF-8%26hl%3Den%26btnG%3DGoogle%2BSearch">OpenBSD i386 and NetBSD i386</a>.
 </blockquote>
 
 <p>
@@ -506,14 +506,14 @@ Brian Mosher reports that
   incompatibilites between the output of compilers such as
 
   <ul>
-   <li> Different object file formats, or variations of the format. 
+   <li> Different object file formats, or variations of the format.
     (OpenBSD uses a.out, but most Unixes use ELF.)
    <li> Different patches applied to the compiler, even if it claims
     to be the same version.
     </ul>
 
 <h3>What's hard about synchronizing clocks?</h3>
-  
+
 <p>
 <blockquote>
   Why do you say it's a feature of distcc that the machine clocks
@@ -543,7 +543,7 @@ Brian Mosher reports that
 <p>
   This message means it's listening for connections on a wildcard IP
   address, so clients coming through any network interface should be
-  able to connect, subject to <tt>--allow</tt> rules.  
+  able to connect, subject to <tt>--allow</tt> rules.
 <p>
   If you have more than one interface and want to only allow
   connections from one of them then use the <tt>--listen</tt> or <tt>w</tt> options, or both.
@@ -595,7 +595,7 @@ see <a href="http://www.linux.com/feature/54498">here</a>.
 <p>
 <blockquote>
   All objects
-files were created , but when I issue command for execution as 
+files were created , but when I issue command for execution as
 <tt>./executable</tt>
  then program takes so much time as without distcc. Kindly tell me that
 how this execution time can be  reduced.
@@ -666,12 +666,12 @@ compatible.
 <h3>Randomly patched kernel crashes/hangs</h3>
 <p>
 <blockquote>
- I installed applied some 
+ I installed applied some
 <a href="http://bugs.gentoo.org/show_bug.cgi?id=36230">random</a> <a href="http://lists.samba.org/archive/distcc/2004q1/002035.html">unstable</a> kernel patches, and now my machine hangs/crashes/corrupts data when I run distcc!
 </blockquote>
 
 <p>
-If your kernel crashes, it is 
+If your kernel crashes, it is
 <a href="http://lists.samba.org/archive/distcc/2004q1/002040.html">by definition</a>
 a kernel bug.
 <p>
@@ -683,7 +683,7 @@ a kernel bug.
 
 <h3>distccd sometimes unable to find gcc</h3>
 <p>
- 
+
  distccd inherits its <tt>PATH</tt> from whichever process starts it,
  and uses this to find compilers.  You may need to make sure the <tt>H</tt> is set appropriately by the script that starts distccd.  You
  can also set <tt>DISTCCD_PATH</tt>, which overrides <tt>PATH</tt> and
@@ -693,7 +693,7 @@ a kernel bug.
 
 <h3>Error about "jobserver unavailable"</h3>
 
-  
+
 <p>
   This indicates a problem with your Makefile or shell.  See the <a href="http://mail.gnu.org/archive/html/help-make/2001-09/msg00005.html">explanation of this error</a> from GNU make.
 <p>
@@ -712,16 +712,16 @@ a kernel bug.
 <p>
    This is a bug in the Linux kernel NFS client interaction between
     <tt>mmap</tt> and <tt>rename</tt>.  It can be avoided by using the
-    <a href="http://article.gmane.org/gmane.linux.nfs/3578"><tt>no_subtree_check</tt></a> export option on the NFS server.  
+    <a href="http://article.gmane.org/gmane.linux.nfs/3578"><tt>no_subtree_check</tt></a> export option on the NFS server.
     distcc 2.18 no longer uses mmap to receive files and may not
     suffer this bug so strongly, but setting <tt>no_subtree_check</tt> is
     still recommended.
 
- 
+
 <h3>distccmon doesn't work on NFS</h3>
 <p>
 <blockquote>
- When I set DISTCC_DIR to a directory on an NFS server, or have HOME on 
+ When I set DISTCC_DIR to a directory on an NFS server, or have HOME on
   an NFS server, the monitors give errors or just don't work.
 </blockquote>
 <p>
@@ -797,7 +797,7 @@ corrected in distcc 2.8 and later.
    directory from which I start gdb.
 </blockquote>
 <p>
-  
+
 Unfortunately this is caused by a bug in gcc, which I hope will be
 fixed in a future release.  gcc embeds the directory where the
 compiler (cc1) was run, when it really ought to record the directory
@@ -812,13 +812,13 @@ won't merge it because it's better to fix it in gcc.
 <p>
 This is Debian <a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=148957&amp;repeatmerged=yes">#148957</a>.
 <p>
-   There was a <a href="http://gcc.gnu.org/ml/gcc-patches/2002-08/msg01411.html">discussion about this bug</a> on the gcc-patches mailing list.  
-This can affect other programs which rely on debug stabs, such as 
+   There was a <a href="http://gcc.gnu.org/ml/gcc-patches/2002-08/msg01411.html">discussion about this bug</a> on the gcc-patches mailing list.
+This can affect other programs which rely on debug stabs, such as
 <tt>addr2line</tt>, and it results in object files not being
 byte-for-byte identical when they include the source directory.  The
 same bug affects <a href="http://ccache.samba.org/">ccache</a>.
 
-<h3>TCP_CORK in linux-2.2</h3> 
+<h3>TCP_CORK in linux-2.2</h3>
 <p>
   Linux 2.2 has a bug to do with <tt>TCP_CORK</tt> sockets getting stuck in
    the <tt>FIN_WAIT1</tt> state.  distcc 0.10 tries to work around it but it
@@ -826,7 +826,7 @@ same bug affects <a href="http://ccache.samba.org/">ccache</a>.
    <tt>DISTCC_CORK=0</tt>.
 
 
-<h3>Hung sockets in Linux 2.5</h3> 
+<h3>Hung sockets in Linux 2.5</h3>
 <p>
   distcc seems to produce a problem in Linux 2.5 where one machine
   thinks the socket is CLOSED, and the other thinks it is
@@ -878,16 +878,16 @@ setting MAKEFLAGS in your environment.
 </blockquote>
 
 
-<h3>Linux 2.2 makefile strangeness</h3> 
+<h3>Linux 2.2 makefile strangeness</h3>
 <p>
- Linux 2.2.21 cannot be built with distcc because of bugs in the kernel's 
+ Linux 2.2.21 cannot be built with distcc because of bugs in the kernel's
  Makefile.  (<tt>$CC</tt> is set to the compiler name plus the computed
  options.)  It may be possible to use distcc in masquerade mode.
 
 
   <h3>Compiler command line parsing problems?</h3>
 
-   
+
 <p>
    distcc parses the compiler command line to work out what
    operation is being invoked, and what are the input and output
@@ -899,7 +899,7 @@ setting MAKEFLAGS in your environment.
    Either case should be reported as a bug.
 
   <h3>Can't handle local file access</h3>
-  
+
 <p>
   distcc can't handle compilers that need to read other files from
   the local filesystem.  This might be a problem with such things as
@@ -920,10 +920,10 @@ setting MAKEFLAGS in your environment.
     Bernardo Innocenti says
 <p>
      <blockquote> Using the --enable-final configure option of KDE makes distcc almost
-    useless.  
+    useless.
 </blockquote>
 <p>
-    
+
 Frerich Raabe explains:
 <blockquote>
 --enable-final makes the build system concatenate all sourcefiles in a
@@ -957,7 +957,7 @@ over the network, and there is no way to pararellize this.
   compiler crashes, caused by corrupt object or source files.
 <p>
   This has occurred several times in the past, typically because of
-   kernel bugs such as  
+   kernel bugs such as
    Gentoo <a href="http://bugs.gentoo.org/show_bug.cgi?id=36230">#36320</a>.
    See if you can reproduce the problem using a standard kernel.org
    kernel.
@@ -966,7 +966,7 @@ over the network, and there is no way to pararellize this.
  <h3>Linux kernel panic using gigabit ethernet</h3>
 <p>
  There is a
-  <a href="http://lkml.org/lkml/2004/5/3/192">bug in the Linux 2.4.26 kernel</a> 
+  <a href="http://lkml.org/lkml/2004/5/3/192">bug in the Linux 2.4.26 kernel</a>
   [<a href="http://groups.google.com/groups?hl=en&amp;lr=&amp;ie=UTF-8&amp;threadm=1Gu6a-7hD-11%40gated-at.bofh.it&amp;rnum=1&amp;prev=/groups%3Fq%3Ddistcc%2520panic%26meta%3Dsite%253Dgroups">Google groups thread</a>] that is triggered by using distcc.  It is timing-related and seems
   more likely to occur  with a gigabit network adapter.
 <p>
@@ -976,9 +976,9 @@ over the network, and there is no way to pararellize this.
   You may be able to avoid it by setting these environment variables
   on both the client and the server:
 <p>
- <tt>DISTCC_MMAP=0 DISTCC_SENDFILE=0 </tt> 
+ <tt>DISTCC_MMAP=0 DISTCC_SENDFILE=0 </tt>
 <p>
-  This bug is present in the Fedora Core 1 kernel and is 
+  This bug is present in the Fedora Core 1 kernel and is
   <a href="https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=114192">Red Hat bug #114192</a>.
 <h3>Sun Workshop CC does not work with distcc</h3>
 <p>
@@ -1074,10 +1074,10 @@ NFS locking is not working.  Locking in NFS is supported by a separate
 protocol and daemon which can be down even if other file operations
 are working OK.
 <p>
-To fix this, either fix NFS locking on your system, or set 
+To fix this, either fix NFS locking on your system, or set
 <tt>DISTCC_DIR</tt> to point to a local disk.  If your system doesn't have
 a local hard disk you can just use <tt>tmpfs</tt> or something similar,
-because none of the files in that directory need to persist across 
+because none of the files in that directory need to persist across
 reboots.
 
 
@@ -1109,27 +1109,27 @@ You are probably not using the <tt>-j</tt> option to make or scons, so
 
 <h3>Errors with temporary files on Cygwin</h3>
 
- 
+
 <p>
- Some Windows compilers can't handle the default <tt>TMPDIR</tt> setting 
+ Some Windows compilers can't handle the default <tt>TMPDIR</tt> setting
   when distcc is run under Cygwin.  To fix this, put something like
   <tt>export TMPDIR=c:/temp</tt> in <tt>/etc/profile</tt>.
 
 
 <h3>Server won't start on Windows 98 or ME</h3>
 
-  
+
 <p>
-  For some reason the server does not work properly on Windows 98 unless it is 
+  For some reason the server does not work properly on Windows 98 unless it is
    invoked with <tt>--no-detach</tt>.
 
 
 <h3>Make fails with "file not found"</h3>
 
- 
+
 <p>
  If Make works for non-parallel builds, but fails when you use <tt>j</tt> and distcc, then there is probably a concurrency bug in your
- Makefile.  It is similar to a threading bug in C, 
+ Makefile.  It is similar to a threading bug in C,
  C++ or Java when a program is run on a multiprocessor system.
 <p>
   Sometimes it will work with <tt>-j</tt> without distcc, but fail when
@@ -1144,7 +1144,7 @@ You are probably not using the <tt>-j</tt> option to make or scons, so
 
 <h3>Internet-wide distributed compilation</h3>
 <p>
-    
+
 <blockquote>
 I'm a newbie with distcc and linux. I have been able to bootstrap (with
 lots of effort) Gentoo. I'm having only one computer on my lan that I
@@ -1187,7 +1187,7 @@ understand. Any body know if it work with distcc?
  potentially untrusted machines.
 
 
- 
+
 
 
 
@@ -1198,12 +1198,12 @@ understand. Any body know if it work with distcc?
  Apple patches to locate machines using Rendezvous and a small GUI to
  configure it.
 <p>
- The source is available from 
+ The source is available from
  <a href="http://www.opensource.apple.com/">opensource.apple.com</a>.
 
 <h3>How can I avoid compiling on workstations when they're in use</h3>
- 
- 
+
+
 <p>
 This <a href="http://lists.samba.org/archive/distcc/2006q1/003271.html"><tt>watch-ssaver</tt> script</a>
  from <a href="http://sourceforge.net/projects/dmucs">DMUCS</a>

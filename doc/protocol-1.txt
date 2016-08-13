@@ -29,7 +29,7 @@ protocol versioning
 -------------------
 
 This document describes version 1 of the protocol, which is used by
-distcc releases up to and including 2.1.  
+distcc releases up to and including 2.1.
 
 Future versions of the protocol may vary in any way.
 
@@ -93,7 +93,7 @@ packet consists of two or three parts:
   token -- four ascii bytes, defining the type of the packet
 
   parameter -- eight ascii hexadecimal digits, corresponding to a
-  32-bit unsigned quantity 
+  32-bit unsigned quantity
 
   body -- optionally present, depending on the token
 
@@ -137,7 +137,7 @@ request
 The following packets comprise the request:
 
 DIST <version>
- 
+
     Greeting from client, followed by the protocol version, which is
     always 1.
 
@@ -186,12 +186,12 @@ DOTO <len> <bytes>
     Contains the object file (.o) produced by the compiler.
 
     In very early versions, this is missing if the status code is not
-    zero. 
+    zero.
 
     In versions up to and including 2.7.1, zero-length output files
     are not supported.  If compilation fails, then the server sends
     the file with a length of zero, but the client does not read it.
-	
+
     From 2.8, things work as follows:
 
        regular success:
@@ -199,14 +199,14 @@ DOTO <len> <bytes>
            length nonzero
 
        succeeded, but zero-byte output:
-           status zero          
+           status zero
            length zero
            output file is created/touched
 
        failed:
-           status nonzero       
+           status nonzero
            length sent as zero
-           
+
     This is a little complex but is compatible with earlier releases.
 
     This does mean we cannot represent a compiler that produces output

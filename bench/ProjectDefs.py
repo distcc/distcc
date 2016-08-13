@@ -55,7 +55,7 @@ Project(url='http://us1.samba.org/samba/ftp/old-versions/samba-3.0.20.tar.gz',
         build_subdir='source',
         # newer versions of popt can be incompatible
         configure_cmd='./configure --with-included-popt',
-        pre_build_cmd = 'make proto', 
+        pre_build_cmd = 'make proto',
         ).register()
 
 Project(url='http://archive.apache.org/dist/httpd/httpd-2.0.43.tar.gz',

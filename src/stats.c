@@ -202,11 +202,11 @@ static void dcc_stats_calc_kid_avg(void) {
     int total = 0;
 
     gettimeofday(&now, NULL);
-    
+
     /* calculate average kids used over the last minute */
     if ((now.tv_sec - 60) >= last) {
         /* we look at 1min ago back to 2 min ago because we only register
-         * compiles when they complete. If we look right now, we miss all 
+         * compiles when they complete. If we look right now, we miss all
          * the current compiles that haven't completed.
          */
         for (t=60; t<120; t++) {

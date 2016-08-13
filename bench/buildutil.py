@@ -28,7 +28,7 @@ def make_dir(d):
 
 def run_cmd(cmd, expected=0):
     import time, os
-    
+
     before = time.time()
     print '%% %s' % cmd
     result = os.system(cmd)

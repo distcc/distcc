@@ -8,8 +8,8 @@
 #
 #   _include_server/lib.*/include_server/
 #
-# that contains file 'distcc_pump_c_extensions.so'. Write the path of this 
-# directory to stdout and exit with status 0. If such a path does not exist 
+# that contains file 'distcc_pump_c_extensions.so'. Write the path of this
+# directory to stdout and exit with status 0. If such a path does not exist
 # then write error message to stderr and exit with status 1.
 
 builddir="$1"

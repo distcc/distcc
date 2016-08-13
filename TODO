@@ -25,7 +25,7 @@ directory is probably a bad idea anyhow.
 
 error messages get badly interleaved
 
-    Large writes are not always atomic.  
+    Large writes are not always atomic.
 
     When running parallel compiles that produce many warnings/errors,
     the errors can get mixed up, both between lines and within lines.
@@ -37,7 +37,7 @@ error messages get badly interleaved
 
     It might be more useful to voluntarily write output one line at a
     time so as to increase the chance that each line is written atomically.
-    
+
 
 hardcode "gcc" not "cc"?
 
@@ -68,7 +68,7 @@ if connection fails, reschedule remotely?
     are eliminated, then we still run locally.
 
     Perhaps we should more carefully distinguish e.g. "failed to connect",
-    "server dropped connection", etc etc.  
+    "server dropped connection", etc etc.
 
     Backing off from downed machines makes this a little
     less unnecessary.
@@ -76,7 +76,7 @@ if connection fails, reschedule remotely?
 
 auto-check socklen_t mess
 
-    Dmitri says:           
+    Dmitri says:
 
 > By the way, about the accept() argument type (int, size_t, or socklen_t)
 > issue I had already reported in a previous post, an autoconf macro is
@@ -119,7 +119,7 @@ scheduler should allow for clock/bus speed
 gkrellm monitor for distcc
 
     Ought to work with client-server mode
- 
+
     Possibly easier than writing everything ourselves
 
     Show number of running jobs?
@@ -172,7 +172,7 @@ monitor
     network.
 
     lisa writes:
-    
+
     Some things I'd like to see for the daemon:
     1) Uptime
     2) Configuration (port, lzo compression? ssh enabled? etc)
@@ -236,7 +236,7 @@ Installation as an SSH subsystem
 
     Might make use easier on Windows.  I don't see any real advantage
     on Unix.
- 
+
     I think the daemon should already be OK for this.  It just
     requires a slight change in the way we call ssh from the client.
 
@@ -307,7 +307,7 @@ boredom
     Using an OS level semaphore to guard access to slots might work
     with some fudging, but there is no good portable implementation of
     them so it is moot.
-    
+
     When woken, the clients can do one full round of trying to get a
     slot and then go back to sleep.
 
@@ -336,7 +336,7 @@ intel CC
     Is it OK to just get the user to add this?
 
     Perhaps we could add it always?
-    
+
     Do we need a DISTCC_ADD_OPTIONS variable?
 
 
@@ -351,21 +351,21 @@ clean up temp files when a client is signalled
 
 
 globally visible status files
-    
+
     Perhaps store in a world-writable /var/lib/distcc, so that
     they're visible even when TMPDIR or HOME has been reset, as when
     building with emerge.
 
     Another good case to support is compilation from inside a chroot
     jail.
-    
+
     It might also be nice to be able to see other people using your
     machine either as a client or as a server.
 
     This requires passing a trust boundary when publishing information
     across accounts.  The directory needs to be writable and the
     programs need to be robust against other users trying to cause
-    mischief.  
+    mischief.
 
     It's perhaps not great to allow that kind of security issue in a
     default installation.  Should we really create a mode 777
@@ -380,7 +380,7 @@ globally visible status files
 dnotify in monitor
 
     This has been implemented, but I pulled it out because I'm not
-    convinced it is a good idea.   
+    convinced it is a good idea.
 
     Signals into GTK seem to cause some trouble when running from
     valgrind etc.
@@ -399,7 +399,7 @@ dnotify in monitor
     I'm not sure how to nicely integrate this into GNOME though.
     dnotify sends us a signal, which doesn't seem to fit in well with
     the GNOME system.  Perhaps the dummy pipe trick?  Or perhaps we
-    can jump out of the signal?  
+    can jump out of the signal?
 
     We can't call GTK code from inside.
 
@@ -414,7 +414,7 @@ Masquerade
 
     It might be nice to automatically create the directory and
     symlinks.  However we don't know what compiler names they'll want
-    to hook...  
+    to hook...
 
     Probably the best that we can do is provide clear instructions for
     users or package distributors to set this up.
@@ -435,7 +435,7 @@ Statistics
     examined?
 
     Ignore (or delete) files over ~60s old.  This avoids problems with
-    files hanging around from interrupted compilations. 
+    files hanging around from interrupted compilations.
 
 
 refactor name handling
@@ -461,7 +461,7 @@ in plain (non-pump) mode, abort when cpp fails
     The same SIGCHLD handling approach used to feed the compiler from
     a fifo might be used to abort early if the preprocessor fails.
     This will happen reasonably often, whenever there is a problem
-    with an include, ifdef, comment, etc.  
+    with an include, ifdef, comment, etc.
 
     It might save waiting for a long connection to complete.
 
@@ -495,13 +495,13 @@ feed compiler from fifo
     Events that we need to consider:
 
         Client forks
-        
+
         Compiler opens pipe
-        
+
         Client exits
 
         Server opens pipe
-        
+
     There are a few possibilities here:
 
         Client opens fifo, reads all input, and exits.  The normal
@@ -517,7 +517,7 @@ feed compiler from fifo
     neither the compiler or server can proceed past here until the other
     one opens it.  If the compiler exits, then the server ought to be
     broken out of it by a SIGCHLD.  But there is a race condition
-    here: the SIGCHLD might happen just before the open() call.  
+    here: the SIGCHLD might happen just before the open() call.
 
     We need to either jump out of the signal handler and abort the
     compilation, or use a non-blocking open and a dummy pipe to break
@@ -538,7 +538,7 @@ streaming input output
 
     We could start sending the preprocessed source out before it is
     complete.  This would require a protocol that allows us to send
-    little chunks from various streams, followed by an EOF.  
+    little chunks from various streams, followed by an EOF.
 
     This can certainly be done -- fsh and ssh do it.  However,
     particularly if we want to allow for streaming more than one thing
@@ -565,12 +565,12 @@ web site
 
 
 sendfile
- 
+
     perhaps try sendfile to receive as well, if this works on any platforms.
 
 
 static linking
-    
+
     cachegrind shows that a large fraction of client runtime is spent in the
     dynamic linker, which is kind of a waste.  In principle using dietlibc
     might reduce the fixed overhead of the client.  However, the nsswitch
@@ -623,7 +623,7 @@ make "localhost" less magic
 
 
 blacklist/lock by IP, not by name
-               
+
     Means we need reliable addr-to-string for IPv4 and IPv6.
 
     Any downside to this?
@@ -633,7 +633,7 @@ blacklist/lock by IP, not by name
 
 DNS multi-A-records
 
-    build.foo.com expands to a list of all IP addresses for building. 
+    build.foo.com expands to a list of all IP addresses for building.
 
     Need to choose an appropriate target that has the right compilers.
 
@@ -654,7 +654,7 @@ DNS multi-A-records
 
 
 DNS SRV records
-    
+
     Can only be updated by zone administrator -- unless you have
     dynamic DNS, which is quite possible.
 
@@ -690,7 +690,7 @@ better scheduler
 
 
     We want to approximate all tasks on the network being in a single queue,
-    from which the servers invite tasks as cycles become available.  
+    from which the servers invite tasks as cycles become available.
 
     However, we also want to preserve the classic-TCP model of clients opening
     connections to servers, because this makes the security model
@@ -703,14 +703,14 @@ better scheduler
     We "commit" to using a particular server at the last possible moment: when
     we start sending a job to it.  This is almost certainly preferable to
     queueing up on a particular server when we don't know that it will be the
-    next one free. 
+    next one free.
 
     One analogy for this is patients waiting in a medical center to see one of
     several doctors.  They all wait in a common waiting room (the queue) until
     a doctor (server) is free.  Normally the doctors would come into the
     waiting room to say "who's next?", but the constraint of running over TCP
     means that in our case the doctors cannot initiate the transaction.
-    
+
     One approach would be to have a central controller (ie receptionist), who
     knows which clients are waiting and which servers are free, but I don't
     really think the complexity is justified at this stage.
@@ -726,13 +726,13 @@ better scheduler
     polling.
 
     I had wondered whether it would work to use refused TCP connections to
-    indicate that a server's door is closed, but I think that is no good.  
+    indicate that a server's door is closed, but I think that is no good.
 
     It seems that at least on Linux, and probably on other platforms, you
     cannot set the TCP SYN backlog down to zero for a socket.  The kernel will
     still accept new connections on behalf of the process if it is listening,
     even if it's asked for no backlog and if it's not accepting them yet.
-    netstat shows these processes just in 
+    netstat shows these processes just in
 
     It looks like the only way to reliably have the server turn away
     connections is to either close its listening socket when it's too busy, or
@@ -752,7 +752,7 @@ better scheduler
 
     We almost certainly need to do this with nonblocking IO, but that should
     be reasonably portable.
-    
+
     Local compilation needs to be handled by lockfiles or some similar
     mechanism.
 
@@ -771,7 +771,7 @@ better scheduler
     they're listed.
 
     Clients are almost certainly not going to be accepted in the order in
-    which they arrive. 
+    which they arrive.
 
     If the client sends its job early then it doesn't hurt anybody else.  I
     suppose it could open a lot of connections but that sort of fairness issue
@@ -799,7 +799,7 @@ Compression
     Can compression automatically be turned on, rather than requiring
     user configuration?  I can't tell at the moment when would be the
     right time to do that.
-    
+
     Is it cheap enough to always have it on?  We not only pay the cost
     of compression, but we also need to give up on using sendfile()
     and therefore pay for more kernel-userspace transitions and some
@@ -845,17 +845,17 @@ Just cpp and linker?
 
     Is anything else wrong with this approach?
 
-  
+
 kill compiler
 
     If the client is killed, it will close the connection.  The server ought
-    to kill the compiler so as to prevent runaway processes on the server. 
+    to kill the compiler so as to prevent runaway processes on the server.
 
     This probably involves selecting() for read on the connection.
 
     The compilation will complete relatively soon anyhow, so it's not worth
     doing this unless there is a simple implementation.
-    
+
 
 tcp fiddling
 
@@ -902,10 +902,10 @@ rsync-like distributed caching
 
 
 --ping option [Done - see "lsdistcc"]
-       
+
     It would be nice to have a <tt>--ping</tt> client option to contact
     all the remote servers, and perhaps return some kind of interesting
-    information.  
+    information.
 
     Output should be machine-parseable e.g. to use in removing
     unreachable machines from the host list.
@@ -945,7 +945,7 @@ non-CC-specific Protocol
   the argument parser depends on things that can only be seen on the
   client, such as checking whether files exist, then this may be
   needed.
-  
+
   The server needs to use an appropriately-named temporary file.
 
 
@@ -989,7 +989,7 @@ waitstatus
 
 
 override compiler name
-	    
+
     distcc could support cross-compilation by a per-volunteer option to
     override the compiler name.  On the local host, it might invoke gcc
     directly, but on some volunteers it might be necessary to specify a more
@@ -1006,7 +1006,7 @@ override compiler name
 
 
 use spawn() on Windows
- 
+
      fork() is very slow.  Can we get away with only using spawn()?
 
 
@@ -1086,10 +1086,10 @@ preprocess remotely [Done! This is distcc 3.0's "pump" mode.]
 SSH connection hoarding
 
     It might be nice to hold open SSH connections to avoid the network
-    and CPU overhead of opening new ones.  
+    and CPU overhead of opening new ones.
 
     However, fsh is far too slow, probably because of being written in
-    Python. 
+    Python.
 
     It's only going to work on systems which can pass file descriptors
     and therefore needs to be optional.  Probably this only works on
@@ -1116,7 +1116,7 @@ Packaging
     Perhaps build RPMS and .debs? [DONE]
 
     Is it easy to build a static (or LSB-compliant?) .rpm on Debian? [DONE]
-    
+
 
 Local variables:
 mode: indented-text

@@ -58,7 +58,7 @@ class TestCase:
         self.basedir = os.getcwd()
         self.add_cleanup(self._restore_directory)
         self.rundir = os.path.join(self.basedir,
-                                   '_testtmp', 
+                                   '_testtmp',
                                    self.__class__.__name__)
         self.tmpdir = os.path.join(self.rundir, 'tmp')
         shutil.rmtree(self.rundir, ignore_errors=1)
@@ -78,7 +78,7 @@ class TestCase:
         os.environ.clear()
         os.environ.update(self._saved_environ)
 
-    
+
     def setup(self):
         """Set up test fixture."""
         pass
@@ -95,7 +95,7 @@ class TestCase:
     def add_cleanup(self, c):
         """Queue a cleanup to be run when the test is complete."""
         self._cleanups.append(c)
-        
+
     def apply_cleanups(self, debugger):
         """Apply cleanup functions and return error code.
 
@@ -148,7 +148,7 @@ why."""
     def assert_equal(self, a, b):
         if not a == b:
             raise AssertionError("assertEquals failed: %s %s" % (repr(a), repr(b)))
-            
+
     def assert_notequal(self, a, b):
         if a == b:
             raise AssertionError("assertNotEqual failed: %s %s" % (repr(a), repr(b)))
@@ -272,7 +272,7 @@ stderr:
             # tell the difference.
             raise NotRunError("could not execute %s" % repr(cmd))
         return rc, stdout, stderr
-    
+
 
     def explain_failure(self, exc_info = None):
         print("test_log:")
@@ -327,7 +327,7 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
       KeyboardInterrupt
 
     If subtest is true, then the ordinary information about the
-    test progress is not printed.  
+    test progress is not printed.
     """
     if not subtest:
         print("%-30s" % _test_name(testcase_class), end=' ')
@@ -336,7 +336,7 @@ def runtest(testcase_class, ret, verbose=0, debugger=None, subtest=0):
     else:
         def failure_print(message):
             print('[%s %s]' % (_test_name(testcase_class), message))
-            
+
     # flush now so that long running tests are easier to follow
     sys.stdout.flush()
 

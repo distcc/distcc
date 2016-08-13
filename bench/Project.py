@@ -36,7 +36,7 @@ class Project:
 
     'subdir' variables give just a single component of a name; 'dir' variables
     give a full path."""
-    
+
     def __init__(self, url,
                  package_file=None,
                  name=None,
@@ -87,7 +87,7 @@ class Project:
         self.name = name
 
         self.md5 = md5
-        
+
         self.configure_cmd = configure_cmd or "./configure"
         self.build_cmd = build_cmd or "make"
         self.pre_build_cmd = pre_build_cmd
@@ -117,7 +117,7 @@ class Project:
 
         make_dir(self.package_dir)
         make_dir(self.download_dir)
-            
+
         if not os.path.isfile(os.path.join(self.package_dir, self.package_file)):
             # XXX: snarf gets upset if the HTTP server returns "416
             # Requested Range Not Satisfiable" because the file is already
@@ -141,9 +141,9 @@ class Project:
 
     def pre_actions(self, actions):
         """Perform actions preparatory to building according to selection."""
-        
+
         if 'download' in actions:
             self.download()
         if 'md5check' in actions:
             self.md5check()
-            
+

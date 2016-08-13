@@ -2,8 +2,8 @@
 .SH "NAME"
 distcc \- distributed C/C++/ObjC compiler with distcc-pump extensions
 .SH "SYNOPSIS"
-.B distcc 
-.I <compiler> [COMPILER OPTIONS] 
+.B distcc
+.I <compiler> [COMPILER OPTIONS]
 .PP
 .B distcc
 .I [COMPILER OPTIONS]
@@ -14,7 +14,7 @@ distcc \- distributed C/C++/ObjC compiler with distcc-pump extensions
 .B distcc
 .I [DISTCC OPTIONS]
 .SH "DESCRIPTION"
-.P 
+.P
 distcc distributes compilation of C code across several machines on a
 network.  distcc should always generate the same results as a local
 compile, it is simple to install and use, and it is often much faster than a
@@ -36,7 +36,7 @@ workstation or laptop.  The distcc client runs on this machine, as does make,
 the preprocessor (if distcc's pump mode is not used), the linker, and other
 stages of the build process.  Any number of volunteer machines act as
 compilation servers and help the client to build the program, by running the
-.B distccd(1) 
+.B distccd(1)
 daemon, C compiler and assembler
 as required.
 .PP
@@ -45,7 +45,7 @@ through a tunnel command such as ssh(1).  For TCP connections the
 volunteers must run the distccd(1) daemon either directly or from inetd.
 For SSH connections distccd must be installed but should
 .B not
-be listening for connections.  
+be listening for connections.
 .PP
 TCP connections should only be used on secure networks because there
 is no user authentication or protection of source or object code.  SSH
@@ -54,13 +54,13 @@ encryption, although this can vary greatly depending on CPUs, network
 and the program being built.
 .PP
 distcc is intended to be used with GNU Make's
-.B -j 
+.B -j
 option, which runs several compiler processes concurrently.  distcc
 spreads the jobs across both local and remote CPUs.  Because distcc is
 able to distribute most of the work across the network, a higher
-concurrency level can be used than for local builds.  As a rule of thumb, 
+concurrency level can be used than for local builds.  As a rule of thumb,
 the
-.B -j 
+.B -j
 value should be set to about twice the total number of available server
 CPUs but subject to client limitations.  This setting allows for maximal
 interleaving of tasks being blocked waiting for disk or network IO. Note that
@@ -78,10 +78,10 @@ locks.  The effect of other build activity, such as Java compilation when
 building mixed code, should be considered.  The
 .B --localslots_cpp
 parameter is by default set to 16.
-This limits the number of concurrent processes that do preprocessing in 
+This limits the number of concurrent processes that do preprocessing in
 plain distcc (non-pump) mode.
-Therefore, larger 
-.B -j 
+Therefore, larger
+.B -j
 values than 16 may be used without overloading a single-CPU
 client due to preprocessing.  Such large values may speed up parts of the build
 that do not involve C compilations, but they may not be useful to distcc
@@ -100,12 +100,12 @@ cause mysterious compile or link failures.
 For each machine, download distcc, unpack, and install.
 .TP
 2
-On each of the servers, run 
+On each of the servers, run
 .B distccd --daemon
-with 
+with
 .B --allow
 options to restrict access.
-.TP 
+.TP
 3
 Put the names of the servers in your environment:
 .RS
@@ -126,7 +126,7 @@ compressed:
 $ export DISTCC_HOSTS='--randomize localhost red,cpp,lzo green,cpp,lzo blue,cpp,lzo'
 .RE
 
-The 
+The
 .B --randomize
 option enforces a uniform usage of compile servers.  While you will
 get some benefit from distcc's pump mode with only a few servers, you
@@ -214,7 +214,7 @@ compared to plain distcc mode.
 .SH "RESTRICTIONS FOR PUMP MODE"
 
 Using pump mode requires both client and servers to use release 3.0 or
-later of distcc and distccd (respectively).  
+later of distcc and distccd (respectively).
 .PP
 The incremental include analysis of distc-pump mode rests on
 the fundamental assumption that source and header files do not change
@@ -369,7 +369,7 @@ For example:
 .PP
 Then, to use distcc, a user just needs to put the directory
 /usr/lib/distcc/bin early in the PATH, and have set a host list in
-DISTCC_HOSTS or a file.  distcc will handle the rest.  
+DISTCC_HOSTS or a file.  distcc will handle the rest.
 .PP
 Note that this masquerade directory must occur on the PATH earlier
 than the directory that contains the actual compilers of the same
@@ -391,7 +391,7 @@ For example, in /usr/lib/distcc/bin create a file cc which contains:
 .PP
 .RS
 .nf
-#!/bin/sh 
+#!/bin/sh
 distcc /usr/bin/gcc "$@"
 .fi
 .RE
@@ -414,8 +414,8 @@ This tells ccache to run distcc as a wrapper around the real
 compiler.  ccache still uses the real compiler to detect compiler
 upgrades.
 .PP
-ccache  can then be run using either a masquerade directory 
-.I or 
+ccache  can then be run using either a masquerade directory
+.I or
 by
 setting
 .IP
@@ -429,11 +429,11 @@ be any use.
 distcc's pump mode is not compatible with ccache.
 .SH "HOST SPECIFICATIONS"
 A "host list" tells distcc which machines to use for compilation.  In
-order, distcc looks in the 
+order, distcc looks in the
 .B $DISTCC_HOSTS
-environment variable, the user's 
+environment variable, the user's
 .B $DISTCC_DIR/hosts
-file, and the system-wide host 
+file, and the system-wide host
 file.  If no host list can be found, distcc emits a warning and
 compiles locally.
 .PP
@@ -452,7 +452,7 @@ first machine listed is used (but see
 .I --randomize
 below).
 .PP
-Placing 
+Placing
 .I localhost
 at the right point in the list is important to getting good
 performance.  Because overhead for running jobs locally is low,
@@ -472,23 +472,23 @@ later in the list.  To avoid this, place the keyword
 into the host list.  This will cause the host list to be randomized,
 which should improve performance slightly for large build clusters.
 .PP
-There are two special host names 
+There are two special host names
 .B --localslots
 and
 .B --localslots_cpp
-which are useful for adjusting load on the local machine.  The 
+which are useful for adjusting load on the local machine.  The
 .B --localslots
-host specifies how many jobs that cannot be run remotely that can be run concurrently 
-on the local machine, while 
+host specifies how many jobs that cannot be run remotely that can be run concurrently
+on the local machine, while
 .B --localslots_cpp
 controls how many preprocessors will run in parallel on the local machine.  Tuning
 these values can improve performance.  Linking on large projects
-can take large amounts of memory.  Running parallel linkers, which cannot be 
+can take large amounts of memory.  Running parallel linkers, which cannot be
 executed remotely,  may
 force the machine to swap, which reduces performance over just running the
 jobs in sequence without swapping.   Getting the number of parallel preprocessors just
 right allows you to use larger parallel factors with make, since the local machine
-now has some machanism for measuring local resource usage.     
+now has some machanism for measuring local resource usage.
 .PP
 Finally there is the host entry
 .PP
@@ -532,7 +532,7 @@ A literal IPv6 address enclosed in square brackets, such as
 .B [::1]
 .TP
 .B IPV4
-A literal IPv4 address, such as 
+A literal IPv4 address, such as
 .B 10.0.0.1
 .TP
 .B HOSTNAME
@@ -544,18 +544,18 @@ Connect to a specified decimal port number, rather than the default of
 .TP
 .B @HOSTID
 Connect to the host over SSH, rather than TCP.  Options for the SSH
-connection can be set in 
+connection can be set in
 .B ~/.ssh/config
 .TP
 .B USER@
 Connect to the host over SSH as a specified username.
 .TP
-.B :COMMAND 
+.B :COMMAND
 Connect over SSH, and use a specified path to find the distccd
 server.  This is normally only needed if for some reason you can't
 install distccd into a directory on the default PATH for SSH
 connections.  Use this if you get errors like "distccd: command not
-found" in SSH mode.     
+found" in SSH mode.
 .TP
 .B /LIMIT
 A decimal limit can be added to any host specification to restrict the
@@ -568,7 +568,7 @@ servers with more than two processors.
 Enables LZO compression for this TCP or SSH host.
 .TP
 .B ,cpp
-Enables distcc-pump mode for this host.  Note: the build command must be 
+Enables distcc-pump mode for this host.  Note: the build command must be
 wrapped in the pump script in order to start the include server.
 .TP
 .B ,auth
@@ -605,14 +605,14 @@ hash/pound sign (\fB#\fP) and run to the end of the line.
 If a host in the list is not reachable distcc will emit a warning and
 ignore that host for about one minute.
 .SH "COMPRESSION"
-The 
-.B lzo 
+The
+.B lzo
 host option specifies that LZO compression should be used for data
 transfer, including preprocessed source, object code and error
 messages.  Compression is usually economical on networks slower than
 100Mbps, but results may vary depending on the network, processors and
 source tree.
-.PP 
+.PP
 Enabling compression makes the distcc client and server use more CPU time, but
 less network traffic.  The added CPU time is insignificant for pump mode.  The
 compression ratio is typically 4:1 for source and 2:1 for object code.
@@ -650,7 +650,7 @@ Error messages or warnings from local or remote compilers are passed
 through to diagnostic output on the client.
 .PP
 distcc can supply extensive debugging information when the verbose
-option is used.  This is controlled by the 
+option is used.  This is controlled by the
 .B DISTCC_VERBOSE
 environment variable on the client, and the
 .B --verbose
@@ -686,7 +686,7 @@ Connect failed.
 .TP
 104
 Compiler crashed.
-.TP 
+.TP
 105
 Out of memory.
 .TP
@@ -701,7 +701,7 @@ Truncated.
 .TP
 109
 Protocol Error.
-.TP 
+.TP
 110
 The given compiler was not found on the remote host.  Check that $CC is set appropriately and that it's installed in a directory on the search path for distccd.
 .TP
@@ -719,7 +719,7 @@ In use by another process.
 .TP
 115
 No such file.
-.TP 
+.TP
 116
 No hosts defined and fallbacks disabled.
 .TP
@@ -730,7 +730,7 @@ Timeout.
 GSS-API - Catchall error code for GSS-API related errors.
 
 .SH "FILES"
-If $DISTCC_HOSTS is not set, distcc reads a host list from either 
+If $DISTCC_HOSTS is not set, distcc reads a host list from either
 .B $DISTCC_DIR/hosts
 or a system-wide configuration file set at compile time.  The file
 locations are shown in the output from
@@ -796,16 +796,16 @@ packets and aids performance.  This should normally be left enabled.
 Specifies the command used for opening SSH connections.  Defaults to
 "ssh" but may be set to a different connection command such as "lsh"
 or "tsocks-ssh" that accepts a similar command line.  The command is
-not split into words and is not executed through the shell. 
+not split into words and is not executed through the shell.
 .TP
 .B DISTCC_SKIP_LOCAL_RETRY
 If set, when a remote compile fails, distcc will no longer try to
-recompile that file locally. 
+recompile that file locally.
 .TP
 .B "DISTCC_DIR"
 Per-user configuration directory to store lock files and state files.
-By default 
-.B ~/.distcc/ 
+By default
+.B ~/.distcc/
 is used.
 .TP
 .B "TMPDIR"
@@ -820,7 +820,7 @@ caching transient errors such as network problems.
 .TP
 .B "DISTCC_ENABLE_DISCREPANCY_EMAIL"
 If set, distcc sends an email when a compilation failed remotely, but succeeded
-locally.  Built-in heuristics prevent some such discrepancy email from being sent if 
+locally.  Built-in heuristics prevent some such discrepancy email from being sent if
 the problem is that a local file changed between the failing remote compilation
 and the succeeding local compilation.
 .TP
@@ -847,7 +847,7 @@ compilation commands may be required.
 The compilation command passed to distcc must be one that
 will execute properly on every volunteer machine to produce
 an object file of the appropriate type.  If the machines
-have different processors, then simply using 
+have different processors, then simply using
 .B distcc cc
 will probably not work, because that will normally invoke the
 volunteer's native compiler.
@@ -857,7 +857,7 @@ necessarily generate compatible .o files.
 .PP
 Several different gcc configurations can be installed
 side-by-side on any machine.  If you build gcc from source,
-you should use the 
+you should use the
 .B --program-suffix configuration
 options to cause it to be installed with a name that encodes
 the gcc version and the target platform.
@@ -867,13 +867,13 @@ The recommended convention for the gcc name is
 such as
 .B i686-linux-gcc-3.2
 \&.  GCC 3.3 will install itself
-under this name, in addition to 
+under this name, in addition to
 .I TARGET-gcc
-and, if it's native, 
-.I gcc-VERSION 
-and 
+and, if it's native,
+.I gcc-VERSION
+and
 .I gcc
-\&. 
+\&.
 .PP
 The compiler must be installed under the same name on the
 client and on every volunteer machine.
@@ -899,14 +899,14 @@ incompatible versions.  Compiler errors about link problems or
 declarations in system header files are usually due to mismatched or
 incorrectly installed compilers.
 .PP
-gcc's 
-.B -MD 
+gcc's
+.B -MD
 option can produce output in the wrong directory if the source and
-object files are in different directories and the 
-.B -MF 
+object files are in different directories and the
+.B -MF
 option is not used.  There is no perfect solution because of
 incompatible changes between gcc versions.  Explicitly specifying the
-dependency output file with 
+dependency output file with
 .B -MF
 will fix the problem.
 .PP
@@ -917,7 +917,7 @@ build down.
 .PP
 When distcc or ccache is used on NFS, the filesystem must be exported
 with the
-.B no_subtree_check 
+.B no_subtree_check
 option to allow reliable renames between directories.
 .PP
 The compiler can be invoked with a command line
@@ -925,14 +925,14 @@ The compiler can be invoked with a command line
 to both compile and link.  distcc doesn't split this into separate
 parts, but rather runs the whole thing locally.
 .PP
-distcc-pump mode reverts to plain distcc mode for source files that contain 
+distcc-pump mode reverts to plain distcc mode for source files that contain
 includes with absolute paths (either directly or in an included file).
 .PP
 Due to limitations in gcc, gdb may not be able to automatically find
 the source files for programs built using distcc in some
-circumstances.  The gdb 
+circumstances.  The gdb
 .B directory
-command can be used.  For distcc's plain (non-pump) mode, 
+command can be used.  For distcc's plain (non-pump) mode,
 this is fixed in gcc 3.4 and later.  For pump mode, the fix in
 gcc 3.4 does not suffice; we've worked around the gcc limitation
 by rewriting the object files that gcc produces, but this is only
@@ -955,7 +955,7 @@ In distcc-pump mode, certain assumptions are made that source and header files
 do not change during the build.  See discussion in section DISTCC DISCREPANCY
 SYMPTOMS of \fBinclude_server\fR(1().
 
-Other known bugs may be documented on 
+Other known bugs may be documented on
 .I http://code.google.com/p/distcc/
 .SH "AUTHOR"
 distcc was written by Martin Pool <mbp@sourcefrog.net>, with the
