@@ -3,7 +3,7 @@
 # This file, contributed by Dimitri PAPADOPOULOS-ORFANOS <papadopo@shfj.cea.fr>
 # may be installed as "cc" somewhere on your $PATH ahead of the real gcc.  That
 # allows you to just use regular Makefiles without modifying them to change
-# hardcoded calls to cc.  
+# hardcoded calls to cc.
 
 # This script will be a bit slow because of the overhead of running
 # things through a shell.  In a future release, this function should

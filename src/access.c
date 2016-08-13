@@ -64,10 +64,10 @@ static int split_mask(const char *spec,
                        const char **bits)
 {
     int value_len = strcspn(spec, "/");
-    
+
     if (host != NULL) {
         char *host_str;
-        
+
         host_str = malloc(value_len + 1);
         if (host_str == NULL) {
             rs_log_error("could not allocate memory (%d bytes)", value_len + 1);
@@ -75,17 +75,17 @@ static int split_mask(const char *spec,
         }
         strncpy(host_str, spec, value_len);
         host_str[value_len] = '\0';
-        
+
         *host = host_str;
     }
-    
+
     if (bits != NULL) {
         if (spec[value_len] && spec[value_len + 1])
             *bits = spec + value_len + 1;
         else
             *bits = NULL;
     }
-    
+
     return 0;
 }
 
@@ -365,7 +365,7 @@ int dcc_check_address(const struct sockaddr *client,
                 return EXIT_ACCESS_DENIED;
         } else
             return check_address_inet6(a6, &value->addr.inet6, &mask->addr.inet6);
-        
+
 #endif
     } else {
         rs_log_notice("access denied from unsupported address family %d",

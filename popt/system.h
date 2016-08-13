@@ -17,7 +17,7 @@ extern __const __int32_t *__ctype_toupper;
 #include <fcntl.h>
 #include <limits.h>
 
-#if HAVE_MCHECK_H 
+#if HAVE_MCHECK_H
 #include <mcheck.h>
 #endif
 
@@ -43,7 +43,7 @@ extern __const __int32_t *__ctype_toupper;
 /*@=declundef =incondefs =redecl@*/
 #endif
 
-/* AIX requires this to be the first thing in the file.  */ 
+/* AIX requires this to be the first thing in the file.  */
 #ifndef __GNUC__
 # if HAVE_ALLOCA_H
 #  include <alloca.h>

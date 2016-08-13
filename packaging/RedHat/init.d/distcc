@@ -10,7 +10,7 @@
 # clients.allow is searched for in directories
 #   /etc/distcc/`dnsdomainname`/clients.allow
 #   /etc/distcc/clients.allow
-# Format of clients.allow is 
+# Format of clients.allow is
 #   addr/size
 #   addr/size
 #   addr/size

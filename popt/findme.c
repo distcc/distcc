@@ -3,7 +3,7 @@
  */
 
 /* (C) 1998-2002 Red Hat, Inc. -- Licensing details are in the COPYING
-   file accompanying popt source distributions, available from 
+   file accompanying popt source distributions, available from
    ftp://ftp.rpm.org/pub/rpm/dist. */
 
 #include "system.h"
@@ -37,7 +37,7 @@ const char * findProgramPath(const char * argv0) {
 	if (!access(buf, X_OK))
 	    return buf;
 
-	if (chptr) 
+	if (chptr)
 	    start = chptr + 1;
 	else
 	    start = NULL;

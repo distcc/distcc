@@ -38,9 +38,9 @@ class Summary:
           project: a Project object
           compiler: a Compiler object
           time_info_accumulator: the string 'FAIL' or a list of Build.TimeInfo records
-   
+
         The time information is a list because we can build projects repeatedly.
-        
+
         """
         self._table.append((project.name, compiler.name, time_info_accumulator))
 
@@ -69,7 +69,7 @@ class Summary:
 
         # if nothing was run, skip it
         if not len(self._table):
-            return        
+            return
 
         """Print out in a nice tabular form"""
         print """
@@ -87,10 +87,10 @@ class Summary:
         sys.stdout.flush()
         os.system("uname -a")
 
-        print ("%-20s  %-30s  %9s  %9s  %9s  %9s  %9s" 
-        % ('project', 'compiler', 'time', 's.d.', 
+        print ("%-20s  %-30s  %9s  %9s  %9s  %9s  %9s"
+        % ('project', 'compiler', 'time', 's.d.',
            'CPU time',
-           'CPU util', 
+           'CPU util',
            'incl serv'))
 
         for row in self._table:

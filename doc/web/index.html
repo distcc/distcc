@@ -38,7 +38,7 @@
 	      <li><a title="Centralized control over distcc and ccache" href="http://ccontrol.ozlabs.org/">ccontrol</a></li>
 	      <li><a title="Smart job scheduler" href="http://dmucs.sourceforge.net/">dmucs</a></li>
 	  </ul>
-       <p><p></td>                                      
+       <p><p></td>
        <td valign="top">
        <div class="body">
        <h1 class="title">distcc: a fast, free distributed C/C++ compiler</h1>
@@ -81,7 +81,7 @@ Thanks a lot for a great tool!  &mdash; Jeremy Barnes
 <li> For each machine, <a href="http://code.google.com/p/distcc/downloads/list">download distcc</a>
 	  unpack, and do
 	  <br><tt>./configure &amp;&amp; make &amp;&amp; sudo make install</tt>
-     <li> On each of the servers, run <tt>distccd --daemon</tt>, with 
+     <li> On each of the servers, run <tt>distccd --daemon</tt>, with
         <tt>--allow</tt> options to restrict access.
      <li> Put the names of the servers in your environment:<br>
           <tt>export DISTCC_POTENTIAL_HOSTS='localhost red green blue'</tt><br>
@@ -96,7 +96,7 @@ For more detailed installation instructions, see the
 <a href="http://code.google.com/p/distcc/source/browse/trunk/INSTALL">INSTALL</a> file.
 
 <p align="center">
-<img alt="Picture of distcc monitor window" 
+<img alt="Picture of distcc monitor window"
      src="distccmon-gnome-2003-09-23-01.png"
      align="center">
 
@@ -133,13 +133,13 @@ For more detailed installation instructions, see the
       and successfully compiles large, complex free and proprietary
       software systems.  Programs known to build correctly with distcc
       include
-      the <a href="http://kernel.org/">Linux kernel</a>, 
+      the <a href="http://kernel.org/">Linux kernel</a>,
       <a href="http://rsync.samba.org/">rsync</a>,
       <a href="http://www.kde.org/">KDE</a>,
-      <a href="http://www.gnome.org">GNOME</a> (via 
+      <a href="http://www.gnome.org">GNOME</a> (via
       <a href="http://www.gnome.org/~jdub/garnome/">GARNOME</a>),
-      <a href="http://www.samba.org/">Samba</a> and 
-      <a href="http://www.ethereal.com/">Ethereal</a>.  
+      <a href="http://www.samba.org/">Samba</a> and
+      <a href="http://www.ethereal.com/">Ethereal</a>.
 
      <p>
       distcc is nearly linearly scalable for small numbers of
@@ -154,7 +154,7 @@ For more detailed installation instructions, see the
       You don't need a lot of machines to benefit: <a href="scenarios.html">a laptop and a single desktop is much faster than a laptop alone</a>.
 
      <p>
-     There are several tools available separately that 
+     There are several tools available separately that
      enhance or complement distcc:
 
      <ul>
@@ -166,15 +166,15 @@ For more detailed installation instructions, see the
        appropriate servers.
 
       <li>
-        <a href="http://ccontrol.ozlabs.org/">ccontrol</a>  
-	gives centralized control of parallelism, caching and distribution 
+        <a href="http://ccontrol.ozlabs.org/">ccontrol</a>
+	gives centralized control of parallelism, caching and distribution
 	even while the build is running.
 
 
       <li>
         <a href="http://kegel.com/crosstool/">crosstool</a>
         automates building cross-compilation toolchains.
-       
+
     <li><a href="http://research.edm.uhasselt.be/tvanlaerhoven/#distccWebView">distccWebView</a> is a CGI to show which of your
   servers are up and running.
 

@@ -1,11 +1,11 @@
-#! /bin/bash 
+#! /bin/bash
 
 
 # Copyright 2007 Google Inc. All Rights Reserved.
 #
-# A script for installing and controlling distccd on servers. 
+# A script for installing and controlling distccd on servers.
 #
-# This script allows for easy testing of distcc. It does not depend on 
+# This script allows for easy testing of distcc. It does not depend on
 # RPM, debian or other packaging techniques.
 
 

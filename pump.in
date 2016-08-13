@@ -84,7 +84,7 @@ Environment variables (all optional):
 
   DISTCC_LOCATION        Either the distcc 'bin' install directory (when the
                          pump script in the installation executes) or the build
-                         directory (when the pump script is run during 
+                         directory (when the pump script is run during
                          development).
 
                          This location is normally inferred from the dirname
@@ -95,7 +95,7 @@ Environment variables (all optional):
                          itself will be retrieved from the parent directory of
                          the location.
 
-                         If this location is the build directory, then Python 
+                         If this location is the build directory, then Python
                          sources are retrived from the source directory.
 
   DISTCC_POTENTIAL_HOSTS The distcc servers that will be queried by lsdistcc
@@ -103,7 +103,7 @@ Environment variables (all optional):
                          This value may be unset or null. In such
                          cases, use DISTCC_HOSTS.
 
-  DISTCC_HOSTS           This variable is passed through to distcc but only if 
+  DISTCC_HOSTS           This variable is passed through to distcc but only if
                          DISTCC_POTENTIAL_HOSTS is not set.
 
   LSDISTCC_ARGS          Extra arguments to lsdistcc.
@@ -112,7 +112,7 @@ Environment variables (all optional):
 
   PYTHONOPTIMIZE         If set to "", then Python optimization is disabled.
 
-Example: 
+Example:
   pump make
 EOF
     exit 0
@@ -235,7 +235,7 @@ StartIncludeServer() {
     # We assume this script is run from the build directory.  We pick up .py
     # files from the include_server directory in the source tree, and we pick up
     # the .so file from the include_server/build/libXXX/include_server
-    # directory. 
+    # directory.
     #
     # Calculate the location of the source directory.
     distcc_srcdir=`cd "$DISTCC_LOCATION"; cd "$srcdir"; pwd`
@@ -286,7 +286,7 @@ StartIncludeServer() {
     esac
 
     if [ -z "$PYTHONOPTIMIZE" ]; then PYTHONOPTIMIZE=1; fi
-    # We use 'eval' so that INCLUDE_SERVER_ARGS can use shell quoting such 
+    # We use 'eval' so that INCLUDE_SERVER_ARGS can use shell quoting such
     # as in:
     #
     #   INCLUDE_SERVER_ARGS='--stat_reset_triggers="*"'
@@ -433,7 +433,7 @@ StartIncludeServerAndDetermineHosts() {
   if [ -n "$DISTCC_POTENTIAL_HOSTS" ]; then
     # Probe the distcc servers. It may take up to a second. But
     # starting the include server takes about 150ms. Make these
-    # activities happen in parallel. 
+    # activities happen in parallel.
 
     # First, the lsdistcc command goes in the background.
     available_hosts_file=`MakeTmpFile "distcc-pump-hosts"` || exit 1
@@ -443,7 +443,7 @@ StartIncludeServerAndDetermineHosts() {
     StartIncludeServer && include_server_status=0
 
     # Await for AvailableHosts to finish.
-    wait 
+    wait
     ExportDISTCC_HOSTS "$include_server_status"
     rm -f "$available_hosts_file"
   else

@@ -4,7 +4,7 @@ Does not include various little changes, such as a bug fix in argutil.c, and
 making functions from static into global, which happened all around the code.
 
 	- A new protocol version (3) is added. It
-	  supports preprocessing on the server. It also transmits 
+	  supports preprocessing on the server. It also transmits
 	  bulky data compressed, like protocol version 2.
 	  - distcc.h: Added the enum for where to do the cpp.
 	  - hosts.c: Map a set of features (currently a subset of
@@ -56,7 +56,7 @@ making functions from static into global, which happened all around the code.
 	  - dotd.c: Most of the code that handles the dotd: figuring
 		out if we need it, and where it should go; also,
 		cleaning it up after it gets created on the server.
-          - fix_debug_info.c: Rewrite an ELF .o file to refer to the 
+          - fix_debug_info.c: Rewrite an ELF .o file to refer to the
                 client-side filenames.
 	  - clirpc.c Changed dcc_retrieve_results to retrieve
 		the dotd file.
