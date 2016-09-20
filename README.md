@@ -2,7 +2,7 @@
 
 by Martin Pool
 
-Current Docuemnts: https://cdn.rawgit.com/distcc/distcc/9a09372bd3f420cdd7021e52eda14fa536a3c10e/doc/web/index.html
+Current Documents: https://cdn.rawgit.com/distcc/distcc/9a09372bd3f420cdd7021e52eda14fa536a3c10e/doc/web/index.html
 Formally http://distcc.org/
 
 "pump" functionality added by
