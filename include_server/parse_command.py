@@ -100,7 +100,7 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
   '-MT':            lambda ps, arg: None,
   '-MQ':            lambda ps, arg: None,
   '-arch':          lambda ps, arg: None,
-  '-target':          lambda ps, arg: None,
+  '-target':        lambda ps, arg: None,
   '-include':       lambda ps, arg: ps.include_files.append(arg),
   '-imacros':       lambda ps, arg: ps.include_files.append(arg),
   '-idirafter':     lambda ps, arg: ps.after_system_dirs.append(arg),
