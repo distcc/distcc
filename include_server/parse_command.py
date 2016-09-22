@@ -24,6 +24,7 @@ __author__ = "opensource@google.com (Craig Silverstein, Nils Klarlund)"
 import re
 import os
 import sys
+import glob
 
 import basics
 import cache_basics
@@ -99,6 +100,7 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
   '-MT':            lambda ps, arg: None,
   '-MQ':            lambda ps, arg: None,
   '-arch':          lambda ps, arg: None,
+  '-target':          lambda ps, arg: None,
   '-include':       lambda ps, arg: ps.include_files.append(arg),
   '-imacros':       lambda ps, arg: ps.include_files.append(arg),
   '-idirafter':     lambda ps, arg: ps.after_system_dirs.append(arg),
@@ -179,6 +181,7 @@ CPP_OPTIONS_ONE_LETTER = {
   # preprocessor-related, they are all noops.
   'A': lambda ps, arg: None,
   'l': lambda ps, arg: None,
+  'F': lambda ps, arg: ps.i_dirs.extend(glob.glob(os.path.join(arg,'*', 'Headers'))),
   'u': lambda ps, arg: None,
   'L': lambda ps, arg: None,
   'B': lambda ps, arg: None,
