@@ -72,6 +72,21 @@ int dcc_scan_includes = 0;
 static const char *const include_server_port_suffix = "/socket";
 static const char *const discrepancy_suffix = "/discrepancy_counter";
 
+static void bad_host(struct dcc_hostdef *host, int *cpu_lock_fd , int *local_cpu_lock_fd)
+{
+   if (host)
+       dcc_disliked_host(host);
+
+   if (*cpu_lock_fd != -1) {
+       dcc_unlock(*cpu_lock_fd);
+       *cpu_lock_fd = -1;
+   }
+   if (*local_cpu_lock_fd != -1) {
+       dcc_unlock(*local_cpu_lock_fd);
+       *local_cpu_lock_fd = -1;
+   }
+}
+
 static int dcc_get_max_discrepancies_before_demotion(void)
 {
     /* Warning: the default setting here should have the same value as in the
@@ -724,6 +739,7 @@ dcc_build_somewhere(char *argv[],
 
     /* Choose the distcc server host (which could be either a remote
      * host or localhost) and acquire the lock for it.  */
+  choose_host:
     if ((ret = dcc_pick_host_from_list_and_lock_it(&host, &cpu_lock_fd)) != 0) {
         /* Doesn't happen at the moment: all failures are masked by
            returning localhost. */
@@ -821,8 +837,8 @@ dcc_build_somewhere(char *argv[],
 
         /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
         local_cpu_lock_fd = -1;
-
-        goto fallback;
+        bad_host(host, &cpu_lock_fd, &local_cpu_lock_fd);
+        goto choose_host;
     }
     /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
     local_cpu_lock_fd = -1;
@@ -886,17 +902,7 @@ dcc_build_somewhere(char *argv[],
 
 
   fallback:
-    if (host)
-        dcc_disliked_host(host);
-
-    if (cpu_lock_fd != -1) {
-        dcc_unlock(cpu_lock_fd);
-        cpu_lock_fd = -1;
-    }
-    if (local_cpu_lock_fd != -1) {
-        dcc_unlock(local_cpu_lock_fd);
-        local_cpu_lock_fd = -1;
-    }
+    bad_host(host, &cpu_lock_fd, &local_cpu_lock_fd);
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
         rs_log_error("failed to distribute and fallbacks are disabled");
