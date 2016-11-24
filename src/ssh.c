@@ -223,6 +223,7 @@ int dcc_ssh_connect(char *ssh_cmd,
     if (!path)
         path = (char *) "distccd";
 
+    char *child_argv[10+num_ssh_args];
     i = 0;
     child_argv[i++] = ssh_cmd;
     for (j=0; j<num_ssh_args; ) {
