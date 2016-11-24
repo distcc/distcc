@@ -177,7 +177,7 @@ static int dcc_note_discrepancy(const char *discrepancy_filename)
     /* The file position is a property of the stream, so we are
     assured that exactly one process will take the 'if' branch when
     max_discrepancies_before_demotion failures is reached. */
-    if (ftell(discrepancy_file) == 
+    if (ftell(discrepancy_file) ==
         (long int)dcc_get_max_discrepancies_before_demotion()) {
         rs_log_warning("now using plain distcc, possibly due to "
                        "inconsistent file system changes during build");

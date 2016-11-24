@@ -6,7 +6,7 @@
  */
 
 /* (C) 1998-2002 Red Hat, Inc. -- Licensing details are in the COPYING
-   file accompanying popt source distributions, available from 
+   file accompanying popt source distributions, available from
    ftp://ftp.rpm.org/pub/rpm/dist. */
 
 #include "system.h"
@@ -22,7 +22,7 @@
  */
 static void displayArgs(poptContext con,
 		/*@unused@*/ enum poptCallbackReason foo,
-		struct poptOption * key, 
+		struct poptOption * key,
 		/*@unused@*/ const char * arg, /*@unused@*/ void * data)
 	/*@globals fileSystem@*/
 	/*@modifies fileSystem@*/
@@ -167,7 +167,7 @@ singleOptionDefaultValue(int lineLength,
 	} else {
 	    size_t slen = 4*lineLength - (le - l) - sizeof("\"...\")");
 	    *le++ = '"';
-	    strncpy(le, s, slen); le[slen] = '\0'; le += strlen(le);	
+	    strncpy(le, s, slen); le[slen] = '\0'; le += strlen(le);
 	    if (slen < strlen(s)) {
 		strcpy(le, "...");	le += strlen(le);
 	    }
@@ -194,7 +194,7 @@ singleOptionDefaultValue(int lineLength,
  * @param opt		option(s)
  * @param translation_domain	translation domain
  */
-static void singleOptionHelp(FILE * fp, int maxLeftCol, 
+static void singleOptionHelp(FILE * fp, int maxLeftCol,
 		const struct poptOption * opt,
 		/*@null@*/ const char * translation_domain)
 	/*@globals fileSystem @*/
@@ -223,7 +223,7 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
 	sprintf(left, "-%c, %s%s", opt->shortName,
 		((opt->argInfo & POPT_ARGFLAG_ONEDASH) ? "-" : "--"),
 		opt->longName);
-    else if (opt->shortName != '\0') 
+    else if (opt->shortName != '\0')
 	sprintf(left, "-%c", opt->shortName);
     else if (opt->longName)
 	sprintf(left, "%s%s",
@@ -319,7 +319,7 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
     if (help)
 	fprintf(fp,"  %-*s   ", maxLeftCol, left);
     else {
-	fprintf(fp,"  %s\n", left); 
+	fprintf(fp,"  %s\n", left);
 	goto out;
     }
 
@@ -370,7 +370,7 @@ static int maxArgWidth(const struct poptOption * opt,
     int max = 0;
     int len = 0;
     const char * s;
-    
+
     if (opt != NULL)
     while (opt->longName || opt->shortName || opt->arg) {
 	if ((opt->argInfo & POPT_ARG_MASK) == POPT_ARG_INCLUDE_TABLE) {
@@ -396,7 +396,7 @@ static int maxArgWidth(const struct poptOption * opt,
 
 	opt++;
     }
-    
+
     return max;
 }
 
@@ -421,7 +421,7 @@ static void itemHelp(FILE * fp,
     for (i = 0, item = items; i < nitems; i++, item++) {
 	const struct poptOption * opt;
 	opt = &item->option;
-	if ((opt->longName || opt->shortName) && 
+	if ((opt->longName || opt->shortName) &&
 	    !(opt->argInfo & POPT_ARGFLAG_DOC_HIDDEN))
 	    singleOptionHelp(fp, left, opt, translation_domain);
     }
@@ -452,7 +452,7 @@ static void singleTableHelp(poptContext con, FILE * fp,
 
     if (table != NULL)
     for (opt = table; (opt->longName || opt->shortName || opt->arg); opt++) {
-	if ((opt->longName || opt->shortName) && 
+	if ((opt->longName || opt->shortName) &&
 	    !(opt->argInfo & POPT_ARGFLAG_DOC_HIDDEN))
 	    singleOptionHelp(fp, left, opt, translation_domain);
     }
@@ -464,7 +464,7 @@ static void singleTableHelp(poptContext con, FILE * fp,
 	sub_transdom = getTableTranslationDomain(opt->arg);
 	if (sub_transdom == NULL)
 	    sub_transdom = translation_domain;
-	    
+
 	if (opt->descrip)
 	    fprintf(fp, "\n%s\n", D_(sub_transdom, opt->descrip));
 
@@ -519,7 +519,7 @@ void poptPrintHelp(poptContext con, FILE * fp, /*@unused@*/ int flags)
  * @param opt		option(s)
  * @param translation_domain	translation domain
  */
-static int singleOptionUsage(FILE * fp, int cursor, 
+static int singleOptionUsage(FILE * fp, int cursor,
 		const struct poptOption * opt,
 		/*@null@*/ const char *translation_domain)
 	/*@globals fileSystem @*/
@@ -546,13 +546,13 @@ static int singleOptionUsage(FILE * fp, int cursor,
 
     if (len == 4) return cursor;
 
-    if (argDescrip) 
+    if (argDescrip)
 	len += strlen(argDescrip) + 1;
 
     if ((cursor + len) > 79) {
 	fprintf(fp, "\n       ");
 	cursor = 7;
-    } 
+    }
 
     if (opt->longName && opt->shortName) {
 	fprintf(fp, " [-%c|-%s%s%s%s]",
@@ -697,7 +697,7 @@ static int showShortOptions(const struct poptOption * opt, FILE * fp,
 	else if ((opt->argInfo & POPT_ARG_MASK) == POPT_ARG_INCLUDE_TABLE)
 	    if (opt->arg)	/* XXX program error */
 		(void) showShortOptions(opt->arg, fp, str);
-    } 
+    }
 /*@=boundswrite@*/
 
     if (s != str || *s != '\0')

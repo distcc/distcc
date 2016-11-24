@@ -8,7 +8,7 @@ the build. The include server parses and analyzes source (including
 header) files. It runs on the workstation that initiates the build.
 The include server analyzes each header file only a few times during a build,
 sometimes just once. In contrast, during ordinary distcc operation,
-the preprocessor examines each header file multiple times, even hundreds of 
+the preprocessor examines each header file multiple times, even hundreds of
 times for a large build.
 
 In pump mode, a static analysis algorithm inspects each #include directive
@@ -37,7 +37,7 @@ server. The distcc server unpacks these files in the
 /server_temporary_path directory before preprocessing and compiling.
 The server also rewrites include options, such as -I's, to reflect the
 new locations of the files on the server. The .d and the .o files are
-both rewritten as necessary to refer to client-side filenames and 
+both rewritten as necessary to refer to client-side filenames and
 returned to the pump-mode client.
 
 Pump mode is able to distribute compilations up to 10X faster than

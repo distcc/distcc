@@ -38,7 +38,7 @@ start() {
 	echo
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$SERVICE
 	return $RETVAL
-}	
+}
 
 stop() {
 	echo -n $"Stopping $SERVICE: "
@@ -47,12 +47,12 @@ stop() {
 	echo
 	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$SERVICE
 	return $RETVAL
-}	
+}
 
 restart() {
 	stop
 	start
-}	
+}
 
 # See how we were called.
 case "$1" in

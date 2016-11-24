@@ -3,7 +3,7 @@
 #		WARNING: This service should ONLY be used on trusted networks.
 service distcc
 {
-	socket_type	= stream        
+	socket_type	= stream
 	protocol	= tcp
 	port		= 3632
 	wait		= no
