@@ -16,7 +16,7 @@ we'll try to resolve the problem.
 
 1. Your name and email address:
 
-2. OK to publish this?  
+2. OK to publish this?
    - yes
    - yes, but without my identifying details
    - yes, but without my email address

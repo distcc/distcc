@@ -7,7 +7,7 @@ purpose
 This file describes a mooted design for a mechanism for distcc to
 indicate its status for the benefit of a separate display program.
 This is an external protocol so that there can be different
-implementations of status monitors to suit different purposes.  
+implementations of status monitors to suit different purposes.
 
 The protocol is supposed to stay stable for some time to allow people
 to write their own monitors.
@@ -47,13 +47,13 @@ In 2.6 the client progresses through these states in order, although
 not all states may be reached by any particular process.
 
    Startup       Examining command line, host definition and other
-                 settings, and finding a host to use. 
+                 settings, and finding a host to use.
 
-   Starved       Waiting because all defined hosts are completely busy. 
+   Starved       Waiting because all defined hosts are completely busy.
 
-   Connect       Opening a TCP or SSH connection to the host and sending 
+   Connect       Opening a TCP or SSH connection to the host and sending
                  the first part of the request.
-               
+
    Preprocessor  Waiting for the preprocessor to complete.
 
    Send          Sending the preprocessed source.

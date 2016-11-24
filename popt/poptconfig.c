@@ -3,7 +3,7 @@
  */
 
 /* (C) 1998-2002 Red Hat, Inc. -- Licensing details are in the COPYING
-   file accompanying popt source distributions, available from 
+   file accompanying popt source distributions, available from
    ftp://ftp.rpm.org/pub/rpm/dist. */
 
 #include "system.h"
@@ -20,7 +20,7 @@ static void configLine(poptContext con, char * line)
     const char * opt;
     poptItem item = alloca(sizeof(*item));
     int i, j;
-    
+
 /*@-boundswrite@*/
     memset(item, 0, sizeof(*item));
 
@@ -82,7 +82,7 @@ static void configLine(poptContext con, char * line)
     }
     /*@=modobserver@*/
 /*@=boundswrite@*/
-	
+
     /*@-nullstate@*/ /* FIX: item->argv[] may be NULL */
     if (!strcmp(entryType, "alias"))
 	(void) poptAddItem(con, item, 0);
@@ -145,8 +145,8 @@ int poptReadConfigFile(poptContext con, const char * fn)
 	  case '\\':
 	    *dst++ = *chptr++;
 	    if (chptr < end) {
-		if (*chptr == '\n') 
-		    dst--, chptr++;	
+		if (*chptr == '\n')
+		    dst--, chptr++;
 		    /* \ at the end of a line does not insert a \n */
 		else
 		    *dst++ = *chptr++;

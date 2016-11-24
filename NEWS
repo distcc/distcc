@@ -139,11 +139,11 @@ distcc-3.0rc1 "My prices are insane."   2008-06-09
    * gcc debug option -d must be run locally because it produces
      secondary files.  Reported by Nadim Khemir.
 
-   * Improved checking for errors on socket connection.  Patch 
+   * Improved checking for errors on socket connection.  Patch
      from Dan Kegel.
 
 
-  PORTABILITY:	
+  PORTABILITY:
 
    * "Pump" code tested under Linux only.  Processing of object code
       rewrites debug info (so server paths are replaced with client
@@ -161,7 +161,7 @@ distcc-3.0rc1 "My prices are insane."   2008-06-09
    * Execute compiler with correctly redirected output using win32 apis on
      Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
 
-   * Make distccmon-gnome link properly with gnu ld's new --as-needed 
+   * Make distccmon-gnome link properly with gnu ld's new --as-needed
      flag.  (Ben Skeggs, Lisa Seelye)
 
   OTHER CHANGES:
@@ -170,7 +170,7 @@ distcc-3.0rc1 "My prices are insane."   2008-06-09
    * New repository: <http://distcc.googlecode.com/svn/trunk/>.
    * New maintainer: Fergus Henderson.
 
-
+
 distcc-2.18.3  "Porsche safari"  2004-11-30
 
   BUG FIXES:
@@ -182,7 +182,7 @@ distcc-2.18.3  "Porsche safari"  2004-11-30
 
    * Fix false pass in tests for -x and -specs.
 
-
+
 distcc-2.18.2  "Bees and lavender"  2004-11-12
 
   BUG FIXES:
@@ -195,7 +195,7 @@ distcc-2.18.2  "Bees and lavender"  2004-11-12
 
     * Fix prototype problem causing build failure on amd64.  Patch
       from Andreas Jochens.  (Debian #280399, #280644).
-
+
 distcc-2.18.1  "Reality-based computing"  2004-11-03
 
   BUG FIXES:
@@ -206,7 +206,7 @@ distcc-2.18.1  "Reality-based computing"  2004-11-03
     * gcc option -specs= must be run locally so that it can read the
       local spec file.  Reported by Chris Yeoh.
 
- 
+
   PORTABILITY:
 
     * Fix Solaris build problem reported by Dimitri Papadopoulos.
@@ -214,7 +214,7 @@ distcc-2.18.1  "Reality-based computing"  2004-11-03
     * Fix problem with reading hosts files in DOS CRLF format.
       Reported by Sebastien Perochon.
 
-
+
 distcc-2.18  "Billionaires on stilts"  2004-10-12
 
   BUG FIXES:
@@ -222,7 +222,7 @@ distcc-2.18  "Billionaires on stilts"  2004-10-12
     * Fix longjmp() bug that can cause distcc to crash when a timeout
       elapses.
 
-    * Fix compile-time problem with dcc_trace when configured with 
+    * Fix compile-time problem with dcc_trace when configured with
       --enable-rfc2553.  Reported by Greg Earle.
 
     * Fix warning about warn_unused_result for older versions of gcc.
@@ -239,25 +239,25 @@ distcc-2.18  "Billionaires on stilts"  2004-10-12
   CHANGES:
 
     * The --allow option is now mandatory for daemon mode.  As a
-      security feature, distccd will refuse to run without an IP 
+      security feature, distccd will refuse to run without an IP
       access control list.
 
     * conftest.* built by autoconf is always done locally, to make
       configure tests faster and safer.
 
-  
+
   DOCUMENTATION:
 
     * Better description of use with ccache.
 
-  
+
   PORTABILITY:
-  
+
     * Fix various warnings reported by Dimitri Papadopoulos.
 
     * Fix Tru64 build problem reported by Gary V. Vaughan.
 
-
+
 distcc-2.17  "Divers Alarums"  2004-07-31
 
   FEATURES:
@@ -279,7 +279,7 @@ distcc-2.17  "Divers Alarums"  2004-07-31
       of the compilation causing an exit with code >=128, retry
       compilation locally.  Patch from Jakub Stachowski.
 
-  
+
   DOCUMENTATION:
 
     * Manpage fix from Jean Delvare.
@@ -289,7 +289,7 @@ distcc-2.17  "Divers Alarums"  2004-07-31
 
     * Cygwin portability fix for WCOREDUMP, reported by Eric Frias.
 
-
+
 distcc-2.16  "Salt"  2004-07-08
 
   SECURITY:
@@ -328,13 +328,13 @@ distcc-2.16  "Salt"  2004-07-08
     * Include copyright and licence in --version output, as suggested
       by GNU programs.
 
-
+
 distcc-2.15  "feel good for ten seconds"  2004-07-06
 
   BUG FIXES:
 
     * Fix crash bug in receiving LZO compressed data into a mmapped
-      file.  Reported by Arkadiusz Miskiewicz.  
+      file.  Reported by Arkadiusz Miskiewicz.
 
     * Remove redundant temporary file cleanup in non-forking mode.
 
@@ -351,19 +351,19 @@ distcc-2.15  "feel good for ten seconds"  2004-07-06
       --no-prefork option has been removed.
 
     * mmap is no longer used for compressed data to simplify the code.
-  
-  
+
+
   PORTABILITY:
 
     * Additional fixes to Red Hat / Fedora scripts, by Colins Walters.
 
- 
+
   INTERNAL:
 
     * Daemon now chdirs to $TMPDIR at startup rather than /.  This
       allows dumping core, among other things.
 
-
+
 distcc-2.14  "Lake Albina"  2004-05-02
 
   FEATURES:
@@ -372,7 +372,7 @@ distcc-2.14  "Lake Albina"  2004-05-02
       to ~/.distcc/hosts.  The default for $DISTCC_DIR is still
       ~/.distcc.  Suggested by Sebastien Perochon.
 
-    * Source file name is included in success/failure messages, e.g. 
+    * Source file name is included in success/failure messages, e.g.
 
          distcc[6655] ERROR: compile ./cases/bad.c on cardhu failed
 
@@ -405,7 +405,7 @@ distcc-2.14  "Lake Albina"  2004-05-02
       case is a bit dangerous for the way distcc uses mmap.  Suggested
       by Joe Buehler.
 
-
+
 distcc-2.13  "Carnal Bunt"  2004-03-02
 
   SECURITY:
@@ -420,7 +420,7 @@ distcc-2.13  "Carnal Bunt"  2004-03-02
     * Hash comments are allowed in host list files.
 
 
-  INTERNAL: 
+  INTERNAL:
 
     * Use TCP_DEFER_ACCEPT on Linux to avoid some wasted context
       switching when a new connection comes in to the server.
@@ -465,7 +465,7 @@ distcc-2.13  "Carnal Bunt"  2004-03-02
       on: HP-UX 10.20, 11.00, 11i; IRIX 6.5; Redhat Linux7.1, 9;
       Solaris 7, 8, 9; Tru64 UNIX 4.0d, 5.1.
 
-
+
 distcc-2.12.1  "Shatner's Bassoon"  2004-01-09
 
   BUG FIXES:
@@ -486,7 +486,7 @@ distcc-2.12.1  "Shatner's Bassoon"  2004-01-09
     * New man page for distccmon-text, by Shri Shrikumar and Martin
       Pool.
 
-
+
 distcc-2.12  "Figgy Pudding"  2003-12-19
 
   FEATURES:
@@ -520,7 +520,7 @@ distcc-2.12  "Figgy Pudding"  2003-12-19
       Saddi.
 
     * MAXPATHLEN is provided if it's not defined, which is the case on
-      GNU Hurd.  Reported by Santiago Vila as Debian #219600. 
+      GNU Hurd.  Reported by Santiago Vila as Debian #219600.
 
 
   BUG FIXES:
@@ -535,7 +535,7 @@ distcc-2.12  "Figgy Pudding"  2003-12-19
 
     * Small documentation corrections.
 
-
+
 distcc-2.11.2  "Muscovado"  2003-10-23
 
   BUG FIXES:
@@ -546,7 +546,7 @@ distcc-2.11.2  "Muscovado"  2003-10-23
     * Fatal signal handlers for client and daemon should reset the
       signal vector before doing anything else, to protect against an
       (unlikely) spin if the signal is re-sent.
-      
+
     * Corrections to .desktop file from Dag Wieers.
 
 
@@ -556,7 +556,7 @@ distcc-2.11.2  "Muscovado"  2003-10-23
       programs.
 
 
-  PORTABILITY:  
+  PORTABILITY:
 
     * IRIX portability fixes from Dimitri Papadopoulos.
 
@@ -570,7 +570,7 @@ distcc-2.11.2  "Muscovado"  2003-10-23
 
     * Update to xinetd example from Dag Wieers.
 
-
+
 distcc-2.11.1  "Burnt sugar"  2003-10-08
 
   FEATURES:
@@ -600,7 +600,7 @@ distcc-2.11.1  "Burnt sugar"  2003-10-08
     * C++ compilation using -frepo must be local.  Reported by Andrew
       Slater.
 
-  
+
   PORTABILITY:
 
     * Don't use stdint.h, which is not available on FreeBSD 4-STABLE,
@@ -619,7 +619,7 @@ distcc-2.11.1  "Burnt sugar"  2003-10-08
 
     * Fix state.h for use with C++.  Patch from Frerich Raabe.
 
-
+
 distcc-2.11  "Sugar fix"  2003-09-23
 
   INCOMPATIBILITIES:
@@ -691,7 +691,7 @@ distcc-2.11  "Sugar fix"  2003-09-23
 
     * Describe where to put "localhost" in the host list.
 
-  
+
   PORTABILITY:
 
     * Fixes for BSD/OS (BSDi) from Nick Amato.
@@ -699,14 +699,14 @@ distcc-2.11  "Sugar fix"  2003-09-23
     * Fixes for portability issues in  autogen.sh from Lisa Seelye and
       Alexandre Oliva.
 
-
+
 distcc-2.10.1  2003-08-12
 
   BUG FIXES:
 
     * Fix problem in "make clean" reported by Lisa Seelye.
 
-
+
 distcc-2.10  "Hunger is the best sauce"  2003-08-11
 
   SECURITY:
@@ -739,7 +739,7 @@ distcc-2.10  "Hunger is the best sauce"  2003-08-11
   PORTABILITY:
 
     * SCO/Caldera operating systems are no longer supported due to
-      their recent absurd attacks against Linux and IBM.  
+      their recent absurd attacks against Linux and IBM.
 
     * TMPDIR is no longer required to start with '/', so that Cygwin
       paths starting with a drive letter may be used.  Reported by
@@ -766,7 +766,7 @@ distcc-2.10  "Hunger is the best sauce"  2003-08-11
   TESTING:
 
     * Test cases are more robust in choosing a daemon port number.
-
+
 distcc-2.9   "Grace under pressure"  2003-07-21
 
   FEATURES:
@@ -827,7 +827,7 @@ distcc-2.9   "Grace under pressure"  2003-07-21
     * Add tests for new -o and -Wa,-al handling.
 
 
-
+
 distcc-2.8  "Play in the traffic"  2003-07-09
 
   FEATURES:
@@ -877,7 +877,7 @@ distcc-2.8  "Play in the traffic"  2003-07-09
 
     * Include an example xinetd configuration file from Andrew Morton.
 
-
+
 distcc-2.7.1  "Expedition"  2003-06-25
 
   PORTABILITY:
@@ -889,7 +889,7 @@ distcc-2.7.1  "Expedition"  2003-06-25
 
     * Fix for compilation of the monitor on Cygwin.
 
-
+
 distcc-2.7  "The Hard Way"  2003-06-16
 
   FEATURES:
@@ -908,7 +908,7 @@ distcc-2.7  "The Hard Way"  2003-06-16
     * Sanity check GNOME libraries during configuration if
       --enable-gnome was specified.
 
-
+
 distcc-2.6  "The Watcher in the Water"  2003-06-12
 
   FEATURES:
@@ -969,7 +969,7 @@ distcc-2.6  "The Watcher in the Water"  2003-06-12
     * Fix silly typo that made maintainer-check give a false failure
       in ParseHostSpec_Case.
 
-
+
 distcc-2.5.1  "disable extra paranoia"  2003-06-05
 
   FEATURES:
@@ -1009,7 +1009,7 @@ distcc-2.5.1  "disable extra paranoia"  2003-06-05
     * Add test for correct parsing of old-style TCP multiplier
       specification (e.g. "phathost/10:3600").
 
-
+
 distcc-2.5  "give them heaps"  2003-05-27
 
   FEATURES:
@@ -1063,7 +1063,7 @@ distcc-2.5  "give them heaps"  2003-05-27
     * SSH child is collected and checked when the connection is
       closed.
 
-
+
 distcc-2.4.2  "hard and fast"  2003-05-23
 
   BUG FIXES:
@@ -1077,14 +1077,14 @@ distcc-2.4.2  "hard and fast"  2003-05-23
     * Fix string allocation bug in dcc_sockaddr_to_ip that could cause
       a server crash.
 
-
+
 distcc-2.4.1   2003-05-22
 
   PORTABILITY:
 
     * Add strndup() for non-GNU platforms.  Patch from Frerich Raabe.
 
-
+
 distcc-2.4  "sparky will reign"  2003-05-21
 
   FEATURES:
@@ -1131,7 +1131,7 @@ distcc-2.4  "sparky will reign"  2003-05-21
      * More description of execution over SSH.
 
 
-
+
 distcc-2.3  "come down like a ton of bricks"  2003-05-16
 
   FEATURES:
@@ -1182,7 +1182,7 @@ distcc-2.3  "come down like a ton of bricks"  2003-05-16
       works again on dietlibc/Linux.  Some fixes merged from Samba
       HEAD.
 
-
+
 distcc-2.2  "nosurname"  2003-05-05
 
   FEATURES:
@@ -1211,7 +1211,7 @@ distcc-2.2  "nosurname"  2003-05-05
     * Try to prevent server messages getting into syslog during
       testing.
 
-
+
 distcc-2.1  "Don't mind if I do!"  2003-05-03
 
   FEATURES:
@@ -1280,14 +1280,14 @@ distcc-2.1  "Don't mind if I do!"  2003-05-03
       use nonblocking socketpairs to talk to SSH.
 
 
-
+
 distcc-2.0.1  "colorful savings on all your favorite medications"  2003-03-28
 
   BUG FIXES:
 
     * Fix comfychair.py library missing from distribution.
 
-
+
 distcc-2.0  "shoot through like a Bondi tram"  2003-03-28
 
   BUG FIXES:
@@ -1368,7 +1368,7 @@ distcc-2.0  "shoot through like a Bondi tram"  2003-03-28
       distribution or installed by default.  It can be built from SGML if
       desired, with "make install-linuxdoc-info".
 
-
+
 distcc-1.2.3  "stubborn tiny lights"  2003-03-02
 
   PORTABILITY:
@@ -1384,7 +1384,7 @@ distcc-1.2.3  "stubborn tiny lights"  2003-03-02
       on those platforms should work.  Reported by Tom Matelich, Heiko Elger
       and others.
 
-
+
 distcc-1.2.2  "clustering darkness forever"  2003-02-27
 
   BUG FIXES:
@@ -1411,7 +1411,7 @@ distcc-1.2.2  "clustering darkness forever"  2003-02-27
 
     * Add a simple "make distcheck" target to test that the tarball is built
       properly.
-
+
 distcc-1.2.1  "you know you're right"  2003-02-25
 
   BUG FIXES:
@@ -1441,7 +1441,7 @@ distcc-1.2.1  "you know you're right"  2003-02-25
       copy and paste.  This should fix problems with asprintf and ansidecls.h on
       Solaris, BSD, and Cygwin.
 
-
+
 distcc-1.2  "lizard drinking"  2003-02-22
 
   FEATURES:
@@ -1473,7 +1473,7 @@ distcc-1.2  "lizard drinking"  2003-02-22
 
     * Add some functions from libiberty to aid portability.
 
-
+
 distcc-1.1  "balls to the wall"  2003-01-28
 
   BUGS:
@@ -1520,7 +1520,7 @@ distcc-1.1  "balls to the wall"  2003-01-28
     * Comply with GNU Standards by keeping all messages in the NEWS file, not
       just those for the current release.
 
-
+
 distcc-1.0  "consider the oyster"  2003-01-16
 
   BUG FIXES:
@@ -1570,7 +1570,7 @@ distcc-1.0  "consider the oyster"  2003-01-16
 
     * Remove PDF and Postscript from documentation in tarball.  They are still
       available from the web site or may be built from source.
-
+
 distcc-0.15  "petrified forest"  2002-12-12
 
    INCOMPATIBILITIES:
@@ -1633,7 +1633,7 @@ distcc-0.15  "petrified forest"  2002-12-12
       instead.  Keep information about reporting bugs and using the test
       suite, but put it in a different section.
 
-
+
 distcc-0.14  "no agonizing hanging weights"  2002-11-13
 
   BUG FIXES:
@@ -1658,7 +1658,7 @@ distcc-0.14  "no agonizing hanging weights"  2002-11-13
   DOCUMENTATION:
 
     * Include example init.d script.  (Jason Thomas)
-
+
 distcc-0.13  "Armistice"  2002-11-11
 
   FEATURES:
@@ -1817,7 +1817,7 @@ distcc-0.13  "Armistice"  2002-11-11
       once.  This is used for the server, which can write to its own log files
       and also send a copy of messages to a buffer to be sent to the client.
       (Martin Pool)
-
+
 distcc-0.12  "Klein, kosten- und schnörkellos"  2002-10-07
 
   BUG FIXES:
@@ -1834,7 +1834,7 @@ distcc-0.12  "Klein, kosten- und schnörkellos"  2002-10-07
   TESTING:
 
     * Add tests for "-o -".  (Martin Pool)
-
+
 distcc-0.11  "Nuclear Bedtime Story"  2002-09-25
 
   FEATURES:
@@ -1891,7 +1891,7 @@ distcc-0.11  "Nuclear Bedtime Story"  2002-09-25
       h_scanargs to exercise this.  (Martin Pool)
 
     * More tests for argument stripping.  (Martin Pool)
-
+
 distcc-0.10  "shiny fast red thing"  2002-09-12
 
   FEATURES:
@@ -1965,7 +1965,7 @@ distcc-0.10  "shiny fast red thing"  2002-09-12
     * Test using -D on the compiler command line.  (Martin Pool)
 
     * Tests for .s and .S files.  (Martin Pool)
-
+
 distcc-0.9  "samui desu ne?"  2002-09-03
 
   FEATURES:
@@ -2038,7 +2038,7 @@ distcc-0.9  "samui desu ne?"  2002-09-03
 
     * New test of compilation of a largish (~4MB) C file to a ~5MB object
       file.  (Martin Pool)
-
+
 distcc-0.8  "cat and girl"  2002-08-15
 
   FEATURES:
@@ -2065,7 +2065,7 @@ distcc-0.8  "cat and girl"  2002-08-15
     * Document that $DISTCC_HOSTS can now specify ports.  (Martin Pool)
 
     * Document --no-fifo and --log-stderr.  (Martin Pool)
-
+
 distcc-0.7  "Pipeline Authority"  2002-08-05
 
   FEATURES:
@@ -2109,7 +2109,7 @@ distcc-0.7  "Pipeline Authority"  2002-08-05
     * Test suite should now run whether or not there is a daemon listening on
       localhost, because it uses a non-standard port for testing.  (Martin
       Pool)
-
+
 distcc-0.6  "reptilian agenda"  (12 July 2002)
 
   FEATURES:
@@ -2167,7 +2167,7 @@ distcc-0.6  "reptilian agenda"  (12 July 2002)
 
    * If $DISTCC_SAVE_TEMPS is set to "1", then files are not actually deleted
       -- good for debugging.  (Martin Pool)
-
+
 distcc-0.5  "Unacceptable Behaviour"  (27 June 2002)
 
   FEATURES:
@@ -2202,7 +2202,7 @@ distcc-0.5  "Unacceptable Behaviour"  (27 June 2002)
       and shuts it down on completion.  (Martin Pool)
 
     * More test cases.  (Martin Pool)
-
+
 distcc-0.4  "Wisdom Like Silence"  (9 June 2002)
 
   ENHANCEMENTS:
@@ -2244,7 +2244,7 @@ distcc-0.4  "Wisdom Like Silence"  (9 June 2002)
     * Add a partial test suite based on PyUnit.  Python 2 is now
       required to run the test suite, though not to just build or run
       distcc.  (Martin Pool)
-
+
 distcc-0.3  "The Anticipation of a New Lover's Arrival"  (28 May 2002)
 
   ENHANCEMENTS:
@@ -2281,7 +2281,7 @@ distcc-0.3  "The Anticipation of a New Lover's Arrival"  (28 May 2002)
       Pool, Frerich Raabe, Ian Reinhart Geiser)
 
     * Start adding some "make check" tests. (Martin Pool)
-
+
 distcc-0.2 (17 May 2002)
 
   ENHANCEMENTS:
@@ -2289,7 +2289,7 @@ distcc-0.2 (17 May 2002)
     * First public release
 
     * Correctly and usefully builds various large programs
-
+
 Local variables:
 mode: indented-text
 indented-tabs-mode: nil

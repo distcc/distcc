@@ -46,7 +46,7 @@ class Build:
     Note: when done with an object of this type, call its restore function;
     otherwise PATH will remain changed to an inappropriate value.
     """
-    
+
     def __init__(self, project, compiler, n_repeats):
         self.project = project
         self.compiler = compiler
@@ -86,7 +86,7 @@ class Build:
         print ("** Creating masquerading shell scripts in '%s'" % farm_dir)
         masquerade = os.path.join(self.build_dir, 'masquerade')
         prepare_shell_script_farm(self.compiler, farm_dir, masquerade)
-        old_path = os.environ['PATH'] 
+        old_path = os.environ['PATH']
         try:
             os.environ['PATH'] = farm_dir + ":" + old_path
             return run_cmd(cmd)
@@ -130,7 +130,7 @@ class Build:
 
     @staticmethod
     def _extract_time_info(log_file_name):
-	"""Open log file and look for output of 'time -p' and include server 
+	"""Open log file and look for output of 'time -p' and include server
 	time."""
 	log_file = open(log_file_name, 'r')
 	text = log_file.read()

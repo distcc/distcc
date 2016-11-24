@@ -81,7 +81,7 @@ def list_projects():
     for n in names:
         print n
 
-        
+
 def find_project(name):
     """
     Return the nearest unique match for name.
@@ -93,7 +93,7 @@ def find_project(name):
                 raise ValueError, "ambiguous prefix %s" % name
             else:
                 best_match = pn
-                
+
     if not best_match:
         raise ValueError, "nothing matches %s" % name
     else:
@@ -143,7 +143,7 @@ The default is to measure a few reasonable scenarios.
 # -a is for developer use only and not documented; unless you're
 # careful the results will just be confusing.
 
-            
+
 
 
 ######################################################################
