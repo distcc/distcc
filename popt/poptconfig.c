@@ -163,7 +163,7 @@ int poptReadConfigFile(poptContext con, const char * fn)
     return 0;
 }
 
-int poptReadDefaultConfig(poptContext con, /*@unused@*/ int useEnv)
+int poptReadDefaultConfig(poptContext con)
 {
     char * fn, * home;
     int rc;
