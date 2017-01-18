@@ -469,6 +469,7 @@ static void dcc_stats_process(struct statsdata *sd) {
         break;
     case STATS_COMPILE_OK:
         dcc_stats_update_compile_times(sd);
+        /* fallthrough */
     case STATS_COMPILE_ERROR:
     case STATS_COMPILE_TIMEOUT:
     case STATS_CLI_DISCONN:
