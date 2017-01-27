@@ -602,13 +602,17 @@ int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n
             rs_log_crit("fork() failed: %s\n", strerror(errno));
             goto finish;
         } else if (pid == 0) {
-            int fd;
+            int max_fd, fd;
             /* Child */
 
             /* Close file descriptors and replace them by /dev/null */
-            close(0);
-            close(1);
-            close(2);
+            max_fd = (int)sysconf(_SC_OPEN_MAX);
+            if(max_fd == -1) {
+                max_fd = 1024;
+            }
+            for(fd = 0; fd < max_fd; fd++) {
+                close(fd);
+            }
             fd = open("/dev/null", O_RDWR);
             assert(fd == 0);
             fd = dup(0);
