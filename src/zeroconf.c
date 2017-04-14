@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <fcntl.h>
 
 #include <avahi-common/domain.h>
 #include <avahi-common/error.h>
