@@ -61,15 +61,11 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <signal.h>
 #include <time.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#ifdef HAVE_SYS_SIGNAL_H
-#  include <sys/signal.h>
-#endif /* HAVE_SYS_SIGNAL_H */
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
