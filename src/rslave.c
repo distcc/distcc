@@ -30,7 +30,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <sys/time.h>
 
 #include "rslave.h"
