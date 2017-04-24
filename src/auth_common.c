@@ -64,6 +64,9 @@ void dcc_gssapi_status_to_log(OM_uint32 status_code, int status_type) {
         gss_release_buffer(&minor_status, &status_string);
 
     } while (message_ctx != 0);
+
+    (void) major_status;
+    (void) minor_status;
 }
 
 /*
@@ -100,6 +103,9 @@ void dcc_gssapi_cleanup(gss_buffer_desc *input_tok,
             rs_log_error("Failed to release name.");
         }
     }
+
+    (void) major_status;
+    (void) minor_status;
 }
 
 /*
