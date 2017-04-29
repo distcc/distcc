@@ -313,7 +313,7 @@ as soon as that happens we can go ahead and start the client."""
         """Return command to start the daemon"""
         return (self.distccd() +
                 "--verbose --lifetime=%d --daemon --log-file %s "
-                "--pid-file %s --port %d --allow 127.0.0.1 --listen 127.0.0.1"
+                "--pid-file %s --port %d --allow 127.0.0.1"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),
@@ -964,8 +964,8 @@ int main(void) {
 class BackslashInMacro_Case(ComputedInclude_Case):
     def source(self):
         return """
+#include <stdio.h>
 #if FALSE
-  #include <stdio.h>
   #define HEADER MAKE_HEADER(testhdr)
   #define MAKE_HEADER(header_name) STRINGIZE(foobar\)
   #define STRINGIZE(x) STRINGIZE2(x)

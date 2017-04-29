@@ -114,7 +114,7 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
   '-isystem':       lambda ps, arg: ps.before_system_dirs.append(arg),
   '-iquote':        lambda ps, arg: ps.quote_dirs.append(arg),
 }
-CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS = ('M', 'i', '-', 'a')
+CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS = ('M', 'i', '-', 'a', 't')
 # A "compile-time" check to make sure the first-letter list is up-to-date
 for key in CPP_OPTIONS_MAYBE_TWO_WORDS.keys():
   assert key[1] in CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS
