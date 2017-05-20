@@ -61,7 +61,7 @@ int dcc_load_file_string(const char *filename,
 
     /* Open the file */
     if ((fd = open(filename, O_RDONLY)) == -1) {
-        if (errno == EEXIST)
+        if (errno == ENOENT)
             return EXIT_NO_SUCH_FILE;
         else {
             rs_log_warning("failed to open %s: %s", filename,
