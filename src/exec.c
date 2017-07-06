@@ -61,7 +61,9 @@
 #include <sys/resource.h>
 
 #ifdef __CYGWIN__
-    #define NOGDI
+    /* #define NOGDI */
+    #define RC_INVOKED
+    #define NOWINRES
     #include <windows.h>
 #endif
 
