@@ -24,6 +24,9 @@
                 /* His hand is stretched out, and who shall turn it back?
                  * -- Isaiah 14:27 */
 
+#ifndef __DISTCC_RPC_H__
+#define __DISTCC_RPC_H__
+
 int dcc_x_result_header(int ofd, enum dcc_protover);
 int dcc_r_result_header(int ofd, enum dcc_protover);
 
@@ -49,3 +52,6 @@ int dcc_r_argv(int ifd,
                const char *argc_token,
                const char *argv_token,
                /*@out@*/ char ***argv);
+
+
+#endif
