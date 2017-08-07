@@ -1,7 +1,13 @@
-before_install: 
- - sudo apt-get update -qq
- - sudo apt-get install -qq make binutils-dev
+language: c
 
-language: cpp
+addons:
+    apt:
+        packages:
+            - python3-dev
+            - libiberty-dev
 
 before_script: ./autogen.sh
+
+script:
+    - ./configure
+    - make check
