@@ -247,7 +247,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
       glob.glob = Mock_GlobGlob
 
       real_os_stat = os.stat
-      def Mock_OsStat(f):
+      def Mock_OsStat(f, dir_fd=None, follow_symlinks=True):
         # Return the same as initial value in two cases below.
         if f in ["seven", "nine"]: raise OSError
         if f == 'ate':
@@ -282,7 +282,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
       self.assertEqual(self.include_analyzer.generation, 1)
       CheckGeneration(files_and_links, 1)
 
-      def New_Mock_OsStat(f):
+      def New_Mock_OsStat(f, dir_fd=None, follow_symlinks=True):
         if f in ["seven", "nine"]: raise OSError
         if f == 'ate':
           obj = lambda: None
@@ -322,7 +322,7 @@ class IncludeAnalyzerTest(unittest.TestCase):
         return real_glob_glob(f)
       glob.glob = New_Mock_GlobGlob
 
-      def New_New_Mock_OsStat(f):
+      def New_New_Mock_OsStat(f, dir_fd=None, follow_symlinks=True):
         if f in ["seven", "nine"]: raise OSError
         if f == 'ate':
           obj = lambda: None

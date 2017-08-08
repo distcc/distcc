@@ -19,7 +19,7 @@ builddir="$1"
 # (Side note: there is intense internal debate about whether the
 # '[sd][ol]' hack is "so ugly I can't stand it" or "kinda cute".)
 so_files=`ls $builddir/_include_server/lib.*/include_server/\
-distcc_pump_c_extensions.[sd][ol]*`
+distcc_pump_c_extensions*.[sd][ol]*`
 if [ -z "$so_files" ]; then
   echo \
     '__________Could not find shared libraries for distcc-pump' 1>&2
