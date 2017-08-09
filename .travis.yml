@@ -5,9 +5,30 @@ addons:
         packages:
             - python3-dev
             - libiberty-dev
+            - libavahi-client-dev
+            - musl-tools
+
+os:
+    - linux
+
+compiler:
+    - gcc
+
+matrix:
+    include:
+        - os: linux
+          compiler: gcc
+          env: OPTIONS=""
+        - os: linux
+          compiler: gcc
+          env: OPTIONS="--with-auth"
+        - os: linux
+          compiler: musl-gcc
+          env: OPTIONS="--without-libiberty --without-avahi"
+          sudo: required        # for ping (travis-ci #3080)
 
 before_script: ./autogen.sh
 
 script:
-    - ./configure
+    - ./configure $OPTIONS
     - make check
