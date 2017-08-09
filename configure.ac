@@ -239,12 +239,23 @@ CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-# We prefer to use the latest Python
+# We prefer to use the latest Python, but try to find an explicit
+# version to make sure we don't get a really old one.
 #
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
-AM_PATH_PYTHON([3.1],,[:])
+AC_PATH_PROGS(PYTHON, [python2.7 python-2.7 python2.6 python-2.6 python2.5 python-2.5 python2.4 python-2.4 python])
 AC_ARG_VAR(PYTHON, [Python interpreter])
+# Python 1 doesn't even support -V
+if ! "$PYTHON" -V 2>&1 | grep "^Python" >/dev/null; then
+  PYTHON=""
+elif "$PYTHON" -V 2>&1 | grep "^Python 2.[[123]]" >/dev/null; then
+  PYTHON=""
+elif "$PYTHON" -V 2>&1 | grep "^Python 3" >/dev/null; then
+  PYTHON=""
+else
+  PYTHON="$PYTHON"
+fi
 AC_SUBST(PYTHON_RELATIVE_LIB)
 AC_C_INLINE
 AC_C_BIGENDIAN

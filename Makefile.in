@@ -29,8 +29,6 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@ ${DIR_DEFS} \
 	   -Isrc -I"$(srcdir)/src" -I"$(srcdir)/lzo" $(POPT_INCLUDES)
 
-PYTHON = @PYTHON@
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 builddir = @builddir@
@@ -73,6 +71,8 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@ 
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
+
+PYTHON = @PYTHON@
 
 # RESTRICTED_PATH is a colon separated list of directory names.  It
 # contains the locations of 'make', 'sh', 'gcc', and 'python' for use
@@ -704,11 +704,11 @@ TESTDISTCC_OPTS =
 # satisfied w/o actually building an include server (or rather the C extension);
 # this logic needs to be verified or amended.
 maintainer-check-no-set-path:
-	@if ! $(PYTHON) -c 'import sys; print(sys.version)'; then \
+	@if ! $(PYTHON) -c 'import sys; print sys.version'; then \
 	  echo "WARNING: python not found; tests skipped"; \
 	else \
-	  if ! $(CC) --version 2>/dev/null; then \
-	    echo "Could not find CC on the restricted path used to avoid"; \
+	  if ! gcc --version 2>/dev/null; then \
+	    echo "Could not find gcc on the restricted path used to avoid"; \
 	    echo "confusion caused by distcc masquerades on the normal path."; \
 	    echo "PATH is currently '$$PATH'."; \
 	    echo "Please change RESTRICTED_PATH to change this PATH value."; \

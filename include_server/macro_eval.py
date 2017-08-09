@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-
+ 
 """Evaluation of macros acccording to an overapproximation semantics.
 
 This module generally follows CPP semantics for the evalution of macros. But we
@@ -114,7 +114,7 @@ of dcc_build_somewhere, will then perform a local compilation.
 Symbol Table
 ------------
 
-The symbol table is a dictionary, whose entries are of the form
+The symbol table is a dictionary, whose entries are of the form 
 
   symbol: definition_list
 
@@ -188,7 +188,7 @@ def _ParseArgs(string, pos):
     return (None, pos)
   # Prepare a list of comma and extremal positions.  The '(' at the left is the
   # first extremal position.
-  commas = [pos]
+  commas = [pos]  
   pos_end = None
   inside_quotes = False
   for i in range(pos, len(string)):
@@ -241,7 +241,7 @@ def _EvalExprHelper(expr, symbol_table, disabled):
 
   Returns: [ expr_1, expr_2, ...], which is a non-empy list of
     strings, namely the expansions of expr.
-  """
+  """  
 
   def _ReEvalRecursivelyForExpansion(expansion, after):
     """Reevalute the expansion that is the result of finding a match for a
@@ -255,7 +255,7 @@ def _EvalExprHelper(expr, symbol_table, disabled):
       after: the string after the expansion
     Modifies:
       value_set: the set of all possible expansions of expr
-
+      
     The value set is updated according to recursive evaluations of the string
     that results from inserting expansion between expr[:match.start()] and
     expr[match.end():] (for symbol-like macro) or expr[args_end:] (for
@@ -325,7 +325,7 @@ def _EvalExprHelper(expr, symbol_table, disabled):
         _ReEvalRecursivelyForExpansion(real_expansion, expr[args_end:])
     else:
       assert False, "Definition '%s' is unexpected." % definition
-
+      
   # Look for a symbol.
   match = SYMBOL_RE.search(expr)
   if not match:
@@ -408,8 +408,8 @@ def ResolveExpr(includepath_map_index,
   Returns:
     a pair(files, symbols), where files is a list of (filepath pair,
     realpath index), namely those files that are successful resolutions of
-    possible double-quoted and angle-quoted values of expr, and symbols is
-    the set of all identifiers occurring in expression or its possible
+    possible double-quoted and angle-quoted values of expr, and symbols is 
+    the set of all identifiers occurring in expression or its possible 
     expansions
   Raises:
     NotCoveredError
@@ -424,11 +424,13 @@ def ResolveExpr(includepath_map_index,
     match_result = parse_file.INCLUDE_STRING_RE.match(val)
     if match_result:
       if match_result.group('quote'):
-        resolved = resolve(includepath_map_index(match_result.group('quote')),currdir_idx, searchdir_idx, quote_dirs)
-        resolved_files.append(resolved)
+	resolved = resolve(includepath_map_index(match_result.group('quote')),
+			   currdir_idx, searchdir_idx, quote_dirs)
+	resolved_files.append(resolved)
       elif match_result.group('angle'):
-        resolved = resolve(includepath_map_index(match_result.group('angle')), currdir_idx, None, angle_dirs)
-        resolved_files.append(resolved)
+	resolved = resolve(includepath_map_index(match_result.group('angle')),
+			   currdir_idx, None, angle_dirs)
+	resolved_files.append(resolved)
     else:
       symbols.extend(SYMBOL_RE.findall(val))
   if __debug__:

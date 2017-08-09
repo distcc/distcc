@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 # benchmark -- automated system for testing distcc correctness
 # and performance on various source trees.

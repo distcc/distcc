@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 # Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
 # Copyright 2007 Google Inc.
@@ -183,7 +183,7 @@ def _ShellSafe(s):
 # Some tests only make sense for certain object formats
 def _FirstBytes(filename, count):
     '''Returns the first count bytes from the given file.'''
-    f = open(filename, 'rb')
+    f = open(filename)
     try:
         return f.read(count)
     finally:
@@ -195,7 +195,7 @@ def _IsElf(filename):
     taken from /usr/share/file/magic on an ubuntu machine.
     '''
     contents = _FirstBytes(filename, 5)
-    return contents.startswith(b'\177ELF')
+    return contents.startswith('\177ELF')
 
 def _IsMachO(filename):
     '''Given a filename, determine if it's an Mach-O object file or
@@ -203,14 +203,14 @@ def _IsMachO(filename):
     is taken from /usr/share/file/magic on an ubuntu machine.
     '''
     contents = _FirstBytes(filename, 10)
-    return (contents.startswith(b'\xCA\xFE\xBA\xBE') or
-            contents.startswith(b'\xFE\xED\xFA\xCE') or
-            contents.startswith(b'\xCE\xFA\xED\xFE') or
+    return (contents.startswith('\xCA\xFE\xBA\xBE') or
+            contents.startswith('\xFE\xED\xFA\xCE') or
+            contents.startswith('\xCE\xFA\xED\xFE') or
             # The magic file says '4-bytes (BE) & 0xfeffffff ==
             # 0xfeedface' and '4-bytes (LE) & 0xfffffffe ==
             # 0xfeedface' are also mach-o.
-            contents.startswith(b'\xFF\xED\xFA\xCE') or
-            contents.startswith(b'\xCE\xFA\xED\xFF'))
+            contents.startswith('\xFF\xED\xFA\xCE') or
+            contents.startswith('\xCE\xFA\xED\xFF'))
     
 def _IsPE(filename):
     '''Given a filename, determine if it's a Microsoft PE object file or
@@ -218,7 +218,7 @@ def _IsPE(filename):
     /usr/share/file/magic on an ubuntu machine.
     '''
     contents = _FirstBytes(filename, 5)    
-    return contents.startswith(b'MZ')
+    return contents.startswith('MZ')
 
 def _Touch(filename):
     '''Update the access and modification time of the given file,
@@ -239,7 +239,7 @@ class SimpleDistCC_Case(comfychair.TestCase):
     def stripEnvironment(self):
         """Remove all DISTCC variables from the environment, so that
         the test is not affected by the development environment."""
-        for key in list(os.environ.keys()):
+        for key in os.environ.keys():
             if key[:7] == 'DISTCC_':
                 # NOTE: This only works properly on Python 2.2: on
                 # earlier versions, it does not call unsetenv() and so
@@ -369,7 +369,7 @@ class VersionOption_Case(SimpleDistCC_Case):
             out, err = self.runcmd("%s --version" % prog)
             assert out[-1] == '\n'
             out = out[:-1]
-            line1,line2,trash = out.split('\n', 2)
+            line1,line2,trash = string.split(out, '\n', 2)
             self.assert_re_match(r'^%s [\w.-]+ [.\w-]+$'
                                  % prog, line1)
             self.assert_re_match(r'^[ \t]+\(protocol.*\) \(default port 3632\)$'
@@ -404,7 +404,7 @@ class GccOptionsPassed_Case(SimpleDistCC_Case):
                                + self.distcc()
                                + _gcc + " --help")
         if re.search('distcc', out):
-            raise AssertionError("gcc help contains \"distcc\": \"%s\"" % out)
+            raise ("gcc help contains \"distcc\": \"%s\"" % out)
         self.assert_re_match(r"^Usage: [^ ]*gcc", out)
 
 
@@ -461,7 +461,7 @@ class IsSource_Case(SimpleDistCC_Case):
             expected = ("%s %s\n" % (issrc, iscpp))
             if o != expected:
                 raise AssertionError("issource %s gave %s, expected %s" %
-                                     (f, repr(o), repr(expected)))
+                                     (f, `o`, `expected`))
 
 
 
@@ -484,6 +484,7 @@ class ScanArgs_Case(SimpleDistCC_Case):
                  ("gcc -S -c hello.c", "distribute", "hello.c", "hello.s"),
                  ("gcc -M hello.c", "local"),
                  ("gcc -ME hello.c", "local"),
+                 
                  ("gcc -MD -c hello.c", "distribute", "hello.c", "hello.o"),
                  ("gcc -MMD -c hello.c", "distribute", "hello.c", "hello.o"),
 
@@ -518,20 +519,20 @@ class ScanArgs_Case(SimpleDistCC_Case):
                  ("gcc -dr -c foo.c", "local"),
                  ]
         for tup in cases:
-            self.checkScanArgs(*tup)
+            apply(self.checkScanArgs, tup)
 
     def checkScanArgs(self, ccmd, mode, input=None, output=None):
         o, err = self.runcmd("h_scanargs %s" % ccmd)
         o = o[:-1]                      # trim \n
-        os = o.split()
+        os = string.split(o)
         if mode != os[0]:
             self.fail("h_scanargs %s gave %s mode, expected %s" %
                       (ccmd, os[0], mode))
         if mode == 'distribute':
-            if os[1] != input:
+            if os[1] <> input:
                 self.fail("h_scanargs %s gave %s input, expected %s" %
                           (ccmd, os[1], input))
-            if os[2] != output:
+            if os[2] <> output:
                 self.fail("h_scanargs %s gave %s output, expected %s" %
                           (ccmd, os[2], output))
 
@@ -732,7 +733,7 @@ foo_bar""",
                   # Line is non-blank
                   checked_deps[self.getDep(line)] = 1
           deps_list = deps[:]
-          checked_deps_list = list(checked_deps.keys())
+          checked_deps_list = checked_deps.keys()
           deps_list.sort()
           checked_deps_list.sort()
           self.assert_equal(checked_deps_list, deps_list)
@@ -758,7 +759,7 @@ class ImplicitCompilerScan_Case(ScanArgs_Case):
         for tup in cases:
             # NB use "apply" rather than new syntax for compatibility with
             # venerable Pythons.
-            self.checkScanArgs(*tup)
+            apply(self.checkScanArgs, tup)
             
 
 class ExtractExtension_Case(SimpleDistCC_Case):
@@ -835,7 +836,7 @@ class ParseHostSpec_Case(SimpleDistCC_Case):
 """
         out, err = self.runcmd(("DISTCC_HOSTS=\"%s\" " % spec) + self.valgrind()
                                + "h_hosts")
-        assert out == expected, "expected %s\ngot %s" % (repr(expected), repr(out))
+        assert out == expected, "expected %s\ngot %s" % (`expected`, `out`)
 
 
 class Compilation_Case(WithDaemon_Case):
@@ -872,17 +873,17 @@ class Compilation_Case(WithDaemon_Case):
         cmd = self.compileCmd()
         out, err = self.runcmd(cmd)
         if out != '':
-            self.fail("compiler command %s produced output:\n%s" % (repr(cmd), out))
+            self.fail("compiler command %s produced output:\n%s" % (`cmd`, out))
         if err != '':
-            self.fail("compiler command %s produced error:\n%s" % (repr(cmd), err))
+            self.fail("compiler command %s produced error:\n%s" % (`cmd`, err))
 
     def link(self):
         cmd = self.linkCmd()
         out, err = self.runcmd(cmd)
         if out != '':
-            self.fail("command %s produced output:\n%s" % (repr(cmd), repr(out)))
+            self.fail("command %s produced output:\n%s" % (`cmd`, `out`))
         if err != '':
-            self.fail("command %s produced error:\n%s" % (repr(cmd), repr(err)))
+            self.fail("command %s produced error:\n%s" % (`cmd`, `err`))
 
     def compileCmd(self):
         """Return command to compile source"""
@@ -904,8 +905,9 @@ class Compilation_Case(WithDaemon_Case):
         return ""
 
     def checkCompileMsgs(self, msgs):
-        if len(msgs) > 0:
-            self.fail("expected no compiler messages, got \"%s\"" % msgs)
+        if msgs <> '':
+            self.fail("expected no compiler messages, got \"%s\""
+                      % msgs)
 
     def checkBuiltProgram(self):
         '''Check compile/link results.  By default, just try to execute.'''
@@ -1234,9 +1236,9 @@ class Gdb_Case(CompileHello_Case):
                " -o link/testtmp obj/testtmp.o")
         out, err = self.runcmd(cmd)
         if out != '':
-            self.fail("command %s produced output:\n%s" % (repr(cmd), repr(out)))
+            self.fail("command %s produced output:\n%s" % (`cmd`, `out`))
         if err != '':
-            self.fail("command %s produced error:\n%s" % (repr(cmd), repr(err)))
+            self.fail("command %s produced error:\n%s" % (`cmd`, `err`))
 
     def runtest(self):
         # Don't try to run the test if gdb is not installed
@@ -1631,9 +1633,9 @@ class ScanIncludes_Case(CompileHello_Case):
         pump_mode = _server_options.find('cpp') != -1
         if pump_mode:
           if err != '':
-              self.fail("distcc command %s produced stderr:\n%s" % (repr(cmd), err))
+              self.fail("distcc command %s produced stderr:\n%s" % (`cmd`, err))
           if rc != 0:
-              self.fail("distcc command %s failed:\n%s" % (repr(cmd), rc))
+              self.fail("distcc command %s failed:\n%s" % (`cmd`, rc))
           self.assert_re_search(
               r"FILE      /.*/ScanIncludes_Case/testtmp.c", out);
           self.assert_re_search(
@@ -1677,7 +1679,7 @@ class HundredFold_Case(CompileHello_Case):
         return 120
     
     def runtest(self):
-        for unused_i in range(100):
+        for unused_i in xrange(100):
             self.runcmd(self.distcc()
                         + _gcc + " -o testtmp.o -c testtmp.c")
 
@@ -1690,7 +1692,7 @@ class Concurrent_Case(CompileHello_Case):
     def runtest(self):
         # may take about a minute or so
         pids = {}
-        for unused_i in range(50):
+        for unused_i in xrange(50):
             kid = self.runcmd_background(self.distcc() +
                                          _gcc + " -o testtmp.o -c testtmp.c")
             pids[kid] = kid
@@ -1715,7 +1717,7 @@ class BigAssFile_Case(Compilation_Case):
         # machines.
         
         f.write("int main() {}\n")
-        for i in range(200000):
+        for i in xrange(200000):
             f.write("int i%06d = %d;\n" % (i, i))
         f.close()
 
@@ -1949,7 +1951,7 @@ class ModeBits_Case(CompileHello_Case):
     """Check distcc obeys umask"""
     def runtest(self):
         self.runcmd("umask 0; distcc " + _gcc + " -c testtmp.c")
-        self.assert_equal(S_IMODE(os.stat("testtmp.o")[ST_MODE]), 0o666)
+        self.assert_equal(S_IMODE(os.stat("testtmp.o")[ST_MODE]), 0666)
 
 
 class CheckRoot_Case(SimpleDistCC_Case):

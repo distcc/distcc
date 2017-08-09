@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 # Copyright 2007 Google Inc.
 #
@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
 # USA.
-
+ 
 """Parsing of C and C++ commands and extraction of search paths."""
 
 __author__ = "opensource@google.com (Craig Silverstein, Nils Klarlund)"
@@ -225,7 +225,7 @@ def ParseCommandLineSlowly(line):
   if m_unesc_q:
     unesc_q = m_unesc_q.end() - 1
   else:
-    unesc_q = sys.maxsize
+    unesc_q = sys.maxint
   m_nonspc = NONSPACE_RE.search(line, 0)
   if not m_nonspc:
     return args
@@ -235,10 +235,10 @@ def ParseCommandLineSlowly(line):
     # Invariant: (1) start is at the beginning of the next argument
     # (perhaps at a quote, which will later be removed). (2) end is
     # such that line[start:end] is a prefix of the argument.
-    assert start <= unesc_q
+    assert start <= unesc_q 
     assert start < end <= len(line), (start, end, len(line))
     assert not SPACE_RE.match(line, start)
-    assert unesc_q == sys.maxsize or line[unesc_q] == '"'
+    assert unesc_q == sys.maxint or line[unesc_q] == '"'
     try:
       end = SPACE_RE.search(line, end).start()
     except AttributeError:
@@ -265,7 +265,7 @@ def ParseCommandLineSlowly(line):
     m_unesc_q = NONESC_QUOTE_RE.search(line, unesc_q + 1)
     if not m_unesc_q:
       raise NotCoveredError("""Missing '"', could not parse command line.""")
-    assert m_unesc_q.end() - 1 > unesc_q
+    assert m_unesc_q.end() - 1 > unesc_q 
     end = m_unesc_q.end()
     if end == len(line):
       args.append(ESC_QUOTE_RE.sub(
@@ -280,7 +280,7 @@ def ParseCommandLineSlowly(line):
     if m_unesc_q:
       unesc_q = m_unesc_q.end() - 1
     else:
-      unesc_q = sys.maxsize
+      unesc_q = sys.maxint
 
 
 def ParseCommandLine(line):
@@ -347,7 +347,7 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
 
   compiler = args[0]
 
-  i = 1
+  i = 1 
   while i < len(args):
     # First, deal with everything that's not a flag-option
     if args[i][0] != '-' or args[i] == '-':     # - is the stdin file
@@ -420,7 +420,7 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
     i += 1
     continue
   # Done parsing arguments!
-
+  
   # Sanity-checking on arguments
   # -I- is a special form of the -I command.
   if "-" in parse_state.i_dirs:
@@ -432,7 +432,7 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
       send_email=False)
 
   source_file = parse_state.file_names[0]
-
+  
   if parse_state.output_file:
     # Use output_file to create prefix
     source_file_prefix = re.sub("[.]o$", "", parse_state.output_file)
@@ -487,9 +487,9 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
                              ignore_absolute_path_warning=True)
        for f in parse_state.include_files])
 
-  if __debug__: Debug(DEBUG_TRACE, ("ParseCommand result: %s %s %s %s %s %s" %
+  if __debug__: Debug(DEBUG_TRACE, ("ParseCommand result: %s %s %s %s %s %s" % 
                                     (quote_dirs, angle_dirs, include_files,
                                      source_file, source_file_prefix,
                                      parse_state.Dopts)))
-  return (quote_dirs, angle_dirs, include_files, source_file, source_file_prefix,
+  return (quote_dirs, angle_dirs, include_files, source_file, source_file_prefix, 
           parse_state.Dopts)
