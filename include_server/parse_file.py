@@ -277,17 +277,31 @@ class ParseFile(object):
 
     includepath_map_index = self.includepath_map.Index
 
-    try:
-      fd = open(filepath, "r")
-    except IOError as msg:
-      # This normally does not happen because the file should be known to
-      # exists. Still there might be, say, a permissions issue that prevents it
-      # from being read.
-      raise NotCoveredError("Parse file: '%s': %s" % (filepath, msg),
-                            send_email=False)
+    file_contents = ""
+    # Some files might be not utf-8 (default) encoded so we need to try
+    # other encodings as otherwise we get a UnicodeDecodeError.
+    # See as well https://github.com/distcc/distcc/issues/224.
+    # We could use the magic module but that would mean that the user
+    # needs to install additional packages.
+    encodings = [ "utf-8", "windows-1250", "windows-1252" ]
+    opened_with_correct_encoding = False
+    for encoding in encodings:
+      try:
+        with open(filepath, "r", encoding=encoding) as fd:
+          file_contents = fd.read()
+          opened_with_correct_encoding = True
+          break
+      except IOError as msg:
+        # This normally does not happen because the file should be known to
+        # exists. Still there might be, say, a permissions issue that prevents it
+        # from being read.
+        raise NotCoveredError("Parse file: '%s': %s" % (filepath, msg),
+                             send_email=False)
+      except UnicodeDecodeError:
+        Debug(DEBUG_TRACE, "Unicode decode error with %s, trying different encoding", encoding)
+        continue
 
-    file_contents = fd.read()
-    fd.close()
+    assert opened_with_correct_encoding
 
     quote_includes, angle_includes, expr_includes, next_includes = (
       [], [], [], [])
