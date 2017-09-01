@@ -169,7 +169,7 @@ EXIT_ACCESS_DENIED           = 113
 
 DISTCC_TEST_PORT             = 42000
 
-_gcc                         = None     # full path to gcc
+_cc                          = None     # full path to gcc
 _valgrind_command            = "" # Command to invoke valgrind (or other
                                   # similar debugging tool).
                                   # e.g. "valgrind --quiet --num-callsers=20 "
@@ -211,13 +211,13 @@ def _IsMachO(filename):
             # 0xfeedface' are also mach-o.
             contents.startswith(b'\xFF\xED\xFA\xCE') or
             contents.startswith(b'\xCE\xFA\xED\xFF'))
-    
+
 def _IsPE(filename):
     '''Given a filename, determine if it's a Microsoft PE object file or
     executable.  The magic number used ('MZ') is taken from
     /usr/share/file/magic on an ubuntu machine.
     '''
-    contents = _FirstBytes(filename, 5)    
+    contents = _FirstBytes(filename, 5)
     return contents.startswith(b'MZ')
 
 def _Touch(filename):
@@ -264,6 +264,18 @@ class SimpleDistCC_Case(comfychair.TestCase):
 
     def distcc_without_fallback(self):
         return "DISTCC_FALLBACK=0 " + self.distcc()
+
+    def is_gcc(self):
+        out, err = self.runcmd(_cc + " -v")
+        if re.search('gcc', err):
+            return True
+        return False
+
+    def is_clang(self):
+        out, err = self.runcmd(_cc + " -v")
+        if re.search('clang', err):
+            return True
+        return False
 
 
 class WithDaemon_Case(SimpleDistCC_Case):
@@ -390,22 +402,27 @@ class BogusOption_Case(SimpleDistCC_Case):
     Now that we support implicit compilers, this is passed to gcc,
     which returns a non-zero status."""
     def runtest(self):
-        error_rc, _, _ = self.runcmd_unchecked(_gcc + " --bogus-option")
+        error_rc, _, _ = self.runcmd_unchecked(_cc + " --bogus-option")
         assert error_rc != 0
-        self.runcmd(self.distcc() + _gcc + " --bogus-option", error_rc)
-        self.runcmd(self.distccd() + _gcc + " --bogus-option",
+        self.runcmd(self.distcc() + _cc + " --bogus-option", error_rc)
+        self.runcmd(self.distccd() + _cc + " --bogus-option",
                     EXIT_BAD_ARGUMENTS)
 
 
-class GccOptionsPassed_Case(SimpleDistCC_Case):
+class CompilerOptionsPassed_Case(SimpleDistCC_Case):
     """Test that options following the compiler name are passed to the compiler."""
     def runtest(self):
         out, err = self.runcmd("DISTCC_HOSTS=localhost "
                                + self.distcc()
-                               + _gcc + " --help")
+                               + _cc + " --help")
         if re.search('distcc', out):
-            raise AssertionError("gcc help contains \"distcc\": \"%s\"" % out)
-        self.assert_re_match(r"^Usage: [^ ]*gcc", out)
+            raise AssertionError("compiler help contains \"distcc\": \"%s\"" % out)
+        if self.is_gcc():
+            self.assert_re_match(r"Usage: [^ ]*gcc", out)
+        elif self.is_clang():
+            self.assert_re_match(r"OVERVIEW: [^ ]*clang", out)
+        else:
+            raise AssertionError("Unknown compiler found")
 
 
 class StripArgs_Case(SimpleDistCC_Case):
@@ -487,7 +504,7 @@ class ScanArgs_Case(SimpleDistCC_Case):
                  ("gcc -MD -c hello.c", "distribute", "hello.c", "hello.o"),
                  ("gcc -MMD -c hello.c", "distribute", "hello.c", "hello.o"),
 
-                 # Assemble to stdout (thanks Alexandre).  
+                 # Assemble to stdout (thanks Alexandre).
                  ("gcc -S foo.c -o -", "local"),
                  ("-S -o - foo.c", "local"),
                  ("-c -S -o - foo.c", "local"),
@@ -553,7 +570,7 @@ class DotD_Case(SimpleDistCC_Case):
         #
         # - The expected target name (or None).
         #
-        
+
         # The dotd_name is thus divined by examination of the compilation
         # directory where we actually run gcc.
 
@@ -576,7 +593,7 @@ class DotD_Case(SimpleDistCC_Case):
 
         # These C++ cases fail if your gcc installation doesn't support C++.
         error_rc, _, _ = self.runcmd_unchecked("touch testtmp.cpp; " +
-            _gcc + " -c testtmp.cpp -o /dev/null")
+            _cc + " -c testtmp.cpp -o /dev/null")
         if error_rc == 0:
           cases.extend([("foo.cpp -o hello.o", "*.d", 0, None),
                         ("foo.cpp -o hello", "*.d", 0, None)])
@@ -587,7 +604,7 @@ class DotD_Case(SimpleDistCC_Case):
                     map_out['needs_dotd'],
                     map_out['sets_dotd_target'],
                     map_out['dotd_target'])
-        
+
         for (args, dep_glob, how_many, target) in cases:
 
             # Determine what gcc says.
@@ -600,7 +617,7 @@ int main(void) { return 0; }
                 def sourceFilename(self):
                     return args.split()[0]
                 def compileCmd(self):
-                    return _gcc + " -c " + args
+                    return _cc + " -c " + args
                 def runtest(self):
                     self.compile()
                     glob_result = glob.glob(dep_glob)
@@ -659,7 +676,7 @@ int main(void) { return 0; }
 
 class Compile_c_Case(SimpleDistCC_Case):
   """Unit tests for source file 'compile.c.'
-  
+
   Currently, only the functions dcc_fresh_dependency_exists() and
   dcc_discrepancy_filename() are tested.
   """
@@ -759,7 +776,7 @@ class ImplicitCompilerScan_Case(ScanArgs_Case):
             # NB use "apply" rather than new syntax for compatibility with
             # venerable Pythons.
             self.checkScanArgs(*tup)
-            
+
 
 class ExtractExtension_Case(SimpleDistCC_Case):
     def runtest(self):
@@ -786,7 +803,7 @@ class DaemonBadPort_Case(SimpleDistCC_Case):
 class InvalidHostSpec_Case(SimpleDistCC_Case):
     def runtest(self):
         """Test various invalid DISTCC_HOSTS
-        
+
         See also test_parse_host_spec, which tests valid specifications."""
         for spec in ["", "    ", "\t", "  @ ", ":", "mbp@", "angry::", ":4200"]:
             self.runcmd(("DISTCC_HOSTS=\"%s\" " % spec) + self.valgrind()
@@ -887,7 +904,7 @@ class Compilation_Case(WithDaemon_Case):
     def compileCmd(self):
         """Return command to compile source"""
         return self.distcc_without_fallback() + \
-               _gcc + " -o testtmp.o " + self.compileOpts() + \
+               _cc + " -o testtmp.o " + self.compileOpts() + \
                " -c %s" % (self.sourceFilename())
 
     def compileOpts(self):
@@ -897,7 +914,7 @@ class Compilation_Case(WithDaemon_Case):
     def linkCmd(self):
         """Return command to link object files"""
         return self.distcc() + \
-               _gcc + " -o testtmp testtmp.o " + self.libraries()
+               _cc + " -o testtmp testtmp.o " + self.libraries()
 
     def libraries(self):
         """Returns any '-l' options needed to link the program."""
@@ -1014,7 +1031,7 @@ class LanguageSpecific_Case(Compilation_Case):
         error_rc, _, _ = self.runcmd_unchecked(
             "touch " + source + "; " +
             "rm -f testtmp.o; " +
-            _gcc + " -x " + lang + " " + self.compileOpts() +
+            _cc + " -x " + lang + " " + self.compileOpts() +
                 " -c " + source + " " + self.libraries() + " && " +
             "test -f testtmp.o" )
         if error_rc != 0:
@@ -1146,7 +1163,7 @@ class SystemIncludeDirectories_Case(Compilation_Case):
 
     def compileOpts(self):
         if os.path.exists("/usr/include/sys/types.h"):
-          return "-I/usr/include/sys"
+          return "-I/usr/include/"
         else:
           raise comfychair.NotRunError (
               "This test requires /usr/include/sys/types.h")
@@ -1158,12 +1175,13 @@ class SystemIncludeDirectories_Case(Compilation_Case):
 
     def source(self):
         return """
-#include "types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include "sys/types.h"    /* Should resolve to /usr/incude/sys/types.h. */
 #include <stdio.h>
 #include "testhdr.h"
 int main(void) {
+    uint val = 1u;
     puts(HELLO_WORLD);
-    return 0;
+    return val == 1 ? 0 : 1;
 }
 """
 
@@ -1212,7 +1230,7 @@ class Gdb_Case(CompileHello_Case):
 
     def compiler(self):
         """Command for compiling and linking."""
-        return _gcc + " -g ";
+        return _cc + " -g ";
 
     def compileCmd(self):
         """Return command to compile source"""
@@ -1264,7 +1282,7 @@ class Gdb_Case(CompileHello_Case):
         if os.path.exists('link/testtmp.exe'):
             testtmp_exe = 'testtmp.exe'
         else:
-            testtmp_exe = 'testtmp'            
+            testtmp_exe = 'testtmp'
 
         # Run gdb and verify that it is able to correctly locate the
         # testtmp.c source file.  We write the gdb commands to a file
@@ -1353,17 +1371,17 @@ class Gdb_Case(CompileHello_Case):
 class GdbOpt1_Case(Gdb_Case):
     def compiler(self):
         """Command for compiling and linking."""
-        return _gcc + " -g -O1 ";
+        return _cc + " -g -O1 ";
 
 class GdbOpt2_Case(Gdb_Case):
     def compiler(self):
         """Command for compiling and linking."""
-        return _gcc + " -g -O2 ";
+        return _cc + " -g -O2 ";
 
 class GdbOpt3_Case(Gdb_Case):
     def compiler(self):
         """Command for compiling and linking."""
-        return _gcc + " -g -O3 ";
+        return _cc + " -g -O3 ";
 
 class CompressedCompile_Case(CompileHello_Case):
     """Test compilation with compression.
@@ -1390,7 +1408,7 @@ int main(void) {
 class DashONoSpace_Case(CompileHello_Case):
     def compileCmd(self):
         return self.distcc_without_fallback() + \
-               _gcc + " -otesttmp.o -c %s" % (self.sourceFilename())
+               _cc + " -otesttmp.o -c %s" % (self.sourceFilename())
 
     def runtest(self):
         if sys.platform == 'sunos5':
@@ -1404,9 +1422,9 @@ class DashONoSpace_Case(CompileHello_Case):
 class WriteDevNull_Case(CompileHello_Case):
     def runtest(self):
         self.compile()
-        
+
     def compileCmd(self):
-        return self.distcc_without_fallback() + _gcc + \
+        return self.distcc_without_fallback() + _cc + \
                " -c -o /dev/null -c %s" % (self.sourceFilename())
 
 
@@ -1423,13 +1441,13 @@ int main(void) {
    return 0;
 }
 """)
-        
+
     def runtest(self):
         self.runcmd(self.distcc()
-                    + _gcc + " -c test1.c test2.c")
+                    + _cc + " -c test1.c test2.c")
         self.runcmd(self.distcc()
-                    + _gcc + " -o test test1.o test2.o")
-        
+                    + _cc + " -o test test1.o test2.o")
+
 
 
 class CppError_Case(CompileHello_Case):
@@ -1438,7 +1456,7 @@ class CppError_Case(CompileHello_Case):
         return '#error "not tonight dear"\n'
 
     def runtest(self):
-        cmd = self.distcc() + _gcc + " -c testtmp.c"
+        cmd = self.distcc() + _cc + " -c testtmp.c"
         msgs, errs = self.runcmd(cmd, expectedResult=1)
         self.assert_re_search("not tonight dear", errs)
         self.assert_equal(msgs, '')
@@ -1463,10 +1481,10 @@ class BadInclude_Case(Compilation_Case):
             # is exacerbated by distcc's pump mode because we always
             # pass -MMD, even when the user didn't.  TODO(klarlund):
             # change error_rc back to 1 once that FIXME is fixed.
-            error_rc, _, _ = self.runcmd_unchecked(_gcc + " -MMD -E testtmp.c")
+            error_rc, _, _ = self.runcmd_unchecked(_cc + " -MMD -E testtmp.c")
         else:
             error_rc = 1
-        self.runcmd(self.distcc() + _gcc + " -o testtmp.o -c testtmp.c",
+        self.runcmd(self.distcc() + _cc + " -o testtmp.o -c testtmp.c",
                     error_rc)
 
 
@@ -1489,7 +1507,7 @@ large foo!
     def runtest(self):
         # -P means not to emit linemarkers
         self.runcmd(self.distcc()
-                    + _gcc + " -E testtmp.c -o testtmp.out")
+                    + _cc + " -E testtmp.c -o testtmp.out")
         out = open("testtmp.out").read()
         # It's a bit hard to know the exact value, because different versions of
         # GNU cpp seem to handle the whitespace differently.
@@ -1498,7 +1516,7 @@ large foo!
     def teardown(self):
         # no daemon is run for this test
         pass
-        
+
 
 class NoDetachDaemon_Case(CompileHello_Case):
     """Test the --no-detach option."""
@@ -1514,7 +1532,7 @@ class NoDetachDaemon_Case(CompileHello_Case):
         self.pid = self.runcmd_background(cmd)
         self.add_cleanup(self.killDaemon)
         # Wait until the server is ready for connections.
-        time.sleep(0.2)   # Give distccd chance to start listening on the port 
+        time.sleep(0.2)   # Give distccd chance to start listening on the port
         sock = socket.socket()
         while sock.connect_ex(('127.0.0.1', self.server_port)) != 0:
             time.sleep(0.2)
@@ -1571,7 +1589,9 @@ class DashMD_DashMF_DashMT_Case(CompileHello_Case):
     """Test -MD -MFfoo -MTbar"""
 
     def compileOpts(self):
-        return "-MD -MFdotd_filename -MTtarget_name_42"
+        opts = "-MD -MFdotd_filename -MTtarget_name_42"
+        opts += " -Qunused-arguments" if self.is_clang() else ""
+        return opts
 
     def runtest(self):
         try:
@@ -1587,7 +1607,9 @@ class DashWpMD_Case(CompileHello_Case):
     """Test -Wp,-MD,depfile"""
 
     def compileOpts(self):
-        return "-Wp,-MD,depsfile"
+        opts = "-Wp,-MD,depsfile"
+        opts += " -Qunused-arguments" if self.is_clang() else ""
+        return opts
 
     def runtest(self):
         try:
@@ -1621,7 +1643,7 @@ class ScanIncludes_Case(CompileHello_Case):
 
     def compileCmd(self):
         return self.distcc_without_fallback() + "--scan-includes " + \
-               _gcc + " -o testtmp.o " + self.compileOpts() + \
+               _cc + " -o testtmp.o " + self.compileOpts() + \
                " -c %s" % (self.sourceFilename())
 
     def runtest(self):
@@ -1660,10 +1682,10 @@ class AbsSourceFilename_Case(CompileHello_Case):
 
     def compileCmd(self):
         return (self.distcc()
-                + _gcc
+                + _cc
                 + " -c -o testtmp.o %s/testtmp.c"
                 % _ShellSafe(os.getcwd()))
-    
+
 
 class HundredFold_Case(CompileHello_Case):
     """Try repeated simple compilations.
@@ -1675,24 +1697,24 @@ class HundredFold_Case(CompileHello_Case):
 
     def daemon_lifetime(self):
         return 120
-    
+
     def runtest(self):
         for unused_i in range(100):
             self.runcmd(self.distcc()
-                        + _gcc + " -o testtmp.o -c testtmp.c")
+                        + _cc + " -o testtmp.o -c testtmp.c")
 
 
 class Concurrent_Case(CompileHello_Case):
     """Try many compilations at the same time"""
     def daemon_lifetime(self):
         return 120
-    
+
     def runtest(self):
         # may take about a minute or so
         pids = {}
         for unused_i in range(50):
             kid = self.runcmd_background(self.distcc() +
-                                         _gcc + " -o testtmp.o -c testtmp.c")
+                                         _cc + " -o testtmp.o -c testtmp.c")
             pids[kid] = kid
         while len(pids):
             pid, status = os.wait()
@@ -1713,15 +1735,15 @@ class BigAssFile_Case(Compilation_Case):
         # source.  Picking the size is kind of hard -- something that
         # will properly exercise distcc may be too big for small/old
         # machines.
-        
+
         f.write("int main() {}\n")
         for i in range(200000):
             f.write("int i%06d = %d;\n" % (i, i))
         f.close()
 
     def runtest(self):
-        self.runcmd(self.distcc() + _gcc + " -c %s" % "testtmp.c")
-        self.runcmd(self.distcc() + _gcc + " -o testtmp testtmp.o")
+        self.runcmd(self.distcc() + _cc + " -c %s" % "testtmp.c")
+        self.runcmd(self.distcc() + _cc + " -o testtmp testtmp.o")
 
 
     def daemon_lifetime(self):
@@ -1743,7 +1765,7 @@ class BinFalse_Case(Compilation_Case):
     """
     def createSource(self):
         open("testtmp.i", "wt").write("int main() {}")
-        
+
     def runtest(self):
         # On Solaris and IRIX 6, 'false' returns exit status 255
         if sys.platform == 'sunos5' or \
@@ -1769,7 +1791,7 @@ class BinTrue_Case(Compilation_Case):
     """
     def createSource(self):
         open("testtmp.i", "wt").write("int main() {}")
-        
+
     def runtest(self):
         self.runcmd(self.distcc()
                     + "true -c testtmp.i", 0)
@@ -1783,13 +1805,13 @@ class SBeatsC_Case(CompileHello_Case):
     # XXX: Are other compilers the same?
     def runtest(self):
         self.runcmd(self.distcc() +
-                    _gcc + " -c -S testtmp.c")
+                    _cc + " -c -S testtmp.c")
         if os.path.exists("testtmp.o"):
             self.fail("created testtmp.o but should not have")
         if not os.path.exists("testtmp.s"):
             self.fail("did not create testtmp.s but should have")
 
-    
+
 class NoServer_Case(CompileHello_Case):
     """Invalid server name"""
     def setup(self):
@@ -1798,19 +1820,19 @@ class NoServer_Case(CompileHello_Case):
         self.distcc_log = 'distcc.log'
         os.environ['DISTCC_LOG'] = self.distcc_log
         self.createSource()
-    
+
     def runtest(self):
         self.runcmd(self.distcc()
-                    + _gcc + " -c -o testtmp.o testtmp.c")
+                    + _cc + " -c -o testtmp.o testtmp.c")
         msgs = open(self.distcc_log, 'r').read()
         self.assert_re_search(r'failed to distribute.*running locally instead',
-                              msgs)            
-        
-        
+                              msgs)
+
+
 class ImpliedOutput_Case(CompileHello_Case):
     """Test handling absence of -o"""
     def compileCmd(self):
-        return self.distcc() + _gcc + " -c testtmp.c"
+        return self.distcc() + _cc + " -c testtmp.c"
 
 
 class SyntaxError_Case(Compilation_Case):
@@ -1855,7 +1877,7 @@ class NoHosts_Case(CompileHello_Case):
     def compileCmd(self):
         """Return command to compile source and run tests"""
         return self.distcc_with_fallback() + \
-               _gcc + " -o testtmp.o -c %s" % (self.sourceFilename())
+               _cc + " -o testtmp.o -c %s" % (self.sourceFilename())
 
 
 
@@ -1875,7 +1897,7 @@ class MissingCompiler_Case(CompileHello_Case):
                                  + "nosuchcc -c testtmp.i",
                                  expectedResult=EXIT_COMPILER_MISSING)
         self.assert_re_search(r'failed to exec', errs)
-        
+
 
 
 class RemoteAssemble_Case(WithDaemon_Case):
@@ -1890,13 +1912,13 @@ class RemoteAssemble_Case(WithDaemon_Case):
 .globl msg
 .section	.rodata
 .LC0:
-	.string	"hello world"
+  .string	"hello world"
 .data
-	.align 4
-	.type	 msg,object
-	.size	 msg,4
+  .align 4
+  .type	 msg,object
+  .size	 msg,4
 msg:
-	.long .LC0
+  .long .LC0
 """
 
     asm_filename = 'test2.s'
@@ -1907,7 +1929,7 @@ msg:
 
     def compile(self):
         # Need to build both the C file and the assembly file
-        self.runcmd(self.distcc() + _gcc + " -o test2.o -c test2.s")
+        self.runcmd(self.distcc() + _cc + " -o test2.o -c test2.s")
 
 
 
@@ -1919,13 +1941,13 @@ gcc2_compiled.:
 .globl msg
 .section	.rodata
 .LC0:
-	.string	 MSG
+  .string	 MSG
 .data
-	.align 4
-	.type	 msg,object
-	.size	 msg,4
+  .align 4
+  .type	 msg,object
+  .size	 msg,4
 msg:
-	.long .LC0
+  .long .LC0
 """
 
     def setup(self):
@@ -1948,7 +1970,7 @@ msg:
 class ModeBits_Case(CompileHello_Case):
     """Check distcc obeys umask"""
     def runtest(self):
-        self.runcmd("umask 0; distcc " + _gcc + " -c testtmp.c")
+        self.runcmd("umask 0; distcc " + _cc + " -c testtmp.c")
         self.assert_equal(S_IMODE(os.stat("testtmp.o")[ST_MODE]), 0o666)
 
 
@@ -1978,7 +2000,7 @@ class EmptySource_Case(Compilation_Case):
 
     def compile(self):
         rc, out, errs = self.runcmd_unchecked(self.distcc()
-                    + _gcc + " -c %s" % self.sourceFilename())
+                    + _cc + " -c %s" % self.sourceFilename())
         if not re.search("internal compiler error", errs):
           self.assert_equal(rc, 0)
 
@@ -1991,7 +2013,7 @@ class BadLogFile_Case(CompileHello_Case):
         self.runcmd("chmod 0 distcc.log")
         msgs, errs = self.runcmd("DISTCC_LOG=distcc.log " + \
                                  self.distcc() + \
-                                 _gcc + " -c testtmp.c", expectedResult=0)
+                                 _cc + " -c testtmp.c", expectedResult=0)
         self.assert_re_search("failed to open logfile", errs)
 
 
@@ -2011,9 +2033,9 @@ class AccessDenied_Case(CompileHello_Case):
     def compileCmd(self):
         """Return command to compile source and run tests"""
         return self.distcc_with_fallback() + \
-               _gcc + " -o testtmp.o -c %s" % (self.sourceFilename())
+               _cc + " -o testtmp.o -c %s" % (self.sourceFilename())
 
-    
+
     def runtest(self):
         self.compile()
         errs = open('distcc.log').read()
@@ -2155,10 +2177,10 @@ class Getline_Case(comfychair.TestCase):
 
 # When invoking compiler, use absolute path so distccd can find it
 for path in os.environ['PATH'].split (':'):
-    abs_path = os.path.join (path, 'gcc')
+    abs_path = os.path.join (path, 'cc')
 
     if os.path.isfile (abs_path):
-        _gcc = abs_path
+        _cc = abs_path
         break
 
 # All the tests defined in this suite
@@ -2203,7 +2225,7 @@ tests = [
          HelpOption_Case,
          BogusOption_Case,
          MultipleCompile_Case,
-         GccOptionsPassed_Case,
+         CompilerOptionsPassed_Case,
          IsSource_Case,
          ExtractExtension_Case,
          ImplicitCompiler_Case,
