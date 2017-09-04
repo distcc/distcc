@@ -437,19 +437,20 @@ def read_file_content(filepath, mode='r'):
   install additional packages.
   """
   file_contents = ""
-  encodings = [ "utf-8", "windows-1250", "windows-1252" ]
+  encodings = [ "utf-8", "windows-1250", "windows-1252", "iso-8859-1", "iso-8859-2", "utf-16" ]
   opened_with_correct_encoding = False
   for encoding in encodings:
     try:
       with open(filepath, "r", encoding=encoding) as fd:
         file_contents = fd.read()
         opened_with_correct_encoding = True
+        Debug(DEBUG_TRACE, "File decoded with %s encoding" % encoding)
         break
     except UnicodeDecodeError:
       Debug(DEBUG_TRACE, "Unicode decode error with %s, trying different encoding", encoding)
       continue
 
   if not opened_with_correct_encoding:
-    raise RuntimeError("File <%s> does not match any default encodings [%s]" % (filepath, encodings))
+    raise RuntimeError("File <%s> does not match any default encodings %s" % (filepath, encodings))
 
   return file_contents
