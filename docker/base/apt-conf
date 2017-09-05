@@ -1,0 +1,4 @@
+APT::Get::Assume-Yes "true";
+APT::Get::Install-Recommends "false";
+APT::Get::Install-Suggests "false";
+DPkg::Post-Invoke { "rm -rf /var/lib/apt/lists/* || true"; };

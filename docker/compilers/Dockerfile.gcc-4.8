@@ -1,0 +1,11 @@
+FROM distcc/base
+
+LABEL maintainer=""
+
+RUN apt-get update && \
+    apt-get install gcc-4.8 \
+                    gcc-multilib \
+                    g++-4.8 \
+                    g++-multilib && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50 && \
+    update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-4.8 50
