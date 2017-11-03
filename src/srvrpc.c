@@ -60,7 +60,7 @@ int dcc_r_request_header(int ifd,
         return ret;
     }
 
-    if (vers > DCC_VER_3) {
+    if (vers >= __DCC_VER_MAX) {
         rs_log_error("can't handle requested protocol version is %d", vers);
         return EXIT_PROTOCOL_ERROR;
     }
