@@ -79,6 +79,9 @@
 #ifdef HAVE_GSSAPI
 #include "auth.h"
 #endif
+#ifdef HAVE_SECCOMP_FILTER
+#include "sandbox-seccomp-filter.h"
+#endif
 
 
 /* for trace.c */
@@ -226,6 +229,10 @@ int main(int argc, char *argv[])
 
     /* Initialize the distcc io timeout value */
     dcc_get_io_timeout();
+
+#ifdef HAVE_SECCOMP_FILTER
+    dcc_seccomp_sandbox();
+#endif
 
     if (dcc_should_be_inetd())
         ret = dcc_inetd_server();

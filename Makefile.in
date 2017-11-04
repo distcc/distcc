@@ -243,6 +243,7 @@ common_obj = src/arg.o src/argutil.o					\
 	src/dotd.o 							\
 	src/hosts.o src/hostfile.o					\
 	src/implicit.o src/loadfile.o					\
+	src/sandbox-seccomp-filter.o					\
 	lzo/minilzo.o                                                   \
 	@ZEROCONF_COMMON_OBJS@						\
 	@AUTH_COMMON_OBJS@

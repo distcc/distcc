@@ -466,6 +466,22 @@ if test x"$rsync_cv_HAVE_SOCKETPAIR" = x"yes"; then
     AC_DEFINE(HAVE_SOCKETPAIR, 1, [define if you have a working socketpair])
 fi
 
+AC_CACHE_CHECK([for seccomp filter mode],rsync_cv_HAVE_SECCOMP_FILTER,[
+AC_TRY_RUN([
+#include <linux/seccomp.h>
+#include <sys/prctl.h>
+#include <errno.h>
+#include <unistd.h>
+
+main() {
+        return !(prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, NULL, 0, 0) < 0 &&
+                errno == EFAULT);
+}],
+rsync_cv_HAVE_SOCCOMP_FILTER=yes,rsync_cv_HAVE_SECCOMP_FILTER=no,rsync_cv_HAVE_SECCOMP_FILTER=cross)])
+if test x"$rsync_cv_HAVE_SECCOMP_FILTER" = x"yes"; then
+    AC_DEFINE(HAVE_SECCOMP_FILTER, 1, [define if you have seccomp filter mode])
+fi
+
 dnl Checks for structures
 AC_CHECK_MEMBER([struct sockaddr_storage.ss_family],
     AC_DEFINE(HAVE_SOCKADDR_STORAGE, 1, [define if you have struct sockaddr_storage]),,
