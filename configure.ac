@@ -466,6 +466,57 @@ if test x"$rsync_cv_HAVE_SOCKETPAIR" = x"yes"; then
     AC_DEFINE(HAVE_SOCKETPAIR, 1, [define if you have a working socketpair])
 fi
 
+AC_CHECK_HEADERS([linux/seccomp.h linux/filter.h linux/audit.h], [],
+    [], [#include <linux/types.h>])
+AC_MSG_CHECKING([for seccomp architecture])
+seccomp_audit_arch=
+case "$host" in
+x86_64-*)
+	seccomp_audit_arch=AUDIT_ARCH_X86_64
+	;;
+i*86-*)
+	seccomp_audit_arch=AUDIT_ARCH_I386
+	;;
+arm*-*)
+	seccomp_audit_arch=AUDIT_ARCH_ARM
+	;;
+aarch64*-*)
+	seccomp_audit_arch=AUDIT_ARCH_AARCH64
+	;;
+s390x-*)
+	seccomp_audit_arch=AUDIT_ARCH_S390X
+	;;
+s390-*)
+	seccomp_audit_arch=AUDIT_ARCH_S390
+	;;
+powerpc64-*)
+	seccomp_audit_arch=AUDIT_ARCH_PPC64
+	;;
+powerpc64le-*)
+	seccomp_audit_arch=AUDIT_ARCH_PPC64LE
+	;;
+mips-*)
+	seccomp_audit_arch=AUDIT_ARCH_MIPS
+	;;
+mipsel-*)
+	seccomp_audit_arch=AUDIT_ARCH_MIPSEL
+	;;
+mips64-*)
+	seccomp_audit_arch=AUDIT_ARCH_MIPS64
+	;;
+mips64el-*)
+	seccomp_audit_arch=AUDIT_ARCH_MIPSEL64
+	;;
+esac
+if test "x$seccomp_audit_arch" != "x" ; then
+	AC_MSG_RESULT(["$seccomp_audit_arch"])
+	AC_DEFINE_UNQUOTED([SECCOMP_AUDIT_ARCH], [$seccomp_audit_arch],
+	    [Specify the system call convention in use])
+	AC_DEFINE(HAVE_SECCOMP_FILTER, 1, [define if you have seccomp filter mode])
+else
+	AC_MSG_RESULT([architecture not supported])
+fi
+
 dnl Checks for structures
 AC_CHECK_MEMBER([struct sockaddr_storage.ss_family],
     AC_DEFINE(HAVE_SOCKADDR_STORAGE, 1, [define if you have struct sockaddr_storage]),,
