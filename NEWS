@@ -1,4 +1,4 @@
-distcc-3.2 "Back in black"  2011-10-11
+distcc-3.2 "Back in black"  2017-11-03
 
   FEATURES:
 
@@ -12,6 +12,8 @@ distcc-3.2 "Back in black"  2011-10-11
    * Some constants that were previously hard-coded in the
      sources are now configurable via environment variables:
      DISTCC_MAX_DISCREPANCY, DISTCC_IO_TIMEOUT (Lei Zhang).
+
+   * zstd support (Shawn Landden)
 
   BUG FIXES:
 

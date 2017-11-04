@@ -145,7 +145,8 @@ ext = distutils.extension.Extension(
               'src/filename.c',
               'src/bulk.c',
               'src/sendfile.c',
-              'src/compress.c',
+              'src/compress-lzox1.c',
+              'src/compress-zstd.c',
               'src/argutil.c',
               'src/cleanup.c',
               'src/emaillog.c',
@@ -157,7 +158,7 @@ ext = distutils.extension.Extension(
     include_dirs=cpp_flags_includes,
     define_macros=[('_GNU_SOURCE', 1)],
     library_dirs=[],
-    libraries=[],
+    libraries=['zstd'],
     runtime_library_dirs=[],
     extra_objects=[],
     extra_compile_args=[]

@@ -1365,6 +1365,28 @@ class GdbOpt3_Case(Gdb_Case):
         """Command for compiling and linking."""
         return _gcc + " -g -O3 ";
 
+class ZSTDCompressedCompile_Case(CompileHello_Case):
+    """Test compilation with compression.
+
+    The source needs to be moderately large to make sure compression and mmap
+    is turned on."""
+
+    def source(self):
+        return """
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "testhdr.h"
+int main(void) {
+    printf("%s\\n", HELLO_WORLD);
+    return 0;
+}
+"""
+
+    def setupEnv(self):
+        Compilation_Case.setupEnv(self)
+        os.environ['DISTCC_HOSTS'] = '127.0.0.1:%d,zstd' % self.server_port
+
 class CompressedCompile_Case(CompileHello_Case):
     """Test compilation with compression.
 
@@ -2188,6 +2210,7 @@ tests = [
          StripArgs_Case,
          StartStopDaemon_Case,
          CompressedCompile_Case,
+         ZSTDCompressedCompile_Case,
          DashONoSpace_Case,
          WriteDevNull_Case,
          CppError_Case,
@@ -2239,6 +2262,9 @@ if __name__ == '__main__':
       del sys.argv[1]
     elif sys.argv[1] == "--lzo":
       _server_options = ",lzo"
+      del sys.argv[1]
+    elif sys.argv[1] == "--zstd":
+      _server_options = ",zstd"
       del sys.argv[1]
     elif sys.argv[1] == "--pump":
       _server_options = ",lzo,cpp"

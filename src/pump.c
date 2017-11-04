@@ -68,6 +68,8 @@ int dcc_r_bulk(int ofd,
         return dcc_pump_readwrite(ofd, ifd, f_size);
     } else if (compression == DCC_COMPRESS_LZO1X) {
         return dcc_r_bulk_lzo1x(ofd, ifd, f_size);
+    } else if (compression == DCC_COMPRESS_ZSTD) {
+        return dcc_r_bulk_zstd(ofd, ifd, f_size);
     } else {
         rs_log_error("impossible compression %d", compression);
         return EXIT_PROTOCOL_ERROR;
