@@ -268,6 +268,7 @@ distccd_obj = src/access.o						\
 	src/stringmap.o							\
 	src/serve.o src/setuid.o src/srvnet.o src/srvrpc.o src/state.o	\
 	src/stats.o							\
+	src/sandbox-seccomp-filter.o					\
 	src/fix_debug_info.o						\
 	@ZEROCONF_DISTCCD_OBJS@						\
 	@AUTH_DISTCCD_OBJS@						\
@@ -330,6 +331,7 @@ SRC =	src/stats.c							\
 	src/loadfile.c src/lock.c 					\
 	src/mon.c src/mon-notify.c src/mon-text.c			\
 	src/mon-gnome.c							\
+	src/sandbox-seccomp-filter.c					\
 	src/ncpus.c src/netutil.c					\
 	src/prefork.c src/pump.c					\
 	src/remote.c src/renderer.c src/rpc.c				\

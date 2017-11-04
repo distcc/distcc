@@ -74,6 +74,9 @@
 #ifdef HAVE_GSSAPI
 #include "auth.h"
 #endif
+#ifdef HAVE_SECCOMP_FILTER
+#include "sandbox-seccomp-filter.h"
+#endif
 
 static void dcc_nofork_parent(int listen_fd) NORETURN;
 static void dcc_detach(void);
@@ -149,6 +152,10 @@ int dcc_standalone_server(void)
     /* This is called in the master daemon, whether that is detached or
      * not.  */
     dcc_master_pid = getpid();
+
+#ifdef HAVE_SECCOMP_FILTER
+    dcc_seccomp_sandbox_filter();
+#endif
 
     if (opt_no_fork) {
         dcc_log_daemon_started("non-forking daemon");
