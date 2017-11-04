@@ -13,6 +13,8 @@ distcc-3.2 "Back in black"  2011-10-11
      sources are now configurable via environment variables:
      DISTCC_MAX_DISCREPANCY, DISTCC_IO_TIMEOUT (Lei Zhang).
 
+   * Seccomp Filter support on Linux (Shawn Landden)
+
   BUG FIXES:
 
    * Fixed the following 20 issues <http://code.google.com/p/distcc/issues/list>:
