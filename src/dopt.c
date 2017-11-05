@@ -115,6 +115,11 @@ enum {
 int opt_zeroconf = 0;
 #endif
 
+#ifdef HAVE_SECCOMP_FILTER
+/* Flag for enabling/disabling Zeroconf using Avahi */
+int opt_no_seccomp = 0;
+#endif
+
 const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
 #ifdef HAVE_GSSAPI
@@ -152,6 +157,9 @@ const struct poptOption options[] = {
 #ifdef HAVE_AVAHI
     { "zeroconf", 0,     POPT_ARG_NONE, &opt_zeroconf, 0, 0, 0 },
 #endif
+#ifdef HAVE_SECCOMP_FILTER
+    { "no-seccomp", 0,   POPT_ARG_NONE, &opt_no_seccomp, 0, 0, 0 },
+#endif
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 
@@ -186,6 +194,9 @@ static void distccd_show_usage(void)
 "    --stats-port PORT          TCP port to listen on for statistics requests\n"
 #ifdef HAVE_AVAHI
 "    --zeroconf                 register via mDNS/DNS-SD\n"
+#endif
+#ifdef HAVE_SECCOMP_FILTER
+"    --no-seccomp               do not sandbox\n"
 #endif
 "  Debug and trace:\n"
 "    --log-level=LEVEL          set detail level for log file\n"

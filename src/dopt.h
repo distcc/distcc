@@ -48,6 +48,10 @@ extern int opt_niceness;
 extern int opt_zeroconf;
 #endif
 
+#ifdef HAVE_SECCOMP_FILTER
+extern int opt_no_seccomp;
+#endif
+
 #ifdef HAVE_GSSAPI
 extern int dcc_auth_enabled;
 #endif
