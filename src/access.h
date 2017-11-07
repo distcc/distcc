@@ -36,6 +36,12 @@ typedef struct dcc_address {
 } dcc_address_t;
 #endif
 
+/*TODO: IPv6*/
+const char *dcc_private_networks = ["192.168.0.0/16",
+                                    "10.0.0.0/8",
+                                    "172.16.0.0/12",
+                                    "127.0.0.0/8"]
+
 int dcc_parse_mask(const char *mask_spec,
                    dcc_address_t *value,
                    dcc_address_t *mask);
