@@ -68,8 +68,6 @@ int arg_port = DISTCC_DEFAULT_PORT;
 int arg_stats = DISTCC_DEFAULT_STATS_ENABLED;
 int arg_stats_port = DISTCC_DEFAULT_STATS_PORT;
 
-int opt_allow_private = 0;
-
 /** If true, serve all requests directly from listening process
     without forking.  Better for debugging. **/
 int opt_no_fork = 0;
@@ -82,6 +80,8 @@ int opt_no_fifo = 0;
 char *opt_listen_addr = NULL;
 
 struct dcc_allow_list *opt_allowed = NULL;
+
+int opt_allow_private = 0;
 
 /**
  * If true, don't detach from the parent.  This is probably necessary
