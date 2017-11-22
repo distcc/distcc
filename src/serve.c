@@ -720,7 +720,7 @@ static int dcc_run_job(int in_fd,
     if ((ret = dcc_check_compiler_masq(argv[0])))
         goto out_cleanup;
 
-    if (dcc_check_compiler_whitelist(argv[0]))
+    if (!opt_make_me_a_botnet && dcc_check_compiler_whitelist(argv[0]))
         goto out_cleanup;
 
     if ((compile_ret = dcc_spawn_child(argv, &cc_pid,

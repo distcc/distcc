@@ -345,7 +345,7 @@ as soon as that happens we can go ahead and start the client."""
         """Return command to start the daemon"""
         return (self.distccd() +
                 "--verbose --lifetime=%d --daemon --log-file %s "
-                "--pid-file %s --port %d --allow 127.0.0.1"
+                "--pid-file %s --port %d --allow 127.0.0.1 --make-me-a-botnet"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),
