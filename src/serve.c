@@ -357,6 +357,52 @@ static int dcc_check_compiler_masq(char *compiler_name)
     return 0;
 }
 
+/**
+ * Make sure there is a masquerade to distcc in /usr/lib/distcc in order to
+ * execute a binary of the same name.
+ *
+ * Before this it was possible to execute arbitrary command after connecting
+ * to distcc, which is quite a security risk when combined with any local root
+ * privledge escalation exploit. See CVE 2004-2687
+ *
+ * https://nvd.nist.gov/vuln/detail/CVE-2004-2687
+ * https://github.com/distcc/distcc/issues/155
+ **/
+static int dcc_check_compiler_whitelist(char *compiler_name)
+{
+    int dirfd = -1;
+    ssize_t len;
+    struct stat sb;
+    char linkbuf[MAXPATHLEN];
+
+    if (strchr(compiler_name, '/'))
+        return EXIT_BAD_ARGUMENTS;
+
+    dirfd = open("/usr/lib/distcc", O_RDONLY);
+    if (dirfd < 0) {
+        if (errno == ENOENT)
+            rs_log_crit("no %s", "/usr/lib/distcc");
+        return EXIT_DISTCC_FAILED;
+    }
+
+    if (fstatat(dirfd, compiler_name, &sb, AT_SYMLINK_NOFOLLOW) == -1)
+        return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+    if (!S_ISLNK(sb.st_mode)) {
+        rs_trace("%s/%s is not a symlink", "/usr/lib/distcc", compiler_name);
+        return EXIT_BAD_ARGUMENTS;
+    }
+    if ((len = readlinkat(dirfd, compiler_name, linkbuf, sizeof linkbuf)) <= 0)
+        return EXIT_BAD_ARGUMENTS;
+    linkbuf[len] = '\0';
+
+    if (strstr(linkbuf, "distcc")) {
+        rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
+        return 0;
+    } else {
+        return EXIT_BAD_ARGUMENTS;
+    }
+}
+
 static const char *include_options[] = {
     "-I",
     "-include",
@@ -669,9 +715,12 @@ static int dcc_run_job(int in_fd,
     }
 
     if (!dcc_remap_compiler(&argv[0]))
-    goto out_cleanup;
+        goto out_cleanup;
 
     if ((ret = dcc_check_compiler_masq(argv[0])))
+        goto out_cleanup;
+
+    if (dcc_check_compiler_whitelist(argv[0]))
         goto out_cleanup;
 
     if ((compile_ret = dcc_spawn_child(argv, &cc_pid,
