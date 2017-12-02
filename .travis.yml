@@ -5,6 +5,7 @@ addons:
     packages:
       - python3-dev
       - libiberty-dev
+      - clang
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
