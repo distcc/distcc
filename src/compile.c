@@ -25,6 +25,7 @@
 
 #include <config.h>
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -445,6 +446,86 @@ static int dcc_please_send_email_after_investigation(
     return dcc_note_discrepancy(discrepancy_filename);
 }
 
+/* Re-write "cc" to directly call gcc or clang
+ */
+static void dcc_rewrite_generic_compiler(char **argv)
+{
+#ifdef __APPLE__ /* FIXME */
+
+    assert(argv);
+
+    return;
+#else
+    char linkbuf[MAXPATHLEN + 1], *link = NULL, *t;
+    int ret, dir;
+    ssize_t ssz;
+    struct stat st;
+    bool cpp = false;
+
+    assert(argv);
+
+    if (strcmp(argv[0], "cc") == 0)
+        ;
+    else if (strcmp(argv[0], "c++") == 0)
+        cpp = true;
+    else
+        return;
+
+    ret = dcc_which(cpp ? "c++" : "cc", &link);
+    if (ret < 0)
+        return;
+    t = strrchr(link, '/');
+    if (!t)
+        return;
+    *t = '\0';
+    dir = open(link, O_RDONLY);
+    if (dir < 0)
+        return;
+    *t = '/';
+    ret = fstatat(dir, t + 1, &st, AT_SYMLINK_NOFOLLOW);
+    if (ret < 0)
+        return;
+    if ((st.st_mode & S_IFMT) != S_IFLNK)
+        /* TODO use cc -v */
+        return;
+    ssz = readlinkat(dir, t + 1, linkbuf, sizeof(linkbuf) - 1);
+    if (ssz < 0)
+        return;
+    linkbuf[ssz] = '\0';
+    fstatat(dir, linkbuf, &st, AT_SYMLINK_NOFOLLOW);
+    if ((st.st_mode & S_IFMT) == S_IFLNK) {
+        /* this is a Debian thing. Fedora just has /usr/bin/cc -> gcc */
+        if (strcmp(linkbuf, cpp ? "/etc/alternatives/c++" : "/etc/alternatives/cc") == 0) {
+            ssz = readlinkat(dir, linkbuf, linkbuf, sizeof(linkbuf) - 1);
+            linkbuf[ssz] = '\0';
+        }
+    }
+    ret = faccessat(dir, linkbuf, X_OK, 0);
+    if (ret < 0)
+        return;
+
+    if (        cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "clang++") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("clang++");
+        rs_trace("Rewriting '%s' to '%s'", "c++", "clang++");
+    } else if (   cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "g++") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("g++");
+        rs_trace("Rewriting '%s' to '%s'", "c++", "g++");
+    } else if (!cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "clang") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("clang");
+        rs_trace("Rewriting '%s' to '%s'", "cc", "clang");
+    } else if (!cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "gcc") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("gcc");
+        rs_trace("Rewriting '%s' to '%s'", "cc", "gcc");
+    } else
+        return;
+#endif
+}
+
+
 /* Clang is a native cross-compiler, but needs to be told to what target it is
  * building.
  * TODO: actually probe clang with clang --version, instead of trusting
@@ -608,6 +689,7 @@ dcc_build_somewhere(char *argv[],
     dcc_free_argv(argv);
     argv = new_argv;
     if (!getenv("DISTCC_NO_REWRITE_CROSS")) {
+        dcc_rewrite_generic_compiler(new_argv); /* does not work on Mac FIXME */
         dcc_add_clang_target(new_argv);
         dcc_gcc_rewrite_fqn(new_argv);
     }
