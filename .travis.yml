@@ -19,9 +19,6 @@ script:
   - make check
 
 matrix:
-  allow_failures:
-    - compiler: clang
-      env: FIXME=1
   include:
   - os: linux
     compiler: gcc
