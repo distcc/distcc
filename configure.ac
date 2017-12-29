@@ -170,6 +170,22 @@ AC_SUBST(GNOME_LIBS)
 AC_SUBST(INSTALL_GNOME)
 AC_SUBST(UNINSTALL_GNOME)
 
+AC_ARG_WITH(zstd,
+        AC_HELP_STRING([--without-zstd], [build without zstd compression]))
+
+if test x"$with_zstd" != xno; then
+    PKG_CHECK_MODULES([zstd], [libzstd >= 1],
+                 ,
+                 AC_MSG_ERROR([Cannot find zstd]))
+    AC_CHECK_HEADERS([zstd.h],
+                     [break])
+    if (test "$ac_cv_header_zstd_h" != yes); then
+        AC_MSG_ERROR([Cannot find zstd.h])
+    fi
+    LIBS="$LIBS -lzstd"
+    CFLAGS="$CFLAGS -DHAVE_ZSTD"
+fi
+
 dnl Checks for programs
 AC_PROG_CC
 WERROR_CFLAGS=""

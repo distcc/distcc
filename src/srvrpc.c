@@ -60,7 +60,7 @@ int dcc_r_request_header(int ifd,
         return ret;
     }
 
-    if (vers > DCC_VER_3) {
+    if (vers >= __DCC_VER_MAX) {
         rs_log_error("can't handle requested protocol version is %d", vers);
         return EXIT_PROTOCOL_ERROR;
     }
@@ -155,7 +155,7 @@ int dcc_r_many_files(int in_fd,
                 goto out_cleanup;
             }
         } else if (strncmp(token, "FILE", 4) == 0) {
-            if ((ret = dcc_r_file(in_fd, name, link_or_file_len, compr))) {
+            if ((ret = dcc_r_file(in_fd, name, link_or_file_len, 0, compr))) {
                 goto out_cleanup;
             }
             if ((ret = dcc_add_cleanup(name))) {
