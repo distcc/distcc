@@ -61,3 +61,5 @@ int dcc_tokenize_string(const char *in, char ***argv_ptr);
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
+
+char *dcc_make_dwo_fname(const char *temp_o);

@@ -874,3 +874,17 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     return bytes_read == 0 ? -1 : (ssize_t) bytes_read;
 }
 #endif
+
+char *dcc_make_dwo_fname(const char *temp_o)
+{
+    char *out;
+
+    out = malloc(strlen(temp_o) + 2 + 1);
+    if (!out)
+        return NULL;
+    strcpy(out, temp_o);
+    out[strlen(temp_o) - 1] = '\0'; /*kill the 'o' */
+    strcat(out, "dwo");
+
+    return out;
+}

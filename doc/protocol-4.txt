@@ -1,0 +1,38 @@
+description of distcc protocol version 2.1
+Copyright (C) 2017 by Shawn Landden
+
+disclaimer
+----------
+
+This document is provided as explanation for people developing or
+debugging distcc.  Discrepancies between this document and the distcc
+code are an error in the document.
+
+This document is intended to describe distcc 3.2.
+
+Because this program and document is licensed free of charge, there is
+no warranty of any kind, to the extent permitted by applicable law.
+
+If anything is unclear, please ask on the mailing list.
+
+
+protocol
+--------
+
+Protocol 2.1 is a variation of protocol 2.
+
+The protocol number (DIST) sent by the client is set to 4.  The server
+must respond (DONE) in version 4.
+
+The content of the "bulk" tokens (DOTI, DOTO, SERR, SOUT) are
+compressed using the Zstd algorithm.
+
+These tokens return two lengths,
+compressed and uncompressed, in that order.
+
+As a special case, if the uncompressed form is zero bytes, then it is
+not compressed but rather sent directly as zero bytes.
+
+A DDWO token is send after DOTO, comprising the debug information (.dwo),
+if available. See https://gcc.gnu.org/wiki/DebugFission It is compressed
+with Zstd.

@@ -29,6 +29,7 @@ Options:
                           with the valgrind command, which defaults to
                           "valgrind --quiet".
   --lzo                   Run the server tests with lzo compression enabled.
+  --zstd                  Run the server tests with Zstandard compression enabled.
   --pump                  Run the server tests with remote preprocessing
                           enabled.
 Example:
@@ -2275,6 +2276,9 @@ if __name__ == '__main__':
       del sys.argv[1]
     elif sys.argv[1] == "--lzo":
       _server_options = ",lzo"
+      del sys.argv[1]
+    elif sys.argv[1] == "--zstd":
+      _server_options = ",zstd"
       del sys.argv[1]
     elif sys.argv[1] == "--pump":
       _server_options = ",lzo,cpp"
