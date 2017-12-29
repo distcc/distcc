@@ -32,7 +32,11 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <popt.h>
+#ifdef HAVE_POPT
+# include <popt.h>
+#else
+# include "popt.h"
+#endif
 
 #include <sys/socket.h>
 #include <netinet/in.h>
