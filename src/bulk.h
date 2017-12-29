@@ -21,7 +21,8 @@
  * USA.
  */
 
-int dcc_r_file(int ifd, const char *filename, unsigned,
+int dcc_r_file(int ifd, const char *filename, unsigned size,
+               unsigned uncompr_size,
                enum dcc_compress);
 int dcc_r_fifo(int ifd, const char *fifo_name, size_t len);
 
@@ -30,6 +31,7 @@ int dcc_x_file(int ofd, const char *fname, const char *token,
                off_t *);
 
 int dcc_r_file_timed(int ifd, const char *fname, unsigned size,
+                     unsigned uncompr_size,
                      enum dcc_compress);
 
 int dcc_r_token_file(int ifd,

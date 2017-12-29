@@ -89,7 +89,8 @@ struct dcc_hostdef;
 enum dcc_compress {
     /* weird values to catch errors */
     DCC_COMPRESS_NONE     = 69,
-    DCC_COMPRESS_LZO1X
+    DCC_COMPRESS_LZO1X,
+    DCC_COMPRESS_ZSTD,
 };
 
 enum dcc_cpp_where {
@@ -101,7 +102,9 @@ enum dcc_cpp_where {
 enum dcc_protover {
     DCC_VER_1   = 1,            /**< vanilla */
     DCC_VER_2   = 2,            /**< LZO sprinkles */
-    DCC_VER_3   = 3             /**< server-side cpp */
+    DCC_VER_3   = 3,            /**< server-side cpp */
+    DCC_VER_4   = 4,            /**< ZSTD compression, -gsplit-dwarf. No server-side cpp */
+    __DCC_VER_MAX = 5            /**< canary */
 };
 
 
@@ -225,7 +228,7 @@ int dcc_remove_disliked(struct dcc_hostdef **hostlist);
 void dcc_set_trace_from_env(void);
 
 
-/* compress.c */
+/* compress-lzo1x.c */
 int dcc_r_bulk_lzo1x(int outf_fd,
                       int in_fd,
                       unsigned in_len);
@@ -243,6 +246,24 @@ int dcc_compress_lzo1x_alloc(const char *in_buf,
                             size_t *out_len_ret);
 
 
+#ifdef HAVE_ZSTD
+/* compress-zstd.c */
+int dcc_r_bulk_zstd(int outf_fd,
+                      int in_fd,
+                      unsigned in_len,
+                      unsigned uncompr_size);
+
+
+int dcc_compress_file_zstd(int in_fd,
+                            size_t in_len,
+                            char **out_buf,
+                            size_t *out_len);
+
+int dcc_compress_zstd_alloc(const char *in_buf,
+                            size_t in_len,
+                            char **out_buf_ret,
+                            size_t *out_len_ret);
+#endif
 
 /* bulk.c */
 void dcc_calc_rate(off_t size_out,
@@ -342,6 +363,7 @@ extern const int dcc_connect_timeout;
 int dcc_r_bulk(int ofd,
                int ifd,
                unsigned f_size,
+               unsigned uncompr_size,
                enum dcc_compress compression);
 
 int dcc_pump_readwrite(int ofd, int ifd, size_t n);

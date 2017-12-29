@@ -253,6 +253,15 @@ static int dcc_parse_options(const char **psrc,
             rs_trace("got LZO option");
             host->compr = DCC_COMPRESS_LZO1X;
             p += 3;
+        } else if (str_startswith("zstd", p)) {
+#ifdef HAVE_ZSTD
+            rs_trace("got Zstd option");
+            host->compr = DCC_COMPRESS_ZSTD;
+            p += 4;
+#else
+            rs_log_error("Zstd support not built: %s", started);
+            return EXIT_BAD_HOSTSPEC;
+#endif
         } else if (str_startswith("down", p)) {
             /* if "hostid,down", mark it down, and strip down from hostname */
             host->is_up = 0;
@@ -415,18 +424,20 @@ int dcc_get_features_from_protover(enum dcc_protover protover,
                                    enum dcc_compress *compr,
                                    enum dcc_cpp_where *cpp_where)
 {
-    if (protover > 1) {
+    if (protover == 2 || protover == 3) {
         *compr = DCC_COMPRESS_LZO1X;
+    } else if (protover == 4) {
+        *compr = DCC_COMPRESS_ZSTD;
     } else {
         *compr = DCC_COMPRESS_NONE;
     }
-    if (protover > 2) {
+    if (protover == 3) {
         *cpp_where = DCC_CPP_ON_SERVER;
     } else {
         *cpp_where = DCC_CPP_ON_CLIENT;
     }
 
-    if (protover == 0 || protover > 3) {
+    if (protover == 0 || protover >= __DCC_VER_MAX) {
         return 1;
     } else {
         return 0;
@@ -453,6 +464,10 @@ int dcc_get_protover_from_features(enum dcc_compress compr,
 
     if (compr == DCC_COMPRESS_LZO1X && cpp_where == DCC_CPP_ON_CLIENT) {
         *protover = DCC_VER_2;
+    }
+
+    if (compr == DCC_COMPRESS_ZSTD && cpp_where == DCC_CPP_ON_CLIENT) {
+        *protover = DCC_VER_4;
     }
 
     if (compr == DCC_COMPRESS_NONE && cpp_where == DCC_CPP_ON_SERVER) {

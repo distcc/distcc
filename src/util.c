@@ -914,6 +914,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 }
 #endif
 
+<<<<<<< HEAD
 /* from old systemd
 
    Copyright 2010 Lennart Poettering
@@ -1013,4 +1014,18 @@ int sd_is_socket(int fd, int family, int type, int listening) {
         }
 
         return 1;
+}
+
+char *dcc_make_dwo_fname(const char *temp_o)
+{
+    char *out;
+
+    out = malloc(strlen(temp_o) + 2 + 1);
+    if (!out)
+        return NULL;
+    strcpy(out, temp_o);
+    out[strlen(temp_o) - 1] = '\0'; /*kill the 'o' */
+    strcat(out, "dwo");
+
+    return out;
 }
