@@ -64,32 +64,6 @@ int dcc_ncpus(int *ncpus)
 }
 
 
-#elif defined(__VOS__)
-
-#ifdef __GNUC__
-#define $shortmap
-#endif
-
-#include <module_info.h>
-
-extern void s$get_module_info (char_varying *module_name, void *mip,
-          short int *code);
-
-int dcc_ncpus(int *ncpus)
-{
-short int code;
-module_info mi;
-char_varying(66) module_name;
-
-     strcpy_vstr_nstr (&module_name, "");
-     mi.version = MODULE_INFO_VERSION_1;
-     s$get_module_info ((char_varying *)&module_name, (void *)&mi, &code);
-     if (code != 0)
-          *ncpus = 1;    /* safe guess... */
-     else *ncpus = mi.n_user_cpus;
-     return 0;
-}
-
 #elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__) || defined(__bsdi__)
 
 /* http://www.FreeBSD.org/cgi/man.cgi?query=sysctl&sektion=3&manpath=FreeBSD+4.6-stable
