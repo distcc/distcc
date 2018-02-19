@@ -24,3 +24,9 @@ src/config.h.in
 src/config.h.stamp
 man/*.gz
 _testtmp/
+
+# idea
+/.idea/
+/cmake-build-debug/
+CMakeFiles.txt
+

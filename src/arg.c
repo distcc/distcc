@@ -111,6 +111,41 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
 }
 
 /**
+ * Helper function for dcc_scan_args and aoc distcc argument:
+ *
+ * If we build on army of cloned/identical machines some arguments
+ * can be safely built on them. Takes a list of allowed arguments
+ * and checks against compiler args
+ *
+ * @returns 0 if it's ok to distribute this compilation, or an error code.
+ **/
+
+int dcc_check_army_of_clones(char arg){
+    if (!strcmp(a, "-march=native")) {
+        rs_trace("-march=native generates code for local machine; "
+                         "must be local");
+        return EXIT_DISTCC_FAILED;
+    } else if (!strcmp(a, "-mtune=native")) {
+        rs_trace("-mtune=native optimizes for local machine; "
+                         "must be local");
+        return EXIT_DISTCC_FAILED;
+    } else if (str_startswith("-Wa,", a)) {
+        /* Look for assembler options that would produce output
+         * files and must be local.
+         *
+         * Writing listings to stdout could be supported but it might
+         * be hard to parse reliably. */
+        if (strstr(a, ",-a") || strstr(a, "--MD")) {
+            rs_trace("%s must be local", a);
+            return EXIT_DISTCC_FAILED;
+        }
+    } else if (str_startswith("-specs=", a)) {
+        rs_trace("%s must be local", a);
+        return EXIT_DISTCC_FAILED;
+    }
+}
+
+/**
  * Parse arguments, extract ones we care about, and also work out
  * whether it will be possible to distribute this invocation remotely.
  *
@@ -181,28 +216,11 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                     to distribute it even if we could. */
                 rs_trace("%s implies -E (maybe) and must be local", a);
                 return EXIT_DISTCC_FAILED;
-            } else if (!strcmp(a, "-march=native")) {
-                rs_trace("-march=native generates code for local machine; "
-                         "must be local");
-                return EXIT_DISTCC_FAILED;
-            } else if (!strcmp(a, "-mtune=native")) {
-                rs_trace("-mtune=native optimizes for local machine; "
-                         "must be local");
-                return EXIT_DISTCC_FAILED;
-            } else if (str_startswith("-Wa,", a)) {
-                /* Look for assembler options that would produce output
-                 * files and must be local.
-                 *
-                 * Writing listings to stdout could be supported but it might
-                 * be hard to parse reliably. */
-                if (strstr(a, ",-a") || strstr(a, "--MD")) {
-                    rs_trace("%s must be local", a);
-                    return EXIT_DISTCC_FAILED;
-                }
-            } else if (str_startswith("-specs=", a)) {
-                rs_trace("%s must be local", a);
-                return EXIT_DISTCC_FAILED;
-            } else if (!strcmp(a, "-S")) {
+            } else if(a==1) {
+                // identical machines setup
+                return dcc_check_army_of_clones(a);
+            }
+            else if (!strcmp(a, "-S")) {
                 seen_opt_s = 1;
             } else if (!strcmp(a, "-fprofile-arcs")
                        || !strcmp(a, "-ftest-coverage")
