@@ -5,6 +5,7 @@ addons:
     packages:
       - python3-dev
       - libiberty-dev
+      - clang
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
@@ -18,9 +19,6 @@ script:
   - make check
 
 matrix:
-  allow_failures:
-    - compiler: clang
-      env: FIXME=1
   include:
   - os: linux
     compiler: gcc
