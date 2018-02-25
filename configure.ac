@@ -387,6 +387,7 @@ AC_CHECK_DECLS([snprintf, vsnprintf, vasprintf, asprintf, strndup])
 
 AC_MSG_CHECKING([if mmap() supports MAP_FAILED])
 AC_TRY_COMPILE([
+#include <stddef.h>
 #ifdef HAVE_SYS_MMAN_H
 #  include <sys/mman.h>
 #endif],[
