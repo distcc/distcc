@@ -134,7 +134,7 @@ get increasing benefit with more server CPUs (up to the hundreds!).
 Wrap your build inside the pump command, here assuming 10 servers:
 
 .RS
-$ pump make -j20 CC=distcc
+$ distcc-pump make -j20 CC=distcc
 .RE
 
 .SH "QUICKSTART FOR DISTCC-GSSAPI MODE"
@@ -189,7 +189,7 @@ The compiler is then run from the path in the temporary directory that
 corresponds to the current working directory on the client.  To find and
 transmit the many hundreds of files that are often part of a single compilation,
 pump mode uses an incremental include analysis algorithm.  The include server is
-a Python program that implements this algorithm.  The pump command starts the
+a Python program that implements this algorithm.  The distcc-pump command starts the
 include server so that throughout the build it can answer include queries by
 distcc commands.
 .PP
@@ -569,7 +569,7 @@ Enables LZO compression for this TCP or SSH host.
 .TP
 .B ,cpp
 Enables distcc-pump mode for this host.  Note: the build command must be 
-wrapped in the pump script in order to start the include server.
+wrapped in the distcc-pump script in order to start the include server.
 .TP
 .B ,auth
 Enables GSSAPI-based mutual authentication for this host.
@@ -961,7 +961,7 @@ Other known bugs may be documented on
 distcc was written by Martin Pool <mbp@sourcefrog.net>, with the
 co-operation of many scholars including Wayne Davison, Frerich Raabe,
 Dimitri Papadopoulos and others noted in the NEWS file.  Please report
-bugs to <distcc@lists.samba.org>.  See \fBpump\fR(1) for the authors of pump mode.
+bugs to <distcc@lists.samba.org>.  See \fBdistcc-pump\fR(1) for the authors of pump mode.
 .SH "LICENCE"
 You are free to use distcc.  distcc (including this manual) may be
 copied, modified or distributed only under the terms of the GNU
@@ -969,7 +969,7 @@ General Public Licence version 2 or later.  distcc comes with
 absolutely no warrany.  A copy of the GPL is included in the file
 COPYING.
 .SH "SEE ALSO"
-\fBdistccd\fR(1), \fBpump\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1),
+\fBdistccd\fR(1), \fBdistcc-pump\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1),
 \fBmake\fR(1), and  \fBccache\fR(1).
 .I http://code.google.com/p/distcc/
 .I http://ccache.samba.org/

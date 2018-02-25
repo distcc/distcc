@@ -167,6 +167,7 @@ int poptReadDefaultConfig(poptContext con, /*@unused@*/ int useEnv)
 {
     char * fn, * home;
     int rc;
+    UNUSED(useEnv)
 
     /*@-type@*/
     if (!con->appName) return 0;

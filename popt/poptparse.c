@@ -139,6 +139,7 @@ int poptConfigFileToString(FILE *fp, char ** argstrp, /*@unused@*/ int flags)
     size_t linelen;
     int maxargvlen = 480;
     int linenum = 0;
+    UNUSED(flags)
 
     *argstrp = NULL;
 

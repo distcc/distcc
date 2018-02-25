@@ -1030,7 +1030,7 @@ showpaths:
 # tricky features so mkinstalldirs and cp will do
 
 install: showpaths install-doc install-man install-programs \
-	install-include-server install-example @INSTALL_GNOME@ install-conf
+	install-include-server install-example @INSTALL_GNOME@
 
 install-programs: $(bin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
@@ -1069,7 +1069,7 @@ install-include-server: include-server pump
 	        --build-base="$(include_server_builddir)" \
 	        --build-temp="$(include_server_builddir)" \
 	      install 					\
-	         --prefix="$(prefix)" 			\
+	         --install-lib="$(prefix)/lib/distcc-pump" \
 	         --record="$(include_server_builddir)/install.log.pre" \
 	         --root="$$DESTDIR"                     \
 	    || exit 1; \
@@ -1081,7 +1081,7 @@ install-include-server: include-server pump
 	    cp -f "$(include_server_builddir)/install.log" "$(PYTHON_INSTALL_RECORD)"; \
 	  fi; \
 	  $(mkinstalldirs) "$(DESTDIR)$(bindir)" && \
-	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
+	  INCLUDE_SERVER="/usr/lib/distcc-pump/include_server/include_server.py" && \
 	  sed "s,^include_server='',include_server='$$INCLUDE_SERVER'," \
 	    pump > "$(include_server_builddir)/pump" && \
 	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \

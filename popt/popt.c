@@ -1081,6 +1081,7 @@ int poptAddAlias(poptContext con, struct poptAlias alias,
 		/*@unused@*/ int flags)
 {
     poptItem item = alloca(sizeof(*item));
+    UNUSED(flags)
     memset(item, 0, sizeof(*item));
     item->option.longName = alias.longName;
     item->option.shortName = alias.shortName;

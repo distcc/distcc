@@ -259,7 +259,8 @@ AC_PROG_INSTALL
 #
 # NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
 # in autoconf 2.53.
-AM_PATH_PYTHON([3.1],,[:])
+AM_PATH_PYTHON([3.1])
+AX_PYTHON_DEVEL([>= '3.1'])
 AC_ARG_VAR(PYTHON, [Python interpreter])
 AC_SUBST(PYTHON_RELATIVE_LIB)
 AC_C_INLINE
