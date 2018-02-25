@@ -286,14 +286,14 @@ class SimpleDistCC_Case(comfychair.TestCase):
         return None
 
     def is_gcc(self, compiler):
-        out, err = self.runcmd(compiler + " -v")
-        if re.search('gcc', err) or re.search('gcc', out):
+        out, err = self.runcmd(compiler + " --version")
+        if re.search('Free Software Foundation', out):
             return True
         return False
 
     def is_clang(self, compiler):
-        out, err = self.runcmd(compiler + " -v")
-        if re.search('clang', err) or re.search('clang', out):
+        out, err = self.runcmd(compiler + " --version")
+        if re.search('clang', out):
             return True
         return False
 
