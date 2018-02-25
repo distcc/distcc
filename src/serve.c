@@ -685,13 +685,16 @@ static int dcc_run_job(int in_fd,
     if ((ret = dcc_x_result_header(out_fd, protover))
         || (ret = dcc_x_cc_status(out_fd, status))
         || (ret = dcc_x_file(out_fd, err_fname, "SERR", compr, NULL))
-        || (ret = dcc_x_file(out_fd, out_fname, "SOUT", compr, NULL))
-        || WIFSIGNALED(status)
-        || WEXITSTATUS(status)) {
+        || (ret = dcc_x_file(out_fd, out_fname, "SOUT", compr, NULL))) {
+          /* We get a protocol derailment if we send DOTO 0 here */
+
+        if (job_result == -1)
+            job_result = STATS_COMPILE_ERROR;
+    } else if (WIFSIGNALED(status) || WEXITSTATUS(status)) {
         /* Something went wrong, so send DOTO 0 */
         dcc_x_token_int(out_fd, "DOTO", 0);
 
-    if (job_result == -1)
+        if (job_result == -1)
             job_result = STATS_COMPILE_ERROR;
     } else {
         if (cpp_where == DCC_CPP_ON_SERVER) {
