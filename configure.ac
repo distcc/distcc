@@ -78,6 +78,21 @@ getpeername(0,0,&len);
 	[#include <sys/types.h>
 #include <sys/socket.h>])
 
+dnl Android requires -llog for printf and friends
+dnl and will only run position independant executables
+AC_MSG_CHECKING([if building on Android])
+AC_TRY_COMPILE([
+  #ifdef __BIONIC__
+  int ok;
+  (void)ok;
+  #else
+  choke me
+  #endif],
+[func("a"); func("a", "b"); func("a", "b", "c")],
+[AC_MSG_RESULT(yes)
+ LDFLAGS="$LDFLAGS -llog -pie"],
+[AC_MSG_RESULT(no)])
+
 # TODO: Handle program transform rules by autoconf.
 
 ### Checks for configure options
