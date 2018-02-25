@@ -48,10 +48,10 @@ AC_CHECK_TYPE([socklen_t], ,[
 	AC_MSG_CHECKING([for socklen_t equivalent])
 	AC_CACHE_VAL([dcc_cv_socklen_t_equiv],
 	[
-	# Systems have either "struct sockaddr *" or
+	# Systems have either "struct sockaddr{,_in} *" or
 	# "void *" as the second argument to getpeername
 	dcc_cv_socklen_t_equiv=
-	for arg2 in "struct sockaddr" void; do
+	for arg2 in "struct sockaddr_in" "struct sockaddr" void; do
 		for t in int size_t unsigned long "unsigned long"; do
 			AC_TRY_COMPILE([
 #include <sys/types.h>
@@ -519,7 +519,7 @@ AC_ARG_WITH([auth],
 
 if test x"$with_auth" = xyes; then
         AC_SEARCH_LIBS([gss_init_sec_context],
-                        [gssapi gssapi_krb5],
+                        [gssapi gssapi_krb5 gss],
 	                AC_DEFINE(HAVE_GSSAPI, 1, [Define if the GSS_API is available])
 	                AUTH_COMMON_OBJS="src/auth_common.o"
 	                AUTH_DISTCC_OBJS="src/auth_distcc.o"

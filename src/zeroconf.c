@@ -25,6 +25,7 @@
 #include <sys/select.h>
 #include <signal.h>
 #include <sys/file.h>
+#include <fcntl.h>
 #include <sys/time.h>
 #include <time.h>
 #include <sys/stat.h>
