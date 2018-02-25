@@ -748,7 +748,7 @@ static int one_poll_loop(struct rslave_s* rs, struct state_s states[],
                         "now %lld %ld: Resending %s because "
                         "deadline was %lld %ld\n",
                         (long long) now.tv_sec, (long) now.tv_usec/1000,
-                        sp->req.hname, sp->deadline.tv_sec,
+                        sp->req.hname, (long long) sp->deadline.tv_sec,
                         (long) sp->deadline.tv_usec/1000);
             break;
         }
