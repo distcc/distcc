@@ -371,6 +371,11 @@ Then, to use distcc, a user just needs to put the directory
 /usr/lib/distcc/bin early in the PATH, and have set a host list in
 DISTCC_HOSTS or a file.  distcc will handle the rest.  
 .PP
+To automatically discover compilers and create masquerade links run
+the provided
+.BR update-distcc-symlinks.py
+script.
+.PP
 Note that this masquerade directory must occur on the PATH earlier
 than the directory that contains the actual compilers of the same
 names, and that any auxiliary programs that these compilers call (such
