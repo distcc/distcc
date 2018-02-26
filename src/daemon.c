@@ -44,6 +44,7 @@
 
 #include <config.h>
 
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -151,6 +152,23 @@ static int dcc_setup_daemon_path(void)
     }
 }
 
+static void dcc_warn_masquerade_whitelist(void) {
+    DIR *d;
+    const char *warn = "You must see up masquerade" \
+                       " (see distcc(1)) to list whitelisted compilers or pass" \
+                       " --make-me-a-botnet. To set up masquerade automatically" \
+                       " run update-distcc-symlinks.py.";
+
+    d = opendir("/usr/lib/distcc");
+    if (!d) {
+        rs_log_crit("/usr/lib/distcc not found. %s", warn);
+        dcc_exit(EXIT_COMPILER_MISSING);
+    }
+    if (!readdir(d)) {
+        rs_log_crit("/usr/lib/distcc empty. %s", warn);
+        dcc_exit(EXIT_COMPILER_MISSING);
+    }
+}
 
 /**
  * distcc daemon.  May run from inetd, or standalone.  Accepts
@@ -226,6 +244,9 @@ int main(int argc, char *argv[])
 
     /* Initialize the distcc io timeout value */
     dcc_get_io_timeout();
+
+    if (!opt_make_me_a_botnet)
+        dcc_warn_masquerade_whitelist();
 
     if (dcc_should_be_inetd())
         ret = dcc_inetd_server();

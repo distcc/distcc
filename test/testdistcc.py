@@ -815,7 +815,7 @@ class DaemonBadPort_Case(SimpleDistCC_Case):
         """Test daemon invoked with invalid port number"""
         self.runcmd(self.distccd() +
                     "--log-file=distccd.log --lifetime=10 --port 80000 "
-                    "--allow 127.0.0.1",
+                    "--allow 127.0.0.1 --make-me-a-botnet",
                     EXIT_BAD_ARGUMENTS)
         self.assert_no_file("daemonpid.tmp")
 
@@ -2046,7 +2046,7 @@ class AccessDenied_Case(CompileHello_Case):
     def daemon_command(self):
         return (self.distccd()
                 + "--verbose --lifetime=%d --daemon --log-file %s "
-                  "--pid-file %s --port %d --allow 127.0.0.2"
+                  "--pid-file %s --port %d --allow 127.0.0.2 --make-me-a-botnet"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),
