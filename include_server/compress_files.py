@@ -23,6 +23,7 @@ import os
 import sys
 import os.path
 
+import basics
 import distcc_pump_c_extensions
 
 class CompressFiles(object):
@@ -98,19 +99,18 @@ class CompressFiles(object):
           # change its name.
           prefix = ""
         try:
-          real_file_fd = open(realpath, "r")
-        except (IOError, OSError) as why:
-          sys.exit("Could not open '%s' for reading: %s" % (realpath, why))
-        try:
           new_filepath_fd = open(new_filepath, "wb")
         except (IOError, OSError) as why:
           sys.exit("Could not open '%s' for writing: %s" % (new_filepath, why))
         try:
+          real_file_content = basics.read_file_content(realpath)
+        except (IOError, OSError) as why:
+          sys.exit("Could not open '%s' for reading: %s" % (realpath, why))
+        try:
           new_filepath_fd.write(
             distcc_pump_c_extensions.CompressLzo1xAlloc(
-              prefix + real_file_fd.read()))
+              prefix + real_file_content))
         except (IOError, OSError) as why:
           sys.exit("Could not write to '%s': %s" % (new_filepath, why))
         new_filepath_fd.close()
-        real_file_fd.close()
     return files

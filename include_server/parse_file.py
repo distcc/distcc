@@ -278,16 +278,13 @@ class ParseFile(object):
     includepath_map_index = self.includepath_map.Index
 
     try:
-      fd = open(filepath, "r")
+      file_contents = basics.read_file_content(filepath)
     except IOError as msg:
       # This normally does not happen because the file should be known to
       # exists. Still there might be, say, a permissions issue that prevents it
       # from being read.
       raise NotCoveredError("Parse file: '%s': %s" % (filepath, msg),
                             send_email=False)
-
-    file_contents = fd.read()
-    fd.close()
 
     quote_includes, angle_includes, expr_includes, next_includes = (
       [], [], [], [])

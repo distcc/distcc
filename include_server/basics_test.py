@@ -115,4 +115,10 @@ class BasicsTest(unittest.TestCase):
     finally:
       os.rmdir(os.environ['DISTCC_CLIENT_TMP'])
 
+  def test_read_file_content_with_supported_encoding(self):
+    try:
+      basics.read_file_content("test_data/supported_encoding.cpp")
+    except Exception as e:
+      self.fail("Exception not expected: %s" % e)
+
 unittest.main()
