@@ -1546,7 +1546,7 @@ class NoDetachDaemon_Case(CompileHello_Case):
         # port as an existing server, because we can't catch the error.
         cmd = (self.distccd() +
                "--no-detach --daemon --verbose --log-file %s --pid-file %s "
-               "--port %d --allow 127.0.0.1" %
+               "--port %d --allow 127.0.0.1 --make-me-a-botnet" %
                (_ShellSafe(self.daemon_logfile),
                 _ShellSafe(self.daemon_pidfile),
                 self.server_port))
