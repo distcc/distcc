@@ -371,9 +371,6 @@ static int dcc_check_compiler_masq(char *compiler_name)
 static int dcc_check_compiler_whitelist(char *compiler_name)
 {
     int dirfd = -1;
-    ssize_t len;
-    struct stat sb;
-    char linkbuf[MAXPATHLEN];
 
     if (strchr(compiler_name, '/'))
         return EXIT_BAD_ARGUMENTS;
@@ -385,22 +382,13 @@ static int dcc_check_compiler_whitelist(char *compiler_name)
         return EXIT_DISTCC_FAILED;
     }
 
-    if (fstatat(dirfd, compiler_name, &sb, AT_SYMLINK_NOFOLLOW) == -1)
+    if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
+        rs_log_crit("%s not in %s whitelist.", compiler_name, "/usr/lib/distcc");
         return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
-    if (!S_ISLNK(sb.st_mode)) {
-        rs_trace("%s/%s is not a symlink", "/usr/lib/distcc", compiler_name);
-        return EXIT_BAD_ARGUMENTS;
     }
-    if ((len = readlinkat(dirfd, compiler_name, linkbuf, sizeof linkbuf)) <= 0)
-        return EXIT_BAD_ARGUMENTS;
-    linkbuf[len] = '\0';
 
-    if (strstr(linkbuf, "distcc")) {
-        rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
-        return 0;
-    } else {
-        return EXIT_BAD_ARGUMENTS;
-    }
+    rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
+    return 0;
 }
 
 static const char *include_options[] = {
