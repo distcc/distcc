@@ -25,7 +25,6 @@ matrix:
     dist: trusty
   - os: linux
     compiler: clang
-    env: FIXME=1
     dist: trusty
   - os: osx
     osx_image: xcode8.2
