@@ -357,6 +357,40 @@ static int dcc_check_compiler_masq(char *compiler_name)
     return 0;
 }
 
+/**
+ * Make sure there is a masquerade to distcc in /usr/lib/distcc in order to
+ * execute a binary of the same name.
+ *
+ * Before this it was possible to execute arbitrary command after connecting
+ * to distcc, which is quite a security risk when combined with any local root
+ * privledge escalation exploit. See CVE 2004-2687
+ *
+ * https://nvd.nist.gov/vuln/detail/CVE-2004-2687
+ * https://github.com/distcc/distcc/issues/155
+ **/
+static int dcc_check_compiler_whitelist(char *compiler_name)
+{
+    int dirfd = -1;
+
+    if (strchr(compiler_name, '/'))
+        return EXIT_BAD_ARGUMENTS;
+
+    dirfd = open("/usr/lib/distcc", O_RDONLY);
+    if (dirfd < 0) {
+        if (errno == ENOENT)
+            rs_log_crit("no %s", "/usr/lib/distcc");
+        return EXIT_DISTCC_FAILED;
+    }
+
+    if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
+        rs_log_crit("%s not in %s whitelist.", compiler_name, "/usr/lib/distcc");
+        return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+    }
+
+    rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
+    return 0;
+}
+
 static const char *include_options[] = {
     "-I",
     "-include",
@@ -669,9 +703,12 @@ static int dcc_run_job(int in_fd,
     }
 
     if (!dcc_remap_compiler(&argv[0]))
-    goto out_cleanup;
+        goto out_cleanup;
 
     if ((ret = dcc_check_compiler_masq(argv[0])))
+        goto out_cleanup;
+
+    if (!opt_make_me_a_botnet && dcc_check_compiler_whitelist(argv[0]))
         goto out_cleanup;
 
     if ((compile_ret = dcc_spawn_child(argv, &cc_pid,

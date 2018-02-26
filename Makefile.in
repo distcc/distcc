@@ -417,6 +417,9 @@ bin_PROGRAMS = \
 	lsdistcc@EXEEXT@ \
 	@GNOME_BIN@ 
 
+sbin_PROGRAMS = \
+	update-distcc-symlinks.py
+
 check_PROGRAMS = \
 	h_argvtostr@EXEEXT@ \
 	h_exten@EXEEXT@ \
@@ -1022,6 +1025,7 @@ showpaths:
 	@echo "  man pages            $(DESTDIR)$(man1dir)"
 	@echo "  documents            $(DESTDIR)$(docdir)"
 	@echo "  programs             $(DESTDIR)$(bindir)"
+	@echo "  sbin programs        $(DESTDIR)$(sbindir)"
 	@echo "  system configuration $(DESTDIR)$(sysconfdir)"
 	@echo "  shared data files    $(DESTDIR)$(pkgdatadir)"
 
@@ -1034,8 +1038,12 @@ install: showpaths install-doc install-man install-programs \
 
 install-programs: $(bin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
+	$(mkinstalldirs) "$(DESTDIR)$(sbindir)"
 	for p in $(bin_PROGRAMS); do \
 	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(bindir)" || exit 1; \
+	done
+	for p in $(sbin_PROGRAMS); do \
+	  $(INSTALL_PROGRAM) "$$p" "$(DESTDIR)$(sbindir)" || exit 1; \
 	done
 
 # See comments for the include-server target.  Also, we work around an issue in
@@ -1161,7 +1169,12 @@ uninstall-programs:
 	  file="$(DESTDIR)$(bindir)/`basename $$p`";            \
 	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
 	done
+	for p in $(sbin_PROGRAMS); do			\
+	  file="$(DESTDIR)$(sbindir)/`basename $$p`";            \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	done
 	-[ "`basename $(bindir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(bindir)"
+	-[ "`basename $(sbindir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(sbindir)"
 
 # There's no setup.py --uninstall. :-( So I depend on
 # PYTHON_INSTALL_RECORD being set.  If it was used at --install time,

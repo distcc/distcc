@@ -18,12 +18,13 @@ QUICK SUMMARY
 
 1. Build and install
 
-      ./autogen.sh       # If "configure" does not already exist.
+      ./autogen.sh              # If "configure" does not already exist.
       ./configure
       make
-      make check         # Optional! Should have python >= 3.1 installed.
-      make install       # You may need to use "sudo" for this command.
-      make installcheck  # Optional! Should have python >= 3.1 installed.
+      make check                # Optional! Should have python >= 3.1 installed.
+      make install              # You may need to use "sudo" for this command.
+      make installcheck         # Optional! Should have python >= 3.1 installed.
+      update-distcc-symlinks.py # Needs "sudo". Run this again if you install/remove compilers
 
    Repeat installation for each server machine.
 
@@ -40,6 +41,8 @@ QUICK SUMMARY
       cd ~/my_sources/my_project
       pump make -j40 CC="distcc gcc" <your target>
 
+5. If you run into problems it is highly recommended to use DISTCC_VERBOSE=1
+   on the client and "--log-level debug" on the server.
 
 DETAILED INSTRUCTIONS
 =====================
