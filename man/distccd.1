@@ -147,6 +147,10 @@ match in the most significant MASK bits will be allowed.  If no
 connections are rejected by closing the TCP connection immediately.  A
 warning is logged on the server but nothing is sent to the client.
 .TP
+.B --allow-private
+Allow private networks (10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12, and
+127.0.0.0/8).
+.TP
 .B --job-lifetime SECONDS
 Kills a distccd job if it runs for more than SECONDS seconds. This prevents
 denial of service from clients that don't properly disconnect and compilers

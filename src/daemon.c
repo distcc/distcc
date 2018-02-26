@@ -186,10 +186,10 @@ int main(int argc, char *argv[])
     /* check this before redirecting the logs, so that it's really obvious */
     if (!dcc_should_be_inetd())
         if (opt_allowed == NULL) {
-            rs_log_error("--allow option is now mandatory; "
-                         "you must specify which clients are allowed to connect");
-            ret = EXIT_BAD_ARGUMENTS;
-            goto out;
+            rs_log_warning("No --allow option specified. Defaulting to --allow-private."
+                         " Allowing non-Internet (globally"
+                         " routable) addresses.");
+            opt_allow_private = 1;
         }
 
     if ((ret = dcc_set_lifetime()) != 0)
