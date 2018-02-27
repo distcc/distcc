@@ -83,22 +83,6 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
                         int *cpu_lock_fd);
 
 
-void dcc_read_localslots_configuration()
-{
-    struct dcc_hostdef *hostlist;
-    int ret;
-    int n_hosts;
-
-    if ((ret = dcc_get_hostlist(&hostlist, &n_hosts)) == 0) {
-        while (hostlist) {
-            struct dcc_hostdef *l = hostlist;
-            hostlist = hostlist->next;
-            dcc_free_hostdef(l);
-        }
-    }
-}
-
-
 int dcc_pick_host_from_list_and_lock_it(struct dcc_hostdef **buildhost,
                             int *cpu_lock_fd)
 {

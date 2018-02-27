@@ -22,7 +22,6 @@
  */
 
 /* where.c */
-void dcc_read_localslots_configuration(void);
 int dcc_pick_host_from_list_and_lock_it(struct dcc_hostdef **,
                                         int *cpu_lock_fd);
 

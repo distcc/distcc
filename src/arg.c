@@ -158,7 +158,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
         if (a[0] == '-') {
             if (!strcmp(a, "-E")) {
                 rs_trace("-E call for cpp must be local");
-                return EXIT_LOCAL_CPP;
+                return EXIT_DISTCC_FAILED;
             } else if (!strcmp(a, "-MD") || !strcmp(a, "-MMD")) {
                 /* These two generate dependencies as a side effect.  They
                  * should work with the way we call cpp. */
