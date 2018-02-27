@@ -34,6 +34,12 @@
 #include "daemon.h"
 #include "exitcode.h"
 
+#ifdef __linux__
+#include <sys/prctl.h>
+#ifndef PR_SET_NO_NEW_PRIVS
+#define PR_SET_NO_NEW_PRIVS     38
+#endif
+#endif
 
 const char *opt_user = "distcc";
 
@@ -132,6 +138,11 @@ int dcc_discard_root(void)
         rs_log_crit("still have root privileges after trying to discard them!");
         return EXIT_SETUID_FAILED;
     }
+
+#ifdef __linux__
+    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == 0)
+        rs_trace("successfully set no_new_privs");
+#endif
 
     rs_trace("discarded root privileges, changed to uid=%d gid=%d", (int) uid, (int) gid);
     return 0;
