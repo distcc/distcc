@@ -921,7 +921,12 @@ dcc_build_somewhere(char *argv[],
     }
 
   lock_local:
-    dcc_lock_local(&cpu_lock_fd);
+    dcc_read_localslots_configuration();
+    if (ret == EXIT_LOCAL_CPP) {
+        dcc_lock_local_cpp(&local_cpu_lock_fd);
+    } else {
+        dcc_lock_local(&cpu_lock_fd);
+    }
 
   run_local:
     /* Either compile locally, after remote failure, or simply do other cc tasks
