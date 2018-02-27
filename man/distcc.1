@@ -77,12 +77,12 @@ For example, concurrent linking should be severely curtailed using auxiliary
 locks.  The effect of other build activity, such as Java compilation when
 building mixed code, should be considered.  The
 .B --localslots_cpp
-parameter is by default set to 8.
+parameter is by default set to 16.
 This limits the number of concurrent processes that do preprocessing in 
 plain distcc (non-pump) mode.
 Therefore, larger 
 .B -j 
-values than 8 may be used without overloading a single-CPU
+values than 16 may be used without overloading a single-CPU
 client due to preprocessing.  Such large values may speed up parts of the build
 that do not involve C compilations, but they may not be useful to distcc
 efficiency in plain mode.
@@ -733,9 +733,6 @@ Timeout.
 .TP
 119
 GSS-API - Catchall error code for GSS-API related errors.
-.TP
-120
-Called for preprocessing, which needs to be done locally.
 
 .SH "FILES"
 If $DISTCC_HOSTS is not set, distcc reads a host list from either 
