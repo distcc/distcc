@@ -9,8 +9,8 @@ dnl Process this file with autoconf to produce a configure script
 # Copyright (C) 2002, 2003, 2004 by Martin Pool
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
-AC_PREREQ(2.53)
-AC_INIT(distcc, 3.2rc1, distcc@lists.samba.org)
+AC_PREREQ(2.69)
+AC_INIT(distcc, 3.2, distcc@lists.samba.org)
 
 AC_CONFIG_HEADERS(src/config.h)
 AC_CANONICAL_HOST
