@@ -9,11 +9,10 @@ dnl Process this file with autoconf to produce a configure script
 # Copyright (C) 2002, 2003, 2004 by Martin Pool
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
-AC_PREREQ(2.53)
+AC_PREREQ(2.69)
 AC_INIT(distcc, 3.2rc1, distcc@lists.samba.org)
 
 AC_CONFIG_HEADERS(src/config.h)
-AC_CANONICAL_HOST
 
 # FreeBSD installs its version of libpopt into /usr/local/, but does
 # not put that on the default library and header path.
@@ -22,25 +21,6 @@ AC_CANONICAL_HOST
 # cross-compilation, and it's kind of ugly anyhow.  Anyhow, you can
 # either set CPPFLAGS and LDFLAGS when running configure, or use
 # --with-extra-foo.
-
-##### defaults
-
-dnl --with-docdir
-AC_DEFUN([DISTCC_WITH_DOCDIR],
-[AC_ARG_WITH(docdir,
-            AC_HELP_STRING([--with-docdir=DIR],
-                           [Use DIR to store documentation files (default ${datadir}/doc/distcc)]),
-            [with_docdir=$withval])
-if test "x$with_docdir" = "x" ; then
-  docdir='${datadir}/doc/distcc'
-else
-  docdir=$with_docdir
-fi
-AC_SUBST(docdir)
-])
-
-dnl Run the check for --with-docdir
-DISTCC_WITH_DOCDIR
 
 # Check for socklen_t, and do something appropiate on systems
 # that don't have it.
@@ -99,6 +79,18 @@ AC_TRY_COMPILE([
 
 AC_ARG_WITH(included-popt,
 	AC_HELP_STRING([--with-included-popt], [use bundled popt library, not from system]))
+
+AC_ARG_ENABLE(pump-mode,
+	AC_HELP_STRING([--disable-pump-mode],
+		[include server support (pump mode), requires python]),
+		[pump_mode=${enableval}], [pump_mode=yes])
+
+# We prefer to use the latest Python
+if test "x${pump_mode}" = xyes; then
+	AM_PATH_PYTHON([3.1],,[:])
+	AC_ARG_VAR(PYTHON, [Python interpreter])
+	AC_SUBST(PYTHON_RELATIVE_LIB)
+fi
 
 AC_ARG_ENABLE(rfc2553,
 	AC_HELP_STRING([--enable-rfc2553], [use getaddrinfo, getnameinfo, etc]))
@@ -255,13 +247,6 @@ CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-# We prefer to use the latest Python
-#
-# NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
-# in autoconf 2.53.
-AM_PATH_PYTHON([3.1],,[:])
-AC_ARG_VAR(PYTHON, [Python interpreter])
-AC_SUBST(PYTHON_RELATIVE_LIB)
 AC_C_INLINE
 AC_C_BIGENDIAN
 
@@ -540,7 +525,6 @@ CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 CC="$PTHREAD_CC"
 
 dnl ##### Output
-AC_SUBST(docdir)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
