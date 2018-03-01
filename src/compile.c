@@ -896,7 +896,7 @@ dcc_build_somewhere(char *argv[],
     }
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
-        rs_log_warning("failed to distribute and fallbacks are disabled");
+        rs_log_error("failed to distribute and fallbacks are disabled");
         /* Try copying any server-side error message to stderr;
          * If we fail the user will miss all the messages from the server; so
          * we pretend we failed remotely.
