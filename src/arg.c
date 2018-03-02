@@ -136,7 +136,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
     int ret;
 
      /* allow for -o foo.o */
-    if ((ret = dcc_copy_argv(argv, ret_newargv, 2)) != 0)
+    if ((ret = dcc_copy_argv(argv, ret_newargv, 4)) != 0)
         return ret;
     argv = *ret_newargv;
 

@@ -1,5 +1,7 @@
 language: c
 
+cache: ccache
+
 addons:
   apt:
     packages:

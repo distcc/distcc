@@ -450,12 +450,6 @@ static int dcc_please_send_email_after_investigation(
  */
 static void dcc_rewrite_generic_compiler(char **argv)
 {
-#ifdef __APPLE__ /* FIXME */
-
-    assert(argv);
-
-    return;
-#else
     char linkbuf[MAXPATHLEN + 1], *link = NULL, *t;
     int ret, dir;
     ssize_t ssz;
@@ -522,7 +516,6 @@ static void dcc_rewrite_generic_compiler(char **argv)
         rs_trace("Rewriting '%s' to '%s'", "cc", "gcc");
     } else
         return;
-#endif
 }
 
 
@@ -689,7 +682,7 @@ dcc_build_somewhere(char *argv[],
     dcc_free_argv(argv);
     argv = new_argv;
     if (!getenv("DISTCC_NO_REWRITE_CROSS")) {
-        dcc_rewrite_generic_compiler(new_argv); /* does not work on Mac FIXME */
+        dcc_rewrite_generic_compiler(new_argv);
         dcc_add_clang_target(new_argv);
         dcc_gcc_rewrite_fqn(new_argv);
     }
@@ -896,7 +889,7 @@ dcc_build_somewhere(char *argv[],
     }
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
-        rs_log_warning("failed to distribute and fallbacks are disabled");
+        rs_log_error("failed to distribute and fallbacks are disabled");
         /* Try copying any server-side error message to stderr;
          * If we fail the user will miss all the messages from the server; so
          * we pretend we failed remotely.

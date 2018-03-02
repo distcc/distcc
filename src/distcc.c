@@ -241,13 +241,13 @@ int main(int argc, char **argv)
 
     dcc_trace_version();
 
-    compiler_name = (char *) dcc_find_basename(argv[0]);
-
-#if HAVE_LIBIBERTY    
+#if HAVE_LIBIBERTY
     /* Expand @FILE arguments. */
     expandargv(&argc, &argv);
 #endif
- 
+
+    compiler_name = (char *) dcc_find_basename(argv[0]);
+
     /* Ignore SIGPIPE; we consistently check error codes and will
      * see the EPIPE. */
     dcc_ignore_sigpipe(1);
