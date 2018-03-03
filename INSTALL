@@ -14,19 +14,17 @@ QUICK SUMMARY
 
 0. Install prerequisites.  For example, on Debian or Ubuntu, you could use
 
-      sudo apt-get install gcc make python python-dev libiberty-dev
-
-   Note that past versions of Debian used binutils-dev instead of
-   libiberty-dev.
+      sudo apt-get install gcc make python3 python3-dev libiberty-dev
 
 1. Build and install
 
-      ./autogen.sh       # If "configure" does not already exist.
+      ./autogen.sh              # If "configure" does not already exist.
       ./configure
       make
-      make check         # Optional! Should have python >= 2.4 installed.
-      make install       # You may need to use "sudo" for this command.
-      make installcheck  # Optional! Should have python >= 2.4 installed.
+      make check                # Optional! Should have python >= 3.1 installed.
+      make install              # You may need to use "sudo" for this command.
+      make installcheck         # Optional! Should have python >= 3.1 installed.
+      update-distcc-symlinks.py # Needs "sudo". Run this again if you install/remove compilers
 
    Repeat installation for each server machine.
 
@@ -43,6 +41,8 @@ QUICK SUMMARY
       cd ~/my_sources/my_project
       pump make -j40 CC="distcc gcc" <your target>
 
+5. If you run into problems it is highly recommended to use DISTCC_VERBOSE=1
+   on the client and "--log-level debug" on the server.
 
 DETAILED INSTRUCTIONS
 =====================
@@ -58,7 +58,7 @@ To build distcc you need
 
 It is also highly desireable to have
 
-   Python >=2.4
+   Python >=3.1
 
      To use "pump" mode, or to run the full test suite with "make check",
      or to run the benchmarks.
@@ -67,11 +67,6 @@ If you have any version of Python installed, then you need to have
 the corresponding Python.h file installed (e.g. sudo apt-get install python-dev).
 
 You can optionally have
-
-   Python >=2.2
-
-      To run a partial test suite with "make check" (it leaves out
-      the pump-mode functionality, which requires Python 2.4).
 
    libpopt
 

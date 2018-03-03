@@ -85,6 +85,8 @@ char *opt_listen_addr = NULL;
 
 struct dcc_allow_list *opt_allowed = NULL;
 
+int opt_allow_private = 0;
+
 /**
  * If true, don't detach from the parent.  This is probably necessary
  * for use with daemontools or other monitoring programs, and is also
@@ -95,6 +97,12 @@ int opt_no_detach = 0;
 int opt_log_stderr = 0;
 
 int opt_log_level_num = RS_LOG_NOTICE;
+
+/**
+ * If true, do not check if a link to distcc exists in /usr/lib/distcc
+ * for every program executed remotely.
+ **/
+int opt_make_me_a_botnet = 0;
 
 /**
  * Daemon exits after this many seconds.  Intended mainly for testing, to make
@@ -119,8 +127,19 @@ enum {
 int opt_zeroconf = 0;
 #endif
 
+
+static const char *dcc_private_networks[] = {"192.168.0.0/16",
+                                             "10.0.0.0/8",
+                                             "172.16.0.0/12",
+                                             "127.0.0.0/8",
+
+                                             "fe80::/10",
+                                              "fc00::/7",
+                                              "::1/128"};
+
 const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
+    { "allow-private", 0,POPT_ARG_STRING, &opt_allow_private, 0, 0, 0 },
 #ifdef HAVE_GSSAPI
     { "auth", 0,	 POPT_ARG_NONE, &opt_auth_enabled, 'A', 0, 0 },
     { "blacklist", 0,    POPT_ARG_STRING, &arg_list_file, 'b', 0, 0 },
@@ -156,6 +175,7 @@ const struct poptOption options[] = {
 #ifdef HAVE_AVAHI
     { "zeroconf", 0,     POPT_ARG_NONE, &opt_zeroconf, 0, 0, 0 },
 #endif
+    { "make-me-a-botnet", 0, POPT_ARG_NONE, &opt_make_me_a_botnet, 0, 0, 0 },
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 
@@ -229,6 +249,7 @@ int distccd_parse_options(int argc, const char **argv)
 {
     poptContext po;
     int po_err, exitcode;
+    struct dcc_allow_list *new;
 
     po = poptGetContext("distccd", argc, argv, options, 0);
 
@@ -242,7 +263,6 @@ int distccd_parse_options(int argc, const char **argv)
         case 'a': {
             /* TODO: Allow this to be a hostname, which is resolved to an address. */
             /* TODO: Split this into a small function. */
-            struct dcc_allow_list *new;
             new = malloc(sizeof *new);
             if (!new) {
                 rs_log_crit("malloc failed");
@@ -368,6 +388,22 @@ int distccd_parse_options(int argc, const char **argv)
                    poptStrerror(po_err));
             exitcode = EXIT_BAD_ARGUMENTS;
             goto out_exit;
+        }
+    }
+
+    if (opt_allow_private) {
+        int i;
+        for (i = 0;i<6;i++) {
+            new = malloc(sizeof *new);
+            if (!new) {
+                rs_log_crit("malloc failed");
+                exitcode = EXIT_OUT_OF_MEMORY;
+                goto out_exit;
+            }
+            new->next = opt_allowed;
+            opt_allowed = new;
+            if ((exitcode = dcc_parse_mask(dcc_private_networks[i], &new->addr, &new->mask)))
+                goto out_exit;
         }
     }
 

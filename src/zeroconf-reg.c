@@ -100,7 +100,7 @@ static void register_stuff(struct context *ctx) {
                     "gnuhost="GNU_HOST,
                     v ? version : NULL,
                     m ? machine : NULL,
-                    NULL) < 0) {
+                    (void*)NULL) < 0) {
             rs_log_crit("Failed to add service: %s\n", avahi_strerror(avahi_client_errno(ctx->client)));
             goto fail;
         }

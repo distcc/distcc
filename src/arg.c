@@ -136,7 +136,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
     int ret;
 
      /* allow for -o foo.o */
-    if ((ret = dcc_copy_argv(argv, ret_newargv, 2)) != 0)
+    if ((ret = dcc_copy_argv(argv, ret_newargv, 4)) != 0)
         return ret;
     argv = *ret_newargv;
 
@@ -158,7 +158,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
         if (a[0] == '-') {
             if (!strcmp(a, "-E")) {
                 rs_trace("-E call for cpp must be local");
-                return EXIT_DISTCC_FAILED;
+                return EXIT_LOCAL_CPP;
             } else if (!strcmp(a, "-MD") || !strcmp(a, "-MMD")) {
                 /* These two generate dependencies as a side effect.  They
                  * should work with the way we call cpp. */
@@ -212,8 +212,15 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
             } else if (!strcmp(a, "-frepo")) {
                 rs_log_info("compiler will emit .rpo files; must be local");
                 return EXIT_DISTCC_FAILED;
-            } else if (str_startswith("-x", a)) {
-                rs_log_info("gcc's -x handling is complex; running locally");
+            } else if (str_startswith("-x", a)
+                       && argv[i+1]
+                       && !str_startswith("c", argv[i+1])
+                       && !str_startswith("c++", argv[i+1])
+                       && !str_startswith("objective-c", argv[i+1])
+                       && !str_startswith("objective-c++", argv[i+1])
+                       && !str_startswith("go", argv[i+1])
+                       ) {
+                rs_log_info("gcc's -x handling is complex; running locally for %s", argv[i+1] ? argv[i+1] : "empty");
                 return EXIT_DISTCC_FAILED;
             } else if (str_startswith("-dr", a)) {
                 rs_log_info("gcc's debug option %s may write extra files; "

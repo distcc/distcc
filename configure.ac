@@ -9,11 +9,10 @@ dnl Process this file with autoconf to produce a configure script
 # Copyright (C) 2002, 2003, 2004 by Martin Pool
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
-AC_PREREQ(2.53)
-AC_INIT(distcc, 3.2rc1, distcc@lists.samba.org)
+AC_PREREQ(2.69)
+AC_INIT(distcc, 3.2, distcc@lists.samba.org)
 
 AC_CONFIG_HEADERS(src/config.h)
-AC_CANONICAL_HOST
 
 # FreeBSD installs its version of libpopt into /usr/local/, but does
 # not put that on the default library and header path.
@@ -23,35 +22,16 @@ AC_CANONICAL_HOST
 # either set CPPFLAGS and LDFLAGS when running configure, or use
 # --with-extra-foo.
 
-##### defaults
-
-dnl --with-docdir
-AC_DEFUN([DISTCC_WITH_DOCDIR],
-[AC_ARG_WITH(docdir,
-            AC_HELP_STRING([--with-docdir=DIR],
-                           [Use DIR to store documentation files (default ${datadir}/doc/distcc)]),
-            [with_docdir=$withval])
-if test "x$with_docdir" = "x" ; then
-  docdir='${datadir}/doc/distcc'
-else
-  docdir=$with_docdir
-fi
-AC_SUBST(docdir)
-])
-
-dnl Run the check for --with-docdir
-DISTCC_WITH_DOCDIR
-
 # Check for socklen_t, and do something appropiate on systems
 # that don't have it.
 AC_CHECK_TYPE([socklen_t], ,[
 	AC_MSG_CHECKING([for socklen_t equivalent])
 	AC_CACHE_VAL([dcc_cv_socklen_t_equiv],
 	[
-	# Systems have either "struct sockaddr *" or
+	# Systems have either "struct sockaddr{,_in} *" or
 	# "void *" as the second argument to getpeername
 	dcc_cv_socklen_t_equiv=
-	for arg2 in "struct sockaddr" void; do
+	for arg2 in "struct sockaddr_in" "struct sockaddr" void; do
 		for t in int size_t unsigned long "unsigned long"; do
 			AC_TRY_COMPILE([
 #include <sys/types.h>
@@ -78,12 +58,39 @@ getpeername(0,0,&len);
 	[#include <sys/types.h>
 #include <sys/socket.h>])
 
+dnl Android requires -llog for printf and friends
+dnl and will only run position independant executables
+AC_MSG_CHECKING([if building on Android])
+AC_TRY_COMPILE([
+  #ifdef __BIONIC__
+  int ok;
+  (void)ok;
+  #else
+  choke me
+  #endif],
+[func("a"); func("a", "b"); func("a", "b", "c")],
+[AC_MSG_RESULT(yes)
+ LDFLAGS="$LDFLAGS -llog -pie"],
+[AC_MSG_RESULT(no)])
+
 # TODO: Handle program transform rules by autoconf.
 
 ### Checks for configure options
 
 AC_ARG_WITH(included-popt,
 	AC_HELP_STRING([--with-included-popt], [use bundled popt library, not from system]))
+
+AC_ARG_ENABLE(pump-mode,
+	AC_HELP_STRING([--disable-pump-mode],
+		[include server support (pump mode), requires python]),
+		[pump_mode=${enableval}], [pump_mode=yes])
+
+# We prefer to use the latest Python
+if test "x${pump_mode}" = xyes; then
+	AM_PATH_PYTHON([3.1],,[:])
+	AC_ARG_VAR(PYTHON, [Python interpreter])
+	AC_SUBST(PYTHON_RELATIVE_LIB)
+fi
 
 AC_ARG_ENABLE(rfc2553,
 	AC_HELP_STRING([--enable-rfc2553], [use getaddrinfo, getnameinfo, etc]))
@@ -256,13 +263,6 @@ CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-# We prefer to use the latest Python
-#
-# NB: Cannot use AC_CONFIG_LIBOBJ_DIR here, because it's not present
-# in autoconf 2.53.
-AM_PATH_PYTHON([3.1],,[:])
-AC_ARG_VAR(PYTHON, [Python interpreter])
-AC_SUBST(PYTHON_RELATIVE_LIB)
 AC_C_INLINE
 AC_C_BIGENDIAN
 
@@ -403,6 +403,7 @@ AC_CHECK_DECLS([snprintf, vsnprintf, vasprintf, asprintf, strndup])
 
 AC_MSG_CHECKING([if mmap() supports MAP_FAILED])
 AC_TRY_COMPILE([
+#include <stddef.h>
 #ifdef HAVE_SYS_MMAN_H
 #  include <sys/mman.h>
 #endif],[
@@ -519,7 +520,7 @@ AC_ARG_WITH([auth],
 
 if test x"$with_auth" = xyes; then
         AC_SEARCH_LIBS([gss_init_sec_context],
-                        [gssapi gssapi_krb5],
+                        [gssapi gssapi_krb5 gss],
 	                AC_DEFINE(HAVE_GSSAPI, 1, [Define if the GSS_API is available])
 	                AUTH_COMMON_OBJS="src/auth_common.o"
 	                AUTH_DISTCC_OBJS="src/auth_distcc.o"
@@ -540,7 +541,6 @@ CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 CC="$PTHREAD_CC"
 
 dnl ##### Output
-AC_SUBST(docdir)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)

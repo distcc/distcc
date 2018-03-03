@@ -20,6 +20,8 @@
  * USA.
  */
 
+#pragma once
+
 #include <config.h>
 
 /* access.c */

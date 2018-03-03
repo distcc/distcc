@@ -24,6 +24,7 @@
 
 /* dopt.c */
 extern struct dcc_allow_list *opt_allowed;
+extern int opt_allow_private;
 int distccd_parse_options(int argc, const char *argv[]);
 
 extern int arg_port;
@@ -36,6 +37,7 @@ extern int opt_no_fork;
 extern int opt_no_prefork;
 extern int opt_no_detach;
 extern int opt_daemon_mode, opt_inetd_mode;
+extern int opt_make_me_a_botnet;
 extern int opt_job_lifetime;
 extern const char *arg_log_file;
 extern int opt_no_fifo;

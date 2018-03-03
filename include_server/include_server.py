@@ -247,7 +247,7 @@ def ExactDependencies(cmd, realpath_map, systemdir_prefix_cache,
                           translation_unit)
   # Using the primitive fd_d file descriptor for reading is cumbersome, so open
   # normally as well.
-  fd_d_ = open(name_d, "rb")
+  fd_d_ = open(name_d, "rb", encoding='latin-1')
   # Massage the contents of fd_d_
   dotd = re.sub("^.*:", # remove Makefile target
                 "",

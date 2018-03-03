@@ -1,5 +1,7 @@
 language: c
 
+cache: ccache
+
 addons:
   apt:
     packages:
@@ -7,6 +9,7 @@ addons:
       - libiberty-dev
       - clang
       - meson
+      - libavahi-client-dev 
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
