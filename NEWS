@@ -1,3 +1,20 @@
+distcc-3.3 "Charlie the unicorn" 2018-3-3
+
+  FEATURES:
+
+   * Use masquerade as compiler white-list. Bug #155 d849ca2. (Shawn Landden)
+
+   * New --allow-private (the default) which allows non-global
+     IP and IPv6 addresses. (Shawn Landden)
+
+   * Cross-compilation support. PR #244. (Shawn Landden)
+
+   * Fix parsing of IPv6 addresses. PR #175 (Bing Sun)
+
+   * Python 3, not python 2.
+
+   * Can build without python (and without pump mode or tests).
+
 distcc-3.2 "Back in black"  2011-10-11
 
   FEATURES:
