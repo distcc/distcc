@@ -117,10 +117,27 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
  * can be safely built on them. Takes a list of allowed arguments
  * and checks against compiler args
  *
+ * checks DISTCC_AOC envvar for list of allowed options
  * @returns 0 if it's ok to distribute this compilation, or an error code.
  **/
 
-int dcc_check_army_of_clones(char arg){
+int dcc_check_army_of_clones(char *a){
+    char *allow = NULL;
+    char *allow_in = getenv("DISTCC_AOC");
+
+    const int max_allowed_options=5; //number of IF cases in process options block
+    int num_allowed_options = 0;
+    char *allowed_options[max_allowed_options]={} ;
+    //allowed_options[max_allowed_options-1]='\0';
+
+    allow = strtok(allow_in, ",");
+    while (allow != NULL) //tokenize and store in array
+    {
+        allowed_options[num_allowed_options++] = allow;
+        allow = strtok (NULL, ",");
+    }
+
+    // process options
     if (!strcmp(a, "-march=native")) {
         rs_trace("-march=native generates code for local machine; "
                          "must be local");
@@ -139,10 +156,11 @@ int dcc_check_army_of_clones(char arg){
             rs_trace("%s must be local", a);
             return EXIT_DISTCC_FAILED;
         }
-    } else if (str_startswith("-specs=", a)) {
-        rs_trace("%s must be local", a);
+    } else if (str_startswith("-specs=", a) && !argv_contains(allowed_options, "spec")) {
+        rs_trace("%s must be local or listed in DISTCC_AOC option", a);
         return EXIT_DISTCC_FAILED;
     }
+    return 0;
 }
 
 /**
@@ -191,6 +209,12 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
 
     for (i = 0; (a = argv[i]); i++) {
         if (a[0] == '-') {
+
+            if (dcc_check_army_of_clones(a)){
+                // identical machines setup moved to dcc_check_army_of_clones()
+                // for now enable only 'spec'
+                return EXIT_DISTCC_FAILED;
+            }
             if (!strcmp(a, "-E")) {
                 rs_trace("-E call for cpp must be local");
                 return EXIT_DISTCC_FAILED;
@@ -216,11 +240,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                     to distribute it even if we could. */
                 rs_trace("%s implies -E (maybe) and must be local", a);
                 return EXIT_DISTCC_FAILED;
-            } else if(a==1) {
-                // identical machines setup
-                return dcc_check_army_of_clones(a);
-            }
-            else if (!strcmp(a, "-S")) {
+            }  else if (!strcmp(a, "-S")) {
                 seen_opt_s = 1;
             } else if (!strcmp(a, "-fprofile-arcs")
                        || !strcmp(a, "-ftest-coverage")
