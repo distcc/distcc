@@ -157,7 +157,7 @@ static void dcc_warn_masquerade_whitelist(void) {
     const char *warn = "You must see up masquerade" \
                        " (see distcc(1)) to list whitelisted compilers or pass" \
                        " --make-me-a-botnet. To set up masquerade automatically" \
-                       " run update-distcc-symlinks.py.";
+                       " run update-distcc-symlinks.";
 
     d = opendir("/usr/lib/distcc");
     if (!d) {
