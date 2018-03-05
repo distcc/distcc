@@ -574,6 +574,34 @@ int dcc_remove_if_exists(const char *fname)
     return 0;
 }
 
+int dcc_which(const char *command, char **out)
+{
+    char *loc = NULL, *path, *t;
+    int ret;
+
+    path = getenv("PATH");
+    if (!path)
+        return -ENOENT;
+    do {
+        /* emulate strchrnul() */
+        t = strchr(path, ':');
+        if (!t)
+            t = path + strlen(path);
+        loc = realloc(loc, t - path + 1 + strlen(command) + 1);
+        if (!loc)
+            return -ENOMEM;
+        strncpy(loc, path, t - path);
+        loc[t - path] = '\0';
+        strcat(loc, "/");
+        strcat(loc, command);
+        ret = access(loc, X_OK);
+        if (ret < 0)
+            continue;
+        *out = loc;
+        return 0;
+    } while ((path = strchr(path, ':') + 1));
+    return -ENOENT;
+}
 
 /* Returns the number of processes in state D, the max non-cc/c++ RSS in kb and
  * the max RSS program's name */

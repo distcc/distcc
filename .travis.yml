@@ -1,10 +1,14 @@
 language: c
 
+cache: ccache
+
 addons:
   apt:
     packages:
       - python3-dev
       - libiberty-dev
+      - clang
+      - libavahi-client-dev 
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
@@ -18,16 +22,12 @@ script:
   - make check
 
 matrix:
-  allow_failures:
-    - compiler: clang
-      env: FIXME=1
   include:
   - os: linux
     compiler: gcc
     dist: trusty
   - os: linux
     compiler: clang
-    env: FIXME=1
     dist: trusty
   - os: osx
     osx_image: xcode8.2

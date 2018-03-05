@@ -491,11 +491,11 @@ int dcc_collect_child(const char *what, pid_t pid,
              * critique_status(). */
             rs_trace("%s child %ld terminated with status %#x",
                      what, (long) ret_pid, *wait_status);
-            rs_log_info("%s times: user %ld.%06lds, system %ld.%06lds, "
+            rs_log_info("%s times: user %lld.%06lds, system %lld.%06lds, "
                         "%ld minflt, %ld majflt",
                         what,
-                        ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
-                        ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
+                        (long long) ru.ru_utime.tv_sec, (long) ru.ru_utime.tv_usec,
+                        (long long) ru.ru_stime.tv_sec, (long) ru.ru_stime.tv_usec,
                         ru.ru_minflt, ru.ru_majflt);
 
             return 0;
