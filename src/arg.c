@@ -128,8 +128,7 @@ int dcc_check_army_of_clones(char *a){
     const int max_allowed_options=5; //number of IF cases in process options block
     int num_allowed_options = 0;
     char *allowed_options[max_allowed_options]={} ;
-    //allowed_options[max_allowed_options-1]='\0';
-
+    
     allow = strtok(allow_in, ",");
     while (allow != NULL) //tokenize and store in array
     {
