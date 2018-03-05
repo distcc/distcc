@@ -124,13 +124,15 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
 int dcc_check_army_of_clones(char *a){
     char *allow = NULL;
     char *allow_in = getenv("DISTCC_AOC");
-
-    const int max_allowed_options=5; //number of IF cases in process options block
-    int num_allowed_options = 0;
-    char *allowed_options[max_allowed_options]={} ;
     
+    /* number of IF cases in process options block */
+    const int max_allowed_options=5;
+    int num_allowed_options = 0;
+    char *allowed_options[max_allowed_options]={};
     allow = strtok(allow_in, ",");
-    while (allow != NULL) //tokenize and store in array
+    
+    /* tokenize and store in array for processing later */
+    while (allow != NULL) 
     {
         allowed_options[num_allowed_options++] = allow;
         allow = strtok (NULL, ",");
