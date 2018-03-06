@@ -24,7 +24,7 @@ QUICK SUMMARY
       make check                # Optional! Should have python >= 3.1 installed.
       make install              # You may need to use "sudo" for this command.
       make installcheck         # Optional! Should have python >= 3.1 installed.
-      update-distcc-symlinks.py # Needs "sudo". Run this again if you install/remove compilers
+      update-distcc-symlinks    # Needs "sudo". Run this again if you install/remove compilers
 
    Repeat installation for each server machine.
 
