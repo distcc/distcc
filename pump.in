@@ -30,7 +30,6 @@
 
 PYTHON=@PYTHON@
 prefix=@prefix@
-exec_prefix=@exec_prefix@
 sysconfdir=@sysconfdir@
 srcdir=@srcdir@
 
@@ -40,7 +39,7 @@ srcdir=@srcdir@
 # to the installed include_server.py.
 # NOTE: DO NOT CHANGE THE LINE BELOW WITHOUT CHANGING THE SED IN
 #       Makefile.in:install-include-server.
-include_server=''
+include_server='@include_server@'
 
 
 CheckUsage() {

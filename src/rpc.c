@@ -92,6 +92,44 @@ int dcc_x_token_int(int ofd, const char *token, unsigned param)
     return dcc_writex(ofd, buf, 12);
 }
 
+/**
+ * Transmit token name (4 characters) and *two* values (32-bit int, as 8 hex
+ * characters).
+ *
+ * This is only used in protocol version 2.1
+ **/
+int dcc_x_token_2int(int ofd, const char *token, unsigned param,
+                                                 unsigned param2)
+{
+    char buf[21];
+    int shift;
+    char *p;
+    const char *hex = "0123456789abcdef";
+
+    if (strlen(token) != 4) {
+        rs_log_crit("token \"%s\" seems wrong", token);
+        return EXIT_PROTOCOL_ERROR;
+    }
+    memcpy(buf, token, 4);
+
+    /* Quick and dirty int->hex.  The only standard way is to call snprintf
+     * (?), which is undesirably slow for such a frequently-called
+     * function. */
+    for (shift=28, p = &buf[4];
+         shift >= 0;
+         shift -= 4, p++) {
+        *p = hex[(param >> shift) & 0xf];
+    }
+    for (shift=28, p = &buf[12];
+         shift >= 0;
+         shift -= 4, p++) {
+        *p = hex[(param2 >> shift) & 0xf];
+    }
+    buf[20] = '\0';
+
+    rs_trace("send %s", buf);
+    return dcc_writex(ofd, buf, 20);
+}
 
 /**
  * Send start of a result: DONE <version>
@@ -191,6 +229,66 @@ int dcc_r_token_int(int ifd, const char *expected, unsigned *val)
         rs_log_error("failed to parse parameter of token \"%s\"",
                      expected);
         dcc_explain_mismatch(buf, 12, ifd);
+        return EXIT_PROTOCOL_ERROR;
+    }
+
+    rs_trace("got %s", buf);
+
+    return 0;
+}
+
+/**
+ * Read a token and two values.  The receiver always knows what token name
+ * is expected next -- indeed the names are really only there as a
+ * sanity check and to aid debugging.
+ *
+ * This is only used in proto version 2.1
+ *
+ * @param ifd      fd to read from
+ * @param expected 4-char token that is expected to come in next
+ * @param val      receives the parameter value
+ **/
+int dcc_r_token_2int(int ifd, const char *expected, unsigned *val,
+                                                    unsigned *val2)
+{
+    char buf[21], *bum, t;
+    int ret;
+
+    if (strlen(expected) != 4) {
+        rs_log_error("expected token \"%s\" seems wrong", expected);
+        return EXIT_PROTOCOL_ERROR;
+    }
+
+    if ((ret = dcc_readx(ifd, buf, 20))) {
+        rs_log_error("read failed while waiting for token \"%s\"",
+                    expected);
+        return ret;
+    }
+
+    if (memcmp(buf, expected, 4)) {
+        rs_log_error("protocol derailment: expected token \"%s\"", expected);
+        dcc_explain_mismatch(buf, 12, ifd);
+        return EXIT_PROTOCOL_ERROR;
+    }
+
+    t = buf[12];
+    buf[12] = '\0';             /* terminate */
+    *val = strtoul(&buf[4], &bum, 16);
+    if (bum != &buf[12]) {
+        rs_log_error("failed to parse parameter of token \"%s\"",
+                     expected);
+        buf[12] = t;
+        dcc_explain_mismatch(buf, 20, ifd);
+        return EXIT_PROTOCOL_ERROR;
+    }
+
+    buf[12] = t;
+    buf[20] = '\0';
+    *val2 = strtoul(&buf[12], &bum, 16);
+    if (bum != &buf[20]) {
+        rs_log_error("failed to parse parameter of token \"%s\"",
+                     expected);
+        dcc_explain_mismatch(buf, 20, ifd);
         return EXIT_PROTOCOL_ERROR;
     }
 

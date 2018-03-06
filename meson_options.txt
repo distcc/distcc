@@ -1,0 +1,11 @@
+option('gtk', type: 'combo', choices : ['auto', 'true', 'false'],
+    description : 'GTK+ monitor')
+option('auth', type: 'combo', choices : ['auto', 'true', 'false'],
+    description : 'GSSAPI authentication support')
+option('zeroconf', type: 'combo', choices : ['auto', 'true', 'false'],
+    description : 'Zeroconf/mDNS support with Avahi')
+
+option('docdir', type: 'string', value:'/usr/shared/doc',
+    description: 'Directory for documentation'
+)
+option('rfc2553', type: 'boolean', value: true)

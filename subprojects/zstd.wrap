@@ -1,0 +1,11 @@
+[wrap-file]
+directory = zstd-1.3.3
+
+source_url = https://github.com/facebook/zstd/archive/v1.3.3.tar.gz
+source_filename = zstd-1.3.3.tar.gz
+source_hash = a77c47153ee7de02626c5b2a097005786b71688be61e9fb81806a011f90b297b
+
+patch_url = https://wrapdb.mesonbuild.com/v1/projects/zstd/1.3.3/1/get_zip
+patch_filename = zstd-1.3.3-1-wrap.zip
+patch_hash = 0591c6e0b6f82aea83bbeb2c747f849908a5f9005b4fc38b101e2569790d66e2
+

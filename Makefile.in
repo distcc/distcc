@@ -235,7 +235,7 @@ rpm_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.rpm
 deb_glob_pattern = "$(PACKAGE)"*[-_.]"$(VERSION)"[-_.]*.deb
 
 common_obj = src/arg.o src/argutil.o					\
-	src/cleanup.o src/compress.o					\
+	src/cleanup.o src/compress-zstd.o src/compress-lzox1.o		\
 	src/trace.o src/util.o src/io.o src/exec.o			\
 	src/rpc.o src/tempfile.o src/bulk.o src/help.o src/filename.o	\
 	src/lock.o							\
@@ -321,7 +321,7 @@ SRC =	src/stats.c							\
 	src/backoff.c src/bulk.c					\
 	src/cleanup.c							\
 	src/climasq.c src/clinet.c src/clirpc.c src/compile.c		\
-	src/compress.c src/cpp.c					\
+	src/compress-lzo1x.c src/compress-zstd.c src/cpp.c		\
 	src/daemon.c src/distcc.c src/dsignal.c				\
 	src/dopt.c src/dparent.c src/exec.c src/filename.c		\
 	src/h_argvtostr.c						\
@@ -1096,7 +1096,7 @@ install-include-server: include-server pump
 	  fi; \
 	  $(mkinstalldirs) "$(DESTDIR)$(bindir)" && \
 	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
-	  sed "s,^include_server='',include_server='$$INCLUDE_SERVER'," \
+	  sed "s,^include_server='@include_server@',include_server='$$INCLUDE_SERVER'," \
 	    pump > "$(include_server_builddir)/pump" && \
 	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
 	fi

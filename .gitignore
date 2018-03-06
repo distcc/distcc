@@ -2,6 +2,7 @@
 *.d
 *.out
 *.err
+*.pyc
 # binaries
 distcc
 distccd

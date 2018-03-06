@@ -129,10 +129,11 @@ void dcc_calc_rate(off_t size_out,
 }
 
 
-static int dcc_x_file_lzo1x(int out_fd,
+static int dcc_x_file_compressed(int out_fd,
                             int in_fd,
                             const char *token,
-                            unsigned in_len)
+                            unsigned in_len,
+                            enum dcc_compress compression)
 {
     int ret;
     char *out_buf = NULL;
@@ -140,14 +141,32 @@ static int dcc_x_file_lzo1x(int out_fd,
 
     /* As a special case, send 0 as 0 */
     if (in_len == 0) {
-        if ((ret = dcc_x_token_int(out_fd, token, 0)))
-            goto out;
+        if (compression == DCC_COMPRESS_ZSTD) {
+            if ((ret = dcc_x_token_2int(out_fd, token, 0, 0)))
+                goto out;
+        } else
+            if ((ret = dcc_x_token_int(out_fd, token, 0)))
+                goto out;
     } else {
-        if ((ret = dcc_compress_file_lzo1x(in_fd, in_len, &out_buf, &out_len)))
-            goto out;
+        if (compression == DCC_COMPRESS_LZO1X) {
+            if ((ret = dcc_compress_file_lzo1x(in_fd, in_len, 
+                                               &out_buf, &out_len)))
+                goto out;
+        }
+#ifdef HAVE_ZSTD
+          else if (compression == DCC_COMPRESS_ZSTD) {
+            if ((ret = dcc_compress_file_zstd(in_fd, in_len, 
+                                               &out_buf, &out_len)))
+                goto out;
+        }
 
-        if ((ret = dcc_x_token_int(out_fd, token, out_len)))
-            goto out;
+        if (compression == DCC_COMPRESS_ZSTD) {
+            if ((ret = dcc_x_token_2int(out_fd, token, out_len, in_len)))
+                goto out;
+        } else
+#endif
+            if ((ret = dcc_x_token_int(out_fd, token, out_len)))
+                goto out;
 
         if ((ret = dcc_writex(out_fd, out_buf, out_len)))
             goto out;
@@ -183,8 +202,6 @@ int dcc_x_file(int ofd,
 
     if (dcc_open_read(fname, &ifd, &f_size))
         return EXIT_IO_ERROR;
-    if (ifd == -1)
-        return EXIT_IO_ERROR;
     if (f_size_out)
         *f_size_out = f_size;
 
@@ -203,7 +220,9 @@ int dcc_x_file(int ofd,
         ret = dcc_pump_readwrite(ofd, ifd, (size_t) f_size);
 #endif
     } else if (compression == DCC_COMPRESS_LZO1X) {
-        ret = dcc_x_file_lzo1x(ofd, ifd, token, f_size);
+        ret = dcc_x_file_compressed(ofd, ifd, token, f_size, compression);
+    } else if (compression == DCC_COMPRESS_ZSTD) {
+        ret = dcc_x_file_compressed(ofd, ifd, token, f_size, compression);
     } else {
         rs_log_error("invalid compression");
         return EXIT_PROTOCOL_ERROR;
@@ -231,6 +250,7 @@ int dcc_x_file(int ofd,
  **/
 int dcc_r_file(int ifd, const char *filename,
                unsigned len,
+               unsigned uncompr_size,
                enum dcc_compress compr)
 {
     int ofd;
@@ -280,7 +300,7 @@ int dcc_r_file(int ifd, const char *filename,
 
     ret = 0;
     if (len > 0) {
-        ret = dcc_r_bulk(ofd, ifd, len, compr);
+        ret = dcc_r_bulk(ofd, ifd, len, uncompr_size, compr);
     }
     close_ret = dcc_close(ofd);
 
@@ -305,6 +325,7 @@ int dcc_r_file(int ifd, const char *filename,
  * Wrapper around dcc_r_file().
  **/
 int dcc_r_file_timed(int ifd, const char *fname, unsigned size,
+                     unsigned uncompr_size,
                      enum dcc_compress compr)
 {
     struct timeval before, after;
@@ -313,7 +334,7 @@ int dcc_r_file_timed(int ifd, const char *fname, unsigned size,
     if (gettimeofday(&before, NULL))
         rs_log_warning("gettimeofday failed");
 
-    ret = dcc_r_file(ifd, fname, size, compr);
+    ret = dcc_r_file(ifd, fname, size, uncompr_size, compr);
 
     if (gettimeofday(&after, NULL)) {
         rs_log_warning("gettimeofday failed");
@@ -334,12 +355,20 @@ int dcc_r_token_file(int in_fd,
                      enum dcc_compress compr)
 {
     int ret;
-    unsigned i_size;
+    unsigned i_size, uncompr_size = 0;
 
-    if ((ret = dcc_r_token_int(in_fd, token, &i_size)))
-        return ret;
+    if (compr == DCC_COMPRESS_ZSTD) {
+        /* Protocol version 2.1 (4 in wireshark) */
+        if ((ret = dcc_r_token_2int(in_fd, token, &i_size, &uncompr_size)))
+            return ret;
+    } else
+        /* Protocol version 1, 2, 3 */
+        if ((ret = dcc_r_token_int(in_fd, token, &i_size)))
+            return ret;
 
-    if ((ret = dcc_r_file_timed(in_fd, fname, (size_t) i_size, compr)))
+    if ((ret = dcc_r_file_timed(in_fd, fname, (size_t) i_size,
+                                (size_t) uncompr_size,
+                                compr)))
         return ret;
 
     return 0;
