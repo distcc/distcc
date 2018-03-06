@@ -125,10 +125,9 @@ int dcc_check_army_of_clones(char *a){
     char *allow = NULL;
     char *allow_in = getenv("DISTCC_AOC");
     
-    /* number of IF cases in process options block */
-    const int max_allowed_options=5;
     int num_allowed_options = 0;
-    char *allowed_options[max_allowed_options]={};
+    /* number of IF cases in process options block */
+    char *allowed_options[5]={0};
     allow = strtok(allow_in, ",");
     
     /* tokenize and store in array for processing later */
