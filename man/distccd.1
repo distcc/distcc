@@ -147,6 +147,10 @@ match in the most significant MASK bits will be allowed.  If no
 connections are rejected by closing the TCP connection immediately.  A
 warning is logged on the server but nothing is sent to the client.
 .TP
+.B --allow-private
+Allow private networks (10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12, and
+127.0.0.0/8).
+.TP
 .B --job-lifetime SECONDS
 Kills a distccd job if it runs for more than SECONDS seconds. This prevents
 denial of service from clients that don't properly disconnect and compilers
@@ -208,6 +212,15 @@ assumes daemon mode at startup if stdin is a tty, so
 --daemon should be explicitly specified when
 starting distccd from a script or in a non-interactive
 ssh connection.
+.TP 
+.B --make-me-a-botnet
+By default (since Distcc 3.3) distcc will only execute binaries
+that are masqueraded to distcc in /usr/lib/distcc. This turns
+that off, and opens distcc up to executing arbitrary code. This
+feature is mainly for distcc's test suite and is called
+.B --make-me-a-botnet
+for a reason. See MASQUERADING of
+.BR distcc (1).
 .TP 
 .B --zeroconf
 Register the availability of this distccd server using Avahi Zeroconf

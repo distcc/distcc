@@ -25,6 +25,7 @@
 
 #include <config.h>
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -445,6 +446,165 @@ static int dcc_please_send_email_after_investigation(
     return dcc_note_discrepancy(discrepancy_filename);
 }
 
+/* Re-write "cc" to directly call gcc or clang
+ */
+static void dcc_rewrite_generic_compiler(char **argv)
+{
+    char linkbuf[MAXPATHLEN + 1], *link = NULL, *t;
+    int ret, dir;
+    ssize_t ssz;
+    struct stat st;
+    bool cpp = false;
+
+    assert(argv);
+
+    if (strcmp(argv[0], "cc") == 0)
+        ;
+    else if (strcmp(argv[0], "c++") == 0)
+        cpp = true;
+    else
+        return;
+
+    ret = dcc_which(cpp ? "c++" : "cc", &link);
+    if (ret < 0)
+        return;
+    t = strrchr(link, '/');
+    if (!t)
+        return;
+    *t = '\0';
+    dir = open(link, O_RDONLY);
+    if (dir < 0)
+        return;
+    *t = '/';
+    ret = fstatat(dir, t + 1, &st, AT_SYMLINK_NOFOLLOW);
+    if (ret < 0)
+        return;
+    if ((st.st_mode & S_IFMT) != S_IFLNK)
+        /* TODO use cc -v */
+        return;
+    ssz = readlinkat(dir, t + 1, linkbuf, sizeof(linkbuf) - 1);
+    if (ssz < 0)
+        return;
+    linkbuf[ssz] = '\0';
+    fstatat(dir, linkbuf, &st, AT_SYMLINK_NOFOLLOW);
+    if ((st.st_mode & S_IFMT) == S_IFLNK) {
+        /* this is a Debian thing. Fedora just has /usr/bin/cc -> gcc */
+        if (strcmp(linkbuf, cpp ? "/etc/alternatives/c++" : "/etc/alternatives/cc") == 0) {
+            ssz = readlinkat(dir, linkbuf, linkbuf, sizeof(linkbuf) - 1);
+            linkbuf[ssz] = '\0';
+        }
+    }
+    ret = faccessat(dir, linkbuf, X_OK, 0);
+    if (ret < 0)
+        return;
+
+    if (        cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "clang++") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("clang++");
+        rs_trace("Rewriting '%s' to '%s'", "c++", "clang++");
+    } else if (   cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "g++") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("g++");
+        rs_trace("Rewriting '%s' to '%s'", "c++", "g++");
+    } else if (!cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "clang") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("clang");
+        rs_trace("Rewriting '%s' to '%s'", "cc", "clang");
+    } else if (!cpp && strcmp(strrchr(linkbuf, '/') ? strrchr(linkbuf, '/') + 1 : linkbuf, "gcc") == 0) {
+        free(argv[0]);
+        argv[0] = strdup("gcc");
+        rs_trace("Rewriting '%s' to '%s'", "cc", "gcc");
+    } else
+        return;
+}
+
+
+/* Clang is a native cross-compiler, but needs to be told to what target it is
+ * building.
+ * TODO: actually probe clang with clang --version, instead of trusting
+ * autoheader.
+ */
+static void dcc_add_clang_target(char **argv)
+{
+        /* defined by autoheader */
+    const char *target = GNU_HOST;
+
+    if (strcmp(argv[0], "clang") == 0 || strncmp(argv[0], "clang-", strlen("clang-")) == 0 ||
+        strcmp(argv[0], "clang++") == 0 || strncmp(argv[0], "clang++-", strlen("clang++-")) == 0)
+        ;
+    else
+        return;
+
+    if (dcc_argv_search(argv, "-target"))
+        return;
+
+    rs_log_info("Adding '-target %s' to support clang cross-compilation.",
+                target);
+    dcc_argv_append(argv, strdup("-target"));
+    dcc_argv_append(argv, strdup(target));
+}
+
+/*
+ * Cross compilation for gcc
+*/
+static int dcc_gcc_rewrite_fqn(char **argv)
+{
+        /* defined by autoheader */
+    const char *target_with_vendor = GNU_HOST;
+    char *newcmd, *t, *path;
+    int pathlen = 0;
+
+    if (strcmp(argv[0], "gcc") == 0 || strncmp(argv[0], "gcc-", strlen("gcc-")) == 0 ||
+        strcmp(argv[0], "g++") == 0 || strncmp(argv[0], "g++-", strlen("g++-")) == 0)
+        ;
+    else
+        return -ENOENT;
+
+
+    newcmd = malloc(strlen(target_with_vendor) + 1 + strlen(argv[0] + 1));
+    if (!newcmd)
+        return -ENOMEM;
+
+    if ((t = strstr(target_with_vendor, "-pc-"))) {
+        strncpy(newcmd, target_with_vendor, t - target_with_vendor);
+        strcat(newcmd, t + strlen("-pc"));
+    } else
+        strcpy(newcmd, target_with_vendor);
+
+
+    strcat(newcmd, "-");
+    strcat(newcmd, argv[0]);
+
+    /* TODO, is this the right PATH? */
+    path = getenv("PATH");
+    do {
+        char binname[strlen(path) + 1 + strlen(newcmd) + 1];
+        int r;
+
+        /* emulate strchrnul() */
+        t = strchr(path, ':');
+        if (!t)
+            t = path + strlen(path);
+        pathlen = t - path;
+        if (*path == '\0')
+            return -ENOENT;
+        strncpy(binname, path, pathlen);
+        binname[pathlen] = '\0';
+        strcat(binname, "/");
+        strcat(binname, newcmd);
+        r = access(binname, X_OK);
+        if (r < 0)
+            continue;
+        /* good!, now rewrite */
+        rs_log_info("Re-writing call to '%s' to '%s' to support cross-compilation.",
+                    argv[0], newcmd);
+        free(argv[0]);
+        argv[0] = newcmd;
+        return 0;
+    } while ((path += pathlen + 1));
+    return -ENOENT;
+}
+
 /**
  * Execute the commands in argv remotely or locally as appropriate.
  *
@@ -521,6 +681,11 @@ dcc_build_somewhere(char *argv[],
     ret = dcc_scan_args(argv, &input_fname, &output_fname, &new_argv);
     dcc_free_argv(argv);
     argv = new_argv;
+    if (!getenv("DISTCC_NO_REWRITE_CROSS")) {
+        dcc_rewrite_generic_compiler(new_argv);
+        dcc_add_clang_target(new_argv);
+        dcc_gcc_rewrite_fqn(new_argv);
+    }
     if (ret != 0) {
         /* we need to scan the arguments even if we already know it's
          * local, so that we can pick up distcc client options. */
@@ -560,10 +725,12 @@ dcc_build_somewhere(char *argv[],
         goto run_local;
     }
 
-    /* Lock the local CPU, since we're going to be doing preprocessing
-     * or include scanning. */
-    if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
-        goto fallback;
+    if (!dcc_is_preprocessed(input_fname)) {
+        /* Lock the local CPU, since we're going to be doing preprocessing
+         * or include scanning. */
+        if ((ret = dcc_lock_local_cpp(&local_cpu_lock_fd)) != 0) {
+            goto fallback;
+        }
     }
 
     if (host->cpp_where == DCC_CPP_ON_SERVER) {
@@ -594,7 +761,7 @@ dcc_build_somewhere(char *argv[],
             dcc_get_protover_from_features(host->compr,
                                            host->cpp_where,
                                            &host->protover);
-        } else {
+        } else if (local_cpu_lock_fd != -1) {
             /* Include server succeeded. */
             /* We're done with local "preprocessing" (include scanning). */
             dcc_unlock(local_cpu_lock_fd);
@@ -722,7 +889,7 @@ dcc_build_somewhere(char *argv[],
     }
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
-        rs_log_warning("failed to distribute and fallbacks are disabled");
+        rs_log_error("failed to distribute and fallbacks are disabled");
         /* Try copying any server-side error message to stderr;
          * If we fail the user will miss all the messages from the server; so
          * we pretend we failed remotely.
@@ -747,7 +914,12 @@ dcc_build_somewhere(char *argv[],
     }
 
   lock_local:
-    dcc_lock_local(&cpu_lock_fd);
+    dcc_read_localslots_configuration();
+    if (ret == EXIT_LOCAL_CPP) {
+        dcc_lock_local_cpp(&local_cpu_lock_fd);
+    } else {
+        dcc_lock_local(&cpu_lock_fd);
+    }
 
   run_local:
     /* Either compile locally, after remote failure, or simply do other cc tasks
@@ -819,8 +991,8 @@ int dcc_build_somewhere_timed(char *argv[],
         timeval_subtract(&delta, &after, &before);
 
         rs_log(RS_LOG_INFO|RS_LOG_NONAME,
-               "elapsed compilation time %ld.%06lds",
-               delta.tv_sec, (long) delta.tv_usec);
+               "elapsed compilation time %lld.%06lds",
+               (long long) delta.tv_sec, (long) delta.tv_usec);
     }
 
     return ret;

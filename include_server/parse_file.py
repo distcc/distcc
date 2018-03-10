@@ -278,7 +278,7 @@ class ParseFile(object):
     includepath_map_index = self.includepath_map.Index
 
     try:
-      fd = open(filepath, "r")
+      fd = open(filepath, "r", encoding='latin-1')
     except IOError as msg:
       # This normally does not happen because the file should be known to
       # exists. Still there might be, say, a permissions issue that prevents it

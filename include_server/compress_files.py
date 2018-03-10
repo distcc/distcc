@@ -98,7 +98,7 @@ class CompressFiles(object):
           # change its name.
           prefix = ""
         try:
-          real_file_fd = open(realpath, "r")
+          real_file_fd = open(realpath, "r", encoding='latin-1')
         except (IOError, OSError) as why:
           sys.exit("Could not open '%s' for reading: %s" % (realpath, why))
         try:
