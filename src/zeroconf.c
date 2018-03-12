@@ -279,7 +279,7 @@ static void resolve_reply(
                 avahi_free(value);
             }
 
-            /* Look for the number of jobs in TXT RRs, and if not found, then set n_jobs = 4 * n_cpus */
+            /* Look for the number of jobs in TXT RRs, and if not found, then set n_jobs = n_cpus + 2 */
             for (i = txt; i; i = i->next) {
                 char *key, *value;
 
@@ -288,7 +288,7 @@ static void resolve_reply(
 
                 if (!strcmp(key, "jobs"))
                     if ((h->n_jobs = atoi(value)) <= 0)
-                        h->n_jobs = 4 * h->n_cpus;
+                        h->n_jobs = h->n_cpus + 2;
 
                 avahi_free(key);
                 avahi_free(value);
