@@ -1,3 +1,4 @@
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/distcc/distcc.png?columns=all)](https://waffle.io/distcc/distcc?utm_source=badge)
 # distcc -- a free distributed C/C++ compiler system
 [![Build Status](https://travis-ci.org/distcc/distcc.svg?branch=master)](https://travis-ci.org/distcc/distcc)
 
