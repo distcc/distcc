@@ -98,6 +98,7 @@ dist_files =							\
 	$(example_DOCS)						\
 	$(popt_EXTRA) $(popt_SRC) $(popt_HEADERS)		\
 	$(SRC) $(HEADERS)					\
+	$(update_distcc_symlinks_PY)				\
 	$(test_SOURCE)						\
 	$(bench_PY)						\
 	$(include_server_PY)                                    \
@@ -182,6 +183,8 @@ include_server_PY = \
 
 include_server_SRC = \
 	include_server/c_extensions/distcc_pump_c_extensions_module.c
+
+update_distcc_symlinks_PY = update-distcc-symlinks.py
 
 # These are included in the distribution but not installed anywhere.
 dist_extra =							\
@@ -418,7 +421,7 @@ bin_PROGRAMS = \
 	@GNOME_BIN@ 
 
 sbin_PROGRAMS = \
-	update-distcc-symlinks.py
+	update-distcc-symlinks
 
 check_PROGRAMS = \
 	h_argvtostr@EXEEXT@ \
@@ -462,7 +465,7 @@ check_include_server_PY = \
 
 ## NOTE: "all" must be the first (default) rule, aside from patterns.
 
-all: $(bin_PROGRAMS) pump include-server
+all: $(bin_PROGRAMS) $(sbin_PROGRAMS) pump include-server
 
 #  src/config.h.in is used by config.status
 Makefile: Makefile.in src/config.h.in config.status
@@ -509,6 +512,9 @@ distccmon-text@EXEEXT@: $(mon_obj) src/mon-text.o
 
 lsdistcc@EXEEXT@: $(lsdistcc_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(lsdistcc_obj) $(LIBS)
+
+update-distcc-symlinks: $(update_distcc_symlinks_PY)
+	cp $< $@
 
 h_exten@EXEEXT@: $(h_exten_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_exten_obj) $(LIBS)
@@ -923,7 +929,7 @@ benchmark:
 clean: clean-autoconf clean-lzo clean-include-server
 	rm -f src/*.[od] popt/*.[od]
 	rm -f test/*.pyc
-	rm -f $(check_PROGRAMS) $(bin_PROGRAMS)
+	rm -f $(check_PROGRAMS) $(bin_PROGRAMS) $(sbin_PROGRAMS)
 	rm -f `echo $(man1_MEN) | sed -e 's/ /.gz /g' -e 's/$$/.gz/'`
 	rm -f $(man_HTML)
 	rm -f distccmon-gnome
@@ -1036,7 +1042,7 @@ showpaths:
 install: showpaths install-doc install-man install-programs \
 	install-include-server install-example @INSTALL_GNOME@ install-conf
 
-install-programs: $(bin_PROGRAMS)
+install-programs: $(bin_PROGRAMS) $(sbin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
 	$(mkinstalldirs) "$(DESTDIR)$(sbindir)"
 	for p in $(bin_PROGRAMS); do \
