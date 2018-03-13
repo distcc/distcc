@@ -324,7 +324,9 @@ void dcc_remove_pid(void)
     if (!arg_pid_file)
         return;
 
-    if (unlink(arg_pid_file)) {
+                                /* this may be called from a signal handler,
+                                   and syslog is not safe from signal handler */
+    if (unlink(arg_pid_file) && !rs_trace_syslog) {
         rs_log_warning("failed to remove pid file %s: %s",
                        arg_pid_file, strerror(errno));
     }

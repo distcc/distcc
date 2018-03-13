@@ -108,6 +108,7 @@ static int dcc_setup_startup_log(void)
         rs_add_logger(rs_logger_file, RS_LOG_DEBUG, 0, STDERR_FILENO);
     } else {
         openlog("distccd", LOG_PID, LOG_DAEMON);
+        rs_trace_syslog = TRUE;
         rs_add_logger(rs_logger_syslog, RS_LOG_DEBUG, NULL, 0);
     }
 
@@ -304,6 +305,7 @@ static void dcc_setup_real_log(void)
 
     rs_remove_all_loggers();
     openlog("distccd", LOG_PID, LOG_DAEMON);
+    rs_trace_syslog = TRUE;
     rs_add_logger(rs_logger_syslog, opt_log_level_num, NULL, 0);
 }
 

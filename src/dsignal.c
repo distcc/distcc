@@ -120,7 +120,8 @@ static RETSIGTYPE dcc_daemon_terminate(int whichsig)
 
     am_parent = getpid() == dcc_master_pid;
 
-    if (am_parent) {
+    /* syslog is not safe from a signal handler */
+    if (am_parent && !rs_trace_syslog) {
 #ifdef HAVE_STRSIGNAL
         rs_log_info("%s", strsignal(whichsig));
 #else
@@ -139,6 +140,9 @@ static RETSIGTYPE dcc_daemon_terminate(int whichsig)
 
     raise(whichsig);
 
+/* malloc() stuff not safe from a signal handler, but keep this here in case
+   this memory non-leak is to be fixed in the future. */
+/*
 #ifdef HAVE_GSSAPI
     if (dcc_auth_enabled) {
         dcc_gssapi_release_credentials();
@@ -147,5 +151,5 @@ static RETSIGTYPE dcc_daemon_terminate(int whichsig)
             dcc_gssapi_free_list();
         }
     }
-#endif
+#endif*/
 }
