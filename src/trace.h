@@ -210,6 +210,8 @@ void rs_log0_nofn(int level, char const *fmt, ...);
  * messages.
  */
 
+/* really bool */
+extern int rs_trace_syslog;
 extern int rs_trace_level;
 
 #ifdef DO_RS_TRACE
