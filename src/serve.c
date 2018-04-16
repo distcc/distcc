@@ -368,12 +368,21 @@ static int dcc_check_compiler_masq(char *compiler_name)
  * https://nvd.nist.gov/vuln/detail/CVE-2004-2687
  * https://github.com/distcc/distcc/issues/155
  **/
-static int dcc_check_compiler_whitelist(char *compiler_name)
+static int dcc_check_compiler_whitelist(char *_compiler_name)
 {
+    char *compiler_name = _compiler_name;
     int dirfd = -1;
 
+    /* Support QtCreator by treating /usr/bin and /bin absolute paths as non-absolute
+     * see https://github.com/distcc/distcc/issues/279
+     */
+    if (strstr(_compiler_name, "/bin/"))
+        compiler_name = _compiler_name + strlen("/bin/");
+    else if (strstr(_compiler_name, "/usr/bin/"))
+        compiler_name = _compiler_name + strlen("/usr/bin/");
+
     if (strchr(compiler_name, '/')) {
-        rs_log_crit("compiler name <%s> cannot be an absolute path (or must pass --make-me-a-botnet)", compiler_name);
+        rs_log_crit("compiler name <%s> cannot be an absolute path (or must pass --make-me-a-botnet)", _compiler_name);
         return EXIT_BAD_ARGUMENTS;
     }
 
