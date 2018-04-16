@@ -372,8 +372,10 @@ static int dcc_check_compiler_whitelist(char *compiler_name)
 {
     int dirfd = -1;
 
-    if (strchr(compiler_name, '/'))
+    if (strchr(compiler_name, '/')) {
+        rs_log_crit("compiler name <%s> cannot be an absolute path (or must pass --make-me-a-botnet)", compiler_name);
         return EXIT_BAD_ARGUMENTS;
+    }
 
     dirfd = open("/usr/lib/distcc", O_RDONLY);
     if (dirfd < 0) {
