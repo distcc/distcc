@@ -253,7 +253,7 @@ void* dcc_zeroconf_register(uint16_t port, int n_cpus, int n_jobs) {
     }
 
     if (!(ctx->client = avahi_client_new(avahi_threaded_poll_get(ctx->threaded_poll), AVAHI_CLIENT_NO_FAIL, client_callback, ctx, &error))) {
-        rs_log_crit("Failed to create client object: %s\n", avahi_strerror(avahi_client_errno(ctx->client)));
+        rs_log_crit("Failed to create client object: %s\n", avahi_strerror(error));
         goto fail;
     }
 
