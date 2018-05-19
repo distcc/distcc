@@ -358,7 +358,7 @@ static int dcc_check_compiler_masq(char *compiler_name)
 }
 
 /**
- * Make sure there is a masquerade to distcc in /usr/lib/distcc in order to
+ * Make sure there is a masquerade to distcc in LIBDIR/distcc in order to
  * execute a binary of the same name.
  *
  * Before this it was possible to execute arbitrary command after connecting
@@ -387,19 +387,19 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
         return EXIT_BAD_ARGUMENTS;
     }
 
-    dirfd = open("/usr/lib/distcc", O_RDONLY);
+    dirfd = open(LIBDIR "/distcc", O_RDONLY);
     if (dirfd < 0) {
         if (errno == ENOENT)
-            rs_log_crit("no %s", "/usr/lib/distcc");
+            rs_log_crit("no %s", LIBDIR "/distcc");
         return EXIT_DISTCC_FAILED;
     }
 
     if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
-        rs_log_crit("%s not in %s whitelist.", compiler_name, "/usr/lib/distcc");
+        rs_log_crit("%s not in %s whitelist.", compiler_name, LIBDIR "/distcc");
         return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
     }
 
-    rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
+    rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
 #endif
     return 0;
 }
