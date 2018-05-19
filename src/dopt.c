@@ -135,7 +135,7 @@ static const char *dcc_private_networks[] = {"192.168.0.0/16",
 
 const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
-    { "allow-private", 0,POPT_ARG_STRING, &opt_allow_private, 0, 0, 0 },
+    { "allow-private", 0,POPT_ARG_NONE, &opt_allow_private, 0, 0, 0 },
 #ifdef HAVE_GSSAPI
     { "auth", 0,	 POPT_ARG_NONE, &opt_auth_enabled, 'A', 0, 0 },
     { "blacklist", 0,    POPT_ARG_STRING, &arg_list_file, 'b', 0, 0 },
