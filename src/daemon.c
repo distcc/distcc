@@ -160,13 +160,13 @@ static void dcc_warn_masquerade_whitelist(void) {
                        " --make-me-a-botnet. To set up masquerade automatically" \
                        " run update-distcc-symlinks.";
 
-    d = opendir("/usr/lib/distcc");
+    d = opendir(LIBDIR "/distcc");
     if (!d) {
-        rs_log_crit("/usr/lib/distcc not found. %s", warn);
+        rs_log_crit(LIBDIR "/distcc not found. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
     if (!readdir(d)) {
-        rs_log_crit("/usr/lib/distcc empty. %s", warn);
+        rs_log_crit(LIBDIR "/distcc empty. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
 }
