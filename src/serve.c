@@ -370,6 +370,7 @@ static int dcc_check_compiler_masq(char *compiler_name)
  **/
 static int dcc_check_compiler_whitelist(char *_compiler_name)
 {
+#ifdef HAVE_FSTATAT
     char *compiler_name = _compiler_name;
     int dirfd = -1;
 
@@ -399,6 +400,7 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     }
 
     rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
+#endif
     return 0;
 }
 

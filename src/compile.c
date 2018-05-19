@@ -446,6 +446,7 @@ static int dcc_please_send_email_after_investigation(
     return dcc_note_discrepancy(discrepancy_filename);
 }
 
+#ifdef HAVE_FSTATAT
 /* Re-write "cc" to directly call gcc or clang
  */
 static void dcc_rewrite_generic_compiler(char **argv)
@@ -517,6 +518,7 @@ static void dcc_rewrite_generic_compiler(char **argv)
     } else
         return;
 }
+#endif
 
 
 /* Clang is a native cross-compiler, but needs to be told to what target it is
@@ -682,7 +684,9 @@ dcc_build_somewhere(char *argv[],
     dcc_free_argv(argv);
     argv = new_argv;
     if (!getenv("DISTCC_NO_REWRITE_CROSS")) {
+#ifdef HAVE_FSTATAT
         dcc_rewrite_generic_compiler(new_argv);
+#endif
         dcc_add_clang_target(new_argv);
         dcc_gcc_rewrite_fqn(new_argv);
     }
