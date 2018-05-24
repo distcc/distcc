@@ -375,13 +375,20 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     /* Support QtCreator by treating /usr/bin and /bin absolute paths as non-absolute
      * see https://github.com/distcc/distcc/issues/279
      */
-    if (strstr(_compiler_name, "/bin/"))
-        compiler_name = _compiler_name + strlen("/bin/");
-    else if (strstr(_compiler_name, "/usr/bin/"))
-        compiler_name = _compiler_name + strlen("/usr/bin/");
+    const char *creator_paths[] = { "/bin/", "/usr/bin/", NULL };
+    for (int i = 0 ; creator_paths[i] ; ++i) {
+        size_t len = strlen(creator_paths[i]);
+        // /bin and /usr/bin are absolute paths (= compare from the string start)
+        // use strncasecmp() to support case-insensitive / (= on Mac).
+        if (strncasecmp(_compiler_name, creator_paths[i], len) == 0) {
+            compiler_name = _compiler_name + len;
+            // stop at the first hit
+            break;
+        }
+    }
 
     if (strchr(compiler_name, '/')) {
-        rs_log_crit("compiler name <%s> cannot be an absolute path (or must pass --make-me-a-botnet)", _compiler_name);
+        rs_log_crit("compiler name <%s> cannot be an absolute path (or must set DISTCC_CMDLIST or pass --make-me-a-botnet)", _compiler_name);
         return EXIT_BAD_ARGUMENTS;
     }
 
