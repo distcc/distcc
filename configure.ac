@@ -383,7 +383,7 @@ AC_CHECK_FUNCS([strndup strsep mmap strlcpy])
 AC_CHECK_FUNCS([getloadavg])
 AC_CHECK_FUNCS([getline])
 
-AC_CHECK_FUNCS([fstatat],[],[AC_MSG_WARN([fstatat() not available; distccd will be slightly less secure])])
+AC_CHECK_FUNCS([fstatat])
 
 AC_CHECK_DECLS([snprintf, vsnprintf, vasprintf, asprintf, strndup])
 

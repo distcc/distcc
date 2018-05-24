@@ -370,9 +370,7 @@ static int dcc_check_compiler_masq(char *compiler_name)
  **/
 static int dcc_check_compiler_whitelist(char *_compiler_name)
 {
-#ifdef HAVE_FSTATAT
     char *compiler_name = _compiler_name;
-    int dirfd = -1;
 
     /* Support QtCreator by treating /usr/bin and /bin absolute paths as non-absolute
      * see https://github.com/distcc/distcc/issues/279
@@ -387,7 +385,8 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
         return EXIT_BAD_ARGUMENTS;
     }
 
-    dirfd = open(LIBDIR "/distcc", O_RDONLY);
+#ifdef HAVE_FSTATAT
+    int dirfd = open(LIBDIR "/distcc", O_RDONLY);
     if (dirfd < 0) {
         if (errno == ENOENT)
             rs_log_crit("no %s", LIBDIR "/distcc");
@@ -400,8 +399,26 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     }
 
     rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
-#endif
     return 0;
+#else
+    // make do with access():
+    char *compiler_path = NULL;
+    int ret = 0;
+    if (asprintf(&compiler_path, "%s/distcc/%s", LIBDIR, compiler_name) && compiler_path) {
+        if (access(compiler_path, X_OK) < 0) {
+            rs_log_crit("%s not in %s whitelist.", compiler_name, LIBDIR "/distcc");
+            ret = EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+        }
+        rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
+    } else {
+        rs_log_crit("Couldn't check if %s is in %s whitelist.", compiler_name, LIBDIR "/distcc");
+        ret = EXIT_DISTCC_FAILED;
+    }
+    if (compiler_path) {
+        free(compiler_path);
+    }
+    return ret;
+#endif
 }
 
 static const char *include_options[] = {
