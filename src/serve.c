@@ -376,7 +376,8 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
      * see https://github.com/distcc/distcc/issues/279
      */
     const char *creator_paths[] = { "/bin/", "/usr/bin/", NULL };
-    for (int i = 0 ; creator_paths[i] ; ++i) {
+    int i;
+    for (i = 0 ; creator_paths[i] ; ++i) {
         size_t len = strlen(creator_paths[i]);
         // /bin and /usr/bin are absolute paths (= compare from the string start)
         // use strncasecmp() to support case-insensitive / (= on Mac).
