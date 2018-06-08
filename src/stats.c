@@ -178,7 +178,7 @@ static void dcc_stats_update_compile_times(struct statsdata *sd) {
             free(curr_sd);
             curr_sd = prev_sd->next;
         } else {
-            /* we didn't delete anyting. move forward by one */
+            /* we didn't delete anything. move forward by one */
             prev_sd = curr_sd;
             curr_sd = curr_sd->next;
         }

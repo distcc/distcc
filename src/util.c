@@ -742,7 +742,7 @@ void dcc_get_disk_io_stats(int *n_reads, int *n_writes) {
             *n_writes += writes;
         } else {
 #if 0
-            /* individual parition stats */
+            /* individual partition stats */
             retval = fscanf(f, " %*d %d %*d %d", &reads, &writes);
             if (retval == EOF || retval != 2)
                 break;

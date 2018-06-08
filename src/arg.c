@@ -41,7 +41,7 @@
  *
  * We need to distinguish the two by working out whether the first argument
  * "looks like" a compiler name or not.  I think the two cases in which we
- * should assume it's implicit are "distcc -c hello.c" (starts with a hypen),
+ * should assume it's implicit are "distcc -c hello.c" (starts with a hyphen),
  * and "distcc hello.c" (starts with a source filename.)
  *
  * In the case of implicit compilation "distcc --help" will always give you

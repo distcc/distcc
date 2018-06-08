@@ -70,7 +70,7 @@ static int dcc_preforked_child(int listen_fd);
 int dcc_preforking_parent(int listen_fd)
 {
     int ret;
-    /* use sigaction instead of signal() because we need persistant handler, not oneshot */
+    /* use sigaction instead of signal() because we need persistent handler, not oneshot */
     struct sigaction act_child;
     memset(&act_child, 0, sizeof act_child);
     act_child.sa_handler = dcc_sigchld_handler;

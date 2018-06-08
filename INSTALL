@@ -56,7 +56,7 @@ To build distcc you need
    A C compiler
    GNU libiberty (distributed with GNU Binutils and GCC)
 
-It is also highly desireable to have
+It is also highly desirable to have
 
    Python >=3.1
 
@@ -256,7 +256,7 @@ For SSH connections
   localhost @red @green @blue
 
 The hosts should be listed in descending order of speed.  localhost
-should normally be first, unless it is signficantly slower than
+should normally be first, unless it is significantly slower than
 another machine.  If you many hosts (say ten or more), it's probably
 better to leave localhost out of the list.
 

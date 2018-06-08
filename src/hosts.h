@@ -60,7 +60,7 @@ struct dcc_hostdef {
     enum dcc_cpp_where cpp_where;
 
 #ifdef HAVE_GSSAPI
-    /* Are we autenticating with this host? */
+    /* Are we authenticating with this host? */
     int authenticate;
 #endif
 

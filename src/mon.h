@@ -198,7 +198,7 @@ extern "C" {
 /**
  * Read the list of running processes for this user.
  *
- * @param ppl On return, recieves a pointer to the start of a list of
+ * @param ppl On return, receives a pointer to the start of a list of
  * status elements, representing the running processes.  *ppl will be
  * NULL if there are no processes running.
  *

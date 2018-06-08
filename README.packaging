@@ -63,7 +63,7 @@ consider these requests.
    'i386-redhat-linux-cc-3.2.2').  This makes it much more likely that
    people will be able to plug-and-go for cross-architecture or
    cross-OS builds.  It's good to name even native compilers this way
-   so that they can participate in heterogenous builds.  If you don't
+   so that they can participate in heterogeneous builds.  If you don't
    maintain the compiler packages for your OS, please talk to the
    person who does.
 

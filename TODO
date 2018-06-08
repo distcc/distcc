@@ -19,7 +19,7 @@ failing to resolve a host should be a soft failure
 
 
 State files depend on host byte order and break when DISTCC_DIR is
-shared between heterogenous machines.  Of course sharing this
+shared between heterogeneous machines.  Of course sharing this
 directory is probably a bad idea anyhow.
 
 
@@ -1049,7 +1049,7 @@ central configuration
     would be good, and probably quite practical.  Setting up a list of
     machines centrally rather than configuring each one sounds more friendly.
     The most likely design is to use DNS SRV records (RFC2052), or perhaps
-    multi-RR A records.  For exmaple, compile.ozlabs.foo.com would resolve to
+    multi-RR A records.  For example, compile.ozlabs.foo.com would resolve to
     all relevant machines.  Another possibility would be to use SLP, the
     Service Location Protocol, but that adds a larger dependency and it seems
     not to be widely deployed.

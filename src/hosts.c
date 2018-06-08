@@ -207,7 +207,7 @@ int dcc_get_hostlist(struct dcc_hostdef **ret_list,
  * *psrc is the current parse cursor; it is advanced over what is read.
  *
  * If a multiplier is present, *psrc points to a substring starting with '/'.
- * The host defintion is updated to the numeric value following.  Otherwise
+ * The host definition is updated to the numeric value following.  Otherwise
  * the hostdef is unchanged.
  **/
 static int dcc_parse_multiplier(const char **psrc, struct dcc_hostdef *hostdef)

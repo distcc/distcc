@@ -752,7 +752,7 @@ dcc_build_somewhere(char *argv[],
             /* It's unfortunate that the variable that controls that is in the
              * "host" datastructure, even though in this case it's the client
              * that fails to support it,  but "host" is what gets passed
-             * around in the client code. We are, in essense, throwing away
+             * around in the client code. We are, in essence, throwing away
              * the host's capability to do cpp, so if this code was to execute
              * again (it won't, not in the same process) we wouldn't know if
              * the server supports it or not.
@@ -858,7 +858,7 @@ dcc_build_somewhere(char *argv[],
            (Currently, we send email to an appropriate email address).
         */
         if (getenv("DISTCC_SKIP_LOCAL_RETRY")) {
-            /* dont retry locally. We'll treat the remote failure as
+            /* don't retry locally. We'll treat the remote failure as
                if it was a local one. But if we can't get the failures
                then we need to retry regardless.
             */
