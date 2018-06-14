@@ -154,18 +154,19 @@ static int dcc_setup_daemon_path(void)
 }
 
 static void dcc_warn_masquerade_whitelist(void) {
-    DIR *d;
+    DIR *d, *e;
     const char *warn = "You must see up masquerade" \
                        " (see distcc(1)) to list whitelisted compilers or pass" \
                        " --make-me-a-botnet. To set up masquerade automatically" \
                        " run update-distcc-symlinks.";
 
+    e = opendir("/usr/lib/distcc");
     d = opendir(LIBDIR "/distcc");
-    if (!d) {
+    if (!e && !d) {
         rs_log_crit(LIBDIR "/distcc not found. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
-    if (!readdir(d)) {
+    if (!readdir(e) && !readdir(d)) {
         rs_log_crit(LIBDIR "/distcc empty. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
