@@ -649,7 +649,9 @@ or unreachable, and to prevent compiles hanging indefinitely if a
 server is disconnected while in use.  If a client-side timeout
 expires, the job will be re-run locally.
 .PP
-The timeouts are not configurable at present.
+The transfer timeout is not configurable at present. The timeout that
+detects stale distributed job is configurable via DISTCC_IO_TIMEOUT
+environment variable.
 .SH "DIAGNOSTICS"
 Error messages or warnings from local or remote compilers are passed
 through to diagnostic output on the client.
