@@ -252,7 +252,6 @@ int dcc_writex(int fd, const void *buf, size_t len)
     return 0;
 }
 
-
 /**
  * Stick a TCP cork in the socket.  It's not clear that this will help
  * performance, but it might.
@@ -262,7 +261,8 @@ int dcc_writex(int fd, const void *buf, size_t len)
 int tcp_cork_sock(int POSSIBLY_UNUSED(fd), int POSSIBLY_UNUSED(corked))
 {
 #if defined(TCP_CORK) && defined(SOL_TCP)
-    if (!dcc_getenv_bool("DISTCC_TCP_CORK", 1))
+    if (!dcc_getenv_bool("DISTCC_TCP_CORK", 1) || !(sd_is_socket(fd, AF_INET, SOCK_STREAM, 1) ||
+                                                    sd_is_socket(fd, AF_INET6, SOCK_STREAM, 1)))
         return 0;
 
     if (setsockopt(fd, SOL_TCP, TCP_CORK, &corked, sizeof corked) == -1) {
@@ -279,8 +279,6 @@ int tcp_cork_sock(int POSSIBLY_UNUSED(fd), int POSSIBLY_UNUSED(corked))
 #endif /* def TCP_CORK */
     return 0;
 }
-
-
 
 int dcc_close(int fd)
 {

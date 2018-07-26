@@ -236,7 +236,7 @@ int dcc_ssh_connect(char *ssh_cmd,
     child_argv[i++] = machine;
     child_argv[i++] = path;
     child_argv[i++] = (char *) "--inetd";
-    child_argv[i++] = (char *) "---make-me-a-botnet";
+    child_argv[i++] = (char *) "--make-me-a-botnet";
     child_argv[i++] = NULL;
 
     rs_trace("connecting to %s using %s", machine, ssh_cmd);

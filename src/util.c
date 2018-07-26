@@ -36,6 +36,8 @@
 
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -902,3 +904,104 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     return bytes_read == 0 ? -1 : (ssize_t) bytes_read;
 }
 #endif
+
+/* from old systemd
+
+   Copyright 2010 Lennart Poettering
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation files
+   (the "Software"), to deal in the Software without restriction,
+   including without limitation the rights to use, copy, modify, merge,
+   publish, distribute, sublicense, and/or sell copies of the Software,
+   and to permit persons to whom the Software is furnished to do so,
+   subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+ */
+static int sd_is_socket_internal(int fd, int type, int listening) {
+        struct stat st_fd;
+
+        if (fd < 0 || type < 0)
+                return -EINVAL;
+
+        if (fstat(fd, &st_fd) < 0)
+                return -errno;
+
+        if (!S_ISSOCK(st_fd.st_mode))
+                return 0;
+
+        if (type != 0) {
+                int other_type = 0;
+                socklen_t l = sizeof(other_type);
+
+                if (getsockopt(fd, SOL_SOCKET, SO_TYPE, &other_type, &l) < 0)
+                        return -errno;
+
+                if (l != sizeof(other_type))
+                        return -EINVAL;
+
+                if (other_type != type)
+                        return 0;
+        }
+
+        if (listening >= 0) {
+                int accepting = 0;
+                socklen_t l = sizeof(accepting);
+
+                if (getsockopt(fd, SOL_SOCKET, SO_ACCEPTCONN, &accepting, &l) < 0)
+                        return -errno;
+
+                if (l != sizeof(accepting))
+                        return -EINVAL;
+
+                if (!accepting != !listening)
+                        return 0;
+        }
+
+        return 1;
+}
+
+union sockaddr_union {
+        struct sockaddr sa;
+        struct sockaddr_in in4;
+        struct sockaddr_in6 in6;
+        struct sockaddr_un un;
+        struct sockaddr_storage storage;
+};
+
+int sd_is_socket(int fd, int family, int type, int listening) {
+        int r;
+
+        if (family < 0)
+                return -EINVAL;
+
+        r = sd_is_socket_internal(fd, type, listening);
+        if (r <= 0)
+                return r;
+
+        if (family > 0) {
+                union sockaddr_union sockaddr = {};
+                socklen_t l = sizeof(sockaddr);
+
+                if (getsockname(fd, &sockaddr.sa, &l) < 0)
+                        return -errno;
+
+                if (l < sizeof(sa_family_t))
+                        return -EINVAL;
+
+                return sockaddr.sa.sa_family == family;
+        }
+
+        return 1;
+}
