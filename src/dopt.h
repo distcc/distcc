@@ -37,7 +37,7 @@ extern int opt_no_fork;
 extern int opt_no_prefork;
 extern int opt_no_detach;
 extern int opt_daemon_mode, opt_inetd_mode;
-extern int opt_make_me_a_botnet;
+extern int opt_enable_tcp_insecure;
 extern int opt_job_lifetime;
 extern const char *arg_log_file;
 extern int opt_no_fifo;
