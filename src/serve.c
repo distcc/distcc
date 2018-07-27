@@ -389,7 +389,7 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     }
 
     if (strchr(compiler_name, '/')) {
-        rs_log_crit("compiler name <%s> cannot be an absolute path (or must set DISTCC_CMDLIST or pass --make-me-a-botnet)", _compiler_name);
+        rs_log_crit("compiler name <%s> cannot be an absolute path (or must set DISTCC_CMDLIST or pass --enable-tcp-insecure)", _compiler_name);
         return EXIT_BAD_ARGUMENTS;
     }
 
@@ -751,7 +751,7 @@ static int dcc_run_job(int in_fd,
     if ((ret = dcc_check_compiler_masq(argv[0])))
         goto out_cleanup;
 
-    if (!opt_make_me_a_botnet &&
+    if (!opt_enable_tcp_insecure &&
         !getenv("DISTCC_CMDLIST") &&
         dcc_check_compiler_whitelist(argv[0]))
         goto out_cleanup;

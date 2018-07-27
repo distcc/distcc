@@ -345,7 +345,7 @@ as soon as that happens we can go ahead and start the client."""
         """Return command to start the daemon"""
         return (self.distccd() +
                 "--verbose --lifetime=%d --daemon --log-file %s "
-                "--pid-file %s --port %d --allow 127.0.0.1 --make-me-a-botnet"
+                "--pid-file %s --port %d --allow 127.0.0.1 --enable-tcp-insecure"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),
@@ -815,7 +815,7 @@ class DaemonBadPort_Case(SimpleDistCC_Case):
         """Test daemon invoked with invalid port number"""
         self.runcmd(self.distccd() +
                     "--log-file=distccd.log --lifetime=10 --port 80000 "
-                    "--allow 127.0.0.1 --make-me-a-botnet",
+                    "--allow 127.0.0.1 --enable-tcp-insecure",
                     EXIT_BAD_ARGUMENTS)
         self.assert_no_file("daemonpid.tmp")
 
@@ -1546,7 +1546,7 @@ class NoDetachDaemon_Case(CompileHello_Case):
         # port as an existing server, because we can't catch the error.
         cmd = (self.distccd() +
                "--no-detach --daemon --verbose --log-file %s --pid-file %s "
-               "--port %d --allow 127.0.0.1 --make-me-a-botnet" %
+               "--port %d --allow 127.0.0.1 --enable-tcp-insecure" %
                (_ShellSafe(self.daemon_logfile),
                 _ShellSafe(self.daemon_pidfile),
                 self.server_port))
@@ -2046,7 +2046,7 @@ class AccessDenied_Case(CompileHello_Case):
     def daemon_command(self):
         return (self.distccd()
                 + "--verbose --lifetime=%d --daemon --log-file %s "
-                  "--pid-file %s --port %d --allow 127.0.0.2 --make-me-a-botnet"
+                  "--pid-file %s --port %d --allow 127.0.0.2 --enable-tcp-insecure"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),

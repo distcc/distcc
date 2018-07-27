@@ -98,7 +98,7 @@ int opt_log_level_num = RS_LOG_NOTICE;
  * If true, do not check if a link to distcc exists in /usr/lib/distcc
  * for every program executed remotely.
  **/
-int opt_make_me_a_botnet = 0;
+int opt_enable_tcp_insecure = 0;
 
 /**
  * Daemon exits after this many seconds.  Intended mainly for testing, to make
@@ -171,7 +171,8 @@ const struct poptOption options[] = {
 #ifdef HAVE_AVAHI
     { "zeroconf", 0,     POPT_ARG_NONE, &opt_zeroconf, 0, 0, 0 },
 #endif
-    { "make-me-a-botnet", 0, POPT_ARG_NONE, &opt_make_me_a_botnet, 0, 0, 0 },
+    { "make-me-a-botnet", 0, POPT_ARG_NONE, &opt_enable_tcp_insecure, 0, 0, 0 },
+    { "enable-tcp-insecure", 0, POPT_ARG_NONE, &opt_enable_tcp_insecure, 0, 0, 0 },
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 

@@ -157,7 +157,7 @@ static void dcc_warn_masquerade_whitelist(void) {
     DIR *d, *e;
     const char *warn = "You must see up masquerade" \
                        " (see distcc(1)) to list whitelisted compilers or pass" \
-                       " --make-me-a-botnet. To set up masquerade automatically" \
+                       " --enable-tcp-insecure. To set up masquerade automatically" \
                        " run update-distcc-symlinks.";
 
     e = opendir("/usr/lib/distcc");
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
     /* Initialize the distcc io timeout value */
     dcc_get_io_timeout();
 
-    if (!opt_make_me_a_botnet)
+    if (!opt_enable_tcp_insecure)
         dcc_warn_masquerade_whitelist();
 
     if (dcc_should_be_inetd())
