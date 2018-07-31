@@ -491,9 +491,12 @@ static void dcc_rewrite_generic_compiler(char **argv)
     if ((st.st_mode & S_IFMT) == S_IFLNK) {
         /* this is a Debian thing. Fedora just has /usr/bin/cc -> gcc */
         if (strcmp(linkbuf, cpp ? "/etc/alternatives/c++" : "/etc/alternatives/cc") == 0) {
-            char *intermediate_link = strdupa(linkbuf);
+            char m[MAXPATHLEN + 1];
 
-            ssz = readlinkat(dir, intermediate_link, linkbuf, sizeof(linkbuf) - 1);
+            m[0] = '\0';
+            strcpy(m, linkbuf);
+
+            ssz = readlinkat(dir, m, linkbuf, sizeof(linkbuf) - 1);
             linkbuf[ssz] = '\0';
         }
     }
