@@ -585,6 +585,8 @@ int dcc_which(const char *command, char **out)
     if (!path)
         return -ENOENT;
     do {
+        if (strstr(path, "distcc"))
+            continue;
         /* emulate strchrnul() */
         t = strchr(path, ':');
         if (!t)
