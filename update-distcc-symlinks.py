@@ -31,17 +31,26 @@ for x in standard_names:
 consider_gcc("", "")
 consider_gcc("c89-", "")
 consider_gcc("c99-", "")
-for gnu_host in os.listdir(gcc_dir):
-  consider_gcc("%(gnu_host)s-" % vars(), "")
-  for version in os.listdir(gcc_dir + "/" + gnu_host):
-    consider_gcc("", "-%(version)s" % vars())
-    consider_gcc("%(gnu_host)s-" % vars(), "-%(version)s" % vars())
-for gnu_host in os.listdir(gcccross_dir):
-  consider_gcc("%(gnu_host)s-" % vars(), "")
-  for version in os.listdir(gcccross_dir + "/" + gnu_host):
-    consider_gcc("", "-%(version)s" % vars())
-    consider_gcc("%(gnu_host)s-" % vars(), "-%(version)s" % vars())
-
+try:
+  for gnu_host in os.listdir(gcc_dir):
+    consider_gcc("%(gnu_host)s-" % vars(), "")
+    for version in os.listdir(gcc_dir + "/" + gnu_host):
+      consider_gcc("", "-%(version)s" % vars())
+      consider_gcc("%(gnu_host)s-" % vars(), "-%(version)s" % vars())
+except FileNotFoundError:
+  pass
+except NotADirectoryError:
+  pass
+try:
+  for gnu_host in os.listdir(gcccross_dir):
+    consider_gcc("%(gnu_host)s-" % vars(), "")
+    for version in os.listdir(gcccross_dir + "/" + gnu_host):
+      consider_gcc("", "-%(version)s" % vars())
+      consider_gcc("%(gnu_host)s-" % vars(), "-%(version)s" % vars())
+except FileNotFoundError:
+  pass
+except NotADirectoryError:
+  pass
 
 consider_clang("")
 for ent in os.listdir("/usr/lib"):
