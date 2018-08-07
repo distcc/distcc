@@ -402,8 +402,14 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     }
 
     if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
-        rs_log_crit("%s not in %s whitelist.", compiler_name, LIBDIR "/distcc");
-        return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+        char *compiler_path = NULL;
+        if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
+            if (access(compiler_path, X_OK) < 0) {
+                rs_log_crit("%s not in %s or %s whitelist.", compiler_name, LIBDIR "/distcc", "/usr/lib/distcc);
+                return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+            }
+            free(compiler_path);
+        }
     }
 
     rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
@@ -414,6 +420,7 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     int ret = 0;
     if (asprintf(&compiler_path, "%s/distcc/%s", LIBDIR, compiler_name) && compiler_path) {
         if (access(compiler_path, X_OK) < 0) {
+            free(compiler_path);
             /* check /usr/lib/distcc too */
             if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
                 if (access(compiler_path, X_OK) < 0) {
