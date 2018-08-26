@@ -397,8 +397,9 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     int dirfd = open(LIBDIR "/distcc", O_RDONLY);
     if (dirfd < 0) {
         if (errno == ENOENT)
-            rs_log_crit("no %s", LIBDIR "/distcc");
-        return EXIT_DISTCC_FAILED;
+            rs_log_warning("no %s", LIBDIR "/distcc");
+        else
+            return EXIT_DISTCC_FAILED;
     }
 
     if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
