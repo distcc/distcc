@@ -166,7 +166,7 @@ static void dcc_warn_masquerade_whitelist(void) {
         rs_log_crit(LIBDIR "/distcc not found. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
-    if (!readdir(e) && !readdir(d)) {
+    if ((!e || !readdir(e)) && (!d || !readdir(d))) {
         rs_log_crit(LIBDIR "/distcc empty. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
