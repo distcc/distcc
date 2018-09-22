@@ -68,6 +68,8 @@
 
 #include <arpa/inet.h>
 
+#include <semaphore.h>
+
 
 #include "exitcode.h"
 #include "distcc.h"
@@ -88,7 +90,11 @@ char const *rs_program_name = "distccd";
 /* for serve.c */
 char const *dcc_daemon_wd;  /* The working directory for the server. */
 
+static char const *dcc_job_slots_semaphore_name = "distccd_inetd_server_job_slots";
 
+
+int dcc_ncpus(int *);
+int dcc_getcurrentload(void);
 static int dcc_inetd_server(void);
 static void dcc_setup_real_log(void);
 
@@ -323,6 +329,18 @@ int dcc_log_daemon_started(const char *role)
 }
 
 
+static int dcc_get_inetd_server_loadlimit(void)
+{
+    int ncpus = 0;
+    const int ret = dcc_ncpus(&ncpus);
+    if ((ret != 0) || (ncpus < 1)) {
+        rs_log_error("failed to get number of CPUs, limiting to one job\n");
+        return 1;
+    }
+    return ncpus + ((ncpus + 1) >> 1);
+}
+
+
 /**
  * Serve a single file on stdin, and then exit.
  **/
@@ -332,6 +350,31 @@ static int dcc_inetd_server(void)
     struct dcc_sockaddr_storage ss;
     struct sockaddr *psa = (struct sockaddr *) &ss;
     socklen_t len = sizeof ss;
+
+    const int loadlimit = dcc_get_inetd_server_loadlimit();
+    sem_t *const job_slots_sem = sem_open(dcc_job_slots_semaphore_name, O_CREAT, S_IRUSR|S_IWUSR, loadlimit);
+    if (job_slots_sem == SEM_FAILED) {
+        rs_log_crit("failed to open semaphore \"%s\": %s\n", dcc_job_slots_semaphore_name, strerror(errno));
+        return EXIT_DISTCC_FAILED;
+    }
+
+    while (dcc_getcurrentload() >= loadlimit) {
+        int available_job_slots = 0;
+        if (sem_getvalue(job_slots_sem, &available_job_slots) != 0) {
+            rs_log_crit("failed to get value of semaphore \"%s\": %s\n", dcc_job_slots_semaphore_name, strerror(errno));
+            return EXIT_DISTCC_FAILED;
+        }
+        /* Start at least one job regardless to the system load.
+         * Yes, we have race here (more than one job can be started by this rule). */
+        if (available_job_slots == loadlimit)
+            break;
+        sleep(1);
+    }
+
+    if (sem_wait(job_slots_sem) != 0) {
+        rs_log_crit("failed to wait semaphore \"%s\": %s\n", dcc_job_slots_semaphore_name, strerror(errno));
+        return EXIT_DISTCC_FAILED;
+    }
 
     dcc_log_daemon_started("inetd server");
 
@@ -356,6 +399,16 @@ static int dcc_inetd_server(void)
 	    }
     }
 #endif
+
+    if (sem_post(job_slots_sem) != 0) {
+        rs_log_crit("failed to post semaphore \"%s\": %s\n", dcc_job_slots_semaphore_name, strerror(errno));
+        return EXIT_DISTCC_FAILED;
+    }
+
+    if (sem_close(job_slots_sem) != 0) {
+        rs_log_crit("failed to close semaphore \"%s\": %s\n", dcc_job_slots_semaphore_name, strerror(errno));
+        return EXIT_DISTCC_FAILED;
+    }
 
     if (ret)
         return ret;
