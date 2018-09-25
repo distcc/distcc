@@ -358,7 +358,7 @@ int dcc_mon_poll(struct dcc_task_state **p_list)
             && pthis) {
             /* We can succeed without getting a new entry back, but it
              * turns out that this time we did get one.  So insert it
-             * intot he right point on the list. */
+             * into the right point on the list. */
             dcc_mon_insert_sorted(p_list, pthis);
         }
     }

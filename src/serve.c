@@ -363,7 +363,7 @@ static int dcc_check_compiler_masq(char *compiler_name)
  *
  * Before this it was possible to execute arbitrary command after connecting
  * to distcc, which is quite a security risk when combined with any local root
- * privledge escalation exploit. See CVE 2004-2687
+ * privilege escalation exploit. See CVE 2004-2687
  *
  * https://nvd.nist.gov/vuln/detail/CVE-2004-2687
  * https://github.com/distcc/distcc/issues/155

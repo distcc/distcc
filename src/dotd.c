@@ -150,7 +150,7 @@ int dcc_cleanup_dotd(const char *dotd_fname,
 /* Go through arguments (in @p argv), and relevant environment variables, and
  * find out where the dependencies output should go.  Return that location in a
  * newly allocated string in @p dotd_fname.  @p needs_dotd is set to true if the
- * compilation command line and environent imply that a .d file must be
+ * compilation command line and environment imply that a .d file must be
  * produced.  @p sets_dotd_target is set to true if there is a -MQ or -MT
  * option.  This is to be used on the client, so that the client knows where to
  * put the .d file it gets from the server. @p dotd_target is set only if

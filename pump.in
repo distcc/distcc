@@ -96,7 +96,7 @@ Environment variables (all optional):
                          the location.
 
                          If this location is the build directory, then Python 
-                         sources are retrived from the source directory.
+                         sources are retrieved from the source directory.
 
   DISTCC_POTENTIAL_HOSTS The distcc servers that will be queried by lsdistcc
                          in order to produce a value for DISTCC_HOSTS.

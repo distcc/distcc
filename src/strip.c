@@ -48,7 +48,7 @@
  * remotely, it is possible that omitting these options will make
  * failure more obvious and avoid false success.
  *
- * Giving -L on a compile-only command line is a bit wierd, but it is
+ * Giving -L on a compile-only command line is a bit weird, but it is
  * observed to happen in Makefiles that are not strict about CFLAGS vs
  * LDFLAGS, etc.
  *

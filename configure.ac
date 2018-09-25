@@ -22,7 +22,7 @@ AC_CONFIG_HEADERS(src/config.h)
 # either set CPPFLAGS and LDFLAGS when running configure, or use
 # --with-extra-foo.
 
-# Check for socklen_t, and do something appropiate on systems
+# Check for socklen_t, and do something appropriate on systems
 # that don't have it.
 AC_CHECK_TYPE([socklen_t], ,[
 	AC_MSG_CHECKING([for socklen_t equivalent])
@@ -59,7 +59,7 @@ getpeername(0,0,&len);
 #include <sys/socket.h>])
 
 dnl Android requires -llog for printf and friends
-dnl and will only run position independant executables
+dnl and will only run position independent executables
 AC_MSG_CHECKING([if building on Android])
 AC_TRY_COMPILE([
   #ifdef __BIONIC__

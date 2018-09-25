@@ -1195,7 +1195,7 @@ class SystemIncludeDirectories_Case(Compilation_Case):
 
     def source(self):
         return """
-#include "sys/types.h"    /* Should resolve to /usr/incude/sys/types.h. */
+#include "sys/types.h"    /* Should resolve to /usr/include/sys/types.h. */
 #include <stdio.h>
 #include "testhdr.h"
 int main(void) {

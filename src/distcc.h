@@ -87,13 +87,13 @@ struct dcc_hostdef;
 
 
 enum dcc_compress {
-    /* wierd values to catch errors */
+    /* weird values to catch errors */
     DCC_COMPRESS_NONE     = 69,
     DCC_COMPRESS_LZO1X
 };
 
 enum dcc_cpp_where {
-    /* wierd values to catch errors */
+    /* weird values to catch errors */
     DCC_CPP_ON_CLIENT     = 42,
     DCC_CPP_ON_SERVER
 };

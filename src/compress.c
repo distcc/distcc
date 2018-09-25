@@ -118,7 +118,7 @@ int dcc_compress_file_lzo1x(int in_fd,
 /**
  * Send LZO-compressed bulk data.
  *
- * The most straighforward method for miniLZO is to just send everything in
+ * The most straightforward method for miniLZO is to just send everything in
  * one big chunk.  So we just read the whole input into a buffer, build the
  * output in a buffer, and send it once its complete.
  **/

@@ -52,7 +52,7 @@
 /* How long shall the background daemon be idle before i terminates itself? */
 #define MAX_IDLE_TIME 20
 
-/* Maxium size of host file to load */
+/* Maximum size of host file to load */
 #define MAX_FILE_SIZE (1024*100)
 
 /* General daemon data */
@@ -84,7 +84,7 @@ struct host {
     AvahiServiceResolver *resolver;
 };
 
-/* A generic, system independant lock routine, similar to sys_lock,
+/* A generic, system independent lock routine, similar to sys_lock,
  * but more powerful:
  *        rw:         if non-zero: r/w lock instead of r/o lock
  *        enable:     lock or unlock
@@ -503,7 +503,7 @@ static int daemon_proc(const char *host_file, const char *lock_file, int n_slots
 
         /* Iterate the main loop for 5s */
         if (avahi_simple_poll_iterate(d.simple_poll, 5000) != 0) {
-            rs_log_crit("Event loop exited abnormaly.\n");
+            rs_log_crit("Event loop exited abnormally.\n");
             goto finish;
         }
     }
