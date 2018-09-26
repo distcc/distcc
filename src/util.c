@@ -39,6 +39,8 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 
+#include <netinet/in.h>
+
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
