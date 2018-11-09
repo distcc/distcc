@@ -119,6 +119,22 @@ CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS = ('M', 'i', '-', 'a', 't')
 for key in CPP_OPTIONS_MAYBE_TWO_WORDS.keys():
   assert key[1] in CPP_OPTIONS_MAYBE_TWO_WORDS_FIRST_LETTERS
 
+PATH_EXPR='[/a-zA-Z_0-9.]+' # regular expression for a partial file path
+
+# These are the cpp options that require regular expressions, m is Match.
+CPP_OPTIONS_REGULAR_EXPRESSIONS = {
+  '-Wa,(%s\.s)' % PATH_EXPR:     lambda ps, m: ps.include_files.append(m.group(1)),
+  '-Wa,\[(%s\.s)\]' % PATH_EXPR: lambda ps, m: ps.include_files.append(m.group(1)),
+}
+
+CPP_OPTIONS_REGULAR_EXPRESSIONS_STARTS_WITH = '-Wa,'
+for key in CPP_OPTIONS_REGULAR_EXPRESSIONS.keys():
+  assert key.startswith(CPP_OPTIONS_REGULAR_EXPRESSIONS_STARTS_WITH)
+
+CPP_OPTIONS_REGULAR_EXPRESSIONS_COMPILED = {}
+for key in CPP_OPTIONS_REGULAR_EXPRESSIONS.keys():
+  CPP_OPTIONS_REGULAR_EXPRESSIONS_COMPILED[key] = re.compile(key)
+
 # These are the cpp options that a) are more than one letter long,
 # b) always take an argument, and c) must have that argument as a
 # separate word in argv.
@@ -413,6 +429,20 @@ def ParseCommandArgs(args, current_dir, includepath_map, dir_map,
           found_action = True
           break
       if found_action:    # what we really need here is a goto!
+        continue
+
+    # Deal with the complex options requiring regular expressions last.
+    if args[i].startswith(CPP_OPTIONS_REGULAR_EXPRESSIONS_STARTS_WITH):
+      found_action = False
+      for (option, action) in CPP_OPTIONS_REGULAR_EXPRESSIONS.items():
+        r = CPP_OPTIONS_REGULAR_EXPRESSIONS_COMPILED[option]
+        m = r.match(args[i])
+        if action and m is not None:
+          action(parse_state, m)
+          i += 1
+          found_action = True
+          break
+      if found_action:
         continue
 
     # Whatever is left must be a one-word option (that is, an option
