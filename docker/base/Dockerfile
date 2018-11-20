@@ -12,4 +12,6 @@ RUN apt-get update && \
                     python-dev \
                     libiberty-dev \
                     build-essential \
-                    make
+                    make \
+                   && \
+    rm -rf /var/lib/apt/lists/*

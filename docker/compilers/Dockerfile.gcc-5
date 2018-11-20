@@ -7,5 +7,6 @@ RUN apt-get update && \
                     gcc-multilib \
                     g++-5 \
                     g++-multilib && \
+    rm -rf /var/lib/apt/lists/* && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 50 && \
     update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-5 50
