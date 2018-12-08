@@ -599,7 +599,7 @@ static GtkWidget * dcc_gnome_make_mainwin (void)
 
 #if GTK_CHECK_VERSION(2,2,0)
   gtk_window_set_icon_from_file (GTK_WINDOW (mainwin),
-                                 PKGDATADIR "/distccmon-gnome-icon.png",
+                                 ICONDIR "/distccmon-gnome.png",
                                  NULL);
 #endif
 

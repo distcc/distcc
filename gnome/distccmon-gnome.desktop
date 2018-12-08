@@ -1,6 +1,5 @@
 [Desktop Entry]
-Version=0.9.4
-Encoding=UTF-8
+Version=1.0
 Exec=distccmon-gnome
 Name=distcc monitor
 Name[sv]=distcc övervakare
@@ -8,9 +7,9 @@ GenericName=Distributed Compile Monitor
 GenericName[sv]=Distribuerad kompilerings-övervakare
 Comment=Graphical view of distributed compile tasks
 Comment[sv]=Grafisk vy av distribuerade kompileringsuppgifter
-Icon=distccmon-gnome-icon.png
+Icon=distccmon-gnome
 TryExec=distccmon-gnome
 Terminal=false
 Type=Application
-Categories=GNOME;Application;Development;
+Categories=GNOME;GTK;Development;
 StartupNotify=true
