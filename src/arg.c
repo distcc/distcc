@@ -128,7 +128,7 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
  * @returns 0 if it's ok to distribute this compilation, or an error code.
  **/
 int dcc_scan_args(char *argv[], char **input_file, char **output_file,
-                  char ***ret_newargv)
+                  char ***ret_newargv,int *hasgcov)
 {
     int seen_opt_c = 0, seen_opt_s = 0;
     int i;
@@ -206,9 +206,10 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                 seen_opt_s = 1;
             } else if (!strcmp(a, "-fprofile-arcs")
                        || !strcmp(a, "-ftest-coverage")) {
-                rs_log_info("compiler will emit profile info; must be local");
-                return EXIT_DISTCC_FAILED;
-            } else if (!strcmp(a, "-frepo")) {
+					*hasgcov=1;
+                //rs_log_info("compiler will emit profile info; must be local");
+                //return EXIT_DISTCC_FAILED;
+            }else if (!strcmp(a, "-frepo")) {
                 rs_log_info("compiler will emit .rpo files; must be local");
                 return EXIT_DISTCC_FAILED;
             } else if (str_startswith("-x", a)) {

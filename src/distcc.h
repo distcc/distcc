@@ -177,7 +177,8 @@ int dcc_retrieve_results(int net_fd,
                          const char *output_fname,
                          const char *deps_fname,
                          const char *server_stderr_fname,
-                         struct dcc_hostdef *);
+                         struct dcc_hostdef *,
+                         int hasgcov /*support gcov*/);
 
 /* climasq.c */
 int dcc_support_masquerade(char *argv[], char *progname, int *);
@@ -253,7 +254,7 @@ int dcc_set_action_opt(char **, const char *);
 int dcc_set_output(char **, char *);
 int dcc_set_input(char **, char *);
 int dcc_scan_args(char *argv[], /*@out@*/ /*@relnull@*/ char **orig_o,
-                  char **orig_i, char ***ret_newargv);
+                  char **orig_i, char ***ret_newargv,int * hasgcov);
 int dcc_expand_preprocessor_options(char ***argv_ptr);
 
 /* argutil.c */
@@ -305,6 +306,7 @@ int dcc_output_from_source(const char *sfile, const char *out_extn,
 
 const char * dcc_preproc_exten(const char *e);
 const char * dcc_find_basename(const char *sfile);
+void dcc_truncate_to_nosuffix(char *sfile);
 void dcc_truncate_to_dirname(char *file);
 
 

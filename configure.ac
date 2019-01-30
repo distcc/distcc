@@ -188,7 +188,7 @@ then
     # causing some of the tests to fail when they should succeed.
     if test x"$enable_Werror" != xno
     then
-      WERROR_CFLAGS="-Werror"
+      WERROR_CFLAGS=""
     fi
 
     # Additional flags for compiling Python extension modules.

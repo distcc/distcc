@@ -504,6 +504,7 @@ dcc_build_somewhere(char *argv[],
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename = NULL;
     char **new_argv;
+	int hasgcov=0;
 
     if ((ret = dcc_expand_preprocessor_options(&argv)) != 0)
         goto clean_up;
@@ -518,7 +519,7 @@ dcc_build_somewhere(char *argv[],
 
     /* FIXME: this may leak memory for argv. */
 
-    ret = dcc_scan_args(argv, &input_fname, &output_fname, &new_argv);
+    ret = dcc_scan_args(argv, &input_fname, &output_fname, &new_argv,&hasgcov);
     dcc_free_argv(argv);
     argv = new_argv;
     if (ret != 0) {
@@ -638,7 +639,7 @@ dcc_build_somewhere(char *argv[],
                                   needs_dotd ? deps_fname : NULL,
                                   server_stderr_fname,
                                   cpp_pid, local_cpu_lock_fd,
-                  host, status)) != 0) {
+                  host, status,hasgcov)) != 0) {
         /* Returns zero if we successfully ran the compiler, even if
          * the compiler itself bombed out. */
 

@@ -585,6 +585,8 @@ static int dcc_run_job(int in_fd,
     char *server_cwd = NULL;
     char *client_cwd = NULL;
     int changed_directory = 0;
+	char * out_fname_gcno=NULL,*tmpcopy=NULL;		
+	int hasgcov=0;
 
     gettimeofday(&start, NULL);
 
@@ -626,7 +628,7 @@ static int dcc_run_job(int in_fd,
 
     if ((ret = dcc_r_argv(in_fd, &argv))
         || (ret = dcc_scan_args(argv, &orig_input_tmp, &orig_output_tmp,
-                                &tweaked_argv)))
+                                &tweaked_argv,&hasgcov)))
         goto out_cleanup;
 
     /* The orig_input_tmp and orig_output_tmp values returned by dcc_scan_args()
@@ -646,9 +648,19 @@ static int dcc_run_job(int in_fd,
     argv = tweaked_argv;
     tweaked_argv = NULL;
 
-    rs_trace("output file %s", orig_output);
+    rs_trace("output file %s hasgcov:%d", orig_output,hasgcov);
     if ((ret = dcc_make_tmpnam("distccd", ".o", &temp_o)))
         goto out_cleanup;
+
+	//make gcno file name
+	if(hasgcov)
+	{
+		
+		tmpcopy = strdup(temp_o);
+		dcc_truncate_to_nosuffix(tmpcopy);
+		asprintf(&out_fname_gcno,"%s.gcno",tmpcopy);	
+		rs_log_notice("target objfile:%s gcno:%s",temp_o,out_fname_gcno);
+	}
 
     /* if the protocol is multi-file, then we need to do the following
      * in a loop.
@@ -712,11 +724,26 @@ static int dcc_run_job(int in_fd,
            */
           if ((ret = dcc_fix_debug_info(temp_o, "/", temp_dir)))
             goto out_cleanup;
+
+		  if(hasgcov){
+          	if ((ret = dcc_fix_debug_info(out_fname_gcno, "/", temp_dir)))
+            	goto out_cleanup;
+		  }
+		
         }
+
+		
         if ((ret = dcc_x_file(out_fd, temp_o, "DOTO", compr, NULL)))
             goto out_cleanup;
 
-        if (cpp_where == DCC_CPP_ON_SERVER) {
+		if(hasgcov)
+		{
+        	if ((ret = dcc_x_file(out_fd, out_fname_gcno, "GCOV", compr, NULL)))
+            	goto out_cleanup;
+		}
+
+		
+        if (cpp_where == DCC_CPP_ON_SERVER) {						
             char *cleaned_dotd;
             ret = dcc_cleanup_dotd(deps_fname,
                                    &cleaned_dotd,
@@ -726,7 +753,23 @@ static int dcc_run_job(int in_fd,
             if (ret) goto out_cleanup;
             ret = dcc_x_file(out_fd, cleaned_dotd, "DOTD", compr, NULL);
             free(cleaned_dotd);
-        }
+
+
+			if (hasgcov) {		
+				
+				char *cleaned_dotd;
+				ret = dcc_cleanup_dotd(deps_fname,
+									   &cleaned_dotd,
+									   temp_dir,
+									   dotd_target ? dotd_target : orig_output,
+									   out_fname_gcno);
+				if (ret) goto out_cleanup;
+				ret = dcc_x_file(out_fd, cleaned_dotd, "GCOV", compr, NULL);
+				free(cleaned_dotd);
+			}
+
+
+        }		
 
         job_result = STATS_COMPILE_OK;
     }
@@ -819,6 +862,9 @@ out_cleanup:
 
     free(client_cwd);
     free(server_cwd);
+
+	free(out_fname_gcno);	
+	free(tmpcopy);
 
     return ret;
 }
