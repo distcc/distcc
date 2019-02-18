@@ -202,7 +202,8 @@ int dcc_compile_remote(char **argv,
                        pid_t cpp_pid,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
-                       int *status)
+                       int *status,
+                       int hasgcov)
 {
     int to_net_fd = -1, from_net_fd = -1;
     int ret;
@@ -295,7 +296,8 @@ int dcc_compile_remote(char **argv,
      * receive results. */
     if (ret == 0 && *status == 0) {
         ret = dcc_retrieve_results(from_net_fd, status, output_fname,
-                                   deps_fname, server_stderr_fname, host);
+                                   deps_fname, server_stderr_fname, host,hasgcov);
+
     }
 
     if (gettimeofday(&after, NULL)) {

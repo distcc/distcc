@@ -450,3 +450,88 @@ int dcc_make_tmpnam(const char *prefix,
     *name_ret = s;
     return 0;
 }
+
+
+int dcc_make_tmpnam_gcov(const char *orig_output,
+                    char **name_ret)
+{
+    char *s = NULL;
+    const char *tempdir;
+    int ret;
+    unsigned long random_bits;
+    int fd;
+
+    if ((ret = dcc_get_tmp_top(&tempdir)))
+        return ret;
+
+    if (access(tempdir, W_OK|X_OK) == -1) {
+        rs_log_error("can't use TMPDIR \"%s\": %s", tempdir, strerror(errno));
+        return EXIT_IO_ERROR;
+    }
+
+    random_bits = (unsigned long) getpid() << 16;
+
+# if HAVE_GETTIMEOFDAY
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        random_bits ^= tv.tv_usec << 16;
+        random_bits ^= tv.tv_sec;
+    }
+# else
+    random_bits ^= time(NULL);
+# endif
+
+#if 0
+    random_bits = 0;            /* FOR TESTING */
+#endif
+
+    do {
+        free(s);
+        if (asprintf(&s, " mkdir %s/%s_%08lx/",
+                    tempdir,
+                    "distccd_",
+                    random_bits & 0xffffffffUL) == -1)
+            return EXIT_OUT_OF_MEMORY;
+        system(s);
+
+        free(s);
+        if (asprintf(&s, "%s/%s_%08lx/%s",
+                     tempdir,
+                     "distccd_",
+                     random_bits & 0xffffffffUL,
+                     orig_output) == -1)
+            return EXIT_OUT_OF_MEMORY;
+
+        /* Note that if the name already exists as a symlink, this
+ *          * open call will fail.
+ *                   *
+ *                            * The permissions are tight because nobody but this process
+ *                                     * and our children should do anything with it. */
+        fd = open(s, O_WRONLY | O_CREAT | O_EXCL, 0600);
+        if (fd == -1) {
+            /* try again */
+            rs_trace("failed to create %s: %s", s, strerror(errno));
+            random_bits += 7777; /* fairly prime */
+            continue;
+        }
+
+        if (close(fd) == -1) {  /* huh? */
+            rs_log_warning("failed to close %s: %s", s, strerror(errno));
+            return EXIT_IO_ERROR;
+        }
+
+        break;
+    } while (1);
+
+    if ((ret = dcc_add_cleanup(s))) {
+        /* bailing out */
+        unlink(s);
+        free(s);
+        return ret;
+    }
+
+    *name_ret = s;
+    return 0;
+}
+

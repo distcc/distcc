@@ -254,7 +254,7 @@ int dcc_set_action_opt(char **, const char *);
 int dcc_set_output(char **, char *);
 int dcc_set_input(char **, char *);
 int dcc_scan_args(char *argv[], /*@out@*/ /*@relnull@*/ char **orig_o,
-                  char **orig_i, char ***ret_newargv,int * hasgcov);
+                  char **orig_i, char ***ret_newargv, int * hasgcov);
 int dcc_expand_preprocessor_options(char ***argv_ptr);
 
 /* argutil.c */
@@ -268,6 +268,7 @@ void dcc_free_argv(char **argv);
 /* tempfile.c */
 int dcc_get_tempdir(const char **);
 int dcc_make_tmpnam(const char *, const char *suffix, char **);
+int dcc_make_tmpnam_gcov(const char *, char **);
 int dcc_get_new_tmpdir(char **tmpdir);
 int dcc_mk_tmpdir(const char *path);
 int dcc_mkdir(const char *path);
