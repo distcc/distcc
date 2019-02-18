@@ -460,6 +460,7 @@ int dcc_make_tmpnam_gcov(const char *orig_output,
     int ret;
     unsigned long random_bits;
     int fd;
+    char *relatpath=NULL, *dstdir=NULL, *outfile=NULL;
 
     if ((ret = dcc_get_tmp_top(&tempdir)))
         return ret;
@@ -487,32 +488,60 @@ int dcc_make_tmpnam_gcov(const char *orig_output,
 #endif
 
     do {
-        free(s);
-        if (asprintf(&s, " mkdir %s/%s_%08lx/",
+
+        relatpath=strdup(orig_output);
+        //absolute path
+        if(relatpath[0]=='/')
+        {
+            dcc_truncate_to_dirname(relatpath);
+            relatpath[0]="_";
+        }
+        //relate path
+        else
+        {
+            dcc_truncate_to_dirname(relatpath); 
+        }
+        
+        outfile=dcc_find_basename(orig_output);
+
+        //target dir 
+        free(dstdir);
+        if (asprintf(&dstdir, "%s/%s_%08lx",
                     tempdir,
-                    "distccd_",
+                    "distccd",
                     random_bits & 0xffffffffUL) == -1)
             return EXIT_OUT_OF_MEMORY;
+        
+        //make dir 
+        free(s);
+        if (asprintf(&s, " mkdir -p %s/%s",
+                    dstdir,
+                    relatpath) == -1)
+            return EXIT_OUT_OF_MEMORY;
+        rs_log_notice("try to mkdir:%s", s);
+
         system(s);
 
         free(s);
-        if (asprintf(&s, "%s/%s_%08lx/%s",
-                     tempdir,
-                     "distccd_",
-                     random_bits & 0xffffffffUL,
-                     orig_output) == -1)
+        if (asprintf(&s, "%s/%s/%s",
+                    dstdir,
+                    relatpath,
+                    outfile) == -1)
             return EXIT_OUT_OF_MEMORY;
-
+        rs_log_notice("try to create file:%s", s);
+        
         /* Note that if the name already exists as a symlink, this
- *          * open call will fail.
- *                   *
- *                            * The permissions are tight because nobody but this process
- *                                     * and our children should do anything with it. */
+         * open call will fail.
+         *
+         * The permissions are tight because nobody but this process
+         * and our children should do anything with it. */
         fd = open(s, O_WRONLY | O_CREAT | O_EXCL, 0600);
         if (fd == -1) {
             /* try again */
-            rs_trace("failed to create %s: %s", s, strerror(errno));
+            rs_log_notice("failed to create %s: %s", s, strerror(errno));
             random_bits += 7777; /* fairly prime */
+            //try to remove tmpdir
+            remove_dir(dstdir);
             continue;
         }
 
@@ -524,13 +553,15 @@ int dcc_make_tmpnam_gcov(const char *orig_output,
         break;
     } while (1);
 
-    if ((ret = dcc_add_cleanup(s))) {
+    if ((ret = dcc_add_cleanup(dstdir))) {
         /* bailing out */
-        unlink(s);
+        unlink(dstdir);
         free(s);
+        free(dstdir);
         return ret;
     }
-
+    free(dstdir);
+    
     *name_ret = s;
     return 0;
 }

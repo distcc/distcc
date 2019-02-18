@@ -648,17 +648,25 @@ static int dcc_run_job(int in_fd,
     argv = tweaked_argv;
     tweaked_argv = NULL;
 
-    rs_trace("output file %s hasgcov:%d", orig_output, hasgcov);
-    if ((ret = dcc_make_tmpnam_gcov(orig_output, &temp_o)))
-        goto out_cleanup;
-
     //make gcno file name
-    if(hasgcov)
-    {
+    if(hasgcov) {
+        if ((ret = dcc_make_tmpnam_gcov(orig_output, &temp_o)))
+            goto out_cleanup;
+
         tmpcopy = strdup(temp_o);
         dcc_truncate_to_nosuffix(tmpcopy);
         asprintf(&out_fname_gcno, "%s.gcno", tmpcopy);
         rs_log_notice("target objfile:%s gcno:%s", temp_o, out_fname_gcno);
+        //must clenup .gcno tmp file by self
+        if ((ret = dcc_add_cleanup(out_fname_gcno))) {
+            /* bailing out */
+            unlink(out_fname_gcno);
+            free(out_fname_gcno);
+        }
+    }
+    else {
+        if ((ret = dcc_make_tmpnam("distccd", ".o", &temp_o)))
+            goto out_cleanup;
     }
 
     /* if the protocol is multi-file, then we need to do the following

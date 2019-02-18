@@ -37,6 +37,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include<dirent.h>
 
 #include "distcc.h"
 #include "exitcode.h"
@@ -62,6 +63,53 @@ void dcc_cleanup_tempfiles(void)
 void dcc_cleanup_tempfiles_from_signal_handler(void)
 {
     dcc_cleanup_tempfiles_inner(1);
+}
+
+/**
+* recurse del file or path
+* @dir: file or path need to del
+*/
+int remove_dir(const char *dir)
+{
+    char cur_dir[] = ".";
+    char up_dir[] = "..";
+    char dir_name[128];
+    DIR *dirp;
+    struct dirent *dp;
+    struct stat dir_stat;
+
+    //file or dir not exist
+    if ( 0 != access(dir, F_OK) ) {
+        return -1;
+    }
+
+    //get stat err
+    if ( 0 > stat(dir, &dir_stat) ) {
+        rs_log_notice("get directory stat error:%s", dir);		
+        return -1;
+    }
+
+    //nomal file
+    if ( S_ISREG(dir_stat.st_mode) ) {
+        remove(dir);
+    } 
+    //path 
+    else if ( S_ISDIR(dir_stat.st_mode) ) {
+        dirp = opendir(dir);
+        while ( (dp=readdir(dirp)) != NULL ) {
+            // filter . and ..
+            if ( (0 == strcmp(cur_dir, dp->d_name)) || (0 == strcmp(up_dir, dp->d_name)) ) {
+                continue;
+            }
+            sprintf(dir_name, "%s/%s", dir, dp->d_name);
+            remove_dir(dir_name);
+        }
+        closedir(dirp);
+        rmdir(dir);
+    } else {
+        rs_log_notice("unknow file type:%s!",dir);    
+    }
+    return 0;
 }
 
 /*
@@ -100,9 +148,10 @@ static void dcc_cleanup_tempfiles_inner(int from_signal_handler)
              * if that fails, try removing is as a file.
              * Report the error from removing-as-a-file
              * if both fail. */
-            if ((rmdir(cleanups[i]) == -1) &&
-                (unlink(cleanups[i]) == -1) &&
-                (errno != ENOENT)) {
+            //if ((rmdir(cleanups[i]) == -1) &&
+            //    (unlink(cleanups[i]) == -1) &&
+           //     (errno != ENOENT)) {
+           if((remove_dir(cleanups[i])!=0) && (errno != ENOENT)){
                 rs_log_notice("cleanup %s failed: %s", cleanups[i],
                               strerror(errno));
             }

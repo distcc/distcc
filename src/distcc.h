@@ -285,6 +285,7 @@ int dcc_mk_tmp_ancestor_dirs(const char* file);
 void dcc_cleanup_tempfiles(void);
 void dcc_cleanup_tempfiles_from_signal_handler(void);
 int dcc_add_cleanup(const char *filename) WARN_UNUSED;
+int remove_dir(const char * dir);
 
 /* strip.c */
 int dcc_strip_local_args(char **from, char ***out_argv);
