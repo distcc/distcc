@@ -119,7 +119,7 @@ void dcc_truncate_to_nosuffix(char *file)
     slash = strrchr(file, '.');
 
     if (slash == NULL) {
-      file[0] = '\0';
+        file[0] = '\0';
     } else {
         *slash = '\0';
     }
@@ -137,7 +137,7 @@ void dcc_truncate_to_dirname(char *file)
     slash = strrchr(file, '/');
 
     if (slash == NULL) {
-      file[0] = '\0';
+        file[0] = '\0';
     } else {
         *slash = '\0';
     }
