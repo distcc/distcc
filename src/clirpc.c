@@ -152,7 +152,7 @@ int dcc_retrieve_results(int net_fd,
                          const char *deps_fname,
                          const char *server_stderr_fname,
                          struct dcc_hostdef *host,
-                         int hasgcov)
+                         const int hasgcov)
 {
     unsigned len;
     int ret;
@@ -210,7 +210,9 @@ int dcc_retrieve_results(int net_fd,
             if ((ret = dcc_r_token_int(net_fd, "GCOV", &o_len)))
                 return ret;	
 
-            char * gcnopath=NULL,*output_fname_gcno=NULL,*dirpath=NULL;
+            char * gcnopath=NULL;
+            char * output_fname_gcno=NULL;
+            char * dirpath=NULL;
             const char * gcnoenv=NULL;
             const char * basename=NULL;
             gcnoenv = getenv("GCNO_PATH");
@@ -219,10 +221,12 @@ int dcc_retrieve_results(int net_fd,
             dirpath=strdup(output_fname);
             dcc_truncate_to_dirname(dirpath);
 
-            if(gcnoenv&&strlen(gcnoenv)>0)
+            if(gcnoenv&&strlen(gcnoenv)>0) {
                 asprintf(&gcnopath, "%s/%s", gcnoenv, dirpath);
-            else
+            }
+            else {
                 gcnopath=strdup(dirpath);
+            }
             
             basename=dcc_find_basename(output_fname);
             dcc_truncate_to_nosuffix(basename);

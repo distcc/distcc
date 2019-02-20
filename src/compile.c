@@ -638,8 +638,11 @@ dcc_build_somewhere(char *argv[],
                                   output_fname,
                                   needs_dotd ? deps_fname : NULL,
                                   server_stderr_fname,
-                                  cpp_pid, local_cpu_lock_fd,
-                  host, status, hasgcov)) != 0) {
+                                  cpp_pid,
+                                  local_cpu_lock_fd,
+                                  host,
+                                  status,
+                                  hasgcov)) != 0) {
         /* Returns zero if we successfully ran the compiler, even if
          * the compiler itself bombed out. */
 

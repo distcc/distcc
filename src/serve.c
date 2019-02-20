@@ -648,7 +648,17 @@ static int dcc_run_job(int in_fd,
     argv = tweaked_argv;
     tweaked_argv = NULL;
 
-    //make gcno file name
+    /* If has coverage(-fprofile-arcs -ftest-coverage),
+     * the tmp file will build to a tmp path which has the obj original relative path
+     * (/tmp/distccd_1756c11c.o ==> /tmp/distccd_1756c11c/obj/xxx.o + /tmp/distccd_1756c11c/obj/xxx.gcno),
+     * for obj path will used by gcc to build gcda target name in excutable,
+     * in this way we can get file name when run the executable file
+     * (/tmp/distccd_1756c11c.gcda => /tmp/distccd_1756c11c/obj/xxx.gcda),
+     * then pick up obj/xxx.gcda (may use some script)    
+     * 
+     * If has not coverage the tmp file will build as a tmp file as before
+     * (/tmp/distccd_1756c11c.o)
+     */
     if(hasgcov) {
         if ((ret = dcc_make_tmpnam_gcov(orig_output, &temp_o)))
             goto out_cleanup;
@@ -657,7 +667,8 @@ static int dcc_run_job(int in_fd,
         dcc_truncate_to_nosuffix(tmpcopy);
         asprintf(&out_fname_gcno, "%s.gcno", tmpcopy);
         rs_log_notice("target objfile:%s gcno:%s", temp_o, out_fname_gcno);
-        //must clenup .gcno tmp file by self
+        
+        /* must clenup .gcno tmp file by self */
         if ((ret = dcc_add_cleanup(out_fname_gcno))) {
             /* bailing out */
             unlink(out_fname_gcno);

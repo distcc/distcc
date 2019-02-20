@@ -107,10 +107,9 @@ const char * dcc_find_basename(const char *sfile)
     return slash+1;
 }
 
-/**
- * Return a pointer to the nosuffix of the file (everything before the
- * last slash.)  If there is no slash, return the whole filename,
- * which is presumably in the current directory.
+/** Truncate the filename to its nosuffix (everything before the last .).
+ *  If the filename ends without a . do nothing.
+ *  Note: this is destructive.
  **/
 void dcc_truncate_to_nosuffix(char *file)
 {

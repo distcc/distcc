@@ -451,7 +451,24 @@ int dcc_make_tmpnam(const char *prefix,
     return 0;
 }
 
-
+/**
+ * Create a path include obj file relative path and register it for
+ * later cleanup, and return the full path name.
+ *
+ * The file will be reopened later, possibly in a child.  But we know
+ * that it exists with appropriately tight permissions.
+ *
+ * If has coverage(-fprofile-arcs -ftest-coverage),
+ * the tmp file will build to a tmp path 
+ * (/tmp/distccd_1756c11c.o ==> /tmp/distccd_1756c11c/obj/xxx.o + /tmp/distccd_1756c11c/obj/xxx.gcno),
+ * for obj path will used by gcc to build gcda target name in excutable,
+ * in this way we can get file name when run the executable file
+ * (/tmp/distccd_1756c11c.gcda => /tmp/distccd_1756c11c/obj/xxx.gcda),
+ * then pick up obj/xxx.gcda (may use some script)    
+ * 
+ * If has not coverage the tmp file will build as a tmp file as before
+ * (/tmp/distccd_1756c11c.o)
+ **/
 int dcc_make_tmpnam_gcov(const char *orig_output,
                     char **name_ret)
 {

@@ -184,6 +184,8 @@ dcc_send_header(int net_fd,
  *
  * @param status on return contains the wait-status of the remote
  * compiler.
+ * 
+ * @param hasgcov If compile argv has "-fprofile-arcs" or "-ftest-coverage"
  *
  * Returns 0 on success, otherwise error.  Returning nonzero does not
  * necessarily imply the remote compiler itself succeeded, only that
@@ -203,7 +205,7 @@ int dcc_compile_remote(char **argv,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
                        int *status,
-                       int hasgcov)
+                       const int hasgcov)
 {
     int to_net_fd = -1, from_net_fd = -1;
     int ret;
@@ -296,7 +298,7 @@ int dcc_compile_remote(char **argv,
      * receive results. */
     if (ret == 0 && *status == 0) {
         ret = dcc_retrieve_results(from_net_fd, status, output_fname,
-                                   deps_fname, server_stderr_fname, host,hasgcov);
+                                   deps_fname, server_stderr_fname, host, hasgcov);
 
     }
 

@@ -268,6 +268,7 @@ void dcc_free_argv(char **argv);
 /* tempfile.c */
 int dcc_get_tempdir(const char **);
 int dcc_make_tmpnam(const char *, const char *suffix, char **);
+/* tempfile.c */
 int dcc_make_tmpnam_gcov(const char *, char **);
 int dcc_get_new_tmpdir(char **tmpdir);
 int dcc_mk_tmpdir(const char *path);
