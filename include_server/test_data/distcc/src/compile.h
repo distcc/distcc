@@ -31,7 +31,8 @@ int dcc_compile_remote(char **argv,
                        pid_t cpp_pid,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
-                       int *status);
+                       int *status,
+                       int hasgcov/*support gcov*/);
 
 int dcc_build_somewhere_timed(char *argv[],
                               int sg_level,

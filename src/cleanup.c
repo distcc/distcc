@@ -37,6 +37,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 
 #include "distcc.h"
 #include "exitcode.h"
@@ -62,6 +63,54 @@ void dcc_cleanup_tempfiles(void)
 void dcc_cleanup_tempfiles_from_signal_handler(void)
 {
     dcc_cleanup_tempfiles_inner(1);
+}
+
+/**
+* Recurse remove file or path.
+*
+* @dir: file or path need to remove.
+* If @dir is file remove it directly.
+* If @dir is path remove it recursively.
+*/
+int remove_dir(const char *dir)
+{
+    const char cur_dir[] = ".";
+    const char up_dir[] = "..";
+    char dir_name[128];
+    DIR *dirp;
+    struct dirent *dp;
+    struct stat dir_stat;
+
+    /* file or dir not exist */
+    if ( 0 != access(dir, F_OK) ) {
+        return -1;
+    }
+
+    /* get stat err */
+    if ( 0 > stat(dir, &dir_stat) ) {
+        rs_log_notice("get directory stat error:%s", dir);
+        return -1;
+    }
+
+    if ( S_ISREG(dir_stat.st_mode) ) {
+        remove(dir);
+    } 
+    else if ( S_ISDIR(dir_stat.st_mode) ) {
+        dirp = opendir(dir);
+        while ( (dp=readdir(dirp)) != NULL ) {
+            /* filter "." and ".." */
+            if ( (0 == strcmp(cur_dir, dp->d_name)) || (0 == strcmp(up_dir, dp->d_name)) ) {
+                continue;
+            }
+            sprintf(dir_name, "%s/%s", dir, dp->d_name);
+            remove_dir(dir_name);
+        }
+        closedir(dirp);
+        rmdir(dir);
+    } else {
+        rs_log_notice("unknow file type:%s!",dir);    
+    }
+    return 0;
 }
 
 /*
@@ -91,19 +140,19 @@ static void dcc_cleanup_tempfiles_inner(int from_signal_handler)
     /* do the unlinks from the last to the first file.
      * This way, directories get deleted after their files. */
 
-     /* tempus fugit */
+    /* tempus fugit */
     for (i = n_cleanups - 1; i >= 0; i--) {
         if (save) {
             rs_trace("skip cleanup of %s", cleanups[i]);
         } else {
-            /* Try removing it as a directory first, and
-             * if that fails, try removing is as a file.
+            /* Try removing it as file or path,
+             * if it's a file remove it directly, 
+             * if it's a path remove it recursively.
              * Report the error from removing-as-a-file
              * if both fail. */
-            if ((rmdir(cleanups[i]) == -1) &&
-                (unlink(cleanups[i]) == -1) &&
-                (errno != ENOENT)) {
-                rs_log_notice("cleanup %s failed: %s", cleanups[i],
+           if((remove_dir(cleanups[i])!=0) && 
+               (errno != ENOENT)) {
+                  rs_log_notice("cleanup %s failed: %s", cleanups[i],
                               strerror(errno));
             }
             done++;

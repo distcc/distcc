@@ -151,7 +151,8 @@ int dcc_retrieve_results(int net_fd,
                          const char *output_fname,
                          const char *deps_fname,
                          const char *server_stderr_fname,
-                         struct dcc_hostdef *host)
+                         struct dcc_hostdef *host,
+                         const int hasgcov)
 {
     unsigned len;
     int ret;
@@ -203,6 +204,56 @@ int dcc_retrieve_results(int net_fd,
                 return ret;
             }
         }
+
+        if(hasgcov)
+        {
+            if ((ret = dcc_r_token_int(net_fd, "GCOV", &o_len)))
+                return ret;	
+
+            char * gcnopath=NULL;
+            char * output_fname_gcno=NULL;
+            char * dirpath=NULL;
+            const char * gcnoenv=NULL;
+            const char * basename=NULL;
+            gcnoenv = getenv("GCNO_PATH");
+
+            //save xxx.gcno to GCNO_PATH if it set or default save to xxx.obj path
+            dirpath=strdup(output_fname);
+            dcc_truncate_to_dirname(dirpath);
+
+            if(gcnoenv&&strlen(gcnoenv)>0) {
+                asprintf(&gcnopath, "%s/%s", gcnoenv, dirpath);
+            }
+            else {
+                gcnopath=strdup(dirpath);
+            }
+            
+            basename=dcc_find_basename(output_fname);
+            dcc_truncate_to_nosuffix(basename);
+            asprintf(&output_fname_gcno, "%s/%s.gcno", gcnopath, basename);
+
+            
+            struct timeval tt;
+            gettimeofday(&tt, NULL);
+
+            rs_log(RS_LOG_INFO|RS_LOG_NONAME, "recv gcno file:%s\n", output_fname_gcno);
+            
+            if ((ret = dcc_r_file_timed(net_fd, output_fname_gcno, o_len, host->compr)))
+                return ret;
+
+            free(dirpath);
+            free(output_fname_gcno);
+            free(gcnopath);
+            
+            if (host->cpp_where == DCC_CPP_ON_SERVER) {
+                if ((ret = dcc_r_token_int(net_fd, "DOTD", &len) == 0)
+                    && deps_fname != NULL) {
+                    ret = dcc_r_file_timed(net_fd, deps_fname, len, host->compr);
+                    return ret;
+                }
+            }
+        }
+        
     } else if (o_len != 0) {
         rs_log_error("remote compiler failed but also returned output: "
                      "I don't know what to do");
