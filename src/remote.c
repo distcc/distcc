@@ -185,7 +185,7 @@ dcc_send_header(int net_fd,
  * @param status on return contains the wait-status of the remote
  * compiler.
  * 
- * @param hasgcov If compile argv has "-fprofile-arcs" or "-ftest-coverage"
+ * @param hasgcov If compile argv has "-fprofile-arcs" or "-ftest-coverage" or "--coverage"
  *
  * Returns 0 on success, otherwise error.  Returning nonzero does not
  * necessarily imply the remote compiler itself succeeded, only that

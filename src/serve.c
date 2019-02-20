@@ -648,7 +648,7 @@ static int dcc_run_job(int in_fd,
     argv = tweaked_argv;
     tweaked_argv = NULL;
 
-    /* If has coverage(-fprofile-arcs -ftest-coverage),
+    /* If has coverage(-fprofile-arcs -ftest-coverage or --coverage),
      * the tmp file will build to a tmp path which has the obj original relative path
      * (/tmp/distccd_1756c11c.o ==> /tmp/distccd_1756c11c/obj/xxx.o + /tmp/distccd_1756c11c/obj/xxx.gcno),
      * for obj path will used by gcc to build gcda target name in excutable,
