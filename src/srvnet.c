@@ -102,7 +102,8 @@ static int dcc_listen_by_addr(int fd,
     rs_log_info("listening on %s", sa_buf ? sa_buf : "UNKNOWN");
     free(sa_buf);
 
-    if (listen(fd, 10)) {
+    /* This should be at least 2X the number of threads, and AMD EPYX sells 64-thread CPUs (2019) */
+    if (listen(fd, 1024)) {
         rs_log_error("listen failed: %s", strerror(errno));
         close(fd);
         return EXIT_BIND_FAILED;
