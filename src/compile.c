@@ -594,7 +594,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
             t = path + strlen(path);
         pathlen = t - path;
         if (*path == '\0')
-            return -ENOENT;
+            break;
         strncpy(binname, path, pathlen);
         binname[pathlen] = '\0';
         strcat(binname, "/");
@@ -609,6 +609,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         argv[0] = newcmd;
         return 0;
     } while ((path += pathlen + 1));
+    free(newcmd);
     return -ENOENT;
 }
 
