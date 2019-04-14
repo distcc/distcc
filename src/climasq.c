@@ -117,8 +117,10 @@ int dcc_support_masquerade(char *argv[], char *progname, int *did_masquerade)
 
     if (*p != '\0') {
         int ret = dcc_set_path(p);
-        if (ret)
+        if (ret) {
+            free(buf);
             return ret;
+        }
         *did_masquerade = 1;
     }
     else {

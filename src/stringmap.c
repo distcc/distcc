@@ -43,14 +43,20 @@
  */
 stringmap_t *stringmap_load(const char *filename, int numFinalWordsToMatch)
 {
-    stringmap_t *result = calloc(1, sizeof(*result));
-    FILE *fp = fopen(filename, "r");
+    stringmap_t *result;
+    FILE *fp;
     char buf[2*PATH_MAX];
     int n;
 
-    result->numFinalWordsToMatch = numFinalWordsToMatch;
-    if (!fp)
+    result = calloc(1, sizeof(*result));
+    if (!result)
         return NULL;
+    result->numFinalWordsToMatch = numFinalWordsToMatch;
+    fp = fopen(filename, "r");
+    if (!fp) {
+        free(result);
+        return NULL;
+    }
     n=0;
     while (fgets(buf, sizeof(buf), fp))
         n++;

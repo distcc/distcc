@@ -95,7 +95,7 @@ void dcc_free_argv(char **argv)
 int dcc_copy_argv(char **from, char ***out, int delta)
 {
     char **b;
-    int l, i;
+    int l, i, k;
 
     l = dcc_argv_len(from);
     b = malloc((l+1+delta) * (sizeof from[0]));
@@ -106,6 +106,9 @@ int dcc_copy_argv(char **from, char ***out, int delta)
     for (i = 0; i < l; i++) {
         if ((b[i] = strdup(from[i])) == NULL) {
             rs_log_error("failed to duplicate element %d", i);
+            for(k = 0; k < i; k++)
+                free(b[k]);
+            free(b);
             return EXIT_OUT_OF_MEMORY;
         }
     }
