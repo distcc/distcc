@@ -1197,7 +1197,7 @@ uninstall-include-server:
 uninstall-man:
 	for p in $(man1_MEN); do				\
 	  file="$(DESTDIR)$(man1dir)/`basename $$p`";           \
-	  if [ -e "$$file" ]; then rm -fv "$$file"; fi          \
+	  if [ -e "$$file" ]; then rm -fv "$$file"; fi;         \
 	  if [ -e "$$file.gz" ]; then rm -fv "$$file.gz"; fi    \
 	done
 	-[ "`basename $(man1dir)`" = "$(PACKAGE)" ] && rmdir "$(DESTDIR)$(man1dir)"
