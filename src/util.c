@@ -580,7 +580,7 @@ int dcc_remove_if_exists(const char *fname)
 
 int dcc_which(const char *command, char **out)
 {
-    char *loc = NULL, *path, *t;
+    char *loc = NULL, *_loc, *path, *t;
     int ret;
 
     path = getenv("PATH");
@@ -593,9 +593,12 @@ int dcc_which(const char *command, char **out)
         t = strchr(path, ':');
         if (!t)
             t = path + strlen(path);
-        loc = realloc(loc, t - path + 1 + strlen(command) + 1);
-        if (!loc)
+        _loc = realloc(loc, t - path + 1 + strlen(command) + 1);
+        if (!_loc) {
+            free(loc);
             return -ENOMEM;
+        }
+        loc = _loc;
         strncpy(loc, path, t - path);
         loc[t - path] = '\0';
         strcat(loc, "/");
