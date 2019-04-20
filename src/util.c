@@ -1004,7 +1004,7 @@ int sd_is_socket(int fd, int family, int type, int listening) {
                 if (getsockname(fd, &sockaddr.sa, &l) < 0)
                         return -errno;
 
-                if (l < sizeof(sa_family_t))
+                if ((size_t)l < sizeof(sa_family_t))
                         return -EINVAL;
 
                 return sockaddr.sa.sa_family == family;
