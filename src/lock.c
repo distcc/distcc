@@ -103,6 +103,7 @@ struct dcc_hostdef _dcc_local = {
     DCC_CPP_ON_CLIENT,          /* where to cpp (ignored) */
 #ifdef HAVE_GSSAPI
     0,                          /* Authentication? */
+    NULL,                       /* Authentication name */
 #endif
     NULL
 };
@@ -123,6 +124,7 @@ struct dcc_hostdef _dcc_local_cpp = {
     DCC_CPP_ON_CLIENT,          /* where to cpp (ignored) */
 #ifdef HAVE_GSSAPI
     0,                          /* Authentication? */
+    NULL,                       /* Authentication name */
 #endif
     NULL
 };

@@ -245,6 +245,7 @@ static int dcc_parse_options(const char **psrc,
     host->cpp_where = DCC_CPP_ON_CLIENT;
 #ifdef HAVE_GSSAPI
     host->authenticate = 0;
+    host->auth_name = NULL;
 #endif
 
     while (p[0] == ',') {
@@ -266,6 +267,17 @@ static int dcc_parse_options(const char **psrc,
             rs_trace("got GSSAPI option");
             host->authenticate = 1;
             p += 4;
+            if (p[0] == '=') {
+                p++;
+                int ret;
+                if ((ret = dcc_dup_part(&p, &host->auth_name, "/: \t\n\r\f,")))
+	                return ret;
+
+                if (host->auth_name) {
+                    rs_trace("using \"%s\" server name instead of fqdn "
+                             "lookup for GSS-API auth", host->auth_name);
+                }
+            }
 #endif
         } else {
             rs_log_error("unrecognized option in host specification: %s",

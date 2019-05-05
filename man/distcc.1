@@ -516,7 +516,7 @@ The syntax is
   OLDSTYLE_TCP_HOST = HOSTID[/LIMIT][:PORT][OPTIONS]
   HOSTID = HOSTNAME | IPV4 | IPV6
   OPTIONS = ,OPTION[OPTIONS]
-  OPTION = lzo | cpp | auth
+  OPTION = lzo | cpp | auth[=AUTH_NAME]
   GLOBAL_OPTION = --randomize
   ZEROCONF = +zeroconf
 .fi
@@ -576,6 +576,12 @@ wrapped in the pump script in order to start the include server.
 .TP
 .B ,auth
 Enables GSSAPI-based mutual authentication for this host.
+.TP
+.B AUTH_NAME
+The "canonical" name to use for the service principal name instead
+of HOSTNAME (or its corresponding fqdn). This option is useful in case of
+accessing an authenticated server via ssh port forwarding, in which case
+the HOSTNAME is 127.0.0.1.
 .TP
 .B --randomize
 Randomize the order of the host list before execution.
