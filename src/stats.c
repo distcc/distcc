@@ -133,8 +133,8 @@ void dcc_stats_compile_ok(char *compiler, char *filename, struct timeval start,
         memcpy(&(sd.start), &start, sizeof(struct timeval));
         memcpy(&(sd.stop), &stop, sizeof(struct timeval));
         sd.time = time_usec;
-        strncpy(sd.filename, filename, MAX_FILENAME_LEN);
-        strncpy(sd.compiler, compiler, MAX_FILENAME_LEN);
+        strncpy(sd.filename, filename, MAX_FILENAME_LEN - 1);
+        strncpy(sd.compiler, compiler, MAX_FILENAME_LEN - 1);
         dcc_writex(dcc_statspipe[1], &sd, sizeof(sd));
     }
 }

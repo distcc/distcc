@@ -170,7 +170,7 @@ int dcc_r_many_files(int in_fd,
             /* We should explain what happened here, but we have already read
              * a few more bytes.
              */
-            strncpy(buf, token, 4);
+            memcpy(buf, token, 4);
             /* TODO(manos): this is probably not kosher */
             memcpy(&buf[4], &link_or_file_len, sizeof(link_or_file_len));
             dcc_explain_mismatch(buf, 12, in_fd);

@@ -265,7 +265,8 @@ int dcc_get_dns_domain(const char **domain_name)
                              hstrerror(h_errno));
                 return -1;
             }
-            strncpy(host_name, h->h_name, sizeof(host_name));
+            strncpy(host_name, h->h_name, sizeof(host_name - 1));
+            host_name[sizeof(host_name) - 1] = '\0';
         }
         envh = host_name;
     }
