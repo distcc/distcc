@@ -433,9 +433,10 @@ rs_supports_trace(void)
 }
 
 
-static char job_summary[4096];
+static char job_summary[4096*4];
 void dcc_job_summary_clear(void) {
     job_summary[0] = 0;
+    job_summary[sizeof(job_summary) - 1] = '\0';
 }
 
 void dcc_job_summary(void) {
@@ -443,5 +444,7 @@ void dcc_job_summary(void) {
 }
 
 void dcc_job_summary_append(const char *s) {
-    strncat(job_summary, s, 4096-strlen(job_summary));
+    int64_t len = (4096 * 4 - 1) - strlen(job_summary);
+    if (len > 0)
+        strncat(job_summary, s, len);
 }
