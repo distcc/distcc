@@ -769,8 +769,10 @@ static int dcc_run_job(int in_fd,
     int i;
     for (i = 0; (a = argv[i]); i++)
         if (strncmp(a, "-fplugin=", strlen("-fplugin=")) == 0 ||
-            strncmp(a, "-specs=", strlen("-specs=")) == 0)
+            strncmp(a, "-specs=", strlen("-specs=")) == 0) {
+            rs_log_warning("-fplugin= and/or -specs= passed, which are insecure and not supported.");
             goto out_cleanup;
+    }
 
     if ((compile_ret = dcc_spawn_child(argv, &cc_pid,
                                        "/dev/null", out_fname, err_fname))
