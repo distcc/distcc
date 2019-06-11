@@ -1,5 +1,5 @@
 project('distcc', 'c',
-        version : '3.2rc1',
+        version : '3.4',
         license : 'GPLv2+',
         default_options: [
                 'c_std=gnu99',

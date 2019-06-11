@@ -8,7 +8,7 @@ This document is provided as explanation for people developing or
 debugging distcc.  Discrepancies between this document and the distcc
 code are an error in the document.
 
-This document is intended to describe distcc 3.2.
+This document is intended to describe distcc 3.4.
 
 Because this program and document is licensed free of charge, there is
 no warranty of any kind, to the extent permitted by applicable law.
@@ -35,4 +35,5 @@ not compressed but rather sent directly as zero bytes.
 
 A DDWO token is send after DOTO, comprising the debug information (.dwo),
 if available. See https://gcc.gnu.org/wiki/DebugFission It is compressed
-with Zstd.
+with Zstd. This isn't as important now that we have lld, which does not
+mmap the whole object file, so debug sections no longer take virtual memory.
