@@ -914,7 +914,6 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 }
 #endif
 
-<<<<<<< HEAD
 /* from old systemd
 
    Copyright 2010 Lennart Poettering
