@@ -573,7 +573,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         return -ENOMEM;
 
     if ((t = strstr(target_with_vendor, "-pc-"))) {
-        strncpy(newcmd, target_with_vendor, t - target_with_vendor);
+        memcpy(newcmd, target_with_vendor, t - target_with_vendor);
         strcat(newcmd, t + strlen("-pc"));
     } else
         strcpy(newcmd, target_with_vendor);
