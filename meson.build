@@ -18,6 +18,8 @@ cc = meson.get_compiler('c')
 # in util.c and add it below under functions to get a HAVE_x macro
 add_global_arguments('-D_GNU_SOURCE', language : 'c')
 
+add_global_arguments('-D_FORTIFY_SOURCE=2', language : 'c')
+
 foreach arg : ['-W',
                '-Wall',
                '-Wextra',
