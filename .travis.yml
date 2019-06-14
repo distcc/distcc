@@ -7,7 +7,7 @@ notifications:
 
 language: python
 
-python: 3.7
+python: 3.6
 
 cache: ccache
 
@@ -20,9 +20,11 @@ addons:
       - libavahi-client-dev 
 
 script:
-  - export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-linux.zip)
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-linux.zip); fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-mac.zip); fi
   - wget "$NINJA_LATEST"
-  - unzip -q ninja-linux.zip -d build
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip -q ninja-linux.zip -d build; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then unzip -q ninja-mac.zip -d build; fi
   - export PATH="$PWD/build:$PATH"
   - pip install meson
   - mkdir -p build
@@ -39,13 +41,6 @@ matrix:
   - os: linux
     env: CC=clang
     dist: xenial
-  - os: osx
-    osx_image: xcode8.2
-    env:
-      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-  - os: osx
-    osx_image: xcode8.2
-    env: CC=clang
   - os: osx
     osx_image: xcode8.3
     env: CC=clang
