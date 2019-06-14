@@ -92,13 +92,13 @@ void dcc_free_argv(char **argv)
 /* Copy an argv array, adding extra NULL elements to the end to allow for
  * adding more arguments later.
  */
-int dcc_copy_argv(char **from, char ***out, int delta)
+int dcc_copy_argv(char **from, char ***out, int extra_args)
 {
     char **b;
     int l, i, k;
 
     l = dcc_argv_len(from);
-    b = malloc((l+1+delta) * (sizeof from[0]));
+    b = malloc((l+1+extra_args) * (sizeof from[0]));
     if (b == NULL) {
         rs_log_error("failed to allocate copy of argv");
         return EXIT_OUT_OF_MEMORY;

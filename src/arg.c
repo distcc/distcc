@@ -110,6 +110,162 @@ static void dcc_note_compiled(const char *input_file, const char *output_file)
            "compile from %s to %s", input_base, output_base);
 }
 
+/* Look for march/mtune=native in the arguments, and replace with the
+ * actual arguments employed by gcc / clang. */
+static int dcc_resolve_march_native(char* argv[], char*** ret_newargv, int extra_args, int* ignore_range_min, int* ignore_range_max)
+{
+    int i, l, j;
+    l = dcc_argv_len(argv);
+    if (l == 0) return 0;
+    if (!argv[0]) return 0;
+    const char* compiler = strrchr(argv[0], '/');
+    compiler = (compiler == 0) ? (argv[0]) : (compiler + 1);
+    int is_clang = strncmp(compiler, "clang", strlen("clang")) == 0;
+    int found_arch_native = 0, found_tune_native = 0, found_cpu_native = 0;
+    for (i = 0;i < l;i++) {
+        if (!strcmp(argv[i], "-march=native")) {
+            found_arch_native = 1;
+        }
+        if (!strcmp(argv[i], "-mtune=native")) {
+            found_tune_native = 1;
+        }
+        if (!strcmp(argv[i], "-mcpu=native")) {
+            found_cpu_native = 1;
+        }
+    }
+    if (!found_arch_native && !found_tune_native && !found_cpu_native) return 0;
+
+    rs_trace("-march/-mtune/-mcpu=native option found, replacing...");
+
+    char buff[16384];
+
+    int outfds[2];
+    int infds[2];
+    int ret = pipe(outfds);
+    if (ret == -1) {
+        fprintf(stderr, "Failed to open stdout pipe: %s (%d)\n", strerror(errno), errno);
+        return 1;
+    }
+    ret = pipe(infds);
+    if (ret == -1) {
+        fprintf(stderr, "Failed to open stdin pipe: %s (%d)\n", strerror(errno), errno);
+        return 1;
+    }
+    int outRead = outfds[0];
+    int outWrite = outfds[1];
+    int inRead = infds[0];
+    int inWrite = infds[1];
+
+    switch (fork()) {
+    case -1:
+        fprintf(stderr, "Failed to fork: %s (%d)", strerror(errno), errno);
+        return 1;
+    case 0: { // Child
+        close(outWrite);
+        dup2(outRead, STDIN_FILENO);
+        close(outRead);
+        close(inRead);
+        dup2(inWrite, STDERR_FILENO);
+        close(inWrite);
+        execlp(compiler, compiler, "-v", "-E", "-x", "c",
+               found_arch_native ? "-march=native" : "-DDUMMY",
+               found_tune_native ? "-mtune=native" : "-DDUMMY",
+               found_cpu_native ? "-mcpu=native" : "-DDUMMY",
+               "-", NULL);
+        return 0;
+    }
+    }
+
+    close(outWrite);
+    close(outRead);
+    close(inWrite);
+
+    FILE *in = fdopen(inRead, "r");
+    while(fgets(buff, sizeof(buff), in) != NULL)
+    {
+        char* cc1 = strstr(buff, "cc1");
+        if (cc1)
+        {
+            char* args = strstr(cc1, " - ");
+            if (args)
+            {
+                args += 3;
+                char* end = strstr(args, " -v ");
+                if (!end) end = strstr(args, "\n");
+                if (end) *end = 0;
+                int n_arguments = 1;
+                for (const char* ptr = args;*ptr;ptr++) {
+                    if (*ptr == ' ') n_arguments++;
+                }
+                pclose(in);
+                close(inRead);
+
+                if (is_clang) n_arguments *= 2; /* must prepend all clang cc1 options with -Xclang */
+
+                char **b;
+                b = malloc((l+1+extra_args+n_arguments-1) * (sizeof argv[0]));
+                if (b == NULL) {
+                    rs_log_error("failed to allocate copy of argv");
+                    return EXIT_OUT_OF_MEMORY;
+                }
+                j = 0;
+                int args_replaced = 0;
+                for (i = 0; i < l; i++) {
+                    if (!strcmp(argv[i], "-march=native") || !strcmp(argv[i], "-mtune=native") ||
+                        !strcmp(argv[i], "-mcpu=native")) {
+                        if (args_replaced == 0) {
+                            /* insert only once, at the position of the first native argument */
+                            *ignore_range_min = j;
+                            const char* ptr_insert = args;
+                            int clang_force_next = 0;
+                            for (char* ptr = args;*ptr;ptr++) {
+                                if (*ptr == ' ' || *ptr == 0) {
+                                    if (*ptr == ' ') *(ptr++) = 0;
+                                    const char* insert = ptr_insert;
+                                    ptr_insert = ptr;
+                                    if (is_clang) {
+                                        if (strncmp(insert, "-target", strlen("-target")) == 0) {
+                                            /* need to forward the following option */
+                                            clang_force_next = 1;
+                                        } else {
+                                            /* discard non-target options */
+                                            if (!clang_force_next) continue;
+                                            clang_force_next = 0;
+                                        }
+                                        if ((b[j++] = strdup("-Xclang")) == NULL) {
+                                            rs_log_error("failed to duplicate element %d", i);
+                                            return EXIT_OUT_OF_MEMORY;
+                                        }
+                                    }
+                                    if ((b[j++] = strdup(insert)) == NULL) {
+                                        rs_log_error("failed to duplicate element %d", i);
+                                        return EXIT_OUT_OF_MEMORY;
+                                    }
+                                }
+                            }
+                            args_replaced = 1;
+                            *ignore_range_max = j;
+                        }
+                        continue;
+                    }
+
+                    if ((b[j++] = strdup(argv[i])) == NULL) {
+                        rs_log_error("failed to duplicate element %d", i);
+                        return EXIT_OUT_OF_MEMORY;
+                    }
+                }
+                b[j] = NULL;
+                *ret_newargv = b;
+
+                return 1;
+            }
+        }
+    }
+    pclose(in);
+    close(inRead);
+    return 0;
+}
+
 /**
  * Parse arguments, extract ones we care about, and also work out
  * whether it will be possible to distribute this invocation remotely.
@@ -135,9 +291,17 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
     char *a;
     int ret;
 
+    int ignore_range_min = 0, ignore_range_max = 0;
+    if (getenv("DISTCC_RESOLVE_MARCH_NATIVE") &&
+        (ret = dcc_resolve_march_native(argv, ret_newargv, 4, &ignore_range_min, &ignore_range_max)))
+    {
+        /* we replaced march=native and already copied argv */
+        if (ret >= EXIT_DISTCC_FAILED) return ret;
+    }
      /* allow for -o foo.o */
-    if ((ret = dcc_copy_argv(argv, ret_newargv, 4)) != 0)
+    else if ((ret = dcc_copy_argv(argv, ret_newargv, 4)) != 0) {
         return ret;
+    }
     argv = *ret_newargv;
 
     /* FIXME: new copy of argv is leaked */
@@ -155,10 +319,15 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
     *input_file = *output_file = NULL;
 
     for (i = 0; (a = argv[i]); i++) {
+        /* No need to scan the options we inserted in place of march=native */
+        if (i >= ignore_range_min && i < ignore_range_max) continue;
         if (a[0] == '-') {
             if (!strcmp(a, "-E")) {
                 rs_trace("-E call for cpp must be local");
                 return EXIT_LOCAL_CPP;
+            } else if (!strcmp(a, "-Xclang")) {
+                /* Do not break for forwarded clang frontend options */
+                i++;
             } else if (!strcmp(a, "-MD") || !strcmp(a, "-MMD")) {
                 /* These two generate dependencies as a side effect.  They
                  * should work with the way we call cpp. */
@@ -187,6 +356,10 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                 return EXIT_DISTCC_FAILED;
             } else if (!strcmp(a, "-mtune=native")) {
                 rs_trace("-mtune=native optimizes for local machine; "
+                         "must be local");
+                return EXIT_DISTCC_FAILED;
+            } else if (!strcmp(a, "-mcpu=native")) {
+                rs_trace("-mcpu=native optimizes for local machine; "
                          "must be local");
                 return EXIT_DISTCC_FAILED;
             } else if (str_startswith("-Wa,", a)) {
