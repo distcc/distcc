@@ -173,7 +173,7 @@ static int dcc_lock_one(struct dcc_hostdef *hostlist,
     int ret;
 
     while (1) {
-        for (i_cpu = 0; i_cpu < 50; i_cpu++) {
+        for (i_cpu = 0; i_cpu < 50000; i_cpu++) {
             for (h = hostlist; h; h = h->next) {
                 if (i_cpu >= h->n_slots)
                     continue;
