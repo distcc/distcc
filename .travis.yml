@@ -20,9 +20,8 @@ addons:
       - libavahi-client-dev 
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-linux.zip); fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-mac.zip); fi
-  - wget "$NINJA_LATEST"
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-linux.zip); wget "$NINJA_LATEST"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-mac.zip); wget "$NINJA_LATEST"; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip -q ninja-linux.zip -d build; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then unzip -q ninja-mac.zip -d build; fi
   - export PATH="$PWD/build:$PATH"
