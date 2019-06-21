@@ -64,3 +64,4 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
 
 int sd_is_socket(int fd, int family, int type, int listening);
+char *dcc_make_dwo_fname(const char *temp_o);

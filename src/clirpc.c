@@ -156,7 +156,7 @@ int dcc_retrieve_results(int net_fd,
                          const char *server_stderr_fname,
                          struct dcc_hostdef *host)
 {
-    unsigned len;
+    unsigned len, uncompr_len = 0;
     int ret;
     unsigned o_len;
 
@@ -170,7 +170,10 @@ int dcc_retrieve_results(int net_fd,
     if ((ret = dcc_r_cc_status(net_fd, status)))
         return ret;
 
-    if ((ret = dcc_r_token_int(net_fd, "SERR", &len)))
+    if (host->protover == DCC_VER_4) {
+        if ((ret = dcc_r_token_2int(net_fd, "SERR", &len, &uncompr_len)))
+            return ret;
+    } else if ((ret = dcc_r_token_int(net_fd, "SERR", &len)))
         return ret;
 
     /* Save the server-side errors into a file. This way, we can
@@ -182,27 +185,39 @@ int dcc_retrieve_results(int net_fd,
        send to the maintainers, though.
     */
 
-    if ((ret = dcc_r_file(net_fd, server_stderr_fname, len, host->compr)))
+    if ((ret = dcc_r_file(net_fd, server_stderr_fname, len, uncompr_len,
+                          host->compr)))
         return ret;
 
     if (dcc_add_file_to_log_email("server-side stderr", server_stderr_fname))
         return ret;
 
-    if ((ret = dcc_r_token_int(net_fd, "SOUT", &len))
-        || (ret = dcc_r_bulk(STDOUT_FILENO, net_fd, len, host->compr))
-        || (ret = dcc_r_token_int(net_fd, "DOTO", &o_len)))
+    if (host->protover == DCC_VER_4) {
+        if ((ret = dcc_r_token_2int(net_fd, "SOUT", &len, &uncompr_len)))
+            return ret;
+    } else if ((ret = dcc_r_token_int(net_fd, "SOUT", &len)))
         return ret;
 
+    if ((ret = dcc_r_bulk(STDOUT_FILENO, net_fd, len, uncompr_len,
+                             host->compr)))
+        return ret;
+
+    if (host->protover == DCC_VER_4) {
+        if ((ret = dcc_r_token_2int(net_fd, "DOTO", &o_len, &uncompr_len)))
+            return ret;
+    } else if ((ret = dcc_r_token_int(net_fd, "DOTO", &o_len)))
+        return ret;
 
     /* If the compiler succeeded, then we always retrieve the result,
      * even if it's 0 bytes.  */
     if (*status == 0) {
-        if ((ret = dcc_r_file_timed(net_fd, output_fname, o_len, host->compr)))
+        if ((ret = dcc_r_file_timed(net_fd, output_fname, o_len, uncompr_len,
+                                    host->compr)))
             return ret;
         if (host->cpp_where == DCC_CPP_ON_SERVER) {
             if ((ret = dcc_r_token_int(net_fd, "DOTD", &len) == 0)
                 && deps_fname != NULL) {
-                ret = dcc_r_file_timed(net_fd, deps_fname, len, host->compr);
+                ret = dcc_r_file_timed(net_fd, deps_fname, len, 0, host->compr);
                 return ret;
             }
         }
@@ -211,6 +226,21 @@ int dcc_retrieve_results(int net_fd,
                      "I don't know what to do");
     }
 
+    if (host->protover == DCC_VER_4) {
+        char *dwo_fname = NULL;
+
+        if ((ret = dcc_r_token_2int(net_fd, "DDWO", &o_len, &uncompr_len)))
+            return ret;
+        dwo_fname = dcc_make_dwo_fname(output_fname);
+        if (!dwo_fname)
+            return EXIT_OUT_OF_MEMORY;
+        if ((ret = dcc_r_file_timed(net_fd, dwo_fname, o_len, uncompr_len,
+                                    host->compr))) {
+            free(dwo_fname);
+            return ret;
+        }
+        free(dwo_fname);
+    }
     return 0;
 }
 
