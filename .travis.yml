@@ -37,13 +37,6 @@ matrix:
     compiler: clang
     dist: trusty
   - os: osx
-    osx_image: xcode8.2
-    env:
-      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-  - os: osx
-    osx_image: xcode8.2
-    compiler: clang
-  - os: osx
     osx_image: xcode8.3
     compiler: clang
   - os: osx
