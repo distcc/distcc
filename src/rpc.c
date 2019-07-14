@@ -218,7 +218,7 @@ int dcc_r_sometoken_int(int ifd, char *token, unsigned *val)
         return ret;
     }
 
-    strncpy(token, buf, 4);
+    memcpy(token, buf, 4);
     token[4] = '\0';
 
     buf[12] = '\0';             /* terminate */
