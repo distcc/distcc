@@ -32,10 +32,12 @@
 #include "auth.h"
 #include "distcc.h"
 #include "exitcode.h"
+#include "hosts.h"
 #include "netutil.h"
 #include "trace.h"
 
-static int dcc_gssapi_establish_secure_context(int to_net_sd,
+static int dcc_gssapi_establish_secure_context(const struct dcc_hostdef *host,
+                           int to_net_sd,
 					       int from_net_sd,
 					       OM_uint32 req_flags,
 					       OM_uint32 *ret_flags);
@@ -58,14 +60,16 @@ gss_ctx_id_t distcc_ctx_handle = GSS_C_NO_CONTEXT;
  *
  * Returns 0 on success, otherwise error.
  */
-int dcc_gssapi_perform_requested_security(int to_net_sd,
+int dcc_gssapi_perform_requested_security(const struct dcc_hostdef *host,
+					  int to_net_sd,
 					  int from_net_sd) {
     int ret;
     OM_uint32 req_flags, ret_flags;
 
     req_flags = GSS_C_MUTUAL_FLAG | GSS_C_REPLAY_FLAG | GSS_C_SEQUENCE_FLAG;
 
-    if ((ret = dcc_gssapi_establish_secure_context(to_net_sd,
+    if ((ret = dcc_gssapi_establish_secure_context(host,
+						  to_net_sd,
 						  from_net_sd,
 						  req_flags,
 						  &ret_flags)) != 0) {
@@ -108,7 +112,8 @@ int dcc_gssapi_perform_requested_security(int to_net_sd,
  *
  * Returns 0 on success, otherwise error.
  */
-static int dcc_gssapi_establish_secure_context(int to_net_sd,
+static int dcc_gssapi_establish_secure_context(const struct dcc_hostdef *host,
+					       int to_net_sd,
 					       int from_net_sd,
 					       OM_uint32 req_flags,
 					       OM_uint32 *ret_flags) {
@@ -126,39 +131,36 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
     struct hostent *hp;
     struct sockaddr_in addr;
 
-    addr_len = sizeof(addr);
+    if (!host->auth_name) {
+        addr_len = sizeof(addr);
 
-    if ((ret = getpeername(to_net_sd, (struct sockaddr *)&addr, &addr_len)) != 0) {
-        rs_log_error("Failed to look up peer address using socket \"%d\": %s.",
-                     to_net_sd,
-                     hstrerror(h_errno));
-        return EXIT_CONNECT_FAILED;
-    }
+        if ((ret = getpeername(to_net_sd, (struct sockaddr *)&addr, &addr_len)) != 0) {
+            rs_log_error("Failed to look up peer address using socket \"%d\": %s.",
+                        to_net_sd,
+                        hstrerror(h_errno));
+            return EXIT_CONNECT_FAILED;
+        }
 
-    rs_log_info("Successfully looked up IP address %s using socket %d.",
+        rs_log_info("Successfully looked up IP address %s using socket %d.",
                                                 inet_ntoa(addr.sin_addr),
                                                 to_net_sd);
 
-    if ((hp = gethostbyaddr((char *) &addr.sin_addr,
-                            sizeof(addr.sin_addr),
-                            AF_INET)) == NULL) {
-        rs_log_error("Failed to look up host by address \"%s\": %s.",
-                     inet_ntoa(addr.sin_addr),
-                     hstrerror(h_errno));
-        return EXIT_CONNECT_FAILED;
-    }
+        if ((hp = gethostbyaddr((char *) &addr.sin_addr,
+                                sizeof(addr.sin_addr),
+                                AF_INET)) == NULL) {
+            rs_log_error("Failed to look up host by address \"%s\": %s.",
+                        inet_ntoa(addr.sin_addr),
+                        hstrerror(h_errno));
+            return EXIT_CONNECT_FAILED;
+        }
 
-    rs_log_info("Successfully looked up host %s using IP address %s.",
+        rs_log_info("Successfully looked up host %s using IP address %s.",
                                                 hp->h_name,
                                                 inet_ntoa(addr.sin_addr));
-
-    if ((full_name = malloc(strlen(hp->h_name) + 1)) == NULL) {
-        rs_log_error("malloc failed : %ld bytes: out of memory.",
-                                        (long) (strlen(hp->h_name) + 1));
-        return EXIT_OUT_OF_MEMORY;
+        full_name = hp->h_name;
+    } else {
+        full_name = host->auth_name;
     }
-
-    strcpy(full_name, hp->h_name);
 
     if ((princ_env_val = getenv("DISTCC_PRINCIPAL"))) {
         if (asprintf(&ext_princ_name, "%s@%s", princ_env_val, full_name) < 0) {
@@ -176,7 +178,6 @@ static int dcc_gssapi_establish_secure_context(int to_net_sd,
         name_type = GSS_C_NT_USER_NAME;
     }
 
-    free(full_name);
     name_buffer.value = ext_princ_name;
     name_buffer.length = strlen(ext_princ_name);
 

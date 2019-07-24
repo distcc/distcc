@@ -62,6 +62,7 @@ struct dcc_hostdef {
 #ifdef HAVE_GSSAPI
     /* Are we authenticating with this host? */
     int authenticate;
+    char * auth_name;
 #endif
 
     struct dcc_hostdef *next;
