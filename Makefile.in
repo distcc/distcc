@@ -612,7 +612,7 @@ dist:
 	-rm -fr "$(distdir)"
 	$(MAKE) dist-files 
 	$(TAR) cf "$(tarball)" "$(distdir)"
-	$(GZIP_BIN) --help >/dev/null && \
+	$(GZIP_BIN) --help >/dev/null 2>&1 && \
 		$(GZIP_BIN) -fc "$(tarball)" > "$(tarball_gz)"
 	$(BZIP2_BIN) --help 2>/dev/null && \
 		$(BZIP2_BIN) -vfc "$(tarball)" > "$(tarball_bz2)"
@@ -1104,7 +1104,7 @@ install-include-server: include-server pump
 install-man: $(man1_MEN)
 	$(mkinstalldirs) "$(DESTDIR)$(man1dir)"
 	for p in $(man1_MEN); do \
-	  if $(GZIP_BIN) --help >/dev/null; then \
+	  if $(GZIP_BIN) --help >/dev/null 2>&1; then \
 	    mkdir -p "`dirname $$p`"; \
 	    if [ -e "$(DESTDIR)$(man1dir)$$p" ]; then rm -fv "$(DESTDIR)$(man1dir)$$p"; fi; \
 	    $(GZIP_BIN) < "$(srcdir)/$$p" > "$$p.gz"; \
