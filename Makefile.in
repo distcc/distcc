@@ -777,12 +777,9 @@ maintainer-check: distcc-maintainer-check include-server-maintainer-check \
 check:
 	@if test -n "$(PYTHON)"; then \
 	   $(MAKE) maintainer-check; \
-	elif test -n "$(PYTHON)"; then \
+	else \
 	   echo "WARNING: pump-mode not being tested"; \
 	   $(MAKE) distcc-maintainer-check; \
-	else \
-	   echo "Cannot run tests: python binary not found"; \
-	   false; \
 	fi
 
 # Runs the tests in lzo-mode.
