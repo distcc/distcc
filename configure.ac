@@ -13,6 +13,7 @@ AC_PREREQ(2.69)
 AC_INIT(distcc, 3.3.3, distcc@lists.samba.org)
 
 AC_CONFIG_HEADERS(src/config.h)
+AC_CONFIG_MACRO_DIRS([m4])
 
 # FreeBSD installs its version of libpopt into /usr/local/, but does
 # not put that on the default library and header path.
