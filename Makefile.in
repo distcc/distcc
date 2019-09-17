@@ -1130,8 +1130,8 @@ install-example: $(example_DOCS)
 install-gnome-data: $(gnome_data)
 	$(mkinstalldirs) "$(DESTDIR)$(icondir)"
 	$(mkinstalldirs) "$(DESTDIR)$(desktopdir)"
-	$(INSTALL_DATA) gnome/distccmon-gnome.png "$(DESTDIR)$(icondir)"
-	$(INSTALL_DATA) gnome/distccmon-gnome.desktop "$(DESTDIR)$(desktopdir)"
+	$(INSTALL_DATA) $(srcdir)/gnome/distccmon-gnome.png "$(DESTDIR)$(icondir)"
+	$(INSTALL_DATA) $(srcdir)/gnome/distccmon-gnome.desktop "$(DESTDIR)$(desktopdir)"
 
 install-conf: $(conf_files) $(default_files)
 	$(mkinstalldirs) "$(DESTDIR)$(sysconfdir)/distcc"
