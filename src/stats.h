@@ -33,7 +33,7 @@ enum stats_e { STATS_TCP_ACCEPT, STATS_REJ_BAD_REQ, STATS_REJ_OVERLOAD,
                 STATS_COMPILE_OK, STATS_COMPILE_ERROR, STATS_COMPILE_TIMEOUT,
                 STATS_CLI_DISCONN, STATS_OTHER, STATS_ENUM_MAX };
 
-const char *stats_text[20];
+extern const char *stats_text[20];
 
 int  dcc_stats_init(void);
 void dcc_stats_init_kid(void);
