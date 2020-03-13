@@ -1,17 +1,24 @@
+notifications:
+  email:
+    recipients:
+      - shawn@git.icu
+    on_success: change # default: change
+    on_failure: always # default: always
+
 language: c
 
 cache: ccache
 
 addons:
+  homebrew:
+    update: true
+    brewfile: true
   apt:
     packages:
       - python3-dev
       - libiberty-dev
       - clang
-      - libavahi-client-dev 
-
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew bundle; fi
+      - libavahi-client-dev
 
 script:
   - ./autogen.sh

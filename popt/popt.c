@@ -591,7 +591,7 @@ expandNextArg(/*@special@*/ poptContext con, const char * s)
 	    *te = '\0';
 	    t = realloc(t, tn);
 	    te = t + strlen(t);
-	    strncpy(te, a, alen); te += alen;
+	    memcpy(te, a, alen); te += alen;
 	    continue;
 	    /*@notreached@*/ /*@switchbreak@*/ break;
 	default:

@@ -62,13 +62,13 @@ def StartTiming():
   global start_time, translation_unit_counter
   """Mark the start of a request to find an include closure."""
   translation_unit_counter += 1
-  start_time = time.clock()
+  start_time = time.perf_counter()
 
 
 def EndTiming():
   """Mark the end of an include closure calculation."""
   global translation_unit_time, min_time, max_time, total_time
-  translation_unit_time = time.clock() - start_time
+  translation_unit_time = time.perf_counter() - start_time
   min_time = min(translation_unit_time, min_time)
   max_time = max(translation_unit_time, max_time)
   total_time += translation_unit_time

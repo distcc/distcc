@@ -52,13 +52,14 @@ mandir = @mandir@
 includedir = @includedir@
 oldincludedir = /usr/include
 docdir = @docdir@
-pkgdatadir = $(datadir)/@PACKAGE_NAME@
+icondir = $(datarootdir)/pixmaps
+desktopdir = $(datarootdir)/applications
 
 include_server_builddir = $(builddir)/_include_server
 
 # These must be done from here, not from autoconf, because they can 
 # contain variable expansions written in Make syntax.  Ew.
-DIR_DEFS = -DSYSCONFDIR="\"${sysconfdir}\"" -DPKGDATADIR="\"${pkgdatadir}\""
+DIR_DEFS = -DLIBDIR="\"${libdir}\"" -DSYSCONFDIR="\"${sysconfdir}\"" -DICONDIR="\"${icondir}\""
 
 # arguments to pkgconfig
 GNOME_PACKAGES = @GNOME_PACKAGES@
@@ -387,7 +388,7 @@ man_HTML = man/distcc_1.html man/distccd_1.html man/distccmon_text_1.html \
            man/lsdistcc_1.html man/pump_1.html man/include_server_1.html
 MEN = $(man1_MEN)
 
-gnome_data = gnome/distccmon-gnome-icon.png	\
+gnome_data = gnome/distccmon-gnome.png	\
 	gnome/distccmon-gnome.desktop
 
 popt_OBJS=popt/findme.o  popt/popt.o  popt/poptconfig.o \
@@ -612,7 +613,7 @@ dist:
 	-rm -fr "$(distdir)"
 	$(MAKE) dist-files 
 	$(TAR) cf "$(tarball)" "$(distdir)"
-	$(GZIP_BIN) --help >/dev/null && \
+	$(GZIP_BIN) --help >/dev/null 2>&1 && \
 		$(GZIP_BIN) -fc "$(tarball)" > "$(tarball_gz)"
 	$(BZIP2_BIN) --help 2>/dev/null && \
 		$(BZIP2_BIN) -vfc "$(tarball)" > "$(tarball_bz2)"
@@ -777,12 +778,9 @@ maintainer-check: distcc-maintainer-check include-server-maintainer-check \
 check:
 	@if test -n "$(PYTHON)"; then \
 	   $(MAKE) maintainer-check; \
-	elif test -n "$(PYTHON)"; then \
+	else \
 	   echo "WARNING: pump-mode not being tested"; \
 	   $(MAKE) distcc-maintainer-check; \
-	else \
-	   echo "Cannot run tests: python binary not found"; \
-	   false; \
 	fi
 
 # Runs the tests in lzo-mode.
@@ -1033,7 +1031,8 @@ showpaths:
 	@echo "  programs             $(DESTDIR)$(bindir)"
 	@echo "  sbin programs        $(DESTDIR)$(sbindir)"
 	@echo "  system configuration $(DESTDIR)$(sysconfdir)"
-	@echo "  shared data files    $(DESTDIR)$(pkgdatadir)"
+	@echo "  icon file            $(DESTDIR)$(icondir)"
+	@echo "  application file     $(DESTDIR)$(desktopdir)"
 
 
 # install-sh can't handle multiple arguments, but we don't need any
@@ -1098,13 +1097,13 @@ install-include-server: include-server pump
 	  INCLUDE_SERVER=`grep '/include_server.py$$' "$(include_server_builddir)/install.log"` && \
 	  sed "s,^include_server='',include_server='$$INCLUDE_SERVER'," \
 	    pump > "$(include_server_builddir)/pump" && \
-	  $(INSTALL_PROGRAM) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
+	  $(INSTALL_SCRIPT) "$(include_server_builddir)/pump" "$(DESTDIR)$(bindir)"; \
 	fi
 
 install-man: $(man1_MEN)
 	$(mkinstalldirs) "$(DESTDIR)$(man1dir)"
 	for p in $(man1_MEN); do \
-	  if $(GZIP_BIN) --help >/dev/null; then \
+	  if $(GZIP_BIN) --help >/dev/null 2>&1; then \
 	    mkdir -p "`dirname $$p`"; \
 	    if [ -e "$(DESTDIR)$(man1dir)$$p" ]; then rm -fv "$(DESTDIR)$(man1dir)$$p"; fi; \
 	    $(GZIP_BIN) < "$(srcdir)/$$p" > "$$p.gz"; \
@@ -1129,10 +1128,10 @@ install-example: $(example_DOCS)
 	done
 
 install-gnome-data: $(gnome_data)
-	$(mkinstalldirs) "$(DESTDIR)$(pkgdatadir)"
-	for p in $(gnome_data); do \
-	  $(INSTALL_DATA) "$$p" "$(DESTDIR)$(pkgdatadir)" || exit 1; \
-	done
+	$(mkinstalldirs) "$(DESTDIR)$(icondir)"
+	$(mkinstalldirs) "$(DESTDIR)$(desktopdir)"
+	$(INSTALL_DATA) $(srcdir)/gnome/distccmon-gnome.png "$(DESTDIR)$(icondir)"
+	$(INSTALL_DATA) $(srcdir)/gnome/distccmon-gnome.desktop "$(DESTDIR)$(desktopdir)"
 
 install-conf: $(conf_files) $(default_files)
 	$(mkinstalldirs) "$(DESTDIR)$(sysconfdir)/distcc"

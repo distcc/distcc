@@ -272,7 +272,7 @@ class ParseFile(object):
 
     assert isinstance(filepath, str)
     self.filepath = filepath
-    parse_file_start_time = time.clock()
+    parse_file_start_time = time.perf_counter()
     statistics.parse_file_counter += 1
 
     includepath_map_index = self.includepath_map.Index
@@ -338,6 +338,6 @@ class ParseFile(object):
                       expr_includes, next_includes)
 
 
-    statistics.parse_file_total_time += time.clock() - parse_file_start_time
+    statistics.parse_file_total_time += time.perf_counter() - parse_file_start_time
 
     return (quote_includes, angle_includes, expr_includes, next_includes)

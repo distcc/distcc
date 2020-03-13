@@ -49,9 +49,7 @@ be listening for connections.
 .PP
 TCP connections should only be used on secure networks because there
 is no user authentication or protection of source or object code.  SSH
-connections are typically 25% slower because of processor overhead for
-encryption, although this can vary greatly depending on CPUs, network
-and the program being built.
+connections are slower.
 .PP
 distcc is intended to be used with GNU Make's
 .B -j 
@@ -493,7 +491,7 @@ executed remotely,  may
 force the machine to swap, which reduces performance over just running the
 jobs in sequence without swapping.   Getting the number of parallel preprocessors just
 right allows you to use larger parallel factors with make, since the local machine
-now has some machanism for measuring local resource usage.     
+now has some mechanism for measuring local resource usage.     
 .PP
 Finally there is the host entry
 .PP
@@ -518,7 +516,7 @@ The syntax is
   OLDSTYLE_TCP_HOST = HOSTID[/LIMIT][:PORT][OPTIONS]
   HOSTID = HOSTNAME | IPV4 | IPV6
   OPTIONS = ,OPTION[OPTIONS]
-  OPTION = lzo | cpp | auth
+  OPTION = lzo | cpp | auth[=AUTH_NAME]
   GLOBAL_OPTION = --randomize
   ZEROCONF = +zeroconf
 .fi
@@ -578,6 +576,12 @@ wrapped in the pump script in order to start the include server.
 .TP
 .B ,auth
 Enables GSSAPI-based mutual authentication for this host.
+.TP
+.B AUTH_NAME
+The "canonical" name to use for the service principal name instead
+of HOSTNAME (or its corresponding fqdn). This option is useful in case of
+accessing an authenticated server via ssh port forwarding, in which case
+the HOSTNAME is 127.0.0.1.
 .TP
 .B --randomize
 Randomize the order of the host list before execution.
@@ -649,7 +653,9 @@ or unreachable, and to prevent compiles hanging indefinitely if a
 server is disconnected while in use.  If a client-side timeout
 expires, the job will be re-run locally.
 .PP
-The timeouts are not configurable at present.
+The transfer timeout is not configurable at present. The timeout that
+detects stale distributed job is configurable via DISTCC_IO_TIMEOUT
+environment variable.
 .SH "DIAGNOSTICS"
 Error messages or warnings from local or remote compilers are passed
 through to diagnostic output on the client.
@@ -985,4 +991,4 @@ COPYING.
 \fBdistccd\fR(1), \fBpump\fR(1), \fBinclude_server\fR(1), \fBgcc\fR(1),
 \fBmake\fR(1), and  \fBccache\fR(1).
 .I http://code.google.com/p/distcc/
-.I http://ccache.samba.org/
+.I https://ccache.dev/

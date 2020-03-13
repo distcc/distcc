@@ -72,7 +72,7 @@ DOTD <len> <bytes>
 Notes
 -----
 
-This protocol is most useful in conjuction with an "include server" that
+This protocol is most useful in conjunction with an "include server" that
 discovers, for each compilation unit, the list of needed files without
 actually preprocessing. The protocol for talking to the include server
 is simple: distcc sends a CDIR packet, and an ARGC/ARGV sequence with the 

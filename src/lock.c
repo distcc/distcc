@@ -23,7 +23,7 @@
 
 
                 /* Power is nothing without control
-                 *      -- Pirelli tyre advertisment. */
+                 *      -- Pirelli tyre advertisement. */
 
 
 /**
@@ -83,7 +83,7 @@
  *  - Each distcc process should hold no more than two locks at a time;
  *    one local lock, and one remote lock.
  *
- *  - When acquring more than one lock, a strict lock ordering discipline
+ *  - When acquiring more than one lock, a strict lock ordering discipline
  *    must be observed: the remote lock must be acquired first, before the
  *    local lock; and conversely the local lock must be released first,
  *    before the remote lock.
@@ -103,6 +103,7 @@ struct dcc_hostdef _dcc_local = {
     DCC_CPP_ON_CLIENT,          /* where to cpp (ignored) */
 #ifdef HAVE_GSSAPI
     0,                          /* Authentication? */
+    NULL,                       /* Authentication name */
 #endif
     NULL
 };
@@ -123,6 +124,7 @@ struct dcc_hostdef _dcc_local_cpp = {
     DCC_CPP_ON_CLIENT,          /* where to cpp (ignored) */
 #ifdef HAVE_GSSAPI
     0,                          /* Authentication? */
+    NULL,                       /* Authentication name */
 #endif
     NULL
 };
@@ -250,7 +252,7 @@ int dcc_open_lockfile(const char *fname, int *plockfd)
      * in user home directories. */
     *plockfd = open(fname, O_WRONLY|O_CREAT, 0666);
     if (*plockfd == -1 && errno != EEXIST) {
-        rs_log_error("failed to creat %s: %s", fname, strerror(errno));
+        rs_log_error("failed to create %s: %s", fname, strerror(errno));
         return EXIT_IO_ERROR;
     }
 
@@ -262,7 +264,7 @@ int dcc_open_lockfile(const char *fname, int *plockfd)
  * Lock a server slot, in either blocking or nonblocking mode.
  *
  * In blocking mode, this function will not return until either the lock has
- * been acquired, or an error occured.  In nonblocking mode, it will instead
+ * been acquired, or an error occurred.  In nonblocking mode, it will instead
  * return EXIT_BUSY if some other process has this slot locked.
  *
  * @param slot 0-based index of available slots on this host.

@@ -72,6 +72,21 @@ int dcc_scan_includes = 0;
 static const char *const include_server_port_suffix = "/socket";
 static const char *const discrepancy_suffix = "/discrepancy_counter";
 
+static void bad_host(struct dcc_hostdef *host, int *cpu_lock_fd , int *local_cpu_lock_fd)
+{
+   if (host)
+       dcc_disliked_host(host);
+
+   if (*cpu_lock_fd != -1) {
+       dcc_unlock(*cpu_lock_fd);
+       *cpu_lock_fd = -1;
+   }
+   if (*local_cpu_lock_fd != -1) {
+       dcc_unlock(*local_cpu_lock_fd);
+       *local_cpu_lock_fd = -1;
+   }
+}
+
 static int dcc_get_max_discrepancies_before_demotion(void)
 {
     /* Warning: the default setting here should have the same value as in the
@@ -446,6 +461,7 @@ static int dcc_please_send_email_after_investigation(
     return dcc_note_discrepancy(discrepancy_filename);
 }
 
+#ifdef HAVE_FSTATAT
 /* Re-write "cc" to directly call gcc or clang
  */
 static void dcc_rewrite_generic_compiler(char **argv)
@@ -490,7 +506,12 @@ static void dcc_rewrite_generic_compiler(char **argv)
     if ((st.st_mode & S_IFMT) == S_IFLNK) {
         /* this is a Debian thing. Fedora just has /usr/bin/cc -> gcc */
         if (strcmp(linkbuf, cpp ? "/etc/alternatives/c++" : "/etc/alternatives/cc") == 0) {
-            ssz = readlinkat(dir, linkbuf, linkbuf, sizeof(linkbuf) - 1);
+            char m[MAXPATHLEN + 1];
+
+            m[0] = '\0';
+            strcpy(m, linkbuf);
+
+            ssz = readlinkat(dir, m, linkbuf, sizeof(linkbuf) - 1);
             linkbuf[ssz] = '\0';
         }
     }
@@ -517,6 +538,7 @@ static void dcc_rewrite_generic_compiler(char **argv)
     } else
         return;
 }
+#endif
 
 
 /* Clang is a native cross-compiler, but needs to be told to what target it is
@@ -566,7 +588,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         return -ENOMEM;
 
     if ((t = strstr(target_with_vendor, "-pc-"))) {
-        strncpy(newcmd, target_with_vendor, t - target_with_vendor);
+        memcpy(newcmd, target_with_vendor, t - target_with_vendor);
         strcat(newcmd, t + strlen("-pc"));
     } else
         strcpy(newcmd, target_with_vendor);
@@ -587,7 +609,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
             t = path + strlen(path);
         pathlen = t - path;
         if (*path == '\0')
-            return -ENOENT;
+            break;
         strncpy(binname, path, pathlen);
         binname[pathlen] = '\0';
         strcat(binname, "/");
@@ -602,6 +624,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         argv[0] = newcmd;
         return 0;
     } while ((path += pathlen + 1));
+    free(newcmd);
     return -ENOENT;
 }
 
@@ -682,7 +705,9 @@ dcc_build_somewhere(char *argv[],
     dcc_free_argv(argv);
     argv = new_argv;
     if (!getenv("DISTCC_NO_REWRITE_CROSS")) {
+#ifdef HAVE_FSTATAT
         dcc_rewrite_generic_compiler(new_argv);
+#endif
         dcc_add_clang_target(new_argv);
         dcc_gcc_rewrite_fqn(new_argv);
     }
@@ -714,6 +739,7 @@ dcc_build_somewhere(char *argv[],
 
     /* Choose the distcc server host (which could be either a remote
      * host or localhost) and acquire the lock for it.  */
+  choose_host:
     if ((ret = dcc_pick_host_from_list_and_lock_it(&host, &cpu_lock_fd)) != 0) {
         /* Doesn't happen at the moment: all failures are masked by
            returning localhost. */
@@ -748,7 +774,7 @@ dcc_build_somewhere(char *argv[],
             /* It's unfortunate that the variable that controls that is in the
              * "host" datastructure, even though in this case it's the client
              * that fails to support it,  but "host" is what gets passed
-             * around in the client code. We are, in essense, throwing away
+             * around in the client code. We are, in essence, throwing away
              * the host's capability to do cpp, so if this code was to execute
              * again (it won't, not in the same process) we wouldn't know if
              * the server supports it or not.
@@ -811,8 +837,8 @@ dcc_build_somewhere(char *argv[],
 
         /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
         local_cpu_lock_fd = -1;
-
-        goto fallback;
+        bad_host(host, &cpu_lock_fd, &local_cpu_lock_fd);
+        goto choose_host;
     }
     /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
     local_cpu_lock_fd = -1;
@@ -854,7 +880,7 @@ dcc_build_somewhere(char *argv[],
            (Currently, we send email to an appropriate email address).
         */
         if (getenv("DISTCC_SKIP_LOCAL_RETRY")) {
-            /* dont retry locally. We'll treat the remote failure as
+            /* don't retry locally. We'll treat the remote failure as
                if it was a local one. But if we can't get the failures
                then we need to retry regardless.
             */
@@ -876,17 +902,7 @@ dcc_build_somewhere(char *argv[],
 
 
   fallback:
-    if (host)
-        dcc_disliked_host(host);
-
-    if (cpu_lock_fd != -1) {
-        dcc_unlock(cpu_lock_fd);
-        cpu_lock_fd = -1;
-    }
-    if (local_cpu_lock_fd != -1) {
-        dcc_unlock(local_cpu_lock_fd);
-        local_cpu_lock_fd = -1;
-    }
+    bad_host(host, &cpu_lock_fd, &local_cpu_lock_fd);
 
     if (!dcc_getenv_bool("DISTCC_FALLBACK", 1)) {
         rs_log_error("failed to distribute and fallbacks are disabled");

@@ -10,9 +10,10 @@ dnl Process this file with autoconf to produce a configure script
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
 AC_PREREQ(2.69)
-AC_INIT(distcc, 3.3, distcc@lists.samba.org)
+AC_INIT(distcc, 3.3.3, distcc@lists.samba.org)
 
 AC_CONFIG_HEADERS(src/config.h)
+AC_CONFIG_MACRO_DIRS([m4])
 
 # FreeBSD installs its version of libpopt into /usr/local/, but does
 # not put that on the default library and header path.
@@ -22,7 +23,7 @@ AC_CONFIG_HEADERS(src/config.h)
 # either set CPPFLAGS and LDFLAGS when running configure, or use
 # --with-extra-foo.
 
-# Check for socklen_t, and do something appropiate on systems
+# Check for socklen_t, and do something appropriate on systems
 # that don't have it.
 AC_CHECK_TYPE([socklen_t], ,[
 	AC_MSG_CHECKING([for socklen_t equivalent])
@@ -59,7 +60,7 @@ getpeername(0,0,&len);
 #include <sys/socket.h>])
 
 dnl Android requires -llog for printf and friends
-dnl and will only run position independant executables
+dnl and will only run position independent executables
 AC_MSG_CHECKING([if building on Android])
 AC_TRY_COMPILE([
   #ifdef __BIONIC__
@@ -383,6 +384,8 @@ AC_CHECK_FUNCS([strndup strsep mmap strlcpy])
 AC_CHECK_FUNCS([getloadavg])
 AC_CHECK_FUNCS([getline])
 
+AC_CHECK_FUNCS([fstatat])
+
 AC_CHECK_DECLS([snprintf, vsnprintf, vasprintf, asprintf, strndup])
 
 AC_MSG_CHECKING([if mmap() supports MAP_FAILED])
@@ -519,7 +522,7 @@ AC_SUBST(AUTH_COMMON_OBJS)
 AC_SUBST(AUTH_DISTCC_OBJS)
 AC_SUBST(AUTH_DISTCCD_OBJS)
 
-ACX_PTHREAD
+AX_PTHREAD
 LIBS="$PTHREAD_LIBS $LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 CC="$PTHREAD_CC"

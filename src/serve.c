@@ -358,37 +358,87 @@ static int dcc_check_compiler_masq(char *compiler_name)
 }
 
 /**
- * Make sure there is a masquerade to distcc in /usr/lib/distcc in order to
+ * Make sure there is a masquerade to distcc in LIBDIR/distcc in order to
  * execute a binary of the same name.
  *
  * Before this it was possible to execute arbitrary command after connecting
  * to distcc, which is quite a security risk when combined with any local root
- * privledge escalation exploit. See CVE 2004-2687
+ * privilege escalation exploit. See CVE 2004-2687
  *
  * https://nvd.nist.gov/vuln/detail/CVE-2004-2687
  * https://github.com/distcc/distcc/issues/155
  **/
-static int dcc_check_compiler_whitelist(char *compiler_name)
+static int dcc_check_compiler_whitelist(char *_compiler_name)
 {
-    int dirfd = -1;
+    char *compiler_name = _compiler_name;
 
-    if (strchr(compiler_name, '/'))
+    /* Support QtCreator by treating /usr/bin and /bin absolute paths as non-absolute
+     * see https://github.com/distcc/distcc/issues/279
+     */
+    const char *creator_paths[] = { "/bin/", "/usr/bin/", NULL };
+    int i;
+    for (i = 0 ; creator_paths[i] ; ++i) {
+        size_t len = strlen(creator_paths[i]);
+        // /bin and /usr/bin are absolute paths (= compare from the string start)
+        // use strncasecmp() to support case-insensitive / (= on Mac).
+        if (strncasecmp(_compiler_name, creator_paths[i], len) == 0) {
+            compiler_name = _compiler_name + len;
+            // stop at the first hit
+            break;
+        }
+    }
+
+    if (strchr(compiler_name, '/')) {
+        rs_log_crit("compiler name <%s> cannot be an absolute path (or must set DISTCC_CMDLIST or pass --enable-tcp-insecure)", _compiler_name);
         return EXIT_BAD_ARGUMENTS;
+    }
 
-    dirfd = open("/usr/lib/distcc", O_RDONLY);
+#ifdef HAVE_FSTATAT
+    int dirfd = open(LIBDIR "/distcc", O_RDONLY);
     if (dirfd < 0) {
         if (errno == ENOENT)
-            rs_log_crit("no %s", "/usr/lib/distcc");
+            rs_log_crit("no %s", LIBDIR "/distcc");
         return EXIT_DISTCC_FAILED;
     }
 
     if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
-        rs_log_crit("%s not in %s whitelist.", compiler_name, "/usr/lib/distcc");
-        return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+        char *compiler_path = NULL;
+        if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
+            if (access(compiler_path, X_OK) < 0) {
+                rs_log_crit("%s not in %s or %s whitelist.", compiler_name, LIBDIR "/distcc", "/usr/lib/distcc");
+                return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+            }
+            free(compiler_path);
+        }
     }
 
-    rs_trace("%s in /usr/lib/distcc whitelist", compiler_name);
+    rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
     return 0;
+#else
+    // make do with access():
+    char *compiler_path = NULL;
+    int ret = 0;
+    if (asprintf(&compiler_path, "%s/distcc/%s", LIBDIR, compiler_name) && compiler_path) {
+        if (access(compiler_path, X_OK) < 0) {
+            free(compiler_path);
+            /* check /usr/lib/distcc too */
+            if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
+                if (access(compiler_path, X_OK) < 0) {
+                    rs_log_crit("%s not in %s or %s whitelist.", compiler_name, LIBDIR "/distcc", "/usr/lib/distcc");
+                    ret = EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
+                }
+            }
+        }
+        rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
+    } else {
+        rs_log_crit("Couldn't check if %s is in %s whitelist.", compiler_name, LIBDIR "/distcc");
+        ret = EXIT_DISTCC_FAILED;
+    }
+    if (compiler_path) {
+        free(compiler_path);
+    }
+    return ret;
+#endif
 }
 
 static const char *include_options[] = {
@@ -708,10 +758,21 @@ static int dcc_run_job(int in_fd,
     if ((ret = dcc_check_compiler_masq(argv[0])))
         goto out_cleanup;
 
-    if (!opt_make_me_a_botnet &&
+    if (!opt_enable_tcp_insecure &&
         !getenv("DISTCC_CMDLIST") &&
         dcc_check_compiler_whitelist(argv[0]))
         goto out_cleanup;
+
+    /* unsafe compiler options. See  https://youtu.be/bSkpMdDe4g4?t=53m12s
+       on securing https://godbolt.org/ */
+    char *a;
+    int i;
+    for (i = 0; (a = argv[i]); i++)
+        if (strncmp(a, "-fplugin=", strlen("-fplugin=")) == 0 ||
+            strncmp(a, "-specs=", strlen("-specs=")) == 0) {
+            rs_log_warning("-fplugin= and/or -specs= passed, which are insecure and not supported.");
+            goto out_cleanup;
+    }
 
     if ((compile_ret = dcc_spawn_child(argv, &cc_pid,
                                        "/dev/null", out_fname, err_fname))

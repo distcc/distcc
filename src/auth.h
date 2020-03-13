@@ -27,12 +27,15 @@
 /* Notification of server access denied. */
 #define NO_ACCESS 'n'
 
+struct dcc_hostdef;
+
 int dcc_gssapi_acquire_credentials(void);
 void dcc_gssapi_release_credentials(void);
 int dcc_gssapi_obtain_list(int mode);
 void dcc_gssapi_free_list(void);
 int dcc_gssapi_check_client(int to_net_fd, int from_net_fd);
-int dcc_gssapi_perform_requested_security(int to_net_fd,
+int dcc_gssapi_perform_requested_security(const struct dcc_hostdef *host,
+                      int to_net_fd,
 					  int from_net_fd);
 void dcc_gssapi_status_to_log(OM_uint32 status_code, int status_type);
 void dcc_gssapi_cleanup(gss_buffer_desc *input_tok,

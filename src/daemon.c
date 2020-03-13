@@ -108,6 +108,7 @@ static int dcc_setup_startup_log(void)
         rs_add_logger(rs_logger_file, RS_LOG_DEBUG, 0, STDERR_FILENO);
     } else {
         openlog("distccd", LOG_PID, LOG_DAEMON);
+        rs_trace_syslog = TRUE;
         rs_add_logger(rs_logger_syslog, RS_LOG_DEBUG, NULL, 0);
     }
 
@@ -153,19 +154,20 @@ static int dcc_setup_daemon_path(void)
 }
 
 static void dcc_warn_masquerade_whitelist(void) {
-    DIR *d;
+    DIR *d, *e;
     const char *warn = "You must see up masquerade" \
                        " (see distcc(1)) to list whitelisted compilers or pass" \
-                       " --make-me-a-botnet. To set up masquerade automatically" \
+                       " --enable-tcp-insecure. To set up masquerade automatically" \
                        " run update-distcc-symlinks.";
 
-    d = opendir("/usr/lib/distcc");
-    if (!d) {
-        rs_log_crit("/usr/lib/distcc not found. %s", warn);
+    e = opendir("/usr/lib/distcc");
+    d = opendir(LIBDIR "/distcc");
+    if (!e && !d) {
+        rs_log_crit(LIBDIR "/distcc not found. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
-    if (!readdir(d)) {
-        rs_log_crit("/usr/lib/distcc empty. %s", warn);
+    if ((!e || !readdir(e)) && (!d || !readdir(d))) {
+        rs_log_crit(LIBDIR "/distcc empty. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
 }
@@ -245,7 +247,7 @@ int main(int argc, char *argv[])
     /* Initialize the distcc io timeout value */
     dcc_get_io_timeout();
 
-    if (!opt_make_me_a_botnet)
+    if (!opt_enable_tcp_insecure)
         dcc_warn_masquerade_whitelist();
 
     if (dcc_should_be_inetd())
@@ -304,6 +306,7 @@ static void dcc_setup_real_log(void)
 
     rs_remove_all_loggers();
     openlog("distccd", LOG_PID, LOG_DAEMON);
+    rs_trace_syslog = TRUE;
     rs_add_logger(rs_logger_syslog, opt_log_level_num, NULL, 0);
 }
 

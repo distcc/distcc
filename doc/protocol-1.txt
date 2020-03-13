@@ -117,7 +117,7 @@ any person examining the network stream.]
 
 [note: Sending the parameter as hexadecimal is redundant, because four
 bytes would be sufficient to encode the 32-bit integer.  Sending as
-hexadecimal serves as a futher check that the client and server are
+hexadecimal serves as a further check that the client and server are
 synchronized.  Incorrect values for the parameter are detected as a
 program or network error.]
 

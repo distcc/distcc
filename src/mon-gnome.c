@@ -261,7 +261,7 @@ dcc_set_row_idle(GtkListStore *model,
  * nothing now.
  *
  * Every time through, we update each table row exactly once, whether
- * that is adding new state, settting it back to idle, or inserting
+ * that is adding new state, setting it back to idle, or inserting
  * it.  In particular, on each pass we add one value to the start of
  * every state history.
  **/
@@ -599,7 +599,7 @@ static GtkWidget * dcc_gnome_make_mainwin (void)
 
 #if GTK_CHECK_VERSION(2,2,0)
   gtk_window_set_icon_from_file (GTK_WINDOW (mainwin),
-                                 PKGDATADIR "/distccmon-gnome-icon.png",
+                                 ICONDIR "/distccmon-gnome.png",
                                  NULL);
 #endif
 

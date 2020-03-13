@@ -231,7 +231,7 @@ int dcc_compile_remote(char **argv,
     if(host->authenticate) {
         rs_log_info("Performing authentication.");
 
-        if ((ret = dcc_gssapi_perform_requested_security(to_net_fd, from_net_fd)) != 0) {
+        if ((ret = dcc_gssapi_perform_requested_security(host, to_net_fd, from_net_fd)) != 0) {
             rs_log_crit("Failed to perform authentication.");
             goto out;
         }

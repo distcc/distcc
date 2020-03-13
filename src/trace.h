@@ -128,7 +128,7 @@ void rs_logger_file(int level, const char *fn, char const *fmt, va_list va,
 void rs_logger_syslog(int level, const char *fn, char const *fmt, va_list va,
                       void *, int);
 
-/** Check whether the library was compiled with debugging trace suport. */
+/** Check whether the library was compiled with debugging trace support. */
 int             rs_supports_trace(void);
 
 void rs_log0(int level, char const *fn, char const *fmt, ...)
@@ -210,6 +210,8 @@ void rs_log0_nofn(int level, char const *fmt, ...);
  * messages.
  */
 
+/* really bool */
+extern int rs_trace_syslog;
 extern int rs_trace_level;
 
 #ifdef DO_RS_TRACE

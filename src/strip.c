@@ -48,7 +48,7 @@
  * remotely, it is possible that omitting these options will make
  * failure more obvious and avoid false success.
  *
- * Giving -L on a compile-only command line is a bit wierd, but it is
+ * Giving -L on a compile-only command line is a bit weird, but it is
  * observed to happen in Makefiles that are not strict about CFLAGS vs
  * LDFLAGS, etc.
  *
@@ -107,7 +107,9 @@ int dcc_strip_local_args(char **from, char ***out_argv)
                  || str_startswith("-L", from[from_i])
                  || str_startswith("-MF", from[from_i])
                  || str_startswith("-MT", from[from_i])
-                 || str_startswith("-MQ", from[from_i])) {
+                 || str_startswith("-MQ", from[from_i])
+                 || str_startswith("-isystem", from[from_i])
+                 || str_startswith("-stdlib", from[from_i])) {
             /* Something like "-DNDEBUG" or
              * "-Wp,-MD,.deps/nsinstall.pp".  Just skip this word */
             ;

@@ -332,7 +332,7 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
 /*@-boundsread@*/
     while (helpLength > lineLength) {
 	const char * ch;
-	char format[16];
+	char format[30];
 
 	ch = help + lineLength - 1;
 	while (ch > help && !isspace(*ch)) ch--;

@@ -195,15 +195,15 @@ int dcc_ssh_connect(char *ssh_cmd,
     pid_t ret;
     const int max_ssh_args = 12;
     char *ssh_args[max_ssh_args];
-    char *child_argv[10+max_ssh_args];
+    char *child_argv[11+max_ssh_args];
     int i,j;
     int num_ssh_args = 0;
+    char *ssh_cmd_in;
 
     /* We need to cast away constness.  I promise the strings in the argv[]
      * will not be modified. */
 
-    if (!ssh_cmd) {
-        char *ssh_cmd_in = getenv("DISTCC_SSH");
+    if (!ssh_cmd && (ssh_cmd_in = getenv("DISTCC_SSH"))) {
         ssh_cmd = strtok(ssh_cmd_in, " ");
         char *token = strtok(NULL, " ");
         while (token != NULL) {
@@ -236,6 +236,7 @@ int dcc_ssh_connect(char *ssh_cmd,
     child_argv[i++] = machine;
     child_argv[i++] = path;
     child_argv[i++] = (char *) "--inetd";
+    child_argv[i++] = (char *) "--enable-tcp-insecure";
     child_argv[i++] = NULL;
 
     rs_trace("connecting to %s using %s", machine, ssh_cmd);

@@ -41,7 +41,7 @@
  *
  * We need to distinguish the two by working out whether the first argument
  * "looks like" a compiler name or not.  I think the two cases in which we
- * should assume it's implicit are "distcc -c hello.c" (starts with a hypen),
+ * should assume it's implicit are "distcc -c hello.c" (starts with a hyphen),
  * and "distcc hello.c" (starts with a source filename.)
  *
  * In the case of implicit compilation "distcc --help" will always give you
@@ -206,8 +206,12 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                 seen_opt_s = 1;
             } else if (!strcmp(a, "-fprofile-arcs")
                        || !strcmp(a, "-ftest-coverage")
-		       || !strcmp(a, "--coverage")) {
-                rs_log_info("compiler will emit profile info; must be local");
+		       || !strcmp(a, "--coverage")
+		       || !strncmp(a, "-fprofile-generate", 18) /* it also has an -fprofile-generate=<path> form */
+		       || !strncmp(a, "-fprofile-use", 13)
+		       || !strncmp(a, "-fauto-profile", 14)
+		       || !strcmp(a, "-fprofile-correction")) {
+                rs_log_info("compiler will emit/use profile info; must be local");
                 return EXIT_DISTCC_FAILED;
             } else if (!strcmp(a, "-frepo")) {
                 rs_log_info("compiler will emit .rpo files; must be local");
