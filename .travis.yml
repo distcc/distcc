@@ -8,14 +8,6 @@ notifications:
 language: c
 
 cache: ccache
-os: linux
-dist:
-  - trusty
-  - xenial
-  - bionic
-compiler:
-  - gcc
-  - clang
 
 addons:
   homebrew:
@@ -37,5 +29,17 @@ script:
 
 matrix:
   include:
+  - dist: trusty
+    compiler: gcc
+  - dist: trusty
+    compiler: clang
+  - dist: bionic
+    compiler: gcc
+  - dist: bionic
+    compiler: clang
+  - dist: xenial
+    compiler: gcc
+  - dist: xenial
+    compiler: clang
   - os: osx
     compiler: clang
