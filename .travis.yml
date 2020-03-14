@@ -10,16 +10,15 @@ language: c
 cache: ccache
 
 addons:
+  homebrew:
+    update: true
+    brewfile: true
   apt:
     packages:
       - python3-dev
       - libiberty-dev
       - clang
-      - libavahi-client-dev 
-
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python; fi
+      - libavahi-client-dev
 
 script:
   - ./autogen.sh
@@ -30,9 +29,21 @@ script:
 
 matrix:
   include:
-  - os: linux
+  - dist: trusty
     compiler: gcc
-    dist: trusty
-  - os: linux
+  - dist: trusty
     compiler: clang
-    dist: trusty
+  - dist: bionic
+    compiler: gcc
+  - dist: bionic
+    compiler: clang
+  - dist: xenial
+    compiler: gcc
+  - dist: xenial
+    compiler: clang
+  - os: osx
+    compiler: clang
+    osx_image: xcode11.3
+  allow_failures:
+  - dist: xenial
+    compiler: clang
