@@ -43,4 +43,5 @@ matrix:
     compiler: clang
   - os: osx
     compiler: clang
-    before_script: sed -i '' "s/--root=\"\$\$DESTDIR\"//g" Makefile.in
+    osx_image: xcode11.3
+    #before_script: sed -i '' "s/--root=\"\$\$DESTDIR\"//g" Makefile.in
