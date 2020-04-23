@@ -39,5 +39,4 @@ matrix:
     compiler: clang
     dist: trusty
   - os: osx
-    osx_image: xcode9
     compiler: clang
