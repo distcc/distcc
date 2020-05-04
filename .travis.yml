@@ -33,4 +33,5 @@ matrix:
     compiler: clang
     dist: trusty
   - os: osx
+    osx_image: xcode11.3
     compiler: clang
