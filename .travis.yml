@@ -17,12 +17,6 @@ addons:
       - clang
       - libavahi-client-dev 
 
-before_install:
-  # Work around https://github.com/Homebrew/brew/issues/7356
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export HOMEBREW_NO_INSTALL_CLEANUP=1; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python; fi
-
 script:
   - ./autogen.sh
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./configure; fi
@@ -39,5 +33,5 @@ matrix:
     compiler: clang
     dist: trusty
   - os: osx
-    osx_image: xcode9
+    osx_image: xcode11.3
     compiler: clang
