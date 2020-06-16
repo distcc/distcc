@@ -194,7 +194,8 @@ static int dcc_resolve_march_native(char* argv[], char*** ret_newargv, int extra
                 if (!end) end = strstr(args, "\n");
                 if (end) *end = 0;
                 int n_arguments = 1;
-                for (const char* ptr = args;*ptr;ptr++) {
+                char* ptr = args;
+                for (;*ptr;ptr++) {
                     if (*ptr == ' ') n_arguments++;
                 }
                 pclose(in);
@@ -218,7 +219,8 @@ static int dcc_resolve_march_native(char* argv[], char*** ret_newargv, int extra
                             *ignore_range_min = j;
                             const char* ptr_insert = args;
                             int clang_force_next = 0;
-                            for (char* ptr = args;*ptr;ptr++) {
+                            ptr = args;
+                            for (;*ptr;ptr++) {
                                 if (*ptr == ' ' || *ptr == 0) {
                                     if (*ptr == ' ') *(ptr++) = 0;
                                     const char* insert = ptr_insert;
