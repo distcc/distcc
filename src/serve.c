@@ -591,7 +591,9 @@ static int tweak_arguments_for_server(char **argv,
     if ((ret = dcc_convert_mt_to_dotd_target(*tweaked_argv, dotd_target)))
       return 1;
 
-    dcc_argv_append(*tweaked_argv, strdup("-MMD"));
+    if (!dcc_argv_search(*tweaked_argv, "-MD") && !dcc_argv_search(*tweaked_argv, "-MMD")) {
+        dcc_argv_append(*tweaked_argv, strdup("-MMD"));
+    }
     dcc_argv_append(*tweaked_argv, strdup("-MF"));
     dcc_argv_append(*tweaked_argv, strdup(deps_fname));
 

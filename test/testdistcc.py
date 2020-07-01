@@ -1256,7 +1256,6 @@ class Gdb_Case(CompileHello_Case):
         """Return command to compile source"""
         os.mkdir("obj")
         return self.distcc_without_fallback() + self.compiler() + \
-               self.build_id + \
                " -o obj/testtmp.o -I. -c %s" % (self.sourceFilename())
 
     def link(self):
@@ -1610,9 +1609,7 @@ class DashMD_DashMF_DashMT_Case(CompileHello_Case):
     """Test -MD -MFfoo -MTbar"""
 
     def compileOpts(self):
-        opts = "-MD -MFdotd_filename -MTtarget_name_42"
-        opts += " -Qunused-arguments" if self.is_clang(self._cc) else ""
-        return opts
+        return "-MD -MFdotd_filename -MTtarget_name_42"
 
     def runtest(self):
         try:
@@ -1628,9 +1625,7 @@ class DashWpMD_Case(CompileHello_Case):
     """Test -Wp,-MD,depfile"""
 
     def compileOpts(self):
-        opts = "-Wp,-MD,depsfile"
-        opts += " -Qunused-arguments" if self.is_clang(self._cc) else ""
-        return opts
+        return "-Wp,-MD,depsfile"
 
     def runtest(self):
         try:
@@ -1639,12 +1634,8 @@ class DashWpMD_Case(CompileHello_Case):
           pass
         self.compile()
         deps = open('depsfile').read()
-        self.assert_re_search(r"testhdr.h", deps);
-        # The following assertion is commented out for now
-        # because it does not pass in pump mode.
-        # FIXME This is a real bug that we need to fix!
-        #       Pump mode is treating -MD as if it was -MMD.
-        # self.assert_re_search(r"stdio.h", deps);
+        self.assert_re_search(r"testhdr\.h", deps)
+        self.assert_re_search(r"stdio\.h", deps)
 
 class ScanIncludes_Case(CompileHello_Case):
     """Test --scan-includes"""
