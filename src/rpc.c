@@ -142,7 +142,7 @@ int dcc_explain_mismatch(const char *buf,
 
     extrabuf[l] = '\0';
     for (p = extrabuf; *p; p++)
-        if (!(isprint(*p) || *p == ' ' || *p == '\t')) {
+        if (!(isprint((uint8_t)*p) || *p == ' ' || *p == '\t')) {
             *p = '\0';
             break;
         }
