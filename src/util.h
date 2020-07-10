@@ -24,6 +24,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdint.h>
 
 /* util.c */
 int dcc_timecmp(struct timeval a, struct timeval b);
