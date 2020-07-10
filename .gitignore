@@ -3,6 +3,7 @@
 *.out
 *.err
 # binaries
+/*.exe
 distcc
 distccd
 distccmon-text
