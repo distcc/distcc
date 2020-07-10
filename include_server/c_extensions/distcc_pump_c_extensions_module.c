@@ -211,7 +211,7 @@ XArgv(PyObject *dummy, PyObject *args) {
     PyObject *string_object;
     string_object = PyList_GetItem(list_object, i); /* borrowed ref */
 /* TODO do it properly, catch exceptions for fancy Unicode symbols */
-    argv[i] = PyUnicode_AsUTF8(string_object);    /* does not increase
+    argv[i] = (char*)PyUnicode_AsUTF8(string_object); /* does not increase
                                                      ref count */
   }
   ret = dcc_x_argv(ifd, "ARGC", "ARGV", argv);
