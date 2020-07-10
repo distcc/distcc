@@ -222,7 +222,7 @@ static int dcc_parse_multiplier(const char **psrc, struct dcc_hostdef *hostdef)
             rs_log_error("bad multiplier \"%s\" in host specification", token);
             return EXIT_BAD_HOSTSPEC;
         }
-        while (isdigit(**psrc))
+        while (isdigit((uint8_t)**psrc))
             (*psrc)++;
         hostdef->n_slots = val;
     }
@@ -380,7 +380,7 @@ static int dcc_parse_tcp_host(struct dcc_hostdef *hostdef,
         token++;
 
         hostdef->port = strtol(token, &tail, 10);
-        if (*tail != '\0' && !isspace(*tail) && *tail != '/' && *tail != ',') {
+        if (*tail != '\0' && !isspace((uint8_t)*tail) && *tail != '/' && *tail != ',') {
             rs_log_error("invalid tcp port specification in \"%s\"", token);
             return EXIT_BAD_HOSTSPEC;
         } else {
@@ -521,7 +521,7 @@ int dcc_parse_hosts(const char *where, const char *source_name,
             continue;
         }
 
-        if (isspace(where[0])) {
+        if (isspace((uint8_t)where[0])) {
             where++;            /* skip space */
             continue;
         }

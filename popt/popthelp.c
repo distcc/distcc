@@ -335,9 +335,9 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
 	char format[30];
 
 	ch = help + lineLength - 1;
-	while (ch > help && !isspace(*ch)) ch--;
+	while (ch > help && !isspace((uint8_t)*ch)) ch--;
 	if (ch == help) break;		/* give up */
-	while (ch > (help + 1) && isspace(*ch)) ch--;
+	while (ch > (help + 1) && isspace((uint8_t)*ch)) ch--;
 	ch++;
 
 	sprintf(format, "%%.%ds\n%%%ds", (int) (ch - help), indentLength);
@@ -345,7 +345,7 @@ static void singleOptionHelp(FILE * fp, int maxLeftCol,
 	fprintf(fp, format, help, " ");
 	/*@=formatconst@*/
 	help = ch;
-	while (isspace(*help) && *help) help++;
+	while (isspace((uint8_t)*help) && *help) help++;
 	helpLength = strlen(help);
     }
 /*@=boundsread@*/

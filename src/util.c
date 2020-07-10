@@ -183,7 +183,7 @@ int dcc_getenv_bool(const char *name, int default_value)
 }
 
 
-#define IS_LEGAL_DOMAIN_CHAR(c) (isalnum(c) || ((c) == '-') || ((c) == '.'))
+#define IS_LEGAL_DOMAIN_CHAR(c) (isalnum((uint8_t)c) || ((c) == '-') || ((c) == '.'))
 
 /* Copy domain part of hostname to static buffer.
  * If hostname has no domain part, returns -1.
@@ -831,7 +831,7 @@ int dcc_tokenize_string(const char *input, char ***argv_ptr)
 
     /* Count the spaces in the string. */
     for (for_count = input_copy; *for_count; for_count++)
-        if (isspace(*for_count))
+        if (isspace((uint8_t)*for_count))
             n_spaces++;
 
     /* The maximum number of space-delimited strings we
