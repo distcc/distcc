@@ -209,6 +209,7 @@ GC_THRESHOLD = 10000
 
 # FLAGS FOR COMMAND LINE OPTIONS
 
+opt_additional_system_dirs = []
 opt_algorithm = MEMOIZING  # currently, only choice
 opt_debug_pattern = 1  # see DEBUG below
 opt_email_bound = MAX_EMAILS_TO_SEND

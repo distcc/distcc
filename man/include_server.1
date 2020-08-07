@@ -46,6 +46,10 @@ locally retried, see section \fBDISTCC DISCREPANCY SYMPTOMS\fR.
 .SH "OPTION SUMMARY"
 The following options are understood by include_server.py.
 .TP
+.B -A PATH, --additional_system_dir=PATH
+Add PATH as an additional "system directory" for the purpose of creating the
+symlink forest on the destination build server.
+.TP
 .B -dPAT, --debug_pattern=PAT
 Bit vector for turning on warnings and debugging
     1 = warnings

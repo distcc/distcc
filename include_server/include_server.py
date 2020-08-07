@@ -73,6 +73,11 @@ server has been spawned.
 
 OPTIONS:
 
+ -A DIR, --additional_system_dir DIR
+                             Treat DIR as a system directory for the purpose of
+                             not sending those files to the build servers (and not
+                             parsing locally if --skip_parsing_system_files is given)
+
  -dPAT, --debug_pattern=PAT  Bit vector for turning on warnings and debugging
                                1 = warnings
                                2 = trace some functions
@@ -483,8 +488,9 @@ def _ParseCommandLineOptions():
   """
   try:
     opts, args = getopt.getopt(sys.argv[1:],
-			       "d:esStvwx",
-			       ["port=",
+                                "A:d:esStvwx",
+			       ["additional_system_dir=",
+                                "port=",
                                 "pid_file=",
                                 "debug_pattern=",
                                 "email",
@@ -510,6 +516,8 @@ def _ParseCommandLineOptions():
   include_server_port = None
   for opt, arg in opts:
     try:
+      if opt in ("-A", "--additional_system_dir"):
+        basics.opt_additional_system_dirs.append(arg)
       if opt in ("-d", "--debug_pattern"):
         basics.opt_debug_pattern = int(arg)
       if opt in ("--port", ):

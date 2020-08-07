@@ -369,6 +369,7 @@ class CompilerDefaults(object):
         # with a SIGALRM.
         timer.Stop()
       self.system_dirs_default[compiler][sysroot][language] = (
+        basics.opt_additional_system_dirs +
         _SystemSearchdirsGCC(compiler,
                              sysroot, language, self.canonical_lookup))
       Debug(DEBUG_DATA,
