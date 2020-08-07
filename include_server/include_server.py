@@ -98,6 +98,11 @@ OPTIONS:
 
  -s, --statistics            Print information to stdout about include analysis.
 
+ -S, --skip_parsing_system_files
+                             Skips the parsing of system header files (those in
+                             system directories as determined by the compiler
+                             defaults).
+
  --stat_reset_triggers=LIST  Flush stat caches when the timestamp of any
                              filepath in LIST changes or the filepath comes in
                              or out of existence.  LIST is a colon separated
@@ -478,7 +483,7 @@ def _ParseCommandLineOptions():
   """
   try:
     opts, args = getopt.getopt(sys.argv[1:],
-			       "d:estvwx",
+			       "d:esStvwx",
 			       ["port=",
                                 "pid_file=",
                                 "debug_pattern=",
@@ -489,6 +494,7 @@ def _ParseCommandLineOptions():
                                 "path_observation_re=",
                                 "stat_reset_triggers=",
                                 "simple_algorithm",
+                                "skip_parsing_system_files",
                                 "statistics",
                                 "time",
                                 "unsafe_absolute_includes",
@@ -533,6 +539,8 @@ def _ParseCommandLineOptions():
         basics.opt_no_force_dirs = True
       if opt in ("-s", "--statistics"):
         basics.opt_statistics = True
+      if opt in ("-S", "--skip_parsing_system_files"):
+        basics.opt_skip_parsing_system_files = True
       if opt in ("-t", "--time"):
         basics.opt_print_times = True
       if opt in ("-v", "--verify"):

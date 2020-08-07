@@ -84,6 +84,14 @@ module). Print a warning whenever such a change happens (if warnings are
 enabled). This option allows limited exceptions to distcc_pump's normal
 assumption that source files are not modified during the build.
 .TP
+.B -S, --skip_parsing_system_files
+By default, system headers (those determined to be in "system directories" per
+the compiler defaults) are not sent to the remote build hosts but are parsed
+for their own macros and includes. Setting this option causes the macro parser
+to terminate parsing upon identifying a system file. This can speed up macro
+parsing, but is potentially unsafe, as the system headers may define macros
+used in include statements, causing missed dependencies.
+.TP
 .B -t, --time
 Print elapsed, user, and system time to stderr.
 .TP

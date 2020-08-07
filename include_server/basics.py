@@ -217,6 +217,7 @@ opt_print_times = False
 opt_path_observation_re = None
 opt_send_email = False
 opt_simple_algorithm = False
+opt_skip_parsing_system_files = False
 opt_stat_reset_triggers = {}
 opt_statistics = False
 opt_unsafe_absolute_includes = False
