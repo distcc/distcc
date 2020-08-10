@@ -575,6 +575,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
     const char *target_with_vendor = GNU_HOST;
     char *newcmd, *t, *path;
     int pathlen = 0;
+    int newcmd_len = 0;
 
     if (strcmp(argv[0], "gcc") == 0 || strncmp(argv[0], "gcc-", strlen("gcc-")) == 0 ||
         strcmp(argv[0], "g++") == 0 || strncmp(argv[0], "g++-", strlen("g++-")) == 0)
@@ -583,9 +584,11 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         return -ENOENT;
 
 
-    newcmd = malloc(strlen(target_with_vendor) + 1 + strlen(argv[0] + 1));
+    newcmd_len = strlen(target_with_vendor) + 1 + strlen(argv[0] + 1);
+    newcmd = malloc(newcmd_len);
     if (!newcmd)
         return -ENOMEM;
+    memset(newcmd, 0, newcmd_len);
 
     if ((t = strstr(target_with_vendor, "-pc-"))) {
         memcpy(newcmd, target_with_vendor, t - target_with_vendor);
