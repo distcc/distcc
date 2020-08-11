@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# coding=utf-8
 
 # Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
 # Copyright 2007 Google Inc.
@@ -1605,6 +1606,22 @@ class ImplicitCompiler_Case(CompileHello_Case):
             CompileHello_Case.runtest (self)
 
 
+class Unicode_Case(Compilation_Case):
+    """Check unicode compression works OK in include_server"""
+    def source(self):
+        return """
+#include <stdio.h>
+
+int main(void) {
+    puts("Unicode is hard! 😭");
+    return 0;
+}
+"""
+
+    def checkBuiltProgramMsgs(self, msgs):
+        self.assert_equal(msgs, "Unicode is hard! 😭\n")
+
+
 class DashD_Case(Compilation_Case):
     """Test preprocessor arguments"""
     def source(self):
@@ -2277,6 +2294,7 @@ tests = [
          HostFile_Case,
          AbsSourceFilename_Case,
          Getline_Case,
+         Unicode_Case,
          # slow tests below here
          Concurrent_Case,
          HundredFold_Case,
