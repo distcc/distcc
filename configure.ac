@@ -433,9 +433,12 @@ fi
 
 AC_CACHE_CHECK([for C99 vsnprintf],rsync_cv_HAVE_C99_VSNPRINTF,[
 AC_TRY_RUN([
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <stdarg.h>
-void foo(const char *format, ...) {
+static void foo(const char *format, ...) {
        va_list ap;
        int len;
        char buf[5];
@@ -449,7 +452,7 @@ void foo(const char *format, ...) {
 
        exit(0);
 }
-main() { foo("hello"); }
+int main() { foo("hello"); }
 ],
 rsync_cv_HAVE_C99_VSNPRINTF=yes,rsync_cv_HAVE_C99_VSNPRINTF=no,rsync_cv_HAVE_C99_VSNPRINTF=cross)])
 if test x"$rsync_cv_HAVE_C99_VSNPRINTF" = x"yes"; then
