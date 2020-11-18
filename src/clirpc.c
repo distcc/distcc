@@ -114,7 +114,7 @@ int dcc_r_result_header(int ifd,
     unsigned vers;
     int ret;
 
-    if ((ret = dcc_r_token_int(ifd, "DONE", &vers)))
+    if ((ret = dcc_r_token_int(ifd, "DONE", &vers))) {
         rs_log_error("server provided no answer. "
                      "Is the server configured to allow access from your IP"
                      " address? Is the server performing authentication and"
@@ -122,6 +122,7 @@ int dcc_r_result_header(int ifd,
                      " installed? Is the server configured to access the"
                      " compiler?");
         return ret;
+    }
 
     if (vers != expect_ver) {
         rs_log_error("got version %d not %d in response from server",
