@@ -62,14 +62,13 @@ getpeername(0,0,&len);
 dnl Android requires -llog for printf and friends
 dnl and will only run position independent executables
 AC_MSG_CHECKING([if building on Android])
-AC_TRY_COMPILE([
+AC_TRY_COMPILE([], [
   #ifdef __BIONIC__
   int ok;
   (void)ok;
   #else
   choke me
   #endif],
-[func("a"); func("a", "b"); func("a", "b", "c")],
 [AC_MSG_RESULT(yes)
  LDFLAGS="$LDFLAGS -llog -pie"],
 [AC_MSG_RESULT(no)])
@@ -399,12 +398,11 @@ if (mmap (NULL, 0, 0, 0, 0, 0) == MAP_FAILED)
 	return 0;
 #else
 #error mmap unavailable
-#endif], ,[
+#endif], AC_MSG_RESULT(yes), [
+	AC_MSG_RESULT(no)
 	AC_DEFINE([MAP_FAILED], [(void *)-1L],
 	[Define if MAP_FAILED constant not available])
 ])
-AC_MSG_RESULT()
-
 
 dnl
 dnl Test if the preprocessor understand vararg macros
@@ -433,9 +431,12 @@ fi
 
 AC_CACHE_CHECK([for C99 vsnprintf],rsync_cv_HAVE_C99_VSNPRINTF,[
 AC_TRY_RUN([
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <stdarg.h>
-void foo(const char *format, ...) {
+static int foo(const char *format, ...) {
        va_list ap;
        int len;
        char buf[5];
@@ -443,13 +444,13 @@ void foo(const char *format, ...) {
        va_start(ap, format);
        len = vsnprintf(0, 0, format, ap);
        va_end(ap);
-       if (len != 5) exit(1);
+       if (len != 5) return 1;
 
-       if (snprintf(buf, 3, "hello") != 5 || strcmp(buf, "he") != 0) exit(1);
+       if (snprintf(buf, 3, "hello") != 5 || strcmp(buf, "he") != 0) return 1;
 
-       exit(0);
+       return 0;
 }
-main() { foo("hello"); }
+int main() { return foo("hello"); }
 ],
 rsync_cv_HAVE_C99_VSNPRINTF=yes,rsync_cv_HAVE_C99_VSNPRINTF=no,rsync_cv_HAVE_C99_VSNPRINTF=cross)])
 if test x"$rsync_cv_HAVE_C99_VSNPRINTF" = x"yes"; then
@@ -462,9 +463,9 @@ AC_TRY_RUN([
 #include <sys/types.h>
 #include <sys/socket.h>
 
-main() {
+int main() {
        int fd[2];
-       exit((socketpair(AF_UNIX, SOCK_STREAM, 0, fd) != -1) ? 0 : 1);
+       return (socketpair(AF_UNIX, SOCK_STREAM, 0, fd) != -1) ? 0 : 1;
 }],
 rsync_cv_HAVE_SOCKETPAIR=yes,rsync_cv_HAVE_SOCKETPAIR=no,rsync_cv_HAVE_SOCKETPAIR=cross)])
 if test x"$rsync_cv_HAVE_SOCKETPAIR" = x"yes"; then
