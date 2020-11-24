@@ -405,12 +405,15 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
         char *compiler_path = NULL;
         if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
             if (access(compiler_path, X_OK) < 0) {
+                close(dirfd);
                 rs_log_crit("%s not in %s or %s whitelist.", compiler_name, LIBDIR "/distcc", "/usr/lib/distcc");
                 return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
             }
             free(compiler_path);
         }
     }
+
+    close(dirfd);
 
     rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
     return 0;
