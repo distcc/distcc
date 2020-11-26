@@ -150,7 +150,7 @@ char *dcc_argv_tostr(char **a)
         /* kind of half-assed quoting; won't handle strings containing
          * quotes properly, but good enough for debug messages for the
          * moment. */
-        int needs_quotes = (strpbrk(a[i], " \t\n\"\';") != NULL);
+        int needs_quotes = !*a[i] || (strpbrk(a[i], " \t\n\"\';") != NULL);
         if (i)
             *ss++ = ' ';
         if (needs_quotes)
