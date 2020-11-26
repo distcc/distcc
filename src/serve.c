@@ -403,8 +403,9 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
 
     if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
         char *compiler_path = NULL;
-        if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
+        if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) >= 0) {
             if (access(compiler_path, X_OK) < 0) {
+                free(compiler_path);
                 close(dirfd);
                 rs_log_crit("%s not in %s or %s whitelist.", compiler_name, LIBDIR "/distcc", "/usr/lib/distcc");
                 return EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
@@ -419,26 +420,26 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
     return 0;
 #else
     // make do with access():
-    char *compiler_path = NULL;
+    char *compiler_path;
     int ret = 0;
-    if (asprintf(&compiler_path, "%s/distcc/%s", LIBDIR, compiler_name) && compiler_path) {
+    if (asprintf(&compiler_path, "%s/distcc/%s", LIBDIR, compiler_name) >= 0) {
         if (access(compiler_path, X_OK) < 0) {
             free(compiler_path);
             /* check /usr/lib/distcc too */
-            if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) && compiler_path) {
+            if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) >= 0) {
                 if (access(compiler_path, X_OK) < 0) {
                     rs_log_crit("%s not in %s or %s whitelist.", compiler_name, LIBDIR "/distcc", "/usr/lib/distcc");
                     ret = EXIT_BAD_ARGUMENTS;           /* ENOENT, EACCESS, etc */
                 }
+                free(compiler_path);
             }
-        }
+        } else {
+            free(compiler_path);
+	}
         rs_trace("%s in" LIBDIR "/distcc whitelist", compiler_name);
     } else {
         rs_log_crit("Couldn't check if %s is in %s whitelist.", compiler_name, LIBDIR "/distcc");
         ret = EXIT_DISTCC_FAILED;
-    }
-    if (compiler_path) {
-        free(compiler_path);
     }
     return ret;
 #endif
