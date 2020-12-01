@@ -369,7 +369,11 @@ def _EvalExprHelper(expr, symbol_table, disabled):
       # args with parentheses.
       if symbol not in disabled:
         for definition in defs:
-          _EvalMacro(definition, disabled)
+          # We see None definitions for empty #defines (like include-guards)
+          # These won't expand to a value that would be in an #include, so
+          # we can safely skip them
+          if definition is not None:
+            _EvalMacro(definition, disabled)
       return value_set
 
 

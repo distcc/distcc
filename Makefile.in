@@ -748,6 +748,7 @@ pump-maintainer-check: pump include-server check_programs
 	  DISTCC_HOSTS='<invalid>,cpp,lzo' \
 	    "$(builddir)/pump" \
 	        $(MAKE) \
+	        PYTHONOPTIMIZE=0 \
 	        RESTRICTED_PATH="$(RESTRICTED_PATH)" \
 	        TESTDISTCC_OPTS="--pump $(TESTDISTCC_OPTS)" \
 	        distcc-maintainer-check; \
