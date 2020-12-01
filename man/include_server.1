@@ -141,6 +141,15 @@ unexpanded state to reduce the combinations considered. Errors should only
 occur if a function name collides with a token used in an include line,
 which should be rare in practice.
 .TP
+.B -T N, --timeout N
+Sets the maximum user time the include server is allowed handling one request
+to N seconds. This is a critical parameter because all caches are reset if this
+time is exceeded. And if all caches are reset, then the next request may take
+much longer time, possibly again exceeding the quota.  The parameter is also of
+importance to builds that involve compilations that distcc-pump does not grok:
+an amount of time roughly equal to this quota is wasted before CPP is invoked
+instead. Default of 3.8 seconds.
+.TP
 .B --no_force_dirs
 Do not force the creation of all directories used
 in an include path.  May improve performance for

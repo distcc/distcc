@@ -124,6 +124,9 @@ OPTIONS:
 
  -t, --time                  Print elapsed, user, and system time to stderr.
 
+ -T N, --timeout=N           Wait N seconds on an individual request before
+                             timing out and clearing the include_server's cache.
+
  --unsafe_absolute_includes  Do preprocessing on the compilation server even if
                              includes of absolute filepaths are encountered.
                              Such includes are then ignored for the purposes of
@@ -492,7 +495,7 @@ def _ParseCommandLineOptions():
   """
   try:
     opts, args = getopt.getopt(sys.argv[1:],
-                                "A:d:D:esStvwx",
+                                "A:d:D:esStT:vwx",
                                ["additional_system_dir=",
                                 "port=",
                                 "pid_file=",
@@ -507,6 +510,7 @@ def _ParseCommandLineOptions():
                                 "skip_parsing_system_files",
                                 "statistics",
                                 "time",
+                                "timeout=",
                                 "unsafe_absolute_includes",
                                 "unsafe_no_unexpanded_functions",
                                 "no_force_dirs",
@@ -557,6 +561,8 @@ def _ParseCommandLineOptions():
         basics.opt_skip_parsing_system_files = True
       if opt in ("-t", "--time"):
         basics.opt_print_times = True
+      if opt in ("-T", "--timeout"):
+        basics.opt_user_time_quota = int(arg)
       if opt in ("-v", "--verify"):
         basics.opt_verify = True
       if opt in ("-w", "--write_include_closure"):

@@ -23,6 +23,7 @@
 __author__ = 'Nils Klarlund'
 
 import glob
+import math
 import os.path
 import resource
 import signal
@@ -182,14 +183,6 @@ MAX_EMAILS_TO_SEND = 3
 # instead.
 USER_TIME_QUOTA = 3.8  # seconds
 
-# How often the following question is answered: has too much user time been
-# spent in the include handler servicing the current request?
-#
-# FIXME(klarlund): SIGALRM should not be raised in code that has I/O. Fix
-# include server so that this is guaranteed not to happen. Until then, we are
-# careful to wait a full 4 s before issuing SIGALRM.
-USER_TIME_QUOTA_CHECK_INTERVAL_TIME = 4  # seconds, an integer
-
 # ALGORITHMS
 
 SIMPLE = 0     # not implemented
@@ -228,6 +221,7 @@ opt_no_force_dirs = False
 opt_verify = False     # whether to compare calculated include closure to that
                        # produced by compiler
 opt_write_include_closure = False  # write include closures to file
+opt_user_time_quota = USER_TIME_QUOTA
 
 # HELPER FUNCTION FOR STAT_RESET_TRIGGERS
 
@@ -367,27 +361,32 @@ class IncludeAnalyzerTimer(object):
   """
 
   def __init__(self):
+    # FIXME(klarlund): SIGALRM should not be raised in code that has I/O. Fix
+    # include server so that this is guaranteed not to happen. Until then, we are
+    # careful to wait slightly longer than the timeout quota before issuing SIGALRM.
+    self.check_interval_sec = math.ceil(opt_user_time_quota * 1.05)
+
     self.start_utime = resource.getrusage(resource.RUSAGE_SELF).ru_utime
     self.old = signal.signal(signal.SIGALRM, self._TimeIsUp)
-    signal.alarm(USER_TIME_QUOTA_CHECK_INTERVAL_TIME)
+    signal.alarm(self.check_interval_sec)
 
   def _TimeIsUp(self, unused_sig_number, unused_frame):
     """Check CPU time spent and raise exception or reschedule."""
     if (resource.getrusage(resource.RUSAGE_SELF).ru_utime
-        > self.start_utime + USER_TIME_QUOTA):
+        > self.start_utime + opt_user_time_quota):
       raise NotCoveredTimeOutError(('Bailing out because include server '
                                     + 'spent more than %3.1fs user time '
                                     + 'handling request') %
-                                   USER_TIME_QUOTA)
+                                   opt_user_time_quota)
     else:
       # Reschedule ourselves.
-      signal.alarm(USER_TIME_QUOTA_CHECK_INTERVAL_TIME)
+      signal.alarm(self.check_interval_sec)
 
   def Stop(self):
     signal.alarm(0)
 
   def Start(self):
-    signal.alarm(USER_TIME_QUOTA_CHECK_INTERVAL_TIME)
+    signal.alarm(self.check_interval_sec)
 
   def Cancel(self):
     """Must be called eventually. See class documentation."""
