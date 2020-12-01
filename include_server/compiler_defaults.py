@@ -106,7 +106,7 @@ def _MakeLinkFromMirrorToRealLocation(system_dir, client_root, system_links):
     raise ValueError("Expected absolute path, but got '%s'." % system_dir)
   if os.path.realpath(system_dir) != system_dir:
     raise NotCoveredError(
-        "Default compiler search path '%s' must be a realpath." %s)
+        "Default compiler search path '%s' must be a realpath." % system_dir)
   # Typical values for rooted_system_dir:
   #  /dev/shm/tmpX.include_server-X-1/usr/include
   real_prefix, is_link = _RealPrefixWithinClientRoot(client_root, system_dir)
