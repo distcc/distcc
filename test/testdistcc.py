@@ -45,7 +45,7 @@ Example:
 # invocation of a test: this means each method runs just once and so
 # object state is not very useful, but nevermind.
 
-# Having a complicated pattens of up and down-calls within the class
+# Having a complicated patterns of up and down-calls within the class
 # methods seems to make things more complicated.  It may be better if
 # abstract superclasses just provide methods that can be called,
 # rather than establishing default behaviour.

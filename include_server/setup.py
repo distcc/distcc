@@ -21,7 +21,7 @@
 
 The version number should be passed to this script through the environment
 variable DISTCC_VERSION.  Also, the CPPFLAGS of the Makefile must be passed
-through the enviroment.  This is how we figure out the locations of include
+through the environment.  This is how we figure out the locations of include
 directories. SRCDIR must be passed as well; it explains where to find the C
 sources and the include_server directory of Python source files and C
 extensions.  Because SRCDIR is appended to build location and we don't want to

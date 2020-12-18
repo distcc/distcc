@@ -318,7 +318,7 @@ static PyObject *
 Realpath(PyObject *dummy, PyObject *args) {
   const char *in;
 
-  /* We explictly allocate memory for the output 'resolved' of 'realpath' --
+  /* We explicitly allocate memory for the output 'resolved' of 'realpath' --
      otherwise, some systems will make trouble because they do not accept
      passing the second argument NULL (as GNU does) for automatic buffer
      allocation. The glib function 'realpath' comes with the warning to not use

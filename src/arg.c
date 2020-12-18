@@ -262,7 +262,7 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
 
     /* TODO: ccache has the heuristic of ignoring arguments that are not
      * extant files when looking for the input file; that's possibly
-     * worthwile.  Of course we can't do that on the server. */
+     * worthwhile.  Of course we can't do that on the server. */
 
     if (!seen_opt_c && !seen_opt_s) {
         rs_log_info("compiler apparently called not for compile");

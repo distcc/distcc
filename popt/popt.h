@@ -397,8 +397,8 @@ bla=bla
 
 this_is   =   fdsafdas
      bad_line=        
-  reall bad line  
-  reall bad line  = again
+  really bad line  
+  really bad line  = again
 5555=   55555   
   test = with lots of spaces
 \endverbatim
