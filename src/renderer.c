@@ -183,8 +183,6 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
   y1 = cell_area->y + ypad;
   bar_height = cell_area->height - (2 * ypad);
 
-
-
   /* bar width is chosen such that the history roughly fills the cell
      (but it must be at least 1).  We use the full history, not just
      the amount we currently have.  Round up. */
@@ -201,16 +199,9 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
       if (state != DCC_PHASE_DONE)
         {
-#if 0
-          gdk_draw_rectangle (window,
-                              dcc_phase_gc[state],
-                              TRUE, /* fill */
-                              x1, y1, bar_width, bar_height);
-#else
           gdk_cairo_set_source_color (cr, (GdkColor *) &task_color[state]);
           cairo_rectangle (cr, x1, y1, bar_width, bar_height);
           cairo_fill (cr);
-#endif
         }
 
       x1 += bar_width;

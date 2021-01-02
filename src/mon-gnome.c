@@ -97,15 +97,6 @@ enum {
 };
 
 
-/**
- * Graphics contexts to be used to draw each particular state into the
- * model.
- **/
-//GdkGC *dcc_phase_gc[DCC_PHASE_DONE];
-//TODO rename _gc to _cr
-cairo_t *dcc_phase_gc[DCC_PHASE_DONE];
-
-
 #if 0
 /* shades of red */
 const GdkColor task_color[] = {
