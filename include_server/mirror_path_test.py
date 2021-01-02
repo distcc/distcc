@@ -77,7 +77,7 @@ class MirrorPathTest(unittest.TestCase):
         return path in self.links
       def realpath(path):
         if path.startswith('/root'):
-          self.fail("Not expected that '%s' startd with '/root'." % path)
+          self.fail("Not expected that '%s' started with '/root'." % path)
         return self.realpaths[path]
       def makedirs(path):
         if path == '/root/a':

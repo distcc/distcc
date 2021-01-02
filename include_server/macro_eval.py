@@ -19,7 +19,7 @@
 
 """Evaluation of macros acccording to an overapproximation semantics.
 
-This module generally follows CPP semantics for the evalution of macros. But we
+This module generally follows CPP semantics for the evaluation of macros. But we
 treat every define as a possible one, because we don't know whether it is
 actually executed when a file is really preprocessed. Our semantics is thus
 multi-valued: an expression (that is, a string) is evaluated to the set of
@@ -157,7 +157,7 @@ def _BigUnion(list_of_sets):
 
 
 def _PrependToSet(expr, expr_set):
-  """Return the set consiting of expr + element with element in expr_set."""
+  """Return the set consisting of expr + element with element in expr_set."""
   return set([ expr + expr_ for expr_ in expr_set ])
 
 
@@ -244,7 +244,7 @@ def _EvalExprHelper(expr, symbol_table, disabled):
   """
 
   def _ReEvalRecursivelyForExpansion(expansion, after):
-    """Reevalute the expansion that is the result of finding a match for a
+    """Reevaluate the expansion that is the result of finding a match for a
     macro.
 
     Arguments:
@@ -262,7 +262,7 @@ def _EvalExprHelper(expr, symbol_table, disabled):
     function-like macro).
 
     The idea is to form a set of strings from a cross product of two string sets
-    descriping all possibly expansions before and after the match.
+    describing all possibly expansions before and after the match.
 
     There are two recursions involved. First, we evaluate after to find all
     possible values of what follows the match. This recursion does not involve a

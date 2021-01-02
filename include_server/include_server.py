@@ -114,11 +114,11 @@ OPTIONS:
                              includes of absolute filepaths are encountered.
                              Such includes are then ignored for the purposes of
                              gathering the include closure. See the
-                             include_server(1) man page for futher information.
+                             include_server(1) man page for further information.
                              Using this option may lead to incorrect results.
 
  --no_force_dirs             Do not force the creation of all directories used
-                             in an include path.  May improve peformance for
+                             in an include path.  May improve performance for
                              some cases, but will break builds which use
                              include structures like "<foo/../file.h>" without
                              including other files in foo/.

@@ -163,7 +163,7 @@ Naming Conventions
      that string; 3) a triple of indices; or 4) a pair of indices plus an
      assumption that os.getcwd() == currdir.
 
-Pair Represenation of Filepaths
+Pair Representation of Filepaths
 -------------------------------
 A file is uniquely determined by the triple
    (currdir_idx, searchdir_idx, includepath_idx)
@@ -773,7 +773,7 @@ class BuildStatCache(object):
 
         # If we get here, result is not cached yet.
         if __debug__: statistics.sys_stat_counter += 1
-        # We do not explictly take into account currdir_idx, because
+        # We do not explicitly take into account currdir_idx, because
         # of the check above that os.getcwd is set to current_dir.
         relpath = dir_map_string[sl_idx] + includepath
         if _OsPathIsFile(relpath):

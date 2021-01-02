@@ -533,7 +533,7 @@ static int tweak_include_arguments_for_server(char **argv,
  * it augments, rather than replace, the list of targets in the dotd file.
  * The behavior we want though, is the replacing behavior.
  * So here we delete the "-MT target" arguments, and we return the target,
- * for use in the .d rewritting in dotd.c.
+ * for use in the .d rewriting in dotd.c.
  */
 static int dcc_convert_mt_to_dotd_target(char **argv, char **dotd_target)
 {
