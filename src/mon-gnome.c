@@ -528,6 +528,8 @@ static GtkWidget * dcc_gnome_make_load_bar (void)
   gint context_id;
 
   bar = gtk_statusbar_new ();
+  gtk_widget_set_margin_top(GTK_WIDGET(bar), 0);
+  gtk_widget_set_margin_bottom(GTK_WIDGET(bar), 0);
   context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR (bar), "load");
 
   gtk_statusbar_push(GTK_STATUSBAR (bar), context_id, "Load: ");
