@@ -210,23 +210,6 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
 
 
-/**
- * Measure the size that we want to have allocated for this cell.
- */
-static void
-dcc_cell_renderer_chart_get_size (GtkCellRenderer *UNUSED (cell),
-                                  GtkWidget       *UNUSED (widget),
-                                  const GdkRectangle    *UNUSED (cell_area),
-                                  gint            *UNUSED (x_offset),
-                                  gint            *UNUSED (y_offset),
-                                  gint            *UNUSED (width),
-                                  gint            *UNUSED (height))
-{
-  /* default is fine */
-}
-
-
-
 
 static void
 dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
@@ -240,7 +223,6 @@ dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
   object_class->set_property = dcc_cell_renderer_chart_set_property;
 
   cell_class->render = dcc_cell_renderer_chart_render;
-  cell_class->get_size = dcc_cell_renderer_chart_get_size;
 
   spec = g_param_spec_pointer ("history",
                                "Slot history",
