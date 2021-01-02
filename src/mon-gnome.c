@@ -448,35 +448,6 @@ static gint dcc_gnome_load_update_cb (gpointer data)
 
 
 /**
- * Initialize graphics context for drawing into a widget in the right
- * color for each state.
- **/
-static void
-dcc_create_state_gcs (GtkWidget *widget)
-{
-  enum dcc_phase i_state;
-#if 0
-  for (i_state = 0; i_state < DCC_PHASE_DONE; i_state++)
-    {
-      dcc_phase_gc[i_state] = gdk_gc_new (widget->window);
-      gdk_gc_set_rgb_fg_color (dcc_phase_gc[i_state],
-                               (GdkColor *) &task_color[i_state]);
-
-    }
-#else
-  for (i_state = 0; i_state < DCC_PHASE_DONE; i_state++)
-    {
-      GdkWindow * gdk_window = gtk_widget_get_window (widget);
-      dcc_phase_gc[i_state] = gdk_cairo_create(gdk_window);
-      gdk_cairo_set_source_color (dcc_phase_gc[i_state],
-                               (GdkColor *) &task_color[i_state]);
-
-    }
-#endif
-}
-
-
-/**
  * Configure GtkTreeView with the right columns bound to
  * renderers, and a data model.
  **/
@@ -496,10 +467,6 @@ static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (chart_treeview));
 
   gtk_tree_selection_set_mode (selection, GTK_SELECTION_NONE);
-
-  /* we can't create the gcs until the widget is first realized */
-  g_signal_connect_after (chart_treeview, "realize",
-                          G_CALLBACK (dcc_create_state_gcs), NULL);
 
   text_renderer = gtk_cell_renderer_text_new ();
   chart_renderer = dcc_cell_renderer_chart_new ();

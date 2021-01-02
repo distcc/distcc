@@ -183,17 +183,6 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
   y1 = cell_area->y + ypad;
   bar_height = cell_area->height - (2 * ypad);
 
-  const GdkColor task_color[] = {
-  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_STARTUP, accent red dark */
-  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_BLOCKED, accent red dark */
-  { 0, 0xc1c1, 0x6666, 0x5a5a }, /* DCC_PHASE_CONNECT, red medium  */
-  { 0, 0x8888, 0x7f7f, 0xa3a3 }, /* DCC_PHASE_CPP, purple medium*/
-  { 0, 0xe0e0, 0xc3c3, 0x9e9e }, /* DCC_PHASE_SEND, face skin medium*/
-  { 0, 0x8383, 0xa6a6, 0x7f7f }, /* DCC_PHASE_COMPILE, green medium */
-  { 0, 0x7575, 0x9090, 0xaeae }, /* DCC_PHASE_RECEIVE, blue medium*/
-  { 0, 0, 0, 0 },               /* DCC_PHASE_DONE */
-};
-
 
 
   /* bar width is chosen such that the history roughly fills the cell
@@ -218,10 +207,9 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
                               TRUE, /* fill */
                               x1, y1, bar_width, bar_height);
 #else
-gdk_cairo_set_source_color (cr, (GdkColor *) &task_color[state]);
-cairo_rectangle (cr, x1, y1, bar_width, bar_height);
-cairo_fill (cr);
-//cairo_destroy (cr);
+          gdk_cairo_set_source_color (cr, (GdkColor *) &task_color[state]);
+          cairo_rectangle (cr, x1, y1, bar_width, bar_height);
+          cairo_fill (cr);
 #endif
         }
 
