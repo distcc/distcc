@@ -132,10 +132,10 @@ AC_ARG_ENABLE(Werror,
 # we need.  It's faster to just do it once during configuration.
 if test "x${with_gnome}" = xyes
 then
-    GNOME_PACKAGES="gtk+-2.0 libgnome-2.0 libgnomeui-2.0 pango"
+    GNOME_PACKAGES="gtk+-3.0 libgnome-3.0 libgnomeui-3.0 pango"
 elif test "x${with_gtk}" = xyes
 then
-    GNOME_PACKAGES="gtk+-2.0"
+    GNOME_PACKAGES="gtk+-3.0"
 else
     GNOME_PACKAGES=""
 fi

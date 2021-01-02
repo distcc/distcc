@@ -101,7 +101,9 @@ enum {
  * Graphics contexts to be used to draw each particular state into the
  * model.
  **/
-GdkGC *dcc_phase_gc[DCC_PHASE_DONE];
+//GdkGC *dcc_phase_gc[DCC_PHASE_DONE];
+//TODO rename _gc to _cr
+cairo_t *dcc_phase_gc[DCC_PHASE_DONE];
 
 
 #if 0
@@ -453,7 +455,7 @@ static void
 dcc_create_state_gcs (GtkWidget *widget)
 {
   enum dcc_phase i_state;
-
+#if 0
   for (i_state = 0; i_state < DCC_PHASE_DONE; i_state++)
     {
       dcc_phase_gc[i_state] = gdk_gc_new (widget->window);
@@ -461,6 +463,16 @@ dcc_create_state_gcs (GtkWidget *widget)
                                (GdkColor *) &task_color[i_state]);
 
     }
+#else
+  for (i_state = 0; i_state < DCC_PHASE_DONE; i_state++)
+    {
+      GdkWindow * gdk_window = gtk_widget_get_window (widget);
+      dcc_phase_gc[i_state] = gdk_cairo_create(gdk_window);
+      gdk_cairo_set_source_color (dcc_phase_gc[i_state],
+                               (GdkColor *) &task_color[i_state]);
+
+    }
+#endif
 }
 
 
@@ -477,7 +489,7 @@ static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
   GtkWidget *align, *proc_scroll;
 
   chart_treeview = gtk_tree_view_new_with_model (proc_model);
-  gtk_object_set (GTK_OBJECT (chart_treeview),
+  g_object_set (G_OBJECT (chart_treeview),
                   "headers-visible", TRUE,
                   NULL);
 
@@ -592,9 +604,9 @@ static GtkWidget * dcc_gnome_make_mainwin (void)
   gtk_window_set_default_size (GTK_WINDOW (mainwin), 500, 300);
 
   /* Quit when it's closed */
-  g_signal_connect (GTK_OBJECT(mainwin), "delete-event",
+  g_signal_connect (G_OBJECT(mainwin), "delete-event",
                     G_CALLBACK (gtk_main_quit), NULL);
-  g_signal_connect (GTK_OBJECT(mainwin), "destroy",
+  g_signal_connect (G_OBJECT(mainwin), "destroy",
                     G_CALLBACK (gtk_main_quit), NULL);
 
 #if GTK_CHECK_VERSION(2,2,0)

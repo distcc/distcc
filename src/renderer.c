@@ -160,18 +160,17 @@ dcc_cell_renderer_chart_get_property (GObject     *object,
  **/
 static void
 dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
-                                GdkWindow            *window,
+                                cairo_t              *cr,
                                 GtkWidget            *UNUSED(widget),
-                                GdkRectangle         *UNUSED(background_area),
-                                GdkRectangle         *cell_area,
-                                GdkRectangle         *UNUSED(expose_area),
+                                const GdkRectangle   *UNUSED(background_area),
+                                const GdkRectangle   *cell_area,
                                 GtkCellRendererState  UNUSED(flags))
 {
   const struct dcc_history *history;
   enum dcc_phase state;
   int x1, y1;
-  int bar_height;
-  int bar_width;
+  int bar_height, bar_width;
+  int xpad, ypad;
   int i;
   const enum dcc_phase *phases;
 
@@ -179,10 +178,23 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
   history = cellchart->history;
   g_return_if_fail (history);  /* Perhaps we should just ignore this.. */
+  gtk_cell_renderer_get_padding(cell, &xpad, &ypad);
+  x1 = cell_area->x + xpad;
+  y1 = cell_area->y + ypad;
+  bar_height = cell_area->height - (2 * ypad);
 
-  x1 = cell_area->x + cell->xpad;
-  y1 = cell_area->y + cell->ypad;
-  bar_height = cell_area->height - (2 * cell->ypad);
+  const GdkColor task_color[] = {
+  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_STARTUP, accent red dark */
+  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_BLOCKED, accent red dark */
+  { 0, 0xc1c1, 0x6666, 0x5a5a }, /* DCC_PHASE_CONNECT, red medium  */
+  { 0, 0x8888, 0x7f7f, 0xa3a3 }, /* DCC_PHASE_CPP, purple medium*/
+  { 0, 0xe0e0, 0xc3c3, 0x9e9e }, /* DCC_PHASE_SEND, face skin medium*/
+  { 0, 0x8383, 0xa6a6, 0x7f7f }, /* DCC_PHASE_COMPILE, green medium */
+  { 0, 0x7575, 0x9090, 0xaeae }, /* DCC_PHASE_RECEIVE, blue medium*/
+  { 0, 0, 0, 0 },               /* DCC_PHASE_DONE */
+};
+
+
 
   /* bar width is chosen such that the history roughly fills the cell
      (but it must be at least 1).  We use the full history, not just
@@ -200,10 +212,17 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
       if (state != DCC_PHASE_DONE)
         {
+#if 0
           gdk_draw_rectangle (window,
                               dcc_phase_gc[state],
                               TRUE, /* fill */
                               x1, y1, bar_width, bar_height);
+#else
+gdk_cairo_set_source_color (cr, (GdkColor *) &task_color[state]);
+cairo_rectangle (cr, x1, y1, bar_width, bar_height);
+cairo_fill (cr);
+//cairo_destroy (cr);
+#endif
         }
 
       x1 += bar_width;
@@ -216,9 +235,9 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
  * Measure the size that we want to have allocated for this cell.
  */
 static void
-dcc_cell_renderer_chart_get_size (GtkCellRenderer *UNUSED(cell),
+dcc_cell_renderer_chart_get_size (GtkCellRenderer *UNUSED (cell),
                                   GtkWidget       *UNUSED (widget),
-                                  GdkRectangle    *UNUSED (cell_area),
+                                  const GdkRectangle    *UNUSED (cell_area),
                                   gint            *UNUSED (x_offset),
                                   gint            *UNUSED (y_offset),
                                   gint            *UNUSED (width),

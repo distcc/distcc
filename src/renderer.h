@@ -43,6 +43,7 @@ GType            dcc_cell_renderer_chart_get_type (void);
 GtkCellRenderer *dcc_cell_renderer_chart_new      (void);
 
 
-extern GdkGC *dcc_phase_gc[DCC_PHASE_DONE];
+//extern GdkGC *dcc_phase_gc[DCC_PHASE_DONE];
+extern cairo_t *dcc_phase_gc[DCC_PHASE_DONE];
 
 extern const guint dcc_max_history_queue;
