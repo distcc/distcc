@@ -443,12 +443,12 @@ static gint dcc_gnome_load_update_cb (gpointer data)
  * renderers, and a data model.
  **/
 static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
-                                      GtkWidget **align_return)
+                                      GtkWidget **widget_return)
 {
   GtkCellRenderer *text_renderer, *chart_renderer;
   GtkTreeSelection *selection;
   GtkTreeViewColumn *column;
-  GtkWidget *align, *proc_scroll;
+  GtkWidget *proc_scroll;
 
   chart_treeview = gtk_tree_view_new_with_model (proc_model);
   g_object_set (G_OBJECT (chart_treeview),
@@ -514,11 +514,7 @@ static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
                                   GTK_POLICY_AUTOMATIC);
   gtk_container_add (GTK_CONTAINER (proc_scroll), chart_treeview);
 
-  /* Expands to fill all space */
-  align = gtk_alignment_new (0.0, 0.0, 1.0, 1.0);
-  gtk_container_add (GTK_CONTAINER (align), proc_scroll);
-
-  *align_return = align;
+  *widget_return = proc_scroll;
 }
 
 
