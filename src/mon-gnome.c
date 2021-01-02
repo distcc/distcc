@@ -587,8 +587,9 @@ static int dcc_gnome_make_app (void)
   /* Create the main window */
   mainwin = dcc_gnome_make_mainwin ();
 
-  /* Create a vbox for the contents */
-  topbox = gtk_vbox_new (FALSE, 0);
+  /* Create a gtkbox for the contents */
+  topbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+
   gtk_container_add (GTK_CONTAINER (mainwin),
                      topbox);
 
@@ -599,6 +600,13 @@ static int dcc_gnome_make_app (void)
                             &proc_align);
   gtk_container_add (GTK_CONTAINER (topbox),
                      proc_align);
+
+  gtk_box_set_child_packing (GTK_BOX (topbox),
+                             GTK_WIDGET (proc_align),
+                             TRUE,
+                             TRUE,
+                             0,
+                             GTK_PACK_START);
 
   gtk_box_pack_end (GTK_BOX (topbox),
                     load_bar,
