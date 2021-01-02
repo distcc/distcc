@@ -97,36 +97,38 @@ enum {
 };
 
 
-#if 0
-/* shades of red */
-const GdkColor task_color[] = {
-  { 0, 0x2222, 0, 0 },          /* DCC_PHASE_STARTUP, */
-  { 0, 0x4444, 0, 0 },          /* DCC_PHASE_BLOCKED, */
-  { 0, 0x6666, 0, 0 },          /* DCC_PHASE_CONNECT, */
-  { 0, 0x8888, 0, 0 },          /* DCC_PHASE_CPP, */
-  { 0, 0xaaaa, 0, 0 },          /* DCC_PHASE_SEND, */
-  { 0, 0xcccc, 0, 0 },          /* DCC_PHASE_COMPILE, */
-  { 0, 0xeeee, 0, 0 },          /* DCC_PHASE_RECEIVE, */
-  { 0, 0xffff, 0xffff, 0 },     /* DCC_PHASE_DONE */
-};
-#endif
-
 /*
- * Colors used for drawing different state stripes.  First GdkColor
- * field is the assigned color index and zero here.
+ * Colors used for drawing different state stripes.
  *
  * These color names are from the GNOME standard palette.
  */
-const GdkColor task_color[] = {
-  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_STARTUP, accent red dark */
-  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_BLOCKED, accent red dark */
-  { 0, 0xc1c1, 0x6666, 0x5a5a }, /* DCC_PHASE_CONNECT, red medium  */
-  { 0, 0x8888, 0x7f7f, 0xa3a3 }, /* DCC_PHASE_CPP, purple medium*/
-  { 0, 0xe0e0, 0xc3c3, 0x9e9e }, /* DCC_PHASE_SEND, face skin medium*/
-  { 0, 0x8383, 0xa6a6, 0x7f7f }, /* DCC_PHASE_COMPILE, green medium */
-  { 0, 0x7575, 0x9090, 0xaeae }, /* DCC_PHASE_RECEIVE, blue medium*/
-  { 0, 0, 0, 0 },               /* DCC_PHASE_DONE */
+GdkRGBA task_color[DCC_PHASE_DONE];
+
+const char * task_color_string[] = {
+  "#999900000000", /* DCC_PHASE_STARTUP, accent red dark */
+  "#999900000000", /* DCC_PHASE_BLOCKED, accent red dark */
+  "#c1c166665a5a", /* DCC_PHASE_CONNECT, red medium  */
+  "#88887f7fa3a3", /* DCC_PHASE_CPP, purple medium*/
+  "#e0e0c3c39e9e", /* DCC_PHASE_SEND, face skin medium*/
+  "#8383a6a67f7f", /* DCC_PHASE_COMPILE, green medium */
+  "#75759090aeae", /* DCC_PHASE_RECEIVE, blue medium*/
+  "#000000000000", /* DCC_PHASE_DONE */
 };
+
+
+/**
+ * Initialize rgba colors for drawing in the right color for each state.
+ **/
+static void
+dcc_create_state_colors (void)
+{
+  enum dcc_phase i_state;
+  for (i_state = 0; i_state <= DCC_PHASE_DONE; i_state++)
+    {
+      printf("fisk state: %d, color: %s\n", i_state, task_color_string[i_state]);
+      gdk_rgba_parse(&task_color[i_state],task_color_string[i_state]);
+    }
+}
 
 
 static void
@@ -640,6 +642,7 @@ int main(int argc, char **argv)
 #endif
 
   /* do our own initialization */
+  dcc_create_state_colors();
   dcc_gnome_make_app ();
 
   /* Keep running until quit */

@@ -43,4 +43,4 @@ GType            dcc_cell_renderer_chart_get_type (void);
 GtkCellRenderer *dcc_cell_renderer_chart_new      (void);
 
 extern const guint dcc_max_history_queue;
-extern const GdkColor task_color[];
+extern GdkRGBA task_color[];

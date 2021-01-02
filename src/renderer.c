@@ -199,7 +199,7 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
       if (state != DCC_PHASE_DONE)
         {
-          gdk_cairo_set_source_color (cr, (GdkColor *) &task_color[state]);
+          gdk_cairo_set_source_rgba (cr, &task_color[state]);
           cairo_rectangle (cr, x1, y1, bar_width, bar_height);
           cairo_fill (cr);
         }
