@@ -212,7 +212,8 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
 
 static void
-dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
+dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class,
+                                    gpointer UNUSED(klass))
 {
   GParamSpec *spec;
 
@@ -237,7 +238,8 @@ dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
 
 /* Instance initialization */
 static void
-dcc_cell_renderer_chart_init (DccCellRendererChart *cell)
+dcc_cell_renderer_chart_init (DccCellRendererChart *cell,
+                              gpointer UNUSED(klass))
 {
   cell->history = NULL;
 }
