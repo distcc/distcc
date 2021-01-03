@@ -938,7 +938,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
  */
-static int not_sd_is_socket_internal(int fd, int type, int listening) {
+static int sd_is_socket_internal(int fd, int type, int listening) {
         struct stat st_fd;
 
         if (fd < 0 || type < 0)
@@ -989,7 +989,7 @@ union sockaddr_union {
         struct sockaddr_storage storage;
 };
 
-int sd_is_socket(int fd, int family, int type, int listening) {
+int not_sd_is_socket(int fd, int family, int type, int listening) {
         int r;
 
         if (family < 0)
