@@ -261,8 +261,8 @@ int dcc_writex(int fd, const void *buf, size_t len)
 int tcp_cork_sock(int POSSIBLY_UNUSED(fd), int POSSIBLY_UNUSED(corked))
 {
 #if defined(TCP_CORK) && defined(SOL_TCP)
-    if (!dcc_getenv_bool("DISTCC_TCP_CORK", 1) || !(sd_is_socket(fd, AF_INET, SOCK_STREAM, 1) ||
-                                                    sd_is_socket(fd, AF_INET6, SOCK_STREAM, 1)))
+    if (!dcc_getenv_bool("DISTCC_TCP_CORK", 1) || !(not_sd_is_socket(fd, AF_INET, SOCK_STREAM, 1) ||
+                                                    not_sd_is_socket(fd, AF_INET6, SOCK_STREAM, 1)))
         return 0;
 
     if (setsockopt(fd, SOL_TCP, TCP_CORK, &corked, sizeof corked) == -1) {
