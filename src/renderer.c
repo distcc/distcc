@@ -257,20 +257,20 @@ dcc_cell_renderer_chart_get_type (void)
     {
       static const GTypeInfo cell_chart_info =
       {
-    sizeof (DccCellRendererChartClass),
-    NULL,        /* base_init */
-    NULL,        /* base_finalize */
-    (GClassInitFunc) dcc_cell_renderer_chart_class_init,
-    NULL,        /* class_finalize */
-    NULL,        /* class_data */
-    sizeof (DccCellRendererChart),
-    0,              /* n_preallocs */
-    (GInstanceInitFunc) dcc_cell_renderer_chart_init,
-        NULL                    /* value_table */
+        sizeof (DccCellRendererChartClass),
+        NULL,        /* base_init */
+        NULL,        /* base_finalize */
+        (GClassInitFunc) dcc_cell_renderer_chart_class_init,
+        NULL,        /* class_finalize */
+        NULL,        /* class_data */
+        sizeof (DccCellRendererChart),
+        0,           /* n_preallocs */
+        (GInstanceInitFunc) dcc_cell_renderer_chart_init,
+        NULL         /* value_table */
       };
 
       cell_chart_type =
-    g_type_register_static (GTK_TYPE_CELL_RENDERER,
+        g_type_register_static (GTK_TYPE_CELL_RENDERER,
                                 "DccCellRendererChart",
                                 &cell_chart_info, 0);
     }
