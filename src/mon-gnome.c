@@ -125,7 +125,6 @@ dcc_create_state_colors (void)
   enum dcc_phase i_state;
   for (i_state = 0; i_state <= DCC_PHASE_DONE; i_state++)
     {
-      printf("fisk state: %d, color: %s\n", i_state, task_color_string[i_state]);
       gdk_rgba_parse(&task_color[i_state],task_color_string[i_state]);
     }
 }
@@ -631,15 +630,7 @@ int main(int argc, char **argv)
    * compilation */
   nice(5);
 
-#if defined(WITH_GNOME)
-  gnome_program_init ("distccmon-gnome", PACKAGE_VERSION,
-              LIBGNOMEUI_MODULE,
-              argc, argv, NULL);
-#elif defined(WITH_GTK)
   gtk_init (&argc, &argv);
-#else
-#  error This program must be built with either WITH_GTK or WITH_GNOME
-#endif
 
   /* do our own initialization */
   dcc_create_state_colors();
