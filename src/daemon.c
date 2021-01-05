@@ -170,6 +170,12 @@ static void dcc_warn_masquerade_whitelist(void) {
         rs_log_crit(LIBDIR "/distcc empty. %s", warn);
         dcc_exit(EXIT_COMPILER_MISSING);
     }
+    if (d) {
+        closedir(d);
+    }
+    if (e) {
+        closedir(e);
+    }
 }
 
 /**
