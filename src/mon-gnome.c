@@ -97,43 +97,38 @@ enum {
 };
 
 
-/**
- * Graphics contexts to be used to draw each particular state into the
- * model.
- **/
-GdkGC *dcc_phase_gc[DCC_PHASE_DONE];
-
-
-#if 0
-/* shades of red */
-const GdkColor task_color[] = {
-  { 0, 0x2222, 0, 0 },          /* DCC_PHASE_STARTUP, */
-  { 0, 0x4444, 0, 0 },          /* DCC_PHASE_BLOCKED, */
-  { 0, 0x6666, 0, 0 },          /* DCC_PHASE_CONNECT, */
-  { 0, 0x8888, 0, 0 },          /* DCC_PHASE_CPP, */
-  { 0, 0xaaaa, 0, 0 },          /* DCC_PHASE_SEND, */
-  { 0, 0xcccc, 0, 0 },          /* DCC_PHASE_COMPILE, */
-  { 0, 0xeeee, 0, 0 },          /* DCC_PHASE_RECEIVE, */
-  { 0, 0xffff, 0xffff, 0 },     /* DCC_PHASE_DONE */
-};
-#endif
-
 /*
- * Colors used for drawing different state stripes.  First GdkColor
- * field is the assigned color index and zero here.
+ * Colors used for drawing different state stripes.
  *
  * These color names are from the GNOME standard palette.
  */
-const GdkColor task_color[] = {
-  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_STARTUP, accent red dark */
-  { 0, 0x9999, 0, 0 },          /* DCC_PHASE_BLOCKED, accent red dark */
-  { 0, 0xc1c1, 0x6666, 0x5a5a }, /* DCC_PHASE_CONNECT, red medium  */
-  { 0, 0x8888, 0x7f7f, 0xa3a3 }, /* DCC_PHASE_CPP, purple medium*/
-  { 0, 0xe0e0, 0xc3c3, 0x9e9e }, /* DCC_PHASE_SEND, face skin medium*/
-  { 0, 0x8383, 0xa6a6, 0x7f7f }, /* DCC_PHASE_COMPILE, green medium */
-  { 0, 0x7575, 0x9090, 0xaeae }, /* DCC_PHASE_RECEIVE, blue medium*/
-  { 0, 0, 0, 0 },               /* DCC_PHASE_DONE */
+GdkRGBA task_color[DCC_PHASE_DONE];
+
+const char * task_color_string[] = {
+  "#999900000000", /* DCC_PHASE_STARTUP, accent red dark */
+  "#999900000000", /* DCC_PHASE_BLOCKED, accent red dark */
+  "#c1c166665a5a", /* DCC_PHASE_CONNECT, red medium  */
+  "#88887f7fa3a3", /* DCC_PHASE_CPP, purple medium*/
+  "#e0e0c3c39e9e", /* DCC_PHASE_SEND, face skin medium*/
+  "#8383a6a67f7f", /* DCC_PHASE_COMPILE, green medium */
+  "#75759090aeae", /* DCC_PHASE_RECEIVE, blue medium*/
+  "#000000000000", /* DCC_PHASE_DONE */
 };
+
+
+/**
+ * Initialize rgba colors for drawing in the right color for each state.
+ **/
+static void
+dcc_create_state_colors (void)
+{
+  enum dcc_phase i_state;
+  for (i_state = 0; i_state <= DCC_PHASE_DONE; i_state++)
+    {
+      printf("fisk state: %d, color: %s\n", i_state, task_color_string[i_state]);
+      gdk_rgba_parse(&task_color[i_state],task_color_string[i_state]);
+    }
+}
 
 
 static void
@@ -446,48 +441,25 @@ static gint dcc_gnome_load_update_cb (gpointer data)
 
 
 /**
- * Initialize graphics context for drawing into a widget in the right
- * color for each state.
- **/
-static void
-dcc_create_state_gcs (GtkWidget *widget)
-{
-  enum dcc_phase i_state;
-
-  for (i_state = 0; i_state < DCC_PHASE_DONE; i_state++)
-    {
-      dcc_phase_gc[i_state] = gdk_gc_new (widget->window);
-      gdk_gc_set_rgb_fg_color (dcc_phase_gc[i_state],
-                               (GdkColor *) &task_color[i_state]);
-
-    }
-}
-
-
-/**
  * Configure GtkTreeView with the right columns bound to
  * renderers, and a data model.
  **/
 static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
-                                      GtkWidget **align_return)
+                                      GtkWidget **widget_return)
 {
   GtkCellRenderer *text_renderer, *chart_renderer;
   GtkTreeSelection *selection;
   GtkTreeViewColumn *column;
-  GtkWidget *align, *proc_scroll;
+  GtkWidget *proc_scroll;
 
   chart_treeview = gtk_tree_view_new_with_model (proc_model);
-  gtk_object_set (GTK_OBJECT (chart_treeview),
+  g_object_set (G_OBJECT (chart_treeview),
                   "headers-visible", TRUE,
                   NULL);
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (chart_treeview));
 
   gtk_tree_selection_set_mode (selection, GTK_SELECTION_NONE);
-
-  /* we can't create the gcs until the widget is first realized */
-  g_signal_connect_after (chart_treeview, "realize",
-                          G_CALLBACK (dcc_create_state_gcs), NULL);
 
   text_renderer = gtk_cell_renderer_text_new ();
   chart_renderer = dcc_cell_renderer_chart_new ();
@@ -544,11 +516,7 @@ static void dcc_gnome_make_proc_view (GtkTreeModel *proc_model,
                                   GTK_POLICY_AUTOMATIC);
   gtk_container_add (GTK_CONTAINER (proc_scroll), chart_treeview);
 
-  /* Expands to fill all space */
-  align = gtk_alignment_new (0.0, 0.0, 1.0, 1.0);
-  gtk_container_add (GTK_CONTAINER (align), proc_scroll);
-
-  *align_return = align;
+  *widget_return = proc_scroll;
 }
 
 
@@ -558,6 +526,8 @@ static GtkWidget * dcc_gnome_make_load_bar (void)
   gint context_id;
 
   bar = gtk_statusbar_new ();
+  gtk_widget_set_margin_top(GTK_WIDGET(bar), 0);
+  gtk_widget_set_margin_bottom(GTK_WIDGET(bar), 0);
   context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR (bar), "load");
 
   gtk_statusbar_push(GTK_STATUSBAR (bar), context_id, "Load: ");
@@ -592,9 +562,9 @@ static GtkWidget * dcc_gnome_make_mainwin (void)
   gtk_window_set_default_size (GTK_WINDOW (mainwin), 500, 300);
 
   /* Quit when it's closed */
-  g_signal_connect (GTK_OBJECT(mainwin), "delete-event",
+  g_signal_connect (G_OBJECT(mainwin), "delete-event",
                     G_CALLBACK (gtk_main_quit), NULL);
-  g_signal_connect (GTK_OBJECT(mainwin), "destroy",
+  g_signal_connect (G_OBJECT(mainwin), "destroy",
                     G_CALLBACK (gtk_main_quit), NULL);
 
 #if GTK_CHECK_VERSION(2,2,0)
@@ -615,8 +585,9 @@ static int dcc_gnome_make_app (void)
   /* Create the main window */
   mainwin = dcc_gnome_make_mainwin ();
 
-  /* Create a vbox for the contents */
-  topbox = gtk_vbox_new (FALSE, 0);
+  /* Create a gtkbox for the contents */
+  topbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+
   gtk_container_add (GTK_CONTAINER (mainwin),
                      topbox);
 
@@ -627,6 +598,13 @@ static int dcc_gnome_make_app (void)
                             &proc_align);
   gtk_container_add (GTK_CONTAINER (topbox),
                      proc_align);
+
+  gtk_box_set_child_packing (GTK_BOX (topbox),
+                             GTK_WIDGET (proc_align),
+                             TRUE,
+                             TRUE,
+                             0,
+                             GTK_PACK_START);
 
   gtk_box_pack_end (GTK_BOX (topbox),
                     load_bar,
@@ -664,6 +642,7 @@ int main(int argc, char **argv)
 #endif
 
   /* do our own initialization */
+  dcc_create_state_colors();
   dcc_gnome_make_app ();
 
   /* Keep running until quit */

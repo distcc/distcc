@@ -160,18 +160,17 @@ dcc_cell_renderer_chart_get_property (GObject     *object,
  **/
 static void
 dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
-                                GdkWindow            *window,
+                                cairo_t              *cr,
                                 GtkWidget            *UNUSED(widget),
-                                GdkRectangle         *UNUSED(background_area),
-                                GdkRectangle         *cell_area,
-                                GdkRectangle         *UNUSED(expose_area),
+                                const GdkRectangle   *UNUSED(background_area),
+                                const GdkRectangle   *cell_area,
                                 GtkCellRendererState  UNUSED(flags))
 {
   const struct dcc_history *history;
   enum dcc_phase state;
   int x1, y1;
-  int bar_height;
-  int bar_width;
+  int bar_height, bar_width;
+  int xpad, ypad;
   int i;
   const enum dcc_phase *phases;
 
@@ -179,10 +178,10 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
   history = cellchart->history;
   g_return_if_fail (history);  /* Perhaps we should just ignore this.. */
-
-  x1 = cell_area->x + cell->xpad;
-  y1 = cell_area->y + cell->ypad;
-  bar_height = cell_area->height - (2 * cell->ypad);
+  gtk_cell_renderer_get_padding(cell, &xpad, &ypad);
+  x1 = cell_area->x + xpad;
+  y1 = cell_area->y + ypad;
+  bar_height = cell_area->height - (2 * ypad);
 
   /* bar width is chosen such that the history roughly fills the cell
      (but it must be at least 1).  We use the full history, not just
@@ -200,10 +199,9 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
       if (state != DCC_PHASE_DONE)
         {
-          gdk_draw_rectangle (window,
-                              dcc_phase_gc[state],
-                              TRUE, /* fill */
-                              x1, y1, bar_width, bar_height);
+          gdk_cairo_set_source_rgba (cr, &task_color[state]);
+          cairo_rectangle (cr, x1, y1, bar_width, bar_height);
+          cairo_fill (cr);
         }
 
       x1 += bar_width;
@@ -212,26 +210,10 @@ dcc_cell_renderer_chart_render (GtkCellRenderer      *cell,
 
 
 
-/**
- * Measure the size that we want to have allocated for this cell.
- */
-static void
-dcc_cell_renderer_chart_get_size (GtkCellRenderer *UNUSED(cell),
-                                  GtkWidget       *UNUSED (widget),
-                                  GdkRectangle    *UNUSED (cell_area),
-                                  gint            *UNUSED (x_offset),
-                                  gint            *UNUSED (y_offset),
-                                  gint            *UNUSED (width),
-                                  gint            *UNUSED (height))
-{
-  /* default is fine */
-}
-
-
-
 
 static void
-dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
+dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class,
+                                    gpointer UNUSED(klass))
 {
   GParamSpec *spec;
 
@@ -242,7 +224,6 @@ dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
   object_class->set_property = dcc_cell_renderer_chart_set_property;
 
   cell_class->render = dcc_cell_renderer_chart_render;
-  cell_class->get_size = dcc_cell_renderer_chart_get_size;
 
   spec = g_param_spec_pointer ("history",
                                "Slot history",
@@ -257,7 +238,8 @@ dcc_cell_renderer_chart_class_init (DccCellRendererChartClass *class)
 
 /* Instance initialization */
 static void
-dcc_cell_renderer_chart_init (DccCellRendererChart *cell)
+dcc_cell_renderer_chart_init (DccCellRendererChart *cell,
+                              gpointer UNUSED(klass))
 {
   cell->history = NULL;
 }
@@ -277,20 +259,20 @@ dcc_cell_renderer_chart_get_type (void)
     {
       static const GTypeInfo cell_chart_info =
       {
-    sizeof (DccCellRendererChartClass),
-    NULL,        /* base_init */
-    NULL,        /* base_finalize */
-    (GClassInitFunc) dcc_cell_renderer_chart_class_init,
-    NULL,        /* class_finalize */
-    NULL,        /* class_data */
-    sizeof (DccCellRendererChart),
-    0,              /* n_preallocs */
-    (GInstanceInitFunc) dcc_cell_renderer_chart_init,
-        NULL                    /* value_table */
+        sizeof (DccCellRendererChartClass),
+        NULL,        /* base_init */
+        NULL,        /* base_finalize */
+        (GClassInitFunc) dcc_cell_renderer_chart_class_init,
+        NULL,        /* class_finalize */
+        NULL,        /* class_data */
+        sizeof (DccCellRendererChart),
+        0,           /* n_preallocs */
+        (GInstanceInitFunc) dcc_cell_renderer_chart_init,
+        NULL         /* value_table */
       };
 
       cell_chart_type =
-    g_type_register_static (GTK_TYPE_CELL_RENDERER,
+        g_type_register_static (GTK_TYPE_CELL_RENDERER,
                                 "DccCellRendererChart",
                                 &cell_chart_info, 0);
     }
