@@ -125,7 +125,6 @@ dcc_create_state_colors (void)
   enum dcc_phase i_state;
   for (i_state = 0; i_state <= DCC_PHASE_DONE; i_state++)
     {
-      printf("fisk state: %d, color: %s\n", i_state, task_color_string[i_state]);
       gdk_rgba_parse(&task_color[i_state],task_color_string[i_state]);
     }
 }
