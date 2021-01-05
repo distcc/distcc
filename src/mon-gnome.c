@@ -630,15 +630,7 @@ int main(int argc, char **argv)
    * compilation */
   nice(5);
 
-#if defined(WITH_GNOME)
-  gnome_program_init ("distccmon-gnome", PACKAGE_VERSION,
-              LIBGNOMEUI_MODULE,
-              argc, argv, NULL);
-#elif defined(WITH_GTK)
   gtk_init (&argc, &argv);
-#else
-#  error This program must be built with either WITH_GTK or WITH_GNOME
-#endif
 
   /* do our own initialization */
   dcc_create_state_colors();
