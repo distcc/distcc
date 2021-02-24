@@ -67,6 +67,19 @@ int dcc_argv_search(char **a,
 }
 
 
+/**
+ * Return true if argv contains argument starting with needle.
+ */
+int dcc_argv_startswith(char **a,
+                        const char *needle)
+{
+    size_t needle_len = strlen(needle);
+    for (; *a; a++)
+        if (!strncmp(*a, needle, needle_len))
+            return 1;
+    return 0;
+}
+
 unsigned int dcc_argv_len(char **a)
 {
     unsigned int i;
