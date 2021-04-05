@@ -94,7 +94,7 @@ int dcc_preforking_parent(int listen_fd)
 
             /* Another little safety brake here: since children should not exit
              * too quickly, pausing before starting them should be harmless. */
-            sleep(1);
+            sleep(0.1);
         }
     }
 }
@@ -136,7 +136,7 @@ static void dcc_create_kids(int listen_fd) {
 
         /* Don't start them too quickly, or we might overwhelm a machine
          * that's having trouble. */
-        sleep(1);
+        sleep(0.1);
     }
 }
 
