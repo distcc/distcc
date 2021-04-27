@@ -37,6 +37,7 @@
 #include <syslog.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -91,10 +92,6 @@ int dcc_preforking_parent(int listen_fd)
 
             /* wait for any children to exit, and then start some more */
             dcc_reap_kids(TRUE);
-
-            /* Another little safety brake here: since children should not exit
-             * too quickly, pausing before starting them should be harmless. */
-            sleep(1);
         }
     }
 }
@@ -133,10 +130,6 @@ static void dcc_create_kids(int listen_fd) {
             ++dcc_nkids;
             rs_trace("up to %d children", dcc_nkids);
         }
-
-        /* Don't start them too quickly, or we might overwhelm a machine
-         * that's having trouble. */
-        sleep(1);
     }
 }
 
@@ -151,9 +144,12 @@ static void dcc_create_kids(int listen_fd) {
 static int dcc_preforked_child(int listen_fd)
 {
     int ireq;
-    const int child_lifetime = 50;
+    time_t start, now;
+    const int child_requests = 50;
+    const time_t child_lifetime = 60 /* seconds */;
+    start = now = time(NULL);
 
-    for (ireq = 0; ireq < child_lifetime; ireq++) {
+    for (ireq = 0; ireq < child_requests || now - start < child_lifetime; ireq++) {
         int acc_fd;
         struct dcc_sockaddr_storage cli_addr;
         socklen_t cli_len;
@@ -188,6 +184,7 @@ static int dcc_preforked_child(int listen_fd)
                            (struct sockaddr *) &cli_addr, cli_len);
 
         dcc_close(acc_fd);
+        now = time(NULL);
     }
 
     rs_log_info("worn out");
