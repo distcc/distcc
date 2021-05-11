@@ -1,3 +1,13 @@
+distcc-3.4 "Lax lexer" 2021-4-11
+
+  FEATURES
+
+   * distccmon-gnome ported from gtk2 to gtk3
+
+   * Remove debug lag in spawning new threads. (better multi-core performance)
+
+   * Bug fixes.
+
 distcc-3.3 "Charlie the unicorn" 2018-3-3
 
   FEATURES:
