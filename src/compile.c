@@ -584,7 +584,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         return -ENOENT;
 
 
-    newcmd_len = strlen(target_with_vendor) + 1 + strlen(argv[0] + 1);
+    newcmd_len = strlen(target_with_vendor) + 1 + strlen(argv[0]) + 1;
     newcmd = malloc(newcmd_len);
     if (!newcmd)
         return -ENOMEM;
