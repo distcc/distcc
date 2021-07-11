@@ -547,6 +547,22 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(POPT_INCLUDES)
 AC_SUBST(BUILD_POPT)
 AC_SUBST(GNOME_BIN)
+
+
+# Sometimes canonical triples as used by configure differ from GCC ones
+# x86: configure: x86_64-pc-linux-gnu, GCC: x86_64-linux-gnu
+# ALT Linux: configure: ${arch}-alt-linux-gnu, GCC: ${arch}-alt-linux
+# Therefore ask the compiler for its triple
+if test "x${GCC}" = xyes ; then
+	native_compiler_triple=`$CC -dumpmachine`
+fi
+if test "x$native_compiler_triple" = "x"; then
+	native_compiler_triple="$host"
+fi
+AC_MSG_NOTICE([Native compiler triple: $native_compiler_triple])
+
+AC_DEFINE_UNQUOTED(NATIVE_COMPILER_TRIPLE, ["$native_compiler_triple"], [Native compiler triple])
+
 AC_DEFINE_UNQUOTED(GNU_HOST, ["$host"], [Your gnu-style host triple])
 # The '.stamp-conf' files force creation of the containing directories in the
 # build tree.
