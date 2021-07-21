@@ -59,7 +59,7 @@ include_server_builddir = $(builddir)/_include_server
 
 # These must be done from here, not from autoconf, because they can 
 # contain variable expansions written in Make syntax.  Ew.
-DIR_DEFS = -DLIBDIR="\"${libdir}\"" -DSYSCONFDIR="\"${sysconfdir}\"" -DICONDIR="\"${icondir}\""
+DIR_DEFS = -DLIBDIR="\"${prefix}/lib\"" -DSYSCONFDIR="\"${sysconfdir}\"" -DICONDIR="\"${icondir}\""
 
 # arguments to pkgconfig
 GNOME_PACKAGES = @GNOME_PACKAGES@
