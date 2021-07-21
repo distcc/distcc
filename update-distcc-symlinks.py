@@ -2,7 +2,7 @@
 
 import subprocess, string, os, stat, re
 
-distcc_dir = "/usr/lib/distcc"
+distcc_dir = "@prefix@/lib/distcc"
 gcc_dir = "/usr/lib/gcc"
 gcccross_dir = "/usr/lib/gcc-cross"
 old_symlinks = set()

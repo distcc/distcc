@@ -515,7 +515,9 @@ lsdistcc@EXEEXT@: $(lsdistcc_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(lsdistcc_obj) $(LIBS)
 
 update-distcc-symlinks: $(update_distcc_symlinks_PY)
-	cp $< $@
+	sed -e "s;\@prefix\@;${prefix};g" $< > $@.tmp
+	chmod +x $@.tmp
+	mv $@.tmp $@
 
 h_exten@EXEEXT@: $(h_exten_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_exten_obj) $(LIBS)
