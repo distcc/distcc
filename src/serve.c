@@ -395,13 +395,8 @@ static int dcc_check_compiler_whitelist(char *_compiler_name)
 
 #ifdef HAVE_FSTATAT
     int dirfd = open(LIBDIR "/distcc", O_RDONLY);
-    if (dirfd < 0) {
-        if (errno == ENOENT)
-            rs_log_crit("no %s", LIBDIR "/distcc");
-        return EXIT_DISTCC_FAILED;
-    }
 
-    if (faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
+    if (dirfd < 0 || faccessat(dirfd, compiler_name, X_OK, 0) < 0) {
         char *compiler_path = NULL;
         if (asprintf(&compiler_path, "/usr/lib/distcc/%s", compiler_name) >= 0) {
             if (access(compiler_path, X_OK) < 0) {
