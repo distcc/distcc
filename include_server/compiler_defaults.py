@@ -206,10 +206,16 @@ def _SystemSearchdirsGCC(compiler, sysroot, language, canonical_lookup):
     # http://docs.freebsd.org/info/gcc/gcc.info.Environment_Variables.html,
     # or the "Environment Variables Affecting GCC" section of the gcc
     # info page.
+    #
+    trimmed_env = {}
+
     if 'PATH' in os.environ:
-      trimmed_env = {'PATH': os.environ['PATH']}
-    else:
-      trimmed_env = {}
+      trimmed_env['PATH'] = os.environ['PATH']
+
+    # DEVELOPER_DIR is needed to locate compiler on macOS; preserve it
+    if 'DEVELOPER_DIR' in os.environ:
+      trimmed_env['DEVELOPER_DIR'] = os.environ['DEVELOPER_DIR']
+
     p = subprocess.Popen(command,
                          shell=False,
                          stdin=None,
