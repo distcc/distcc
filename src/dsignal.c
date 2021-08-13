@@ -123,7 +123,13 @@ static void dcc_daemon_terminate(int whichsig)
     /* syslog is not safe from a signal handler */
     if (am_parent && !rs_trace_syslog) {
 #ifdef HAVE_STRSIGNAL
-        rs_log_info("%s", strsignal(whichsig));
+        char *signame = strsignal(whichsig);
+        /* on macOS, strsignal can return NULL */
+        if (signame != NULL) {
+            rs_log_info("terminated by signal %s", signame);
+        } else {
+            rs_log_info("terminated by signal %d", whichsig);
+        }
 #else
         rs_log_info("terminated by signal %d", whichsig);
 #endif
