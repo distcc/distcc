@@ -631,6 +631,18 @@ static int dcc_gcc_rewrite_fqn(char **argv)
     return -ENOENT;
 }
 
+static int dcc_get_max_retries(void)
+{
+    if (dcc_backoff_is_enabled()) {
+        /* eventually distcc will either find a suitable host or mark
+	 * all hosts as faulty (and fallback to a local compilation)
+	 */
+	return 0; /* no limit */
+    } else {
+	return 3; /* somewhat arbitrary */
+    }
+}
+
 /**
  * Execute the commands in argv remotely or locally as appropriate.
  *
@@ -687,9 +699,12 @@ dcc_build_somewhere(char *argv[],
     int cpu_lock_fd = -1, local_cpu_lock_fd = -1;
     int ret;
     int remote_ret = 0;
+    int retry_count = 0, max_retries;
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename = NULL;
     char **new_argv;
+
+    max_retries = dcc_get_max_retries();
 
     if ((ret = dcc_expand_preprocessor_options(&argv)) != 0)
         goto clean_up;
@@ -841,7 +856,14 @@ dcc_build_somewhere(char *argv[],
         /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
         local_cpu_lock_fd = -1;
         bad_host(host, &cpu_lock_fd, &local_cpu_lock_fd);
-        goto choose_host;
+        retry_count++;
+        if (max_retries == 0 || retry_count < max_retries)
+            goto choose_host;
+        else {
+            rs_log_warning("Couldn't find a host in %d attempts, retrying locally",
+                           retry_count);
+            goto fallback;
+	}
     }
     /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
     local_cpu_lock_fd = -1;
