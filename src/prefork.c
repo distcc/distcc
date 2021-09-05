@@ -38,6 +38,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <time.h>
+#include <limits.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -148,6 +149,16 @@ static int dcc_preforked_child(int listen_fd)
     const int child_requests = 50;
     const time_t child_lifetime = 60 /* seconds */;
     start = now = time(NULL);
+
+#ifdef HAVE_LINUX
+    if (opt_oom_score_adj != INT_MIN) {
+        FILE *f = fopen("/proc/self/oom_score_adj", "w");
+        if (!f || fprintf(f, "%d\n", opt_oom_score_adj) < 0)
+            rs_log_warning("failed to set oom_score_adj: %s", strerror(errno));
+        if (f)
+            fclose(f);
+    }
+#endif
 
     for (ireq = 0; ireq < child_requests || now - start < child_lifetime; ireq++) {
         int acc_fd;

@@ -123,6 +123,13 @@ the machine.  NICENESS is an increment to the current priority of the
 process.  The range of priorities depends on the operating system but
 is typically 0 to 20.  By default the niceness is increased by 5.
 .TP
+.B --oom-score-adj ADJ
+Alters the kernel's out-of-memory killer score adjustment on worker
+processes.  ADJ is an integer ranging from -1000 to 1000, with greater
+values indicating a greater preference for killing these processes in an
+out-of-memory scenario.  By default the score adjustment is inherited
+from the process that started the distccd daemon.  (Linux only.)
+.TP
 .B -p, --port PORT
 Set the TCP port to listen on, rather than the default of 3632.
 (Daemon mode only.)

@@ -15,6 +15,18 @@ AC_INIT(distcc, 3.4, distcc@lists.samba.org)
 AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_MACRO_DIRS([m4])
 
+AC_CANONICAL_HOST
+AC_MSG_CHECKING([if the host system type is Linux])
+case "${host_os}" in
+linux*)
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_LINUX, 1, [Define to 1 if the host system type is Linux.])
+	;;
+*)
+	AC_MSG_RESULT(no)
+	;;
+esac
+
 # FreeBSD installs its version of libpopt into /usr/local/, but does
 # not put that on the default library and header path.
 # Solaris doesn't even ship libpopt.  We used to add that path if

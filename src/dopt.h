@@ -46,6 +46,10 @@ extern int opt_lifetime;
 extern char *opt_listen_addr;
 extern int opt_niceness;
 
+#ifdef HAVE_LINUX
+extern int opt_oom_score_adj;
+#endif
+
 #ifdef HAVE_AVAHI
 extern int opt_zeroconf;
 #endif

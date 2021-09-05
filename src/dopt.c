@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <popt.h>
+#include <limits.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -48,6 +49,10 @@
 #include "exec.h"
 
 int opt_niceness = 5;           /* default */
+
+#ifdef HAVE_LINUX
+int opt_oom_score_adj = INT_MIN; /* default is not to change */
+#endif
 
 /**
  * Number of children running jobs on this machine.  If zero (recommended),
@@ -154,6 +159,9 @@ const struct poptOption options[] = {
     { "no-detach", 0,    POPT_ARG_NONE, &opt_no_detach, 0, 0, 0 },
     { "no-fifo", 0,      POPT_ARG_NONE, &opt_no_fifo, 0, 0, 0 },
     { "no-fork", 0,      POPT_ARG_NONE, &opt_no_fork, 0, 0, 0 },
+#ifdef HAVE_LINUX
+    { "oom-score-adj",0, POPT_ARG_INT,  &opt_oom_score_adj, 0, 0, 0 },
+#endif
     { "pid-file", 'P',   POPT_ARG_STRING, &arg_pid_file, 0, 0, 0 },
     { "port", 'p',       POPT_ARG_INT, &arg_port, 0, 0, 0 },
 #ifdef HAVE_GSSAPI
@@ -191,6 +199,9 @@ static void distccd_show_usage(void)
 #endif
 "    -P, --pid-file FILE        save daemon process id to file\n"
 "    -N, --nice LEVEL           lower priority, 20=most nice\n"
+#ifdef HAVE_LINUX
+"    --oom-score-adj ADJ        set OOM score adjustment, -1000 to 1000\n"
+#endif
 "    --user USER                if run by root, change to this persona\n"
 "    --jobs, -j LIMIT           maximum tasks at any time\n"
 "    --job-lifetime SECONDS     maximum lifetime of a compile request\n"
