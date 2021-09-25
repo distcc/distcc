@@ -139,6 +139,15 @@ int dcc_discard_root(void)
         return EXIT_SETUID_FAILED;
     }
 
+#ifdef HAVE_LINUX
+    /* On Linux changing the effective user or group ID clears the process's
+     * "dumpable" flag, which makes all files in the /proc/self/ directory
+     * owned by root and therefore unmodifiable by the process itself.
+     * Set the flag again here so we can, e.g., change oom_score_adj. */
+    if (prctl(PR_SET_DUMPABLE, 1, 0, 0, 0) < 0)
+        rs_log_warning("failed to restore dumpable process flag: %s", strerror(errno));
+#endif
+
 #ifdef __linux__
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == 0)
         rs_trace("successfully set no_new_privs");
