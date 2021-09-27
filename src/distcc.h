@@ -190,6 +190,7 @@ int dcc_support_masquerade(char *argv[], char *progname, int *);
 int dcc_enjoyed_host(const struct dcc_hostdef *host);
 int dcc_disliked_host(const struct dcc_hostdef *host);
 int dcc_remove_disliked(struct dcc_hostdef **hostlist);
+int dcc_backoff_is_enabled(void);
 
 
 
