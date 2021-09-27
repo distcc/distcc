@@ -557,7 +557,12 @@ static void dcc_add_clang_target(char **argv)
     else
         return;
 
+    /* -target aarch64-linux-gnu */
     if (dcc_argv_search(argv, "-target"))
+        return;
+
+    /* --target=aarch64-linux-gnu */
+    if (dcc_argv_startswith(argv, "--target"))
         return;
 
     rs_log_info("Adding '-target %s' to support clang cross-compilation.",
