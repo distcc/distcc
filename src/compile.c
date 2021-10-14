@@ -549,7 +549,7 @@ static void dcc_rewrite_generic_compiler(char **argv)
 static void dcc_add_clang_target(char **argv)
 {
         /* defined by autoheader */
-    const char *target = GNU_HOST;
+    const char *target = NATIVE_COMPILER_TRIPLE;
 
     if (strcmp(argv[0], "clang") == 0 || strncmp(argv[0], "clang-", strlen("clang-")) == 0 ||
         strcmp(argv[0], "clang++") == 0 || strncmp(argv[0], "clang++-", strlen("clang++-")) == 0)
@@ -577,7 +577,7 @@ static void dcc_add_clang_target(char **argv)
 static int dcc_gcc_rewrite_fqn(char **argv)
 {
         /* defined by autoheader */
-    const char *target_with_vendor = GNU_HOST;
+    const char *target_with_vendor = NATIVE_COMPILER_TRIPLE;
     char *newcmd, *t, *path;
     int pathlen = 0;
     int newcmd_len = 0;
@@ -595,11 +595,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
         return -ENOMEM;
     memset(newcmd, 0, newcmd_len);
 
-    if ((t = strstr(target_with_vendor, "-pc-"))) {
-        memcpy(newcmd, target_with_vendor, t - target_with_vendor);
-        strcat(newcmd, t + strlen("-pc"));
-    } else
-        strcpy(newcmd, target_with_vendor);
+    strcpy(newcmd, target_with_vendor);
 
 
     strcat(newcmd, "-");
