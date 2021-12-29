@@ -700,7 +700,7 @@ dcc_build_somewhere(char *argv[],
     int cpu_lock_fd = -1, local_cpu_lock_fd = -1;
     int ret;
     int remote_ret = 0;
-    int retry_count = 0, max_retries;
+    int retry_count = 0, max_retries, remote_unsupported = 0;
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename = NULL;
     char **new_argv;
@@ -850,9 +850,15 @@ dcc_build_somewhere(char *argv[],
                                   needs_dotd ? deps_fname : NULL,
                                   server_stderr_fname,
                                   cpp_pid, local_cpu_lock_fd,
-                  host, status)) != 0) {
+                  host, status, &remote_unsupported)) != 0) {
         /* Returns zero if we successfully ran the compiler, even if
          * the compiler itself bombed out. */
+
+        if (remote_unsupported) {
+	    /* Local files are necessary for compilation of the *preprocessed*
+	     * source (i.e. due to .incbin assembler directive). */
+	    goto fallback_unsupported;
+	}
 
         /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
         local_cpu_lock_fd = -1;
@@ -953,6 +959,12 @@ dcc_build_somewhere(char *argv[],
                host->hostdef_string);
     } else {
         rs_log_warning("failed to distribute, running locally instead");
+    }
+
+    fallback_unsupported:
+    if (remote_unsupported) {
+        rs_log_warning("%s: can't distribute due to unsupported directives, running locally",
+                       input_fname ? input_fname : "(unknown)");
     }
 
   lock_local:

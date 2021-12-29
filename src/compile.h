@@ -33,7 +33,8 @@ int dcc_compile_remote(char **argv,
                        pid_t cpp_pid,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
-                       int *status);
+                       int *status,
+                       int *unsupported);
 
 /* compile.c */
 
