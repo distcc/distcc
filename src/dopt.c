@@ -406,6 +406,14 @@ int distccd_parse_options(int argc, const char **argv)
         }
     }
 
+    if (!opt_allow_private && !dcc_should_be_inetd())
+        if (opt_allowed == NULL) {
+            rs_log_warning("No --allow option specified. Defaulting to --allow-private."
+                         " Allowing non-Internet (globally"
+                         " routable) addresses.");
+            opt_allow_private = 1;
+        }
+
     if (opt_allow_private) {
         int i;
         int len = sizeof(dcc_private_networks)/sizeof(dcc_private_networks[0]);

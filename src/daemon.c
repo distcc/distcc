@@ -116,7 +116,7 @@ static int dcc_setup_startup_log(void)
 }
 
 
-static int dcc_should_be_inetd(void)
+int dcc_should_be_inetd(void)
 {
     /* Work out if we ought to serve stdin or be a standalone daemon */
     if (opt_inetd_mode)
@@ -190,15 +190,6 @@ int main(int argc, char *argv[])
 
     if (distccd_parse_options(argc, (const char **) argv))
         dcc_exit(EXIT_DISTCC_FAILED);
-
-    /* check this before redirecting the logs, so that it's really obvious */
-    if (!dcc_should_be_inetd())
-        if (opt_allowed == NULL) {
-            rs_log_warning("No --allow option specified. Defaulting to --allow-private."
-                         " Allowing non-Internet (globally"
-                         " routable) addresses.");
-            opt_allow_private = 1;
-        }
 
     if ((ret = dcc_set_lifetime()) != 0)
         dcc_exit(ret);
