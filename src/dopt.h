@@ -24,7 +24,6 @@
 
 /* dopt.c */
 extern struct dcc_allow_list *opt_allowed;
-extern int opt_allow_private;
 int distccd_parse_options(int argc, const char *argv[]);
 
 extern int arg_port;
