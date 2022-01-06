@@ -135,10 +135,13 @@ static const char *dcc_private_networks[] = {"192.168.0.0/16",
                                              "10.0.0.0/8",
                                              "172.16.0.0/12",
                                              "127.0.0.0/8",
-
+#ifdef ENABLE_RFC2553
+/* ipv6 addresses can only be parsed with this */
                                              "fe80::/10",
-                                              "fc00::/7",
-                                              "::1/128"};
+                                             "fc00::/7",
+                                             "::1/128"
+#endif
+};
 
 const struct poptOption options[] = {
     { "allow", 'a',      POPT_ARG_STRING, 0, 'a', 0, 0 },
@@ -405,7 +408,8 @@ int distccd_parse_options(int argc, const char **argv)
 
     if (opt_allow_private) {
         int i;
-        for (i = 0;i<6;i++) {
+        int len = sizeof(dcc_private_networks)/sizeof(dcc_private_networks[0]);
+        for (i = 0; i < len; i++) {
             new = malloc(sizeof *new);
             if (!new) {
                 rs_log_crit("malloc failed");
