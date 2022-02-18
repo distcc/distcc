@@ -262,7 +262,7 @@ static int dcc_gssapi_establish_secure_context(const struct dcc_hostdef *host,
 
 /*
  * Attempt handshake exchange with the server to indicate client's
- * desire to authentciate.
+ * desire to authenticate.
  *
  * @param to_net_sd.	Socket to write to.
  *

@@ -238,7 +238,7 @@ static int dcc_gssapi_accept_secure_context(int to_net_sd,
 
 /*
  * Attempt handshake exchange with the client to indicate server's
- * desire to authentciate.
+ * desire to authenticate.
  *
  * @param from_net_sd.	Socket to read from.
  *
