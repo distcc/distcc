@@ -14,7 +14,7 @@ QUICK SUMMARY
 
 0. Install prerequisites.  For example, on Debian or Ubuntu, you could use
 
-      sudo apt-get install gcc make python3 python3-dev libiberty-dev
+      sudo apt-get install gcc make python3 python3-dev libiberty-dev autoconf
 
 1. Build and install
 
