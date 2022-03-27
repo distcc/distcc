@@ -309,8 +309,8 @@ int distccd_parse_options(int argc, const char **argv)
 #endif
 
         case 'j':
-            if (arg_max_jobs < 1 || arg_max_jobs > 200) {
-                rs_log_error("--jobs argument must be between 1 and 200");
+            if (arg_max_jobs < 1 ) {
+                rs_log_error("--jobs argument must be more than 0");
                 exitcode = EXIT_BAD_ARGUMENTS;
                 goto out_exit;
             }
