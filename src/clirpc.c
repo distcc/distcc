@@ -266,26 +266,36 @@ int dcc_x_many_files(int ofd,
         ret = dcc_get_original_fname(fname, &original_fname);
         if (ret) return ret;
 
-        if ((ret = dcc_is_link(fname, &is_link))) {
-            return ret;
-        }
-
-        if (is_link) {
-            if ((ret = dcc_read_link(fname, link_points_to)) ||
-                (ret = dcc_x_token_string(ofd, "NAME", original_fname)) ||
-                (ret = dcc_x_token_string(ofd, "LINK", link_points_to))) {
-                    return ret;
-            }
-        } else {
+        if (str_endswith("/forcing_technique_271828", original_fname)) {
+            /* Directory placeholder files don't exist on disk.  Send
+               an empty file to ensure the directory is created */
             ret = dcc_x_token_string(ofd, "NAME", original_fname);
             if (ret) return ret;
-            /* File should be compressed already.
-               If we ever support non-compressed server-side-cpp,
-               we should have some checks here and then uncompress
-               the file if it is compressed. */
-            ret = dcc_x_file(ofd, fname, "FILE", DCC_COMPRESS_NONE,
-                             NULL);
+
+            ret = dcc_x_token_int(ofd, "FILE", 0);
             if (ret) return ret;
+        } else {
+            if ((ret = dcc_is_link(fname, &is_link))) {
+                return ret;
+            }
+
+            if (is_link) {
+                if ((ret = dcc_read_link(fname, link_points_to)) ||
+                    (ret = dcc_x_token_string(ofd, "NAME", original_fname)) ||
+                    (ret = dcc_x_token_string(ofd, "LINK", link_points_to))) {
+                    return ret;
+                }
+            } else {
+                ret = dcc_x_token_string(ofd, "NAME", original_fname);
+                if (ret) return ret;
+
+                /* File should be compressed already.
+                   If we ever support non-compressed server-side-cpp,
+                   we should have some checks here and then uncompress
+                   the file if it is compressed. */
+                ret = dcc_x_file(ofd, fname, "FILE", DCC_COMPRESS_NONE, NULL);
+                if (ret) return ret;
+            }
         }
     }
     return 0;

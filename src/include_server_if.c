@@ -219,13 +219,6 @@ dcc_categorize_file(const char *include_server_filename) {
     char link_target[MAXPATHLEN + 1];
     int ret;
 
-    if ((ret = dcc_is_link(include_server_filename, &is_symlink)))
-        return ret;
-
-    if (is_symlink)
-        if ((ret = dcc_read_link(include_server_filename, link_target)))
-            return ret;
-
     if ((ret = dcc_get_original_fname(include_server_filename, &filename))) {
         rs_log_error("dcc_get_original_fname failed");
         return ret;
@@ -238,7 +231,14 @@ dcc_categorize_file(const char *include_server_filename) {
         is_forced_directory = 1;
     }
 
+    /* forced directories don't exist */
+    if (!is_forced_directory &&
+        (ret = dcc_is_link(include_server_filename, &is_symlink)))
+        return ret;
+
     if (is_symlink) {
+        if ((ret = dcc_read_link(include_server_filename, link_target)))
+            return ret;
         int leading_dotdots = dcc_count_leading_dotdots(link_target);
         is_system_include_directory =
             leading_dotdots > 0 &&

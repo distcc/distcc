@@ -324,10 +324,9 @@ class IncludeAnalyzer(object):
     special_name = 'forcing_technique_271828'
     forcing_files = [d + '/' + special_name
                      for d in must_exist_dirs]
-    for forcing_file in forcing_files:
-      # If for extremely obscure reasons the file already exists and is useful,
-      # then don't change it: that's why we open in "append" mode.
-      open(forcing_file, "a").close()
+    # Note: we used to create these here, but as of v3.4, we let
+    # the distcc client ask the server to create them to avoid
+    # a bottleneck in include processing due to many open() calls
     return forcing_files
 
   def RunAlgorithm(self, filepath_resolved_pair, filepath_real_idx):
