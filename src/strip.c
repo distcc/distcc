@@ -93,7 +93,8 @@ int dcc_strip_local_args(char **from, char ***out_argv)
             || str_equal("-iwithprefix", from[from_i])
             || str_equal("-isystem", from[from_i])
             || str_equal("-iwithprefixbefore", from[from_i])
-            || str_equal("-idirafter", from[from_i])) {
+            || str_equal("-idirafter", from[from_i])
+            || str_equal("-Xpreprocessor", from[from_i])) {
             /* skip next word, being option argument */
             if (from[from_i+1])
                 from_i++;
