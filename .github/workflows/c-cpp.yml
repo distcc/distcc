@@ -1,4 +1,7 @@
 name: C/C++ CI
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -18,26 +21,60 @@ jobs:
       CC: ${{ matrix.cc }}
     steps:
     - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3-dev libiberty-dev libavahi-client-dev
-    - name: Configure
-      run: ./autogen.sh && ./configure
-    - name: make
-      run: make -j$(nproc)
-    - name: make check
-      run: make check
+    - name: Test
+      run: sh .github/scripts/test.sh
+
+  other-gcc:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        cc: [7, 8]
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: gcc-${{ matrix.cc }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test
+      run: sh .github/scripts/test.sh
+
+  musl_gcc:
+    runs-on: ubuntu-20.04
+    env:
+      CC: musl-gcc
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test
+      run: sh .github/scripts/test.sh
+
+# see https://github.com/vmactions/freebsd-vm for more info about
+# using this action
+  freebsd:
+    runs-on: macos-12
+    env:
+      CC: clang
+      USES: autoreconf
+    name: FreeBSD
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v0
+      with:
+        envs: 'CC RUNNER_OS USES'
+        usesh: true
+        prepare:  |
+          pkg update
+          pkg install -y  python38 avahi-app automake autoconf
+        run: sh .github/scripts/test.sh
 
   macos:
     runs-on: macos-latest
+    env:
+      CC: clang
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
       run: brew install automake
-    - name: Configure
-      run: ./autogen.sh && ./configure --without-libiberty
-    - name: make
-      run: make -j$(nproc)
-    - name: make check
-      run: make check
+    - name: Test
+      run: sh .github/scripts/test.sh
