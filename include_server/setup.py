@@ -31,8 +31,7 @@ is absolutized.
 
 __author__ = 'Manos Renieris and Nils Klarlund'
 
-import distutils.core
-import distutils.extension
+import setuptools
 import doctest
 import os
 import shlex
@@ -126,7 +125,7 @@ else:
   srcdir_include_server = os.path.join(srcdir, 'include_server')
 
 # Specify extension.
-ext = distutils.extension.Extension(
+ext = setuptools.Extension(
     name='include_server.distcc_pump_c_extensions',
     sources=[os.path.join(srcdir, source)
              for source in
@@ -180,4 +179,4 @@ args = {
 # First, do a little self-testing.
 doctest.testmod()
 # Second, do the setup.
-distutils.core.setup(**args)
+setuptools.setup(**args)
