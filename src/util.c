@@ -582,35 +582,36 @@ int dcc_remove_if_exists(const char *fname)
 
 int dcc_which(const char *command, char **out)
 {
-    char *loc = NULL, *_loc, *path, *t;
-    int ret;
+    char *loc = NULL, *path, *t;
+    int len, ret;
 
     path = getenv("PATH");
     if (!path)
         return -ENOENT;
+
     do {
-        if (strstr(path, "distcc"))
-            continue;
-        /* emulate strchrnul() */
         t = strchr(path, ':');
         if (!t)
-            t = path + strlen(path);
-        _loc = realloc(loc, t - path + 1 + strlen(command) + 1);
-        if (!_loc) {
-            free(loc);
-            return -ENOMEM;
+           len = strlen(path);
+        else
+            len = t - path;
+        loc = realloc(loc, len + strlen(command) + 2);
+        if (!loc) {
+             free(loc);
+             return -ENOMEM;
         }
-        loc = _loc;
-        strncpy(loc, path, t - path);
-        loc[t - path] = '\0';
+        strncpy(loc, path, len);
+        loc[len] = '\0';
         strcat(loc, "/");
         strcat(loc, command);
         ret = access(loc, X_OK);
-        if (ret < 0)
+        if (strstr(loc, "distcc") || ret < 0) {
+            path = t + 1;
             continue;
+        }
         *out = loc;
         return 0;
-    } while ((path = strchr(path, ':') + 1));
+    } while(t);
     return -ENOENT;
 }
 
