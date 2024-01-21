@@ -580,37 +580,49 @@ int dcc_remove_if_exists(const char *fname)
     return 0;
 }
 
+/* 
+ * Returns the absolute path of *command by searching each subpath of PATH.
+ * 
+ * Input *command is either "c++" or "cc".
+ * **out points to the absolute path, such as "/usr/bin/cc".
+ * 
+ * Skip the path include "distcc" to avoid loops.
+ */
 int dcc_which(const char *command, char **out)
 {
-    char *loc = NULL, *_loc, *path, *t;
-    int ret;
+    char *loc = NULL, *_loc = NULL, *path, *next_colon;
+    int dir_len, ret;
 
     path = getenv("PATH");
     if (!path)
         return -ENOENT;
+
     do {
-        if (strstr(path, "distcc"))
-            continue;
-        /* emulate strchrnul() */
-        t = strchr(path, ':');
-        if (!t)
-            t = path + strlen(path);
-        _loc = realloc(loc, t - path + 1 + strlen(command) + 1);
+        next_colon = strchr(path, ':');
+        if (!next_colon)
+           dir_len = strlen(path);
+        else
+            dir_len = next_colon - path;
+        _loc = realloc(loc, dir_len + strlen(command) + 2);
         if (!_loc) {
-            free(loc);
-            return -ENOMEM;
+             free(loc);
+             return -ENOMEM;
         }
         loc = _loc;
-        strncpy(loc, path, t - path);
-        loc[t - path] = '\0';
+        strncpy(loc, path, dir_len);
+        loc[dir_len] = '\0';
+        if (strstr(loc, "distcc"))
+            continue;
         strcat(loc, "/");
         strcat(loc, command);
         ret = access(loc, X_OK);
-        if (ret < 0)
+        if (ret < 0) {
+            path = next_colon + 1;
             continue;
+        }
         *out = loc;
         return 0;
-    } while ((path = strchr(path, ':') + 1));
+    } while(next_colon);
     return -ENOENT;
 }
 
