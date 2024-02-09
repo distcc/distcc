@@ -257,7 +257,7 @@ For SSH connections
 
 The hosts should be listed in descending order of speed.  localhost
 should normally be first, unless it is significantly slower than
-another machine.  If you many hosts (say ten or more), it's probably
+another machine.  If you have many hosts (say ten or more), it's probably
 better to leave localhost out of the list.
 
 The host list also needs ",cpp,lzo" after each host if you're using
