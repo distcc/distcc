@@ -20,6 +20,7 @@ fn main() {
         .files([
             "lzo/minilzo.c",
             "src/compress.c",
+            "src/io.c",
             "src/rustglue.c",
             "src/trace.c",
         ])

@@ -13,6 +13,10 @@ cc = "1.0"
 glob = "0.3"
 
 [dependencies]
+libc = "0.2.153"
+
+[dev-dependencies]
+tempfile = "3.2"
 
 [[bin]]
 name = "distcc-rs"
