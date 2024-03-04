@@ -379,6 +379,10 @@ int dcc_compile_remote(char **argv,
         dcc_collect_child("ssh", ssh_pid, &ssh_status, timeout_null_fd); /* ignore failure */
     }
 
+    /* The compilation failed remotely: let's see if that was due to unsupported 
+     * directives in the source. It may be unobvious that we check this after trying
+     * remotely rather than before, but these are very rare, and scanning all the 
+     * preprocessed source has a cost. */
     if (ret == 0 && *status != 0) {
         if ((ret = dcc_check_unsupported_directives(cpp_fname, input_fname))) {
             *unsupported = 1;
