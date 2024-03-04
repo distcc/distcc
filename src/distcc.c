@@ -217,6 +217,13 @@ static void dcc_gssapi_show_principal(void) {
 }
 #endif
 
+#ifdef RUST_MAIN
+/* Allow Rust to intercept main */
+#define MAIN_FN_NAME distcc_main
+#else
+#define MAIN_FN_NAME main
+#endif
+
 /**
  * distcc client entry point.
  *
@@ -225,7 +232,7 @@ static void dcc_gssapi_show_principal(void) {
  * Performs basic setup and checks for distcc arguments, and then kicks off
  * dcc_build_somewhere().
  **/
-int main(int argc, char **argv)
+int MAIN_FN_NAME(int argc, char **argv)
 {
     int status, sg_level, tweaked_path = 0;
     char **compiler_args = NULL; /* dynamically allocated */

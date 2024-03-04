@@ -74,5 +74,5 @@ fn program_name_from_global() {
             .to_str()
             .expect("Program name should be UTF-8")
     };
-    assert_eq!(name, "distcc(rust)");
+    assert_eq!(name, "distcc");
 }

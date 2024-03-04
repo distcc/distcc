@@ -2,4 +2,4 @@
 
 /* C-side glue to support calling from Rust. */
 
-const char *const rs_program_name = "distcc(rust)";
+/* const char *const rs_program_name = "distcc(rust)"; */

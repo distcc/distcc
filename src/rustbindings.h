@@ -4,3 +4,6 @@
 
 #include "distcc.h"
 #include "trace.h"
+
+// Manually kept in sync with the main declaration in distcc.c.
+int distcc_main(int argc, char **argv);

@@ -32,3 +32,4 @@ __pycache__/
 # RiiR port files
 target/
 Cargo.lock
+.vscode/settings.json
