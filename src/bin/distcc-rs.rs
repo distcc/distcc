@@ -1,14 +1,24 @@
 // Copyright 2024 Martin Pool
 
 use std::ffi::{c_char, c_int, CString};
+use std::iter::once;
 use std::process::ExitCode;
+use std::ptr::null;
 
 use distcc::c;
 
 fn main() -> ExitCode {
     println!("Hello from distcc-rs!");
 
-    let mut c_args = argv_to_c();
+    // Map argv to C.
+    let args = std::env::args()
+        .map(|arg| CString::new(arg).unwrap())
+        .collect::<Vec<CString>>(); // kept for lifetime
+    let mut c_args = args
+        .iter()
+        .map(|arg| arg.as_ptr())
+        .chain(once(null()))
+        .collect::<Vec<*const c_char>>();
     let err: u8 = unsafe {
         c::distcc_main(
             c_args.len() as c_int,
@@ -19,15 +29,4 @@ fn main() -> ExitCode {
     };
     dbg!(err);
     ExitCode::from(err)
-}
-
-fn argv_to_c() -> Vec<*const c_char> {
-    // Map argv to C.
-    let args = std::env::args()
-        .map(|arg| CString::new(arg).unwrap())
-        .collect::<Vec<CString>>();
-    // convert the strings to raw pointers
-    args.iter()
-        .map(|arg| arg.as_ptr())
-        .collect::<Vec<*const c_char>>()
 }

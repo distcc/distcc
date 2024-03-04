@@ -158,15 +158,13 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header("src/rustbindings.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
-        // .clang_arg("-Isrc")
-        // .clang_arg("-Ilzo")
-        // .clang_arg(format!("-I{}", config_dir.display()))
         .generate()
         .expect("Unable to generate bindings");
     bindings
         .write_to_file(out_dir.join("bindings.rs"))
         .expect("write bindings.rs");
     // println!("cargo:rustc-link-lib=iberty");
+    println!("cargo:rerun-if-changed=src");
 }
 
 fn quote(s: &str) -> String {

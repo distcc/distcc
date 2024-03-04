@@ -6,6 +6,7 @@ authors = ["Martin Pool"]
 edition = "2021"
 build = "build.rs"
 license = "GPL-2.0-or-later"
+include = ["/src"]
 
 [build-dependencies]
 bindgen = "0.69"
