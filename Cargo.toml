@@ -1,0 +1,18 @@
+[package]
+name = "distcc"
+version = "0.0.0"
+publish = false
+authors = ["Martin Pool"]
+edition = "2021"
+build = "build.rs"
+license = "GPL-2.0-or-later"
+
+[build-dependencies]
+bindgen = "0.69"
+cc = "1.0"
+glob = "0.3"
+
+[dependencies]
+
+[[bin]]
+name = "distcc-rs"
