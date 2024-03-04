@@ -149,6 +149,50 @@ dcc_send_header(int net_fd,
     return 0;
 }
 
+/**
+ * Check if the preprocessed source depends on local file(s)
+ *
+ * @param cpp_fname preprocessed file to check
+ * @param input_fname corresponding source file name
+ *
+ * @return 0 if no local dependencies found, 1 otherwise
+ *
+ * For now checks for assembler '.incbin' directive, which could be
+ * part of inline assembly
+ */
+static int
+dcc_check_unsupported_directives(const char *cpp_fname, const char *input_fname)
+{
+    FILE *cpp_f = NULL;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t bytes_read = 0;
+    int ret = 0;
+
+    cpp_f = fopen(cpp_fname, "r");
+    if (!cpp_f) {
+        rs_log_warning("failed to open preprocessed source %s", input_fname);
+	goto out;
+    }
+
+    while ((bytes_read = getline(&line, &len, cpp_f)) != -1) {
+        if (strstr(line, ".incbin \\\"") || strstr(line, ".incbin \"")) {
+	    rs_log_info("Found unsupported .incbin directive, compiling locally.");
+	    ret = 1;
+	    goto out;
+	}
+    }
+
+    if (bytes_read < 0 && errno != 0)
+        rs_log_warning("%s: getline failed: %s (%d), file %s", __func__, strerror(errno), errno, cpp_fname);
+out:
+    if (line)
+	free(line);
+    if (cpp_f)
+        fclose(cpp_f);
+    return ret;
+}
+
 
 /**
  * Pass a compilation across the network.
@@ -202,7 +246,8 @@ int dcc_compile_remote(char **argv,
                        pid_t cpp_pid,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
-                       int *status)
+                       int *status,
+                       int *unsupported)
 {
     int to_net_fd = -1, from_net_fd = -1;
     int ret;
@@ -332,6 +377,16 @@ int dcc_compile_remote(char **argv,
      * cost of the ssh child. */
     if (ssh_pid) {
         dcc_collect_child("ssh", ssh_pid, &ssh_status, timeout_null_fd); /* ignore failure */
+    }
+
+    /* The compilation failed remotely: let's see if that was due to unsupported 
+     * directives in the source. It may be unobvious that we check this after trying
+     * remotely rather than before, but these are very rare, and scanning all the 
+     * preprocessed source has a cost. */
+    if (ret == 0 && *status != 0) {
+        if ((ret = dcc_check_unsupported_directives(cpp_fname, input_fname))) {
+            *unsupported = 1;
+        }
     }
 
     return ret;
