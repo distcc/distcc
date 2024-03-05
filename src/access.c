@@ -316,17 +316,9 @@ static int check_address_inet6(const struct in6_addr *client,
 /**
  * Extract the lower 32-bits of a v6 address.
  **/
-static uint32_t inet_from_inet6(const struct in6_addr *addr)
+static void inet_from_inet6(struct in_addr *v4addr, const struct in6_addr *addr)
 {
-    uint32_t dest = 0;
-    int i;
-
-    for (i = 0; i < 4; ++i) {
-        uint32_t dest_byte = addr->s6_addr[12 + i];
-        dest |= (dest_byte << (8 * (3-i)));
-    }
-
-    return dest;
+    memcpy(&v4addr->s_addr, addr->s6_addr + 12, 4);
 }
 #endif /* ENABLE_RFC2553 */
 
@@ -361,7 +353,8 @@ int dcc_check_address(const struct sockaddr *client,
         if (value->family == AF_INET) {
             if (IN6_IS_ADDR_V4MAPPED(a6) || IN6_IS_ADDR_V4COMPAT(a6)) {
                 struct in_addr a4;
-                a4.s_addr = inet_from_inet6(a6);
+                memset(&a4, 0, sizeof(a4));
+                inet_from_inet6(&a4, a6);
                 return check_address_inet(&a4, &value->addr.inet, &mask->addr.inet);
             } else
                 return EXIT_ACCESS_DENIED;
