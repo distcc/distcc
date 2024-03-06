@@ -5,6 +5,7 @@ use std::fs::{create_dir_all, File};
 use std::path::{Path, PathBuf};
 
 static SOURCES: &[&str] = &[
+    "lzo/minilzo.c",
     "src/access.c",
     "src/arg.c",
     "src/argutil.c",
@@ -148,7 +149,6 @@ fn main() {
         .define("GNU_HOST", triple.as_str())
         .define("_GNU_SOURCE", None)
         .define("PACKAGE_VERSION", quote_var("CARGO_PKG_VERSION").as_str())
-        .files(["lzo/minilzo.c"])
         .files(SOURCES);
     for var in have {
         build.define(var, None);
