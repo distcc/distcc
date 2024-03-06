@@ -2,10 +2,7 @@
 
 use std::env::{self};
 use std::fs::{create_dir_all, File};
-use std::io::Write;
 use std::path::{Path, PathBuf};
-
-// use glob::glob;
 
 static SOURCES: &[&str] = &[
     "src/access.c",
@@ -134,16 +131,6 @@ fn main() {
         have.push("HAVE_STRLCPY");
     }
 
-    // Exclude auth for now, to avoid messing with gssapi.
-    // let all_sources = glob("src/*.c")
-    //     .expect("glob src/*.c")
-    //     .collect::<Result<Vec<PathBuf>, _>>()
-    //     .expect("glob src/*.c")
-    //     .into_iter()
-    //     .filter(|s| {
-    //         let name = s.file_name().unwrap().to_string_lossy();
-    //         !name.starts_with("auth") && name )
-    //     .collect::<Vec<PathBuf>>();
     let triple = quote_var("TARGET");
     let mut build = cc::Build::new();
     build
@@ -175,9 +162,19 @@ fn main() {
     bindings
         .write_to_file(out_dir.join("bindings.rs"))
         .expect("write bindings.rs");
-    // println!("cargo:rustc-link-lib=iberty");
-    // TODO: Rebuild only if *.[ch] changes.
-    println!("cargo:rerun-if-changed=src");
+    for path in glob("src/*.[ch]") {
+        println!(
+            "cargo:rerun-if-changed={}",
+            path.to_str().expect("File should be UTF-8")
+        );
+    }
+}
+
+fn glob(pattern: &str) -> Vec<PathBuf> {
+    glob::glob(pattern)
+        .expect("glob")
+        .collect::<Result<Vec<PathBuf>, _>>()
+        .expect("glob")
 }
 
 fn quote(s: &str) -> String {
