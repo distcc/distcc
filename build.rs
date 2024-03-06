@@ -88,32 +88,6 @@ static SOURCES: &[&str] = &[
     // "src/zeroconf-reg.c",
 ];
 
-static HAVE: &[&str] = &[
-    "HAVE_ASPRINTF",
-    "HAVE_C99_VSNPRINTF",
-    "HAVE_CTYPE_H",
-    "HAVE_DECL_ASPRINTF",
-    "HAVE_DECL_SNPRINTF",
-    "HAVE_DECL_VASPRINTF",
-    "HAVE_DECL_VSNPRINTF",
-    "HAVE_GETCWD",
-    "HAVE_IN_ADDR_T",
-    "HAVE_IN_PORT_T",
-    "HAVE_MKDTEMP",
-    "HAVE_SETSID",
-    "HAVE_SNPRINTF",
-    "HAVE_STDLIB_H",
-    "HAVE_STRERROR",
-    "HAVE_STRING_H",
-    // "HAVE_STRLCPY", // not always available on Linux
-    "HAVE_STRSEP",
-    "HAVE_SYS_RESOURCE_H",
-    "HAVE_VA_COPY",
-    "HAVE_VASPRINTF",
-    "HAVE_VSNPRINTF",
-    "HAVE_WAIT4",
-];
-
 fn main() {
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR should be set by cargo"));
     let config_dir = out_dir.join("include");
@@ -128,6 +102,37 @@ fn main() {
     // .expect("write config.h");
     // TODO: Maybe, to build both the client and server we need a core library
     // and then specific libraries that link in distcc.c and distccd.c?
+
+    let target = env::var("TARGET").unwrap();
+
+    let mut have = vec![
+        "HAVE_ASPRINTF",
+        "HAVE_C99_VSNPRINTF",
+        "HAVE_CTYPE_H",
+        "HAVE_DECL_ASPRINTF",
+        "HAVE_DECL_SNPRINTF",
+        "HAVE_DECL_VASPRINTF",
+        "HAVE_DECL_VSNPRINTF",
+        "HAVE_GETCWD",
+        "HAVE_IN_ADDR_T",
+        "HAVE_IN_PORT_T",
+        "HAVE_MKDTEMP",
+        "HAVE_SETSID",
+        "HAVE_SNPRINTF",
+        "HAVE_STDLIB_H",
+        "HAVE_STRERROR",
+        "HAVE_STRING_H",
+        "HAVE_STRSEP",
+        "HAVE_SYS_RESOURCE_H",
+        "HAVE_VA_COPY",
+        "HAVE_VASPRINTF",
+        "HAVE_VSNPRINTF",
+        "HAVE_WAIT4",
+    ];
+    if target.ends_with("-apple-darwin") {
+        have.push("HAVE_DECL_STRLCPY");
+        have.push("HAVE_STRLCPY");
+    }
 
     // Exclude auth for now, to avoid messing with gssapi.
     // let all_sources = glob("src/*.c")
@@ -158,8 +163,8 @@ fn main() {
         .define("PACKAGE_VERSION", quote_var("CARGO_PKG_VERSION").as_str())
         .files(["lzo/minilzo.c"])
         .files(SOURCES);
-    for &h in HAVE {
-        build.define(h, None);
+    for var in have {
+        build.define(var, None);
     }
     build.compile("distcc-rs");
     let bindings = bindgen::Builder::default()
