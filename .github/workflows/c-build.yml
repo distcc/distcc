@@ -2,7 +2,7 @@ name: C build
 
 on:
   push:
-    branches: ["master", "riir"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
