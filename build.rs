@@ -115,6 +115,7 @@ fn main() {
         "HAVE_IN_ADDR_T",
         "HAVE_IN_PORT_T",
         "HAVE_MKDTEMP",
+        "HAVE_SENDFILE",
         "HAVE_SETSID",
         "HAVE_SNPRINTF",
         "HAVE_STDLIB_H",
@@ -126,6 +127,8 @@ fn main() {
         "HAVE_VASPRINTF",
         "HAVE_VSNPRINTF",
         "HAVE_WAIT4",
+        // TODO: More, either generically or per-platform.
+        // TODO: Some of these will not be available on Windows.
     ];
     if target.ends_with("-apple-darwin") {
         have.push("HAVE_DECL_STRLCPY");
