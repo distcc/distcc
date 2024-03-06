@@ -565,7 +565,7 @@ distccmon-gnome@EXEEXT@: $(mon_obj) $(gnome_obj)
 # the distcc version, the source location, the CPP flags (for location of the
 # includes), and the build location.
 include-server:
-	@if test -z "$(PYTHON)"; then	\
+	if test -z "$(PYTHON)"; then	\
 	  echo "Not building $@: No suitable python found"; \
 	else						\
 	  mkdir -p "$(include_server_builddir)" &&      \

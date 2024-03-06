@@ -91,12 +91,9 @@ AC_ARG_ENABLE(pump-mode,
 	AS_HELP_STRING([--disable-pump-mode],[include server support (pump mode), requires python]),
 		[pump_mode=${enableval}], [pump_mode=yes])
 
-# We prefer to use the latest Python
-if test "x${pump_mode}" = xyes; then
-	AM_PATH_PYTHON([3.1],,[:])
-	AC_ARG_VAR(PYTHON, [Python interpreter])
-	AC_SUBST(PYTHON_RELATIVE_LIB)
-fi
+AM_PATH_PYTHON([3.1],,[:])
+AC_ARG_VAR(PYTHON, [Python interpreter])
+AC_SUBST(PYTHON_RELATIVE_LIB)
 
 AC_ARG_ENABLE(rfc2553,
 	AS_HELP_STRING([--enable-rfc2553],[use getaddrinfo, getnameinfo, etc]))
