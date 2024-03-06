@@ -107,6 +107,7 @@ static HAVE: &[&str] = &[
     "HAVE_STRING_H",
     "HAVE_STRSEP",
     "HAVE_SYS_RESOURCE_H",
+    "HAVE_VA_COPY",
     "HAVE_VASPRINTF",
     "HAVE_VSNPRINTF",
     "HAVE_WAIT4",
@@ -121,10 +122,9 @@ fn main() {
     let prefix = Path::new("/opt/distcc");
     let libdir = prefix.join("lib");
 
-    File::create(config_dir.join("config.h"))
-        .expect("create config.h")
-        .write_all("#define HAVE_VA_COPY\n".as_bytes())
-        .expect("write config.h");
+    File::create(config_dir.join("config.h")).expect("create config.h");
+    // .write_all("#define HAVE_VA_COPY\n".as_bytes())
+    // .expect("write config.h");
     // TODO: Maybe, to build both the client and server we need a core library
     // and then specific libraries that link in distcc.c and distccd.c?
 
