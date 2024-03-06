@@ -153,6 +153,7 @@ fn main() {
         )
         .define("NATIVE_COMPILER_TRIPLE", triple.as_str()) // TODO: Is this "native" in the right sense?
         .define("GNU_HOST", triple.as_str())
+        .define("_GNU_SOURCE", None)
         .define("PACKAGE_VERSION", quote_var("CARGO_PKG_VERSION").as_str())
         .files(["lzo/minilzo.c"])
         .files(SOURCES);
