@@ -105,6 +105,7 @@ static HAVE: &[&str] = &[
     "HAVE_STDLIB_H",
     "HAVE_STRERROR",
     "HAVE_STRING_H",
+    // "HAVE_STRLCPY", // not always available on Linux
     "HAVE_STRSEP",
     "HAVE_SYS_RESOURCE_H",
     "HAVE_VA_COPY",
