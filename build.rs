@@ -107,6 +107,7 @@ static HAVE: &[&str] = &[
     "HAVE_STRING_H",
     "HAVE_STRSEP",
     "HAVE_SYS_RESOURCE_H",
+    "HAVE_VASPRINTF",
     "HAVE_VSNPRINTF",
     "HAVE_WAIT4",
 ];
