@@ -2,28 +2,31 @@ name: C build
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]  # later: , macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-latest] # , windows-latest]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - uses: ConorMacBride/install-package@v1
         with:
-          # brew: TODO
+          # aclocal is in homebrew automake
+          brew: automake
           # brew-cask: TODO
           apt: python3-dev libiberty-dev clang libavahi-client-dev
           # choco: TODO
+      - run: python3 -m pip install --upgrade setuptools
       - run: ./autogen.sh
       - run: ./configure
-        if: ${{matrix.os}} == "ubuntu-latest"
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
       - run: ./configure --without-libiberty
-        if: ${{matrix.os}} == "macOS-latest"
+        if: ${{ startsWith(matrix.os, 'macOS') }}
       - run: make
       - run: make check
