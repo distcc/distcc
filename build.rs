@@ -20,7 +20,7 @@ static SOURCES: &[&str] = &[
     "src/compile.c",
     "src/compress.c",
     "src/cpp.c",
-    "src/daemon.c",
+    // "src/daemon.c", // TODO: Make a separate target
     "src/distcc.c",
     "src/dopt.c",
     "src/dotd.c",
@@ -51,7 +51,7 @@ static SOURCES: &[&str] = &[
     "src/io.c",
     "src/loadfile.c",
     "src/lock.c",
-    "src/lsdistcc.c",
+    // "src/lsdistcc.c", // TODO: Make a separate target
     // "src/mon.c",
     // "src/mon-gnome.c",
     // "src/mon-notify.c",
