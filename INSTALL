@@ -137,9 +137,9 @@ The simple way to build distcc is to just do
 but the recommended way is to build in a different directory tree
 than the source tree:
 
+  ./autogen.sh
   mkdir obj
   cd obj
-  ../autogen.sh
   ../configure && make
 
 You can optionally run "make check" afterwards to verify that everything
