@@ -22,6 +22,7 @@ jobs:
           # brew-cask: TODO
           apt: python3-dev libiberty-dev clang libavahi-client-dev
           # choco: TODO
+          # TODO(#507): Install gdb when the tests pass
       - run: python3 -m pip install --upgrade setuptools
       - run: ./autogen.sh
       - run: ./configure
