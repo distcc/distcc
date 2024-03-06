@@ -136,7 +136,7 @@ fn main() {
     let triple = quote_var("TARGET");
     let mut build = cc::Build::new();
     build
-        .includes(["src", "lzo"])
+        .includes(["src", "lzo", "popt"])
         .include(&config_dir)
         .define("SYSCONFDIR", quote("/etc").as_str())
         .define("LIBDIR", quote_path(&libdir).as_str())
@@ -164,6 +164,7 @@ fn main() {
         .write_to_file(out_dir.join("bindings.rs"))
         .expect("write bindings.rs");
     // println!("cargo:rustc-link-lib=iberty");
+    // TODO: Rebuild only if *.[ch] changes.
     println!("cargo:rerun-if-changed=src");
 }
 
