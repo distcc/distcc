@@ -2,28 +2,30 @@ name: C build
 
 on:
   push:
-  #   branches: ["master"]
-  # pull_request:
-  #   branches: ["master"]
 
 jobs:
   make_check:
     strategy:
       matrix:
-        os: [ubuntu-latest] # macOS-latest is disabled due to https://github.com/distcc/distcc/issues/524
+        os:
+        - macOS-latest
+        - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: ConorMacBride/install-package@v1
         with:
-          # Note: aclocal is packaged with automake in Homebrew, so we need it even though
-          # we don't use automake.
-          brew: automake popt gdb
+          # Note: aclocal is packaged with automake in Homebrew, so we need it
+          # even though we don't use automake.
+          brew: autoconf automake popt python python3 python-setuptools
+          # Note: no gdb on macOS because it's apparently not supported on arm64
           apt: clang libavahi-client-dev libpopt-dev gdb python3-dev python3-setuptools
           # brew-cask: TODO
           # choco: TODO
+      - run: which python3
       - run: ./autogen.sh
-      - run: ./configure
+      # Setting `python3` helps it find the Homebrew Python on macOS.
+      - run: ./configure PYTHON=python3
       - run: make
       - run: make check

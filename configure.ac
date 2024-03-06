@@ -508,7 +508,7 @@ cat <<EOF
 
     $PACKAGE_NAME $PACKAGE_VERSION configured
 
-    Copyright (C) 2002, 2003, 2004 by Martin Pool <mbp@samba.org>
+    Copyright (C) 2002 - 2025 by Martin Pool
     Portions Copyright 2005 Google Inc.
 
     This program is free software; you can redistribute it and/or
