@@ -155,7 +155,7 @@ static int dcc_setup_daemon_path(void)
 
 static void dcc_warn_masquerade_whitelist(void) {
     DIR *d, *e;
-    const char *warn = "You must see up masquerade" \
+    const char *warn = "You must set up masquerade" \
                        " (see distcc(1)) to list whitelisted compilers or pass" \
                        " --enable-tcp-insecure. To set up masquerade automatically" \
                        " run update-distcc-symlinks.";

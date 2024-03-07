@@ -21,6 +21,7 @@
 /* distcc_pump_c_extensions_module.c -- Python bindings for distcc-pump
  * extensions */
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 static const char *version = ".01";
@@ -56,7 +57,7 @@ static PyObject *
 CompressLzo1xAlloc(PyObject *dummy, PyObject *args) {
   PyObject *string_object;
   const char *in_buf;
-  int in_len;
+  Py_ssize_t in_len;
   char *out_buf;
   size_t out_len;
   UNUSED(dummy);
@@ -241,7 +242,7 @@ static /* const */ char OsPathExists_doc__[] =
 static PyObject *
 OsPathExists(PyObject *dummy, PyObject *args) {
   const char *in;
-  int len;
+  Py_ssize_t len;
   int res;
 
   struct stat buf;
@@ -275,7 +276,7 @@ static /* const */ char OsPathIsFile_doc__[] =
 static PyObject *
 OsPathIsFile(PyObject *dummy, PyObject *args) {
   const char *in;
-  int len;
+  Py_ssize_t len;
   int res;
 
   struct stat buf;
