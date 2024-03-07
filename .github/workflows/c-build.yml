@@ -7,7 +7,7 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
+  make_check:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest] # , windows-latest]
