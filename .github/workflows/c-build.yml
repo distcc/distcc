@@ -1,0 +1,33 @@
+name: C build
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  make_check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest] # , windows-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ConorMacBride/install-package@v1
+        with:
+          # aclocal is in homebrew automake
+          brew: automake
+          # brew-cask: TODO
+          apt: python3-dev libiberty-dev clang libavahi-client-dev
+          # choco: TODO
+          # TODO(#507): Install gdb when the tests pass
+      - run: python3 -m pip install --upgrade setuptools
+      - run: ./autogen.sh
+      - run: ./configure
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      - run: ./configure --without-libiberty
+        if: ${{ startsWith(matrix.os, 'macOS') }}
+      - run: make
+      - run: make check
