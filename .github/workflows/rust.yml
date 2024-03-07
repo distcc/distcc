@@ -7,7 +7,7 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
+  rust:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest] # , windows-latest]
