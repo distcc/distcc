@@ -33,3 +33,4 @@ __pycache__/
 target/
 Cargo.lock
 .vscode/settings.json
+.vscode/c_cpp_properties.json
