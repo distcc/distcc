@@ -593,10 +593,10 @@ int dcc_which(const char *command, char **out)
 {
     char *loc = NULL, *_loc = NULL, *path, *next_colon;
     char *next_path = NULL;
-    int dir_len, ret;
+    size_t dir_len;
 
     path = getenv("PATH");
-    do {
+    while (1) {
         if (!path) {
             free(loc);
             return -ENOENT;
@@ -626,8 +626,7 @@ int dcc_which(const char *command, char **out)
             return 0;
         }
         path = next_path;
-    } while (1);
-    return -ENOENT;
+    }
 }
 
 /* Returns the number of processes in state D, the max non-cc/c++ RSS in kb and
