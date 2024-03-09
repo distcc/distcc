@@ -109,6 +109,7 @@ fn main() {
         "HAVE_DECL_SNPRINTF",
         "HAVE_DECL_VASPRINTF",
         "HAVE_DECL_VSNPRINTF",
+        "HAVE_FNMATCH_H",
         "HAVE_GETCWD",
         "HAVE_IN_ADDR_T",
         "HAVE_IN_PORT_T",
