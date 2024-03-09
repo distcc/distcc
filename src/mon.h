@@ -37,13 +37,7 @@ extern "C" {
 
    It is possible for third party developers to write monitoring
    software for distcc clusters, and you are encouranged to do
-   so. This appendix attempts to provide you with all the information
-   you'll need to write a distcc monitor, but just like all other
-   software, distcc is not perfect; in case you are stuck, can't seem
-   to get your monitor working, or just think a particular quirk in
-   the way a monitor was to be written is worth being pointed out,
-   don't hesitate to subscribe to the list (http://lists.samba.org/)
-   and present your problem.
+   so.
 
 
    Limitations on monitoring
