@@ -27,6 +27,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: beta
+          components: clippy, rustfmt
       - run: cargo +beta test
       - run: cargo +beta clippy
       - run: cargo +beta fmt --check
