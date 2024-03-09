@@ -6,9 +6,9 @@ include_server.py \- conservative approximation of include dependencies for C/C+
 --port
 .I INCLUDE_SERVER_PORT [OPTIONS]
 .SH "DESCRIPTION"
-.P 
+.P
 include_server.py starts an include server process.  This process answers
-queries from 
+queries from
 \fBdistcc\fR(1)
 clients about what files to include in C/C++ compilations. The include_server.py
 command itself terminates as soon as the include server has been spawned.
@@ -17,11 +17,11 @@ The INCLUDE_SERVER_PORT argument is the name of a socket used for all
 communication between distcc clients and the include server.  The \fBpump\fR(1)
 command is responsible for creating the socket location, for passing it to this
 script, and for passing it to all distcc clients via the environment variable
-named INCLUDE_SERVER_PORT. 
+named INCLUDE_SERVER_PORT.
 .PP
 The protocol used by the include server uses distcc's RPC implementation. Each
 distcc request consists of (1) the current directory and (2) the list of
-arguments of the compilation command.  
+arguments of the compilation command.
 .PP
 If the include server is able to process the request, then it answers the distcc
 client by sending a list of filepaths.  The filepaths are those of the
@@ -46,7 +46,7 @@ locally retried, see section \fBDISTCC DISCREPANCY SYMPTOMS\fR.
 .SH "OPTION SUMMARY"
 The following options are understood by include_server.py.
 .TP
-.B -dPAT, --debug_pattern=PAT 
+.B -dPAT, --debug_pattern=PAT
 Bit vector for turning on warnings and debugging
     1 = warnings
     2 = trace some functions
@@ -63,7 +63,7 @@ Maximal number of emails to send (in addition to a final email). Default: 3.
 .B --no-email
 Do not send email. This is the default.
 .TP
-.B --path_observation_re=RE 
+.B --path_observation_re=RE
 Issue warning message whenever a filename is resolved to a realpath that is
 matched by RE, which is a regular expression in Python syntax.  This is useful
 for finding out where files included actually come from. Use RE="" to find them
@@ -72,11 +72,11 @@ all.  Note: warnings must be enabled with at least -d1.
 .B --pid_file FILEPATH
 The pid of the include server is written to file FILEPATH. This allows a script
 such a \fBpump\fR to tear down the include server.
-.TP                             
+.TP
 .B -s, --statistics
 Print information to stdout about include analysis.
 .TP
-.B --stat_reset_triggers=LIST  
+.B --stat_reset_triggers=LIST
 Flush stat caches when the timestamp of any filepath in LIST changes or the
 filepath comes in or out of existence.  LIST is a colon separated string of
 filepaths, possibly containing simple globs (as allowed by Python's glob
@@ -84,22 +84,22 @@ module). Print a warning whenever such a change happens (if warnings are
 enabled). This option allows limited exceptions to distcc_pump's normal
 assumption that source files are not modified during the build.
 .TP
-.B -t, --time  
+.B -t, --time
 Print elapsed, user, and system time to stderr.
 .TP
-.B --unsafe_absolute_includes  
+.B --unsafe_absolute_includes
 Do preprocessing on the compilation server even if includes of absolute
 filepaths are encountered.  Normally the include-server will fall back on local
 preprocessing if it detects any absolute includes.  Thus, this flag is useful
 for preventing such fallbacks when the absolute includes are a false alarm,
 either because the absolute include is discarded during preprocessing or because
-the absolutely included file exists on the compilation servers.  
+the absolutely included file exists on the compilation servers.
 .IP
 More precisely, with --unsafe_absolute_includes absolute includes are ignored
 for the purposes of gathering the include closure.  Using this option may lead
 to incorrect results because (1) the header may actually be included on the
 compilation server and it may not be the same as on the client, (2) the include
-directives of the header are not further analyzed.  
+directives of the header are not further analyzed.
 .IP
 The option is useful for compiling code that has such hardcoded absolute
 locations of header files inside conditional directives (e.g. "#ifdef") that
@@ -120,7 +120,7 @@ including other files in foo/.
 Verify that files in CPP closure are contained in
 closure calculated by include processor.
 .TP
-.B -w, --write_include_closure 
+.B -w, --write_include_closure
 Write a .d_approx file which lists all the included files calculated by the
 include server; with -x, additionally write the included files as calculated by
 CPP to a .d_exact file.
@@ -292,7 +292,7 @@ Other known bugs may be documented on
 .SH "AUTHOR"
 The include server was written by Nils Klarlund, with assistance from Fergus
 Henderson, Manos Renieris, and Craig Silverstein. Please report bugs to
-<distcc@lists.samba.org>.
+<https://github.com/distcc/distcc>.
 
 .SH "LICENCE"
 You are free to use distcc.  distcc (including this manual) may be

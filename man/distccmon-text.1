@@ -1,20 +1,20 @@
 .TH distccmon-text 1 "2 October 2004"
 .SH "NAME"
-.LP 
+.LP
 distccmon\-text \- Displays current compilation jobs in text form.
 .SH "SYNTAX"
-.LP 
+.LP
 distccmon-text [DELAY]
 .SH "DESCRIPTION"
-.LP 
+.LP
 Displays current compilation jobs in text form.  distccmon-text must
-be run on the client machine, with the same setting for 
+be run on the client machine, with the same setting for
 .I DISTCC_DIR
-(or home directory) 
+(or home directory)
 as the user running the distcc client.
 .SH "OPTIONS"
-.LP 
-.TP 
+.LP
+.TP
 \fBDELAY\fR
 repeatedly updates after \fIdelay\fP (fractional) seconds.
 .SH "OUTPUT FORMAT"
@@ -40,17 +40,17 @@ index for that host.
 When a delay is specified, each block of output is terminated by a
 blank line.
 .SH "EXAMPLES"
-.LP 
+.LP
 To display currently active jobs (updated every second):
 .IP
 distccmon\-text 1
-.LP 
+.LP
 To display the status once:
 .IP
 distccmon\-text
 .SH "AUTHORS"
-.LP 
-distcc  was  written  by Martin Pool <mbp@sourcefrog.net>, with the co\-operation of many scholars including Wayne Davison, Frerich Raabe, Dimitri Papadopoulos  and  others  noted  in  the  NEWS  file. Please  report  bugs  to <distcc@lists.samba.org>.
+.LP
+distcc  was  written  by Martin Pool <mbp@sourcefrog.net>, with the co\-operation of many scholars including Wayne Davison, Frerich Raabe, Dimitri Papadopoulos  and  others  noted  in  the  NEWS  file. Please  report  bugs  to <https://github.com/distcc/distcc>.
 .SH "SEE ALSO"
 .LP d
 distccd(1), ccache(1), gcc(1), make(1)
