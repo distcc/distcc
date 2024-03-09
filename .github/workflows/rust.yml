@@ -25,7 +25,8 @@ jobs:
       - run: python3 -m pip install --upgrade setuptools
       # need 1.77 beta for c"strings"
       - uses: dtolnay/rust-toolchain@master
-        toolchain: beta
+        with:
+          toolchain: beta
       - run: cargo +beta test
       - run: cargo +beta clippy
       # TODO: Maybe also run C tests?
