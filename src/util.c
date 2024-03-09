@@ -580,29 +580,35 @@ int dcc_remove_if_exists(const char *fname)
     return 0;
 }
 
-/* 
+/*
  * Returns the absolute path of *command by searching each subpath of PATH.
- * 
+ *
  * Input *command is either "c++" or "cc".
- * **out points to the absolute path, such as "/usr/bin/cc".
- * 
- * Skip the path include "distcc" to avoid loops.
+ * **out points to a newly allocated buffer holding the absolute path,
+ * such as "/usr/bin/cc".
+ *
+ * Skip any path compenents that include the substring "distcc" to avoid loops.
  */
 int dcc_which(const char *command, char **out)
 {
     char *loc = NULL, *_loc = NULL, *path, *next_colon;
-    int dir_len, ret;
+    char *next_path = NULL;
+    size_t dir_len;
 
     path = getenv("PATH");
-    if (!path)
-        return -ENOENT;
-
-    do {
+    while (1) {
+        if (!path) {
+            free(loc);
+            return -ENOENT;
+        }
         next_colon = strchr(path, ':');
-        if (!next_colon)
-           dir_len = strlen(path);
-        else
+        if (!next_colon) {
+            next_path = NULL;
+            dir_len = strlen(path);
+        } else {
+            next_path = next_colon + 1;
             dir_len = next_colon - path;
+        }
         _loc = realloc(loc, dir_len + strlen(command) + 2);
         if (!_loc) {
             free(loc);
@@ -615,15 +621,12 @@ int dcc_which(const char *command, char **out)
             continue;
         strcat(loc, "/");
         strcat(loc, command);
-        ret = access(loc, X_OK);
-        if (ret < 0) {
-            path = next_colon + 1;
-            continue;
+        if (access(loc, X_OK) == 0) {
+            *out = loc;
+            return 0;
         }
-        *out = loc;
-        return 0;
-    } while(next_colon);
-    return -ENOENT;
+        path = next_path;
+    }
 }
 
 /* Returns the number of processes in state D, the max non-cc/c++ RSS in kb and
