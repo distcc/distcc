@@ -2,6 +2,7 @@
 
 use std::env::{self};
 use std::fs::{create_dir_all, File};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 static SOURCES: &[&str] = &[
@@ -95,9 +96,6 @@ fn main() {
     let prefix = Path::new("/opt/distcc");
     let libdir = prefix.join("lib");
 
-    File::create(config_dir.join("config.h")).expect("create config.h");
-    // .write_all("#define HAVE_VA_COPY\n".as_bytes())
-    // .expect("write config.h");
     // TODO: Maybe, to build both the client and server we need a core library
     // and then specific libraries that link in distcc.c and distccd.c?
 
@@ -123,6 +121,7 @@ fn main() {
         "HAVE_STRING_H",
         "HAVE_STRSEP",
         "HAVE_SYS_RESOURCE_H",
+        "HAVE_SYS_SENDFILE_H",
         "HAVE_VA_COPY",
         "HAVE_VASPRINTF",
         "HAVE_VSNPRINTF",
@@ -134,6 +133,12 @@ fn main() {
         have.push("HAVE_DECL_STRLCPY");
         have.push("HAVE_STRLCPY");
     }
+
+    let mut config_h = File::create(config_dir.join("config.h")).expect("create config.h");
+    for var in have {
+        writeln!(&mut config_h, "#define {var} 1").unwrap();
+    }
+    drop(config_h);
 
     let triple = quote_var("TARGET");
     let mut build = cc::Build::new();
@@ -153,9 +158,6 @@ fn main() {
         .define("_GNU_SOURCE", None)
         .define("PACKAGE_VERSION", quote_var("CARGO_PKG_VERSION").as_str())
         .files(SOURCES);
-    for var in have {
-        build.define(var, None);
-    }
     build.compile("distcc-rs");
     let bindings = bindgen::Builder::default()
         .header("src/rustbindings.h")
