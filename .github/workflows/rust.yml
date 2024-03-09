@@ -23,8 +23,10 @@ jobs:
           apt: python3-dev libiberty-dev clang libavahi-client-dev
           # choco: TODO
       - run: python3 -m pip install --upgrade setuptools
-      - run: cargo build
-      - run: cargo test
+      # need 1.77 beta for c"strings"
+      - uses: dtolnay/rust-toolchain@master
+        toolchain: beta
+      - run: cargo +beta test
       # TODO: Maybe also run C tests?
 
     #   - run: ./autogen.sh

@@ -7,6 +7,8 @@ edition = "2021"
 build = "build.rs"
 license = "GPL-2.0-or-later"
 include = ["/src"]
+# Need 1.77 for c"string", <https://github.com/rust-lang/rust/pull/119865>
+rust-version = "1.77"
 
 [build-dependencies]
 bindgen = "0.69"
