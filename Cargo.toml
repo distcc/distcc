@@ -10,7 +10,7 @@ include = ["/src"]
 
 [build-dependencies]
 bindgen = "0.69"
-cc = "1.0"
+cc = { version = "1.0", features = [ "parallel" ] }
 glob = "0.3"
 
 [dependencies]
