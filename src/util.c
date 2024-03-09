@@ -580,38 +580,51 @@ int dcc_remove_if_exists(const char *fname)
     return 0;
 }
 
+/*
+ * Returns the absolute path of *command by searching each subpath of PATH.
+ *
+ * Input *command is either "c++" or "cc".
+ * **out points to a newly allocated buffer holding the absolute path,
+ * such as "/usr/bin/cc".
+ *
+ * Skip any path compenents that include the substring "distcc" to avoid loops.
+ */
 int dcc_which(const char *command, char **out)
 {
-    char *loc = NULL, *_loc, *path, *t;
-    int ret;
-
-    path = getenv("PATH");
-    if (!path)
-        return -ENOENT;
-    do {
-        if (strstr(path, "distcc"))
-            continue;
-        /* emulate strchrnul() */
-        t = strchr(path, ':');
-        if (!t)
-            t = path + strlen(path);
-        _loc = realloc(loc, t - path + 1 + strlen(command) + 1);
+    char *loc = NULL, *_loc = NULL, *path, *next_colon;
+    size_t dir_len;
+    char *next_path = getenv("PATH");
+    while (1) {
+        path = next_path;
+        if (!path) {
+            free(loc);
+            return -ENOENT;
+        }
+        next_colon = strchr(path, ':');
+        if (!next_colon) {
+            next_path = NULL;
+            dir_len = strlen(path);
+        } else {
+            next_path = next_colon + 1;
+            dir_len = next_colon - path;
+        }
+        _loc = realloc(loc, dir_len + strlen(command) + 2);
         if (!_loc) {
             free(loc);
             return -ENOMEM;
         }
         loc = _loc;
-        strncpy(loc, path, t - path);
-        loc[t - path] = '\0';
+        strncpy(loc, path, dir_len);
+        loc[dir_len] = '\0';
+        if (strstr(loc, "distcc"))
+            continue;
         strcat(loc, "/");
         strcat(loc, command);
-        ret = access(loc, X_OK);
-        if (ret < 0)
-            continue;
-        *out = loc;
-        return 0;
-    } while ((path = strchr(path, ':') + 1));
-    return -ENOENT;
+        if (access(loc, X_OK) == 0) {
+            *out = loc;
+            return 0;
+        }
+    }
 }
 
 /* Returns the number of processes in state D, the max non-cc/c++ RSS in kb and
