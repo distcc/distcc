@@ -592,11 +592,11 @@ int dcc_remove_if_exists(const char *fname)
 int dcc_which(const char *command, char **out)
 {
     char *loc = NULL, *_loc = NULL, *path, *next_colon;
-    char *next_path = NULL;
     size_t dir_len;
+    char *next_path  = getenv("PATH");
 
-    path = getenv("PATH");
     while (1) {
+        path = next_path;
         if (!path) {
             free(loc);
             return -ENOENT;

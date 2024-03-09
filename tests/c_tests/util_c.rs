@@ -2,11 +2,14 @@
 
 //! FFI tests for `src/util.c`
 
+use std::env::set_var;
 use std::ffi::{c_char, c_int, CString};
-use std::path::PathBuf;
+use std::fs::{create_dir, set_permissions, File};
+use std::path::{Path, PathBuf};
 use std::ptr::null_mut;
 
-// use rusty_fork::rusty_fork_test;
+use rusty_fork::rusty_fork_test;
+use tempfile::TempDir;
 
 use distcc::c;
 
@@ -39,12 +42,29 @@ fn dcc_which_finds_system_cc() {
 /// Before that was fixed, this test reproduced the segfault.
 #[test]
 fn dcc_which_nonexistent_command_not_found() {
-    assert_eq!(dcc_which("cc_____NONEXISTENT_____1234").unwrap_err(), -libc::ENOENT);
+    assert_eq!(
+        dcc_which("cc_____NONEXISTENT_____1234").unwrap_err(),
+        -libc::ENOENT
+    );
 }
 
-// rusty_fork_test! {
-//     // /// Path components containing "distcc" are not matched.
-//     // #[test]
-//     // fn dcc_which_skips_distcc_directories() {
-//     // }
-// }
+#[cfg(unix)]
+fn touch_executable(path: &Path) {
+    File::create(path).unwrap();
+    set_permissions(path, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+}
+
+rusty_fork_test! {
+  #![rusty_fork(timeout_ms = 0)]#[doc = r#" Path components containing "distcc" are not matched."#]#[test]fn dcc_which_skips_distcc_directories(){
+    let temp = TempDir::new().unwrap();
+    let distcc_dir_path = temp.path().join("distcc");
+    let bin_dir_path = temp.path().join("bin");
+    create_dir(&distcc_dir_path).unwrap();
+    create_dir(&bin_dir_path).unwrap();
+    touch_executable(&distcc_dir_path.join("cc"));
+    touch_executable(&bin_dir_path.join("cc"));
+    set_var("PATH", [ distcc_dir_path.to_str().unwrap(), bin_dir_path.to_str().unwrap(),].join(":"));
+    // The "distcc" directory comes first but is skipped.
+    assert_eq!(dcc_which("cc").unwrap(), bin_dir_path.join("cc"));
+  }
+}
