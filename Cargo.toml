@@ -23,4 +23,4 @@ rusty-fork = "0.3"
 tempfile = "3.2"
 
 [[bin]]
-name = "distcc-rs"
+name = "distcc"
