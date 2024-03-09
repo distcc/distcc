@@ -20,7 +20,7 @@ jobs:
           # aclocal is in homebrew automake
           brew: automake
           # brew-cask: TODO
-          apt: python3-dev libiberty-dev clang libavahi-client-dev
+          apt: python3-dev libiberty-dev clang libavahi-client-dev valgrind
           # choco: TODO
           # TODO(#507): Install gdb when the tests pass
       - run: python3 -m pip install --upgrade setuptools
@@ -31,3 +31,5 @@ jobs:
         if: ${{ startsWith(matrix.os, 'macOS') }}
       - run: make
       - run: make check
+      - run: make valgrind-check
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
