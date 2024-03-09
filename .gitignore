@@ -28,3 +28,9 @@ man/*.gz
 _testtmp/
 __pycache__/
 /h_*
+
+# RiiR port files
+target/
+Cargo.lock
+.vscode/settings.json
+.vscode/c_cpp_properties.json

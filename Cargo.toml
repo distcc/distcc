@@ -1,0 +1,26 @@
+[package]
+name = "distcc"
+version = "0.0.0"
+publish = false
+authors = ["Martin Pool"]
+edition = "2021"
+build = "build.rs"
+license = "GPL-2.0-or-later"
+include = ["/src"]
+# Need 1.77 for c"string", <https://github.com/rust-lang/rust/pull/119865>
+rust-version = "1.77"
+
+[build-dependencies]
+bindgen = "0.69"
+cc = { version = "1.0", features = [ "parallel" ] }
+glob = "0.3"
+
+[dependencies]
+libc = "0.2.153"
+
+[dev-dependencies]
+rusty-fork = "0.3"
+tempfile = "3.2"
+
+[[bin]]
+name = "distcc-rs"
