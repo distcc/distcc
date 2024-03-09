@@ -29,6 +29,7 @@ jobs:
           toolchain: beta
       - run: cargo +beta test
       - run: cargo +beta clippy
+      - run: cargo +beta fmt --check
       # TODO: Maybe also run C tests?
 
     #   - run: ./autogen.sh
