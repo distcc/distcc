@@ -1,8 +1,7 @@
 // Copyright 2024 Martin Pool
 
-//! Tests from Rust into bound C code.
+//! Rust tests for `src/compress.c`
 
-use std::ffi::CStr;
 use std::io::{Read, Seek, Write};
 use std::os::fd::AsRawFd;
 use std::ptr::null_mut;
@@ -65,14 +64,4 @@ fn decompress_lzo1x_to_from_files() {
         .read_to_end(&mut output)
         .expect("read temp file");
     assert_eq!(output, HELLO_WORLD);
-}
-
-#[test]
-fn program_name_from_global() {
-    let name = unsafe {
-        CStr::from_ptr(c::rs_program_name)
-            .to_str()
-            .expect("Program name should be UTF-8")
-    };
-    assert_eq!(name, "distcc");
 }
