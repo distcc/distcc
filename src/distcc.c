@@ -219,9 +219,9 @@ static void dcc_gssapi_show_principal(void) {
 
 #ifdef RUST_MAIN
 /* Allow Rust to intercept main */
-#define MAIN_FN_NAME distcc_main
+#  define MAIN_FN_NAME distcc_main
 #else
-#define MAIN_FN_NAME main
+#  define MAIN_FN_NAME main
 #endif
 
 /**

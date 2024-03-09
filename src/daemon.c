@@ -178,11 +178,18 @@ static void dcc_warn_masquerade_whitelist(void) {
     }
 }
 
+#ifdef RUST_MAIN
+/* Allow Rust to intercept main */
+#  define MAIN_FN_NAME distccd_main
+#else
+#  define MAIN_FN_NAME main
+#endif
+
 /**
  * distcc daemon.  May run from inetd, or standalone.  Accepts
  * requests from clients to compile files.
  **/
-int main(int argc, char *argv[])
+int MAIN_FN_NAME(int argc, char *argv[])
 {
     int ret;
 

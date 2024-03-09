@@ -7,6 +7,9 @@ use std::path::{Path, PathBuf};
 
 static SOURCES: &[&str] = &[
     "lzo/minilzo.c",
+    "popt/findme.c",
+    "popt/popt.c",
+    "popt/poptparse.c",
     "src/access.c",
     "src/arg.c",
     "src/argutil.c",
@@ -19,7 +22,7 @@ static SOURCES: &[&str] = &[
     "src/compile.c",
     "src/compress.c",
     "src/cpp.c",
-    // "src/daemon.c", // TODO: Make a separate target
+    "src/daemon.c",
     "src/distcc.c",
     "src/dopt.c",
     "src/dotd.c",
@@ -109,6 +112,7 @@ fn main() {
         "HAVE_DECL_SNPRINTF",
         "HAVE_DECL_VASPRINTF",
         "HAVE_DECL_VSNPRINTF",
+        "HAVE_FLOAT_H",
         "HAVE_FNMATCH_H",
         "HAVE_GETCWD",
         "HAVE_IN_ADDR_T",
@@ -122,6 +126,7 @@ fn main() {
         "HAVE_STRING_H",
         "HAVE_STRSEP",
         "HAVE_SYS_RESOURCE_H",
+        "HAVE_UNISTD_H",
         "HAVE_VA_COPY",
         "HAVE_VASPRINTF",
         "HAVE_VSNPRINTF",
@@ -156,6 +161,8 @@ fn main() {
             "PACKAGE_BUGREPORT",
             quote("https://github.com/distcc/distcc").as_ref(),
         )
+        .define("HAVE_STRERROR", None) // must be here for popt
+        .define("HAVE_CONFIG_H", None)
         .define("NATIVE_COMPILER_TRIPLE", triple.as_str()) // TODO: Is this "native" in the right sense?
         .define("GNU_HOST", triple.as_str())
         .define("_GNU_SOURCE", None)
