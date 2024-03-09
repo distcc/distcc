@@ -12,3 +12,5 @@ pub mod c {
     #![allow(unused)] // Many C things are declared and not yet used.
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
+
+pub mod argv;
