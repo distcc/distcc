@@ -121,7 +121,6 @@ fn main() {
         "HAVE_STRING_H",
         "HAVE_STRSEP",
         "HAVE_SYS_RESOURCE_H",
-        "HAVE_SYS_SENDFILE_H",
         "HAVE_VA_COPY",
         "HAVE_VASPRINTF",
         "HAVE_VSNPRINTF",
@@ -132,6 +131,9 @@ fn main() {
     if target.ends_with("-apple-darwin") {
         have.push("HAVE_DECL_STRLCPY");
         have.push("HAVE_STRLCPY");
+    }
+    if target.contains("-linux") {
+        have.push("HAVE_SYS_SENDFILE_H");
     }
 
     let mut config_h = File::create(config_dir.join("config.h")).expect("create config.h");
