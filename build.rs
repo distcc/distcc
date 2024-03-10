@@ -175,7 +175,7 @@ fn main() {
     bindings
         .write_to_file(out_dir.join("bindings.rs"))
         .expect("write bindings.rs");
-    for path in glob("src/*.[ch]") {
+    for path in glob("*/*.[ch]") {
         println!(
             "cargo:rerun-if-changed={}",
             path.to_str().expect("File should be UTF-8")
