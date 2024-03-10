@@ -52,25 +52,6 @@
 
 
 /**
- * Return a pointer to the extension, including the dot, or NULL.
- * Same as dcc_find_extension(), but the argument and return
- * value are both pointers to const.
- **/
-const char * dcc_find_extension_const(const char *sfile) {
-#if 0
-  return dcc_find_extension((char *) sfile);
-#else
-  /* The following intermediate variable works around a bug in gcc 4.2.3 where
-   * for the code above gcc spuriously reports "warning: passing argument 1
-   * of 'dcc_find_extension' discards qualifiers from pointer target type",
-   * despite the explicit cast. */
-  char *sfile_nonconst = (char *)sfile;
-  return dcc_find_extension(sfile_nonconst);
-#endif
-}
-
-
-/**
  * Return a pointer to the basename of the file (everything after the
  * last slash.)  If there is no slash, return the whole filename,
  * which is presumably in the current directory.

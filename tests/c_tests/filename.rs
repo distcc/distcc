@@ -74,6 +74,24 @@ fn is_preprocessed_cases() {
 }
 
 #[test]
+fn find_extension_const() {
+    fn ext(path: &CStr) -> Option<&CStr> {
+        unsafe {
+            let ext = c::dcc_find_extension_const(path.as_ptr());
+            if ext.is_null() {
+                None
+            } else {
+                Some(CStr::from_ptr(ext))
+            }
+        }
+    }
+    assert_eq!(ext(c"hello.c"), Some(c".c"));
+    assert_eq!(ext(c"hello.cc"), Some(c".cc"));
+    assert_eq!(ext(c"hello."), None);
+    assert_eq!(ext(c"hello"), None);
+}
+
+#[test]
 fn find_extension() {
     fn ext(path: &CStr) -> Option<&CStr> {
         unsafe {

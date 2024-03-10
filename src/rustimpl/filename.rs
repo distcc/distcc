@@ -1,6 +1,6 @@
 use std::ffi::{c_char, c_int, CStr, CString};
 use std::path::Path;
-use std::ptr::null;
+use std::ptr::{null_mut};
 
 // int dcc_is_source(const char *sfile)
 #[no_mangle]
@@ -41,16 +41,21 @@ extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
  * Return a pointer to the extension, including the dot, or NULL.
  **/
 #[no_mangle]
-extern "C" fn dcc_find_extension(path: *const c_char) -> *const c_char {
+extern "C" fn dcc_find_extension(path: *mut c_char) -> *mut c_char {
     let path_str = unsafe { CStr::from_ptr(path) }.to_str().unwrap();
     if let Some(dot_position) = path_str.rfind('.') {
         if (dot_position + 1) < path_str.len() {
             unsafe { path.add(dot_position) }
         } else {
             // The dot is the last character in the string, so there is no extension.
-            null()
+            null_mut()
         }
     } else {
-        null()
+        null_mut()
     }
+}
+
+#[no_mangle]
+extern "C" fn dcc_find_extension_const(path: *const c_char) -> *const c_char {
+    dcc_find_extension(path as *mut c_char)
 }
