@@ -33,7 +33,6 @@ static SOURCES: &[&str] = &[
     "src/filename.c",
     "src/fix_debug_info.c",
     "src/gcc-id.c",
-    // "src/h_argvtostr.c",
     // "src/h_compile.c",
     // "src/h_dotd.c",
     "src/help.c",

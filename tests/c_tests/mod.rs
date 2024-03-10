@@ -1,3 +1,4 @@
+mod argutil_c;
 mod compress_c;
 mod filename;
 mod strip;
