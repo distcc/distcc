@@ -2,7 +2,7 @@
 
 //! Tests corresponding to `h_issource` and `IsSource_case`, covering some of `filename.c`.
 
-use std::ffi::CStr;
+use std::ffi::{c_char, CStr, CString};
 
 use distcc::c;
 
@@ -71,4 +71,22 @@ fn is_preprocessed_cases() {
             "{name:?} should be recognized as preprocessed"
         );
     }
+}
+
+#[test]
+fn find_extension() {
+    fn ext(path: &CStr) -> Option<&CStr> {
+        unsafe {
+            let ext = c::dcc_find_extension(path.as_ptr() as *mut c_char);
+            if ext.is_null() {
+                None
+            } else {
+                Some(CStr::from_ptr(ext))
+            }
+        }
+    }
+    assert_eq!(ext(c"hello.c"), Some(c".c"));
+    assert_eq!(ext(c"hello.cc"), Some(c".cc"));
+    assert_eq!(ext(c"hello."), None);
+    assert_eq!(ext(c"hello"), None);
 }

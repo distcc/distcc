@@ -1,5 +1,6 @@
-use std::ffi::{c_int, CStr};
+use std::ffi::{c_char, c_int, CStr, CString};
 use std::path::Path;
+use std::ptr::null;
 
 // int dcc_is_source(const char *sfile)
 #[no_mangle]
@@ -33,4 +34,22 @@ fn dcc_is_source(sfile: &CStr) -> c_int {
             )
         })
         .into()
+}
+
+/**
+ * Return a pointer to the extension, including the dot, or NULL.
+ **/
+#[no_mangle]
+extern "C" fn dcc_find_extension(path: *const c_char) -> *const c_char {
+    let path_str = unsafe { CStr::from_ptr(path) }.to_str().unwrap();
+    if let Some(dot_position) = path_str.rfind('.') {
+        if (dot_position + 1) < path_str.len() {
+            unsafe { path.add(dot_position) }
+        } else {
+            // The dot is the last character in the string, so there is no extension.
+            null()
+        }
+    } else {
+        null()
+    }
 }

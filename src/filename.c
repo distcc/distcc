@@ -51,23 +51,6 @@
  */
 
 
-
-/**
- * Return a pointer to the extension, including the dot, or NULL.
- **/
-char * dcc_find_extension(char *sfile)
-{
-    char *dot;
-
-    dot = strrchr(sfile, '.');
-    if (dot == NULL || dot[1] == '\0') {
-        /* make sure there's space for one more character after the
-         * dot */
-        return NULL;
-    }
-    return dot;
-}
-
 /**
  * Return a pointer to the extension, including the dot, or NULL.
  * Same as dcc_find_extension(), but the argument and return
