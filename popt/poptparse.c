@@ -3,7 +3,7 @@
  */
 
 /* (C) 1998-2002 Red Hat, Inc. -- Licensing details are in the COPYING
-   file accompanying popt source distributions, available from 
+   file accompanying popt source distributions, available from
    ftp://ftp.rpm.org/pub/rpm/dist. */
 #include <stdint.h>
 
@@ -27,7 +27,7 @@ int poptDupArgv(int argc, const char **argv,
 	    return POPT_ERROR_NOARG;
 	nb += strlen(argv[i]) + 1;
     }
-	
+
     dst = malloc(nb);
     if (dst == NULL)			/* XXX can't happen */
 	return POPT_ERROR_MALLOC;
@@ -127,7 +127,7 @@ exit:
  * 2== line to long
  * 3== umm.... more?
  */
-int poptConfigFileToString(FILE *fp, char ** argstrp, /*@unused@*/ int flags)
+int poptConfigFileToString(FILE *fp, char ** argstrp, __attribute__((unused)) int flags)
 {
     char line[999];
     char * argstr;
@@ -140,6 +140,8 @@ int poptConfigFileToString(FILE *fp, char ** argstrp, /*@unused@*/ int flags)
     size_t linelen;
     int maxargvlen = 480;
     int linenum = 0;
+
+	(void) flags;
 
     *argstrp = NULL;
 
@@ -193,7 +195,7 @@ int poptConfigFileToString(FILE *fp, char ** argstrp, /*@unused@*/ int flags)
 	}
 	if (*q != '=')
 	    continue;	/* XXX for now, silently ignore bogus line */
-		
+
 	/* *q is an equal sign. */
 	*q++ = '\0';
 

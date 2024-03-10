@@ -366,7 +366,6 @@ static int execCommand(poptContext con)
     poptItem item = con->doExec;
     const char ** argv;
     int argc = 0;
-    int rc;
 
     if (item == NULL) /*XXX can't happen*/
 	return POPT_ERROR_NOARG;
@@ -442,7 +441,7 @@ if (_popt_debug)
     }
 #endif
 
-    rc = execvp(argv[0], (char *const *)argv);
+    execvp(argv[0], (char *const *)argv);
 
     return POPT_ERROR_ERRNO;
 }
@@ -863,7 +862,7 @@ int poptGetNextOpt(poptContext con)
 			canstrip) {
 			poptStripArg(con, con->os->next);
 		    }
-		
+
 		    if (con->os->argv != NULL) {	/* XXX can't happen */
 			/* XXX watchout: subtle side-effects live here. */
 			longArg = con->os->argv[con->os->next++];
@@ -1072,14 +1071,15 @@ poptContext poptFreeContext(poptContext con)
     con->otherHelp = _free(con->otherHelp);
     con->execPath = _free(con->execPath);
     con->arg_strip = PBM_FREE(con->arg_strip);
-    
+
     con = _free(con);
     return con;
 }
 
 int poptAddAlias(poptContext con, struct poptAlias alias,
-		/*@unused@*/ int flags)
+		__attribute__((unused)) int flags)
 {
+	(void) flags;
     poptItem item = alloca(sizeof(*item));
     memset(item, 0, sizeof(*item));
     item->option.longName = alias.longName;
@@ -1215,14 +1215,14 @@ int poptStrippedArgv(poptContext con, int argc, char ** argv)
     int numargs = argc;
     int j = 1;
     int i;
-    
+
     /*@-sizeoftype@*/
     if (con->arg_strip)
     for (i = 1; i < argc; i++) {
 	if (PBM_ISSET(i, con->arg_strip))
 	    numargs--;
     }
-    
+
     for (i = 1; i < argc; i++) {
 	if (con->arg_strip && PBM_ISSET(i, con->arg_strip))
 	    continue;
@@ -1230,7 +1230,7 @@ int poptStrippedArgv(poptContext con, int argc, char ** argv)
 	j++;
     }
     /*@=sizeoftype@*/
-    
+
     return numargs;
 }
 /*@=boundswrite@*/
