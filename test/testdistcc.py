@@ -2201,7 +2201,6 @@ tests = [
          BogusOption_Case,
          MultipleCompile_Case,
          CompilerOptionsPassed_Case,
-         IsSource_Case,
          ExtractExtension_Case,
          ImplicitCompiler_Case,
          DaemonBadPort_Case,

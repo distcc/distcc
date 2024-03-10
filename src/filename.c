@@ -228,6 +228,7 @@ int dcc_is_preprocessed(const char *sfile)
 }
 
 
+#ifndef RUST
 /**
  * Work out whether @p sfile is source based on extension
  **/
@@ -272,6 +273,7 @@ int dcc_is_source(const char *sfile)
         return 0;
     }
 }
+#endif
 
 
 

@@ -14,3 +14,6 @@ pub mod c {
 }
 
 pub mod argv;
+
+/// Rust implementations of functions called from C.
+pub mod rustimpl;
