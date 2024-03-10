@@ -4,8 +4,9 @@ use std::ptr::null;
 
 // int dcc_is_source(const char *sfile)
 #[no_mangle]
-fn dcc_is_source(sfile: &CStr) -> c_int {
-    let path = Path::new(sfile.to_str().unwrap());
+extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
+    let sfile_str = unsafe { CStr::from_ptr(sfile) };
+    let path = Path::new(sfile_str.to_str().unwrap());
     // The C code also matched .s and .S when ENABLE_REMOTE_ASSEMBLE was on, but that did
     // not seem to ever be turned on, and the tests assert that they're not matched.
     path.extension()
