@@ -62,8 +62,10 @@
 #include "emaillog.h"
 
 
+#ifndef RUST
 /* Name of this program, for trace.c */
 const char *rs_program_name = "distcc";
+#endif
 
 /**
  * @file

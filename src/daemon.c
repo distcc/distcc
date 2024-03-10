@@ -82,8 +82,10 @@
 #endif
 
 
+#ifndef RUST
 /* for trace.c */
 char const *rs_program_name = "distccd";
+#endif
 
 /* for serve.c */
 char const *dcc_daemon_wd;  /* The working directory for the server. */

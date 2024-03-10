@@ -115,6 +115,7 @@ fn main() {
         "HAVE_FLOAT_H",
         "HAVE_FNMATCH_H",
         "HAVE_GETCWD",
+        "HAVE_GETLINE",
         "HAVE_IN_ADDR_T",
         "HAVE_IN_PORT_T",
         "HAVE_MKDTEMP",
@@ -163,12 +164,13 @@ fn main() {
         )
         .define("HAVE_STRERROR", None) // must be here for popt
         .define("HAVE_CONFIG_H", None)
+        .define("RUST", None)
         .define("NATIVE_COMPILER_TRIPLE", triple.as_str()) // TODO: Is this "native" in the right sense?
         .define("GNU_HOST", triple.as_str())
         .define("_GNU_SOURCE", None)
         .define("PACKAGE_VERSION", quote_var("CARGO_PKG_VERSION").as_str())
         .files(SOURCES);
-    build.compile("distcc-rs");
+    build.compile("distcc-c");
     let bindings = bindgen::Builder::default()
         .header("src/rustbindings.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
