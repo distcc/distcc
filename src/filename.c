@@ -228,55 +228,6 @@ int dcc_is_preprocessed(const char *sfile)
 }
 
 
-#ifndef RUST
-/**
- * Work out whether @p sfile is source based on extension
- **/
-int dcc_is_source(const char *sfile)
-{
-    const char *dot, *ext;
-    dot = dcc_find_extension_const(sfile);
-    if (!dot)
-        return 0;
-    ext = dot+1;
-
-    /* you could expand this out further into a RE-like set of case
-     * statements, but i'm not sure it's that important. */
-
-    switch (ext[0]) {
-    case 'i':
-        return !strcmp(ext, "i")
-            || !strcmp(ext, "ii");
-    case 'c':
-        return !strcmp(ext, "c")
-            || !strcmp(ext, "cc")
-            || !strcmp(ext, "cpp")
-            || !strcmp(ext, "cxx")
-            || !strcmp(ext, "cp")
-            || !strcmp(ext, "c++");
-    case 'C':
-        return !strcmp(ext, "C");
-    case 'm':
-        return !strcmp(ext,"m")
-            || !strcmp(ext,"mm")
-            || !strcmp(ext,"mi")
-            || !strcmp(ext,"mii");
-    case 'M':
-        return !strcmp(ext, "M");
-#ifdef ENABLE_REMOTE_ASSEMBLE
-    case 's':
-        return !strcmp(ext, "s");
-    case 'S':
-        return !strcmp(ext, "S");
-#endif
-    default:
-        return 0;
-    }
-}
-#endif
-
-
-
 /**
  * Decide whether @p filename is an object file, based on its
  * extension.
