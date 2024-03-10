@@ -22,5 +22,13 @@ libc = "0.2.153"
 rusty-fork = "0.3"
 tempfile = "3.2"
 
+[lib]
+path = "rust/lib.rs"
+
 [[bin]]
 name = "distcc"
+path = "rust/bin/distcc.rs"
+
+[[bin]]
+name = "distccd"
+path = "rust/bin/distccd.rs"

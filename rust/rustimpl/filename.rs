@@ -1,8 +1,10 @@
+//! Filename handling functions, ported from filename.c.
+
 use std::ffi::{c_char, c_int, CStr};
 use std::path::Path;
 use std::ptr::null_mut;
 
-// int dcc_is_source(const char *sfile)
+/// Return true if the file extension identifies it as source file.
 #[no_mangle]
 extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
     let sfile_str = unsafe { CStr::from_ptr(sfile) };
@@ -38,7 +40,8 @@ extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
 }
 
 /**
- * Return a pointer to the extension, including the dot, or NULL.
+ * Return a pointer to the extension (within the supplied buffer), including the dot, or NULL.
+ * A filename ending in `.` returns NULL.
  **/
 #[no_mangle]
 extern "C" fn dcc_find_extension(path: *mut c_char) -> *mut c_char {
