@@ -1,3 +1,4 @@
-pub mod compress_c;
-pub mod trace;
+mod compress_c;
+mod filename;
+mod trace;
 mod util_c;

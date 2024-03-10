@@ -472,36 +472,6 @@ class StripArgs_Case(SimpleDistCC_Case):
             self.assert_equal(o, expect)
 
 
-class IsSource_Case(SimpleDistCC_Case):
-    def runtest(self):
-        """Test distcc's method for working out whether a file is source"""
-        cases = (( "hello.c",          "source",       "not-preprocessed" ),
-                 ( "hello.cc",         "source",       "not-preprocessed" ),
-                 ( "hello.cxx",        "source",       "not-preprocessed" ),
-                 ( "hello.cpp",        "source",       "not-preprocessed" ),
-                 ( "hello.c++",        "source",       "not-preprocessed" ),
-                 # ".m" is Objective-C; ".M" and ".mm" are Objective-C++
-                 ( "hello.m",          "source",       "not-preprocessed" ),
-                 ( "hello.M",          "source",       "not-preprocessed" ),
-                 ( "hello.mm",         "source",       "not-preprocessed" ),
-                 # ".mi" and ".mii" are preprocessed Objective-C/Objective-C++.
-                 ( "hello.mi",         "source",       "preprocessed" ),
-                 ( "hello.mii",        "source",       "preprocessed" ),
-                 ( "hello.2.4.4.i",    "source",       "preprocessed" ),
-                 ( ".foo",             "not-source",   "not-preprocessed" ),
-                 ( "gcc",              "not-source",   "not-preprocessed" ),
-                 ( "hello.ii",         "source",       "preprocessed" ),
-                 ( "boot.s",           "not-source",   "not-preprocessed" ),
-                 ( "boot.S",           "not-source",   "not-preprocessed" ))
-        for f, issrc, iscpp in cases:
-            o, err = self.runcmd("h_issource '%s'" % f)
-            expected = ("%s %s\n" % (issrc, iscpp))
-            if o != expected:
-                raise AssertionError("issource %s gave %s, expected %s" %
-                                     (f, repr(o), repr(expected)))
-
-
-
 class ScanArgs_Case(SimpleDistCC_Case):
     '''Test understanding of gcc command lines.'''
     def runtest(self):

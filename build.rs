@@ -40,7 +40,6 @@ static SOURCES: &[&str] = &[
     // "src/h_exten.c",
     // "src/h_getline.c",
     // "src/h_hosts.c",
-    // "src/h_issource.c",
     "src/history.c",
     "src/hostfile.c",
     "src/hosts.c",
