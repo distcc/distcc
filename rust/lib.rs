@@ -13,7 +13,7 @@ pub mod c {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
-pub mod argv;
+pub mod glue;
 
 /// Rust implementations of functions called from C.
 pub mod rustimpl;
