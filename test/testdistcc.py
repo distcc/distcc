@@ -768,18 +768,6 @@ class ImplicitCompilerScan_Case(ScanArgs_Case):
             self.checkScanArgs(*tup)
 
 
-class ExtractExtension_Case(SimpleDistCC_Case):
-    def runtest(self):
-        """Test extracting extensions from filenames"""
-        for f, e in (("hello.c", ".c"),
-                     ("hello.cpp", ".cpp"),
-                     ("hello.2.4.4.4.c", ".c"),
-                     (".foo", ".foo"),
-                     ("gcc", "(NULL)")):
-            out, err = self.runcmd("h_exten '%s'" % f)
-            assert out == e
-
-
 class DaemonBadPort_Case(SimpleDistCC_Case):
     def runtest(self):
         """Test daemon invoked with invalid port number"""
@@ -2201,7 +2189,6 @@ tests = [
          BogusOption_Case,
          MultipleCompile_Case,
          CompilerOptionsPassed_Case,
-         ExtractExtension_Case,
          ImplicitCompiler_Case,
          DaemonBadPort_Case,
          AccessDenied_Case,

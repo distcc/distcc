@@ -1,6 +1,6 @@
 use std::ffi::{c_char, c_int, CStr, CString};
 use std::path::Path;
-use std::ptr::{null_mut};
+use std::ptr::null_mut;
 
 // int dcc_is_source(const char *sfile)
 #[no_mangle]

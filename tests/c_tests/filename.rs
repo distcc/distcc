@@ -89,6 +89,9 @@ fn find_extension_const() {
     assert_eq!(ext(c"hello.cc"), Some(c".cc"));
     assert_eq!(ext(c"hello."), None);
     assert_eq!(ext(c"hello"), None);
+    assert_eq!(ext(c"hello.2.4.4.4.c"), Some(c".c"));
+    assert_eq!(ext(c".foo"), Some(c".foo"));
+    assert_eq!(ext(c"gcc"), None);
 }
 
 #[test]

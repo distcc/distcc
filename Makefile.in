@@ -298,7 +298,6 @@ mon_obj =								\
 gnome_obj = src/history.o src/mon-gnome.o				\
 	src/renderer.o
 
-h_exten_obj = src/h_exten.o $(common_obj)
 h_scanargs_obj = src/h_scanargs.o $(common_obj)
 h_hosts_obj = src/h_hosts.o $(common_obj)
 h_argvtostr_obj = src/h_argvtostr.o $(common_obj)
@@ -325,7 +324,7 @@ SRC =	src/stats.c							\
 	src/daemon.c src/distcc.c src/dsignal.c				\
 	src/dopt.c src/dparent.c src/exec.c src/filename.c		\
 	src/h_argvtostr.c						\
-	src/h_exten.c src/h_hosts.c src/h_parsemask.c	\
+	 src/h_hosts.c src/h_parsemask.c	\
 	src/h_sa2str.c src/h_scanargs.c src/h_strip.c			\
 	src/h_dotd.c src/h_compile.c src/h_getline.c			\
 	src/help.c src/history.c src/hosts.c src/hostfile.c		\
@@ -425,7 +424,6 @@ sbin_PROGRAMS = \
 
 check_PROGRAMS = \
 	h_argvtostr@EXEEXT@ \
-	h_exten@EXEEXT@ \
 	h_fix_debug_info@EXEEXT@ \
 	h_hosts@EXEEXT@ \
 	h_parsemask@EXEEXT@ \
@@ -516,9 +514,6 @@ update-distcc-symlinks: $(update_distcc_symlinks_PY)
 	sed -e "s;\@prefix\@;${prefix};g" $< > $@.tmp
 	chmod +x $@.tmp
 	mv $@.tmp $@
-
-h_exten@EXEEXT@: $(h_exten_obj)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_exten_obj) $(LIBS)
 
 h_sa2str@EXEEXT@: $(h_sa2str_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_sa2str_obj) $(LIBS)

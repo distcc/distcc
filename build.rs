@@ -37,7 +37,6 @@ static SOURCES: &[&str] = &[
     // "src/h_compile.c",
     // "src/h_dotd.c",
     "src/help.c",
-    // "src/h_exten.c",
     // "src/h_getline.c",
     // "src/h_hosts.c",
     "src/history.c",
