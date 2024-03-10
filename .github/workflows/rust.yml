@@ -31,6 +31,11 @@ jobs:
       - run: cargo +beta test
       - run: cargo +beta clippy
       - run: cargo +beta fmt --check
+      - name: Python tests
+        run: env PATH=$(pwd)/target/debug:$PATH python ./test/testdistcc.py
+        # This is the core of `make check` for the C implementation.
+        # Some Python tests don't pass yet with the Rust build
+        continue-on-error: true
       # TODO: Maybe also run C tests?
 
     #   - run: ./autogen.sh
