@@ -45,7 +45,6 @@ static SOURCES: &[&str] = &[
     // "src/h_parsemask.c",
     // "src/h_sa2str.c",
     // "src/h_scanargs.c",
-    // "src/h_strip.c",
     "src/implicit.c",
     "src/include_server_if.c",
     "src/io.c",

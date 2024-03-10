@@ -2,7 +2,7 @@
 
 //! Tests corresponding to `h_issource` and `IsSource_case`, covering some of `filename.c`.
 
-use std::ffi::{c_char, CStr, CString};
+use std::ffi::{c_char, CStr};
 
 use distcc::c;
 

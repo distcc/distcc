@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, CStr, CString};
+use std::ffi::{c_char, c_int, CStr};
 use std::path::Path;
 use std::ptr::null_mut;
 

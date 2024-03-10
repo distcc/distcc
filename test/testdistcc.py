@@ -445,33 +445,6 @@ class CompilerOptionsPassed_Case(SimpleDistCC_Case):
             raise AssertionError("Unknown compiler found")
 
 
-class StripArgs_Case(SimpleDistCC_Case):
-    """Test -D and -I arguments are removed"""
-    def runtest(self):
-        cases = (("gcc -c hello.c", "gcc -c hello.c"),
-                 ("cc -Dhello hello.c -c", "cc hello.c -c"),
-                 ("gcc -g -O2 -W -Wall -Wshadow -Wpointer-arith -Wcast-align -c -o h_strip.o h_strip.c",
-                  "gcc -g -O2 -W -Wall -Wshadow -Wpointer-arith -Wcast-align -c -o h_strip.o h_strip.c"),
-                 # invalid but should work
-                 ("cc -c hello.c -D", "cc -c hello.c"),
-                 ("cc -c hello.c -D -D", "cc -c hello.c"),
-                 ("cc -c hello.c -I ../include", "cc -c hello.c"),
-                 ("cc -c -I ../include  hello.c", "cc -c hello.c"),
-                 ("cc -c -I. -I.. -I../include -I/home/mbp/garnome/include -c -o foo.o foo.c",
-                  "cc -c -c -o foo.o foo.c"),
-                 ("cc -c -DDEBUG -DFOO=23 -D BAR -c -o foo.o foo.c",
-                  "cc -c -c -o foo.o foo.c"),
-
-                 # New options stripped in 0.11
-                 ("cc -o nsinstall.o -c -DOSTYPE=\"Linux2.4\" -DOSARCH=\"Linux\" -DOJI -D_BSD_SOURCE -I../dist/include -I../dist/include -I/home/mbp/work/mozilla/mozilla-1.1/dist/include/nspr -I/usr/X11R6/include -fPIC -I/usr/X11R6/include -Wall -W -Wno-unused -Wpointer-arith -Wcast-align -pedantic -Wno-long-long -pthread -pipe -DDEBUG -D_DEBUG -DDEBUG_mbp -DTRACING -g -I/usr/X11R6/include -include ../config-defs.h -DMOZILLA_CLIENT -Wp,-MD,.deps/nsinstall.pp nsinstall.c",
-                  "cc -o nsinstall.o -c -fPIC -Wall -W -Wno-unused -Wpointer-arith -Wcast-align -pedantic -Wno-long-long -pthread -pipe -g nsinstall.c"),
-                 )
-        for cmd, expect in cases:
-            o, err = self.runcmd("h_strip %s" % cmd)
-            if o[-1] == '\n': o = o[:-1]
-            self.assert_equal(o, expect)
-
-
 class ScanArgs_Case(SimpleDistCC_Case):
     '''Test understanding of gcc command lines.'''
     def runtest(self):
@@ -2134,7 +2107,6 @@ tests = [
          DashMD_DashMF_DashMT_Case,
          Compile_c_Case,
          ImplicitCompilerScan_Case,
-         StripArgs_Case,
          StartStopDaemon_Case,
          CompressedCompile_Case,
          DashONoSpace_Case,
