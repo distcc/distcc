@@ -1,0 +1,14 @@
+{
+   <statx_null_rust_68979>
+   Memcheck:Param
+   statx(file_name)
+   fun:statx
+   fun:statx
+}
+{
+   <statx_null_rust_68979>
+   Memcheck:Param
+   statx(buf)
+   fun:statx
+   fun:statx
+}
