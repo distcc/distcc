@@ -3,7 +3,7 @@
 //! Rust uses its own allocator, typically, so objects from CString etc typically
 //! can't safely be released by `free`.
 
-use std::ffi::{c_char, c_int};
+use std::ffi::{c_char, c_int, CStr};
 use std::mem::size_of;
 
 use libc::{calloc, strndup};
@@ -51,12 +51,27 @@ pub unsafe fn free_argv(argv: *mut *mut c_char) {
     }
 }
 
+/// Convert C argv list to a Vec of newly allocated Rust strings.
+///
+/// # Safety
+///
+/// `argv` must point to an array of pointers to null-terminated strings.
+pub unsafe fn argv_to_vec(argv: *mut *mut c_char) -> Vec<String> {
+    (0..)
+        .map(|i| *argv.add(i))
+        .take_while(|a| !a.is_null())
+        .map(|a| CStr::from_ptr(a).to_str().unwrap().to_owned())
+        .collect()
+}
+
 #[cfg(test)]
 mod test {
     use std::ffi::CStr;
     use std::ptr::null_mut;
 
     use libc::c_void;
+
+    use super::*;
 
     #[test]
     fn test_alloc_string() {
@@ -67,7 +82,7 @@ mod test {
 
     #[test]
     fn test_alloc_argv() {
-        let (argc, argv) = super::alloc_argv(["hello", "world"].iter());
+        let (argc, argv) = alloc_argv(["hello", "world"].iter());
         assert_eq!(argc, 2);
         assert_eq!(
             unsafe { CStr::from_ptr(*argv.add(0)).to_str().unwrap() },
@@ -78,6 +93,7 @@ mod test {
             "world"
         );
         assert_eq!(unsafe { *argv.add(2) }, null_mut());
+        assert_eq!(unsafe { argv_to_vec(argv) }, vec!["hello", "world"]);
         unsafe {
             libc::free(*argv as *mut c_void);
             libc::free(*argv.add(1) as *mut c_void);

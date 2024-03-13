@@ -78,12 +78,12 @@ use std::ffi::CStr;
 use std::ptr::null_mut;
 
 use distcc::c;
-use distcc::glue::malloc::{alloc_argv, free_argv};
+use distcc::glue::malloc::{alloc_argv, argv_to_vec, free_argv};
 
 /// Evaluate if this command should be run local or remote.
 ///
 /// If the command should be run remote, the input and output files are also returned.
-fn scan_args(args: &[&str]) -> Result<(String, String), u32> {
+fn scan_args(args: &[&str]) -> Result<(String, String, Vec<String>), u32> {
     let argv = alloc_argv(args.iter()).1;
     let mut arg1 = null_mut();
     let ret = unsafe { c::dcc_find_compiler(argv, &mut arg1) };
@@ -93,7 +93,9 @@ fn scan_args(args: &[&str]) -> Result<(String, String), u32> {
     let mut out_file = null_mut();
     let mut fixed_argv = null_mut();
     let ret = unsafe { c::dcc_scan_args(arg1, &mut in_file, &mut out_file, &mut fixed_argv) };
-    unsafe { free_argv(argv) };
+    unsafe {
+        free_argv(argv);
+    };
     if ret != 0 {
         Err(ret as u32)
     } else {
@@ -101,6 +103,7 @@ fn scan_args(args: &[&str]) -> Result<(String, String), u32> {
         assert!(!in_file.is_null());
         assert!(!out_file.is_null());
         assert!(!fixed_argv.is_null());
+        let fixed_args = unsafe { argv_to_vec(fixed_argv) };
         let in_file = unsafe { CStr::from_ptr(in_file) }
             .to_str()
             .unwrap()
@@ -109,13 +112,11 @@ fn scan_args(args: &[&str]) -> Result<(String, String), u32> {
             .to_str()
             .unwrap()
             .to_owned();
-        Ok((in_file, out_file))
+        unsafe {
+            free_argv(fixed_argv);
+        }
+        Ok((in_file, out_file, fixed_args))
     }
-    // result = dcc_scan_args(newargv, &infname, &outfname, &outargv);
-
-    // printf("%s %s %s\n",
-    //    result == 0 ? "distribute" : "local",
-    //    infname ? infname : "(NULL)", outfname ? outfname : "(NULL)");
 }
 
 #[test]
@@ -143,11 +144,13 @@ fn scan_args_cases() {
     //  ("gcc -MMD -c hello.c", "distribute", "hello.c", "hello.o"),
     for (args, expected) in cases {
         println!("scan_args({:?})", args);
-        let files = scan_args(&args.split_whitespace().collect::<Vec<_>>());
-        println!(" -> files={files:?}");
-        assert_eq!(files.is_err(), expected.is_err());
-        match files {
-            Ok((a, b)) => assert_eq!((a.as_str(), b.as_str()), expected.unwrap()),
+        let r = scan_args(&args.split_whitespace().collect::<Vec<_>>());
+        println!(" -> {r:?}");
+        assert_eq!(r.is_err(), expected.is_err());
+        match r {
+            Ok((a, b, _fixed_args)) => {
+                assert_eq!((a.as_str(), b.as_str()), expected.unwrap());
+            }
             Err(ret) => assert_eq!(ret, expected.unwrap_err()),
         }
     }
