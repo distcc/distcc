@@ -1,11 +1,8 @@
-How to report bugs in distcc                    -*- indented-text -*-
+# How to report bugs in distcc
 
-
-If you are having trouble with distcc, please send email to
-distcc@lists.samba.org.  Please don't send mail direct to the author:
-if you use the list, other people may be able to help you faster and
-the answers are archived to help others.
-
+If you are having trouble with distcc, please open a question at
+<https://github.com/distcc/distcc/discussions/categories/q-a>, or, if it's
+clearly a bug, open a bug in that GitHub repo.
 
   * The first aim of a bug report is to let the programmer see the
     failure with their own eyes. If you can't be with them to make it
@@ -51,7 +48,7 @@ A good bug report for distcc should include these details:
        -Wimplicit -Wshadow -Wpointer-arith -Wcast-align \
        -Wwrite-strings -Waggregate-return -Wstrict-prototypes \
        -Wmissing-prototypes -Wnested-externs -o src/clirpc.o \
-       -c src/clirpc.c 
+       -c src/clirpc.c
 
   * Turn on client and server error logging.  On the client, set these
     environment variables, and try to reproduce the problem:
@@ -67,7 +64,3 @@ A good bug report for distcc should include these details:
     include all of them in your report, by looking at the process ID
     in square brackets.  If you can't work that out, quote the last
     few hundred lines leading up to the failure.
-
-An error report with all the necessary details is often answered and
-resolved within two days or less.  If you don't include enough
-information to know what is going wrong it can take much longer.

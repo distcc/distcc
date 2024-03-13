@@ -3,7 +3,8 @@
 by Martin Pool
 
 Current Documents: <https://distcc.github.io/>
-Formally <http://distcc.org/>
+
+Formerly <http://distcc.org/>
 
 "pump" functionality added by
 Fergus Henderson, Nils Klarlund, Manos Renieris, and Craig Silverstein (Google Inc.)
@@ -57,6 +58,6 @@ distcc is distributed under the GNU General Public Licence v2.
 
 ## Resources
 
-* [Mailing list](https://lists.samba.org/mailman/listinfo/distcc)
+* Repo, questions, and bugs: https://github.com/distcc/distcc
 
 * [Stack Overflow questions](http://stackoverflow.com/questions/tagged/distcc)
