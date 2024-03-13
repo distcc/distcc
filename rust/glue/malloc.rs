@@ -32,6 +32,25 @@ where
     (argc as c_int, argv)
 }
 
+/// Free an arg list whose entries are themselves allocated on the C heap.
+///
+/// # Safety
+///
+/// `argv` must point to a malloced array of pointers to malloced strings, terminated by a null.
+pub unsafe fn free_argv(argv: *mut *mut c_char) {
+    unsafe {
+        for i in 0.. {
+            let arg = *argv.add(i);
+            if arg.is_null() {
+                break;
+            } else {
+                libc::free(arg as *mut libc::c_void);
+            }
+        }
+        libc::free(argv as *mut libc::c_void);
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::ffi::CStr;

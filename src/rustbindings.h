@@ -1,8 +1,10 @@
 // Copyright 2024 Martin Pool
 
-// Include the header files currently accessed by Rust.
+// Include the header files currently accessed by Rust, as an input to bindgen.
 
 #include "distcc.h"
+#include "exitcode.h"
+#include "implicit.h"
 #include "trace.h"
 #include "util.h"
 
