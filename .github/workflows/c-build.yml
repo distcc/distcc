@@ -18,7 +18,7 @@ jobs:
       - uses: ConorMacBride/install-package@v1
         with:
           # aclocal is in homebrew automake
-          brew: automake
+          brew: automake gdb
           # brew-cask: TODO
           apt: python3-dev libiberty-dev clang libavahi-client-dev valgrind
           # choco: TODO
