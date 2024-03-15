@@ -658,19 +658,6 @@ foo_bar""",
               self.assert_equal(out.split()[1], deps[-1])
 
 
-class ImplicitCompilerScan_Case(ScanArgs_Case):
-    '''Test understanding of commands with no compiler'''
-    def runtest(self):
-        cases = [("-c hello.c",            "distribute", "hello.c", "hello.o"),
-                 ("hello.c -c",            "distribute", "hello.c", "hello.o"),
-                 ("-o hello.o -c hello.c", "distribute", "hello.c", "hello.o"),
-                 ]
-        for tup in cases:
-            # NB use "apply" rather than new syntax for compatibility with
-            # venerable Pythons.
-            self.checkScanArgs(*tup)
-
-
 class DaemonBadPort_Case(SimpleDistCC_Case):
     def runtest(self):
         """Test daemon invoked with invalid port number"""
@@ -2031,12 +2018,10 @@ tests = [
          GdbOpt3_Case,
          Lsdistcc_Case,
          BadLogFile_Case,
-         ScanArgs_Case,
          ParseMask_Case,
          DotD_Case,
          DashMD_DashMF_DashMT_Case,
          Compile_c_Case,
-         ImplicitCompilerScan_Case,
          StartStopDaemon_Case,
          CompressedCompile_Case,
          DashONoSpace_Case,

@@ -152,6 +152,10 @@ fn scan_args_cases() {
         ("-S -o - foo.c", Err(100)),
         ("-c -S -o - foo.c", Err(100)),
         ("-S -c -o - foo.c", Err(100)),
+        // implicit syntax, with no "gcc"
+        ("-c hello.c", Ok(("hello.c", "hello.o"))),
+        ("hello.c -c", Ok(("hello.c", "hello.o"))),
+        ("-o hello.o -c hello.c", Ok(("hello.c", "hello.o"))),
         // dasho syntax
         ("gcc -ofoo.o foo.c -c", Ok(("foo.c", "foo.o"))),
         ("gcc -ofoo foo.o", Err(100)),
