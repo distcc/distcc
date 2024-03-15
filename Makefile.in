@@ -298,7 +298,6 @@ mon_obj =								\
 gnome_obj = src/history.o src/mon-gnome.o				\
 	src/renderer.o
 
-h_scanargs_obj = src/h_scanargs.o $(common_obj)
 h_hosts_obj = src/h_hosts.o $(common_obj)
 h_parsemask_obj = src/h_parsemask.o $(common_obj) src/access.o
 h_sa2str_obj = src/h_sa2str.o $(common_obj) src/srvnet.o src/access.o
@@ -321,7 +320,7 @@ SRC =	src/stats.c							\
 	src/daemon.c src/distcc.c src/dsignal.c				\
 	src/dopt.c src/dparent.c src/exec.c src/filename.c		\
 	 src/h_hosts.c src/h_parsemask.c	\
-	src/h_sa2str.c src/h_scanargs.c 			\
+	src/h_sa2str.c  			\
 	src/h_dotd.c src/h_compile.c 			\
 	src/help.c src/history.c src/hosts.c src/hostfile.c		\
 	src/implicit.c src/io.c						\
@@ -423,7 +422,6 @@ check_PROGRAMS = \
 	h_hosts@EXEEXT@ \
 	h_parsemask@EXEEXT@ \
 	h_sa2str@EXEEXT@ \
-	h_scanargs@EXEEXT@ \
 	h_dotd@EXEEXT@ \
 	h_compile@EXEEXT@
 
@@ -510,9 +508,6 @@ update-distcc-symlinks: $(update_distcc_symlinks_PY)
 
 h_sa2str@EXEEXT@: $(h_sa2str_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_sa2str_obj) $(LIBS)
-
-h_scanargs@EXEEXT@: $(h_scanargs_obj)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_scanargs_obj) $(LIBS)
 
 h_hosts@EXEEXT@: $(h_hosts_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_hosts_obj) $(LIBS)

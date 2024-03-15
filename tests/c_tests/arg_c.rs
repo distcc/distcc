@@ -75,6 +75,7 @@ class ScanArgs_Case(SimpleDistCC_Case):
 */
 
 use std::ffi::CStr;
+use std::iter::once;
 use std::ptr::null_mut;
 
 use distcc::c;
@@ -99,7 +100,6 @@ fn scan_args(args: &[&str]) -> Result<(String, String, Vec<String>), u32> {
     if ret != 0 {
         Err(ret as u32)
     } else {
-        // TODO: Pass back and check fixed_argv.
         assert!(!in_file.is_null());
         assert!(!out_file.is_null());
         assert!(!fixed_argv.is_null());
@@ -121,35 +121,66 @@ fn scan_args(args: &[&str]) -> Result<(String, String, Vec<String>), u32> {
 
 #[test]
 fn scan_args_cases() {
+    // distcc::glue::trace::trace_to_stderr();
     let cases = [
         ("gcc -c hello.c", Ok(("hello.c", "hello.o"))),
         ("gcc hello.c", Err(c::dcc_exitcode_EXIT_DISTCC_FAILED)),
+        (
+            "gcc -o /tmp/hello.o -c ../src/hello.c",
+            Ok(("../src/hello.c", "/tmp/hello.o")),
+        ),
+        (
+            "gcc -DMYNAME=quasibar.c bar.c -c -o bar.o",
+            Ok(("bar.c", "bar.o")),
+        ),
+        ("gcc -ohello.o -c hello.c", Ok(("hello.c", "hello.o"))),
+        ("ccache gcc -c hello.c", Ok(("hello.c", "hello.o"))),
+        ("gcc hello.o", Err(100)),
+        ("gcc -o hello.o hello.c", Err(100)),
+        ("gcc -o hello.o -c hello.s", Err(100)),
+        ("gcc -o hello.o -c hello.S", Err(100)),
+        ("gcc -fprofile-arcs -ftest-coverage -c hello.c", Err(100)),
+        ("gcc -S hello.c", Ok(("hello.c", "hello.s"))),
+        ("gcc -c -S hello.c", Ok(("hello.c", "hello.s"))),
+        ("gcc -S -c hello.c", Ok(("hello.c", "hello.s"))),
+        ("gcc -M hello.c", Err(100)),
+        ("gcc -ME hello.c", Err(100)),
+        ("gcc -MD -c hello.c", Ok(("hello.c", "hello.o"))),
+        ("gcc -MMD -c hello.c", Ok(("hello.c", "hello.o"))),
+        // Assemble to stdout (thanks Alexandre).
+        ("gcc -S foo.c -o -", Err(100)),
+        ("-S -o - foo.c", Err(100)),
+        ("-c -S -o - foo.c", Err(100)),
+        ("-S -c -o - foo.c", Err(100)),
+        // dasho syntax
+        ("gcc -ofoo.o foo.c -c", Ok(("foo.c", "foo.o"))),
+        ("gcc -ofoo foo.o", Err(100)),
+        // tricky this one -- no dashc
+        ("foo.c -o foo.o", Err(100)),
+        ("foo.c -o foo.o -c", Ok(("foo.c", "foo.o"))),
+        // Produce assembly listings
+        ("gcc -Wa,-alh,-a=foo.lst -c foo.c", Err(100)),
+        ("gcc -Wa,--MD -c foo.c", Err(100)),
+        ("gcc -Wa,-xarch=v8 -c foo.c", Ok(("foo.c", "foo.o"))),
+        // Produce .rpo files
+        ("g++ -frepo foo.C", Err(100)),
+        ("gcc -xassembler-with-cpp -c foo.c", Err(100)),
+        ("gcc -x assembler-with-cpp -c foo.c", Err(100)),
+        ("gcc -specs=foo.specs -c foo.c", Err(100)),
+        // Fixed in 2.18.4 -- -dr writes rtl to a local file
+        ("gcc -dr -c foo.c", Err(100)),
     ];
-    //  ("gcc hello.c", "local"),
-    //  ("gcc -o /tmp/hello.o -c ../src/hello.c", "distribute", "../src/hello.c", "/tmp/hello.o"),
-    //  ("gcc -DMYNAME=quasibar.c bar.c -c -o bar.o", "distribute", "bar.c", "bar.o"),
-    //  ("gcc -ohello.o -c hello.c", "distribute", "hello.c", "hello.o"),
-    //  ("ccache gcc -c hello.c", "distribute", "hello.c", "hello.o"),
-    //  ("gcc hello.o", "local"),
-    //  ("gcc -o hello.o hello.c", "local"),
-    //  ("gcc -o hello.o -c hello.s", "local"),
-    //  ("gcc -o hello.o -c hello.S", "local"),
-    //  ("gcc -fprofile-arcs -ftest-coverage -c hello.c", "local", "hello.c", "hello.o"),
-    //  ("gcc -S hello.c", "distribute", "hello.c", "hello.s"),
-    //  ("gcc -c -S hello.c", "distribute", "hello.c", "hello.s"),
-    //  ("gcc -S -c hello.c", "distribute", "hello.c", "hello.s"),
-    //  ("gcc -M hello.c", "local"),
-    //  ("gcc -ME hello.c", "local"),
-    //  ("gcc -MD -c hello.c", "distribute", "hello.c", "hello.o"),
-    //  ("gcc -MMD -c hello.c", "distribute", "hello.c", "hello.o"),
     for (args, expected) in cases {
+        let args = once("distcc")
+            .chain(args.split_whitespace())
+            .collect::<Vec<_>>();
         println!("scan_args({:?})", args);
-        let r = scan_args(&args.split_whitespace().collect::<Vec<_>>());
+        let r = scan_args(&args);
         println!(" -> {r:?}");
-        assert_eq!(r.is_err(), expected.is_err());
         match r {
             Ok((a, b, _fixed_args)) => {
-                assert_eq!((a.as_str(), b.as_str()), expected.unwrap());
+                // TODO: Also check the expected fixed_args.
+                assert_eq!((a.as_str(), b.as_str()), expected.expect("expected Ok"));
             }
             Err(ret) => assert_eq!(ret, expected.unwrap_err()),
         }
