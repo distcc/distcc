@@ -4,6 +4,7 @@
 
 #include "distcc.h"
 #include "exitcode.h"
+#include "hosts.h"
 #include "implicit.h"
 #include "trace.h"
 #include "util.h"

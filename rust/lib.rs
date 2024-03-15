@@ -17,3 +17,5 @@ pub mod glue;
 
 /// Rust implementations of functions called from C.
 pub mod rustimpl;
+
+pub mod hostlist;

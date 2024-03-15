@@ -668,61 +668,6 @@ class DaemonBadPort_Case(SimpleDistCC_Case):
         self.assert_no_file("daemonpid.tmp")
 
 
-class InvalidHostSpec_Case(SimpleDistCC_Case):
-    def runtest(self):
-        """Test various invalid DISTCC_HOSTS
-
-        See also test_parse_host_spec, which tests valid specifications."""
-        for spec in ["", "    ", "\t", "  @ ", ":", "mbp@", "angry::", ":4200"]:
-            self.runcmd(("DISTCC_HOSTS=\"%s\" " % spec) + self.valgrind()
-                        + "h_hosts -v",
-                        EXIT_BAD_HOSTSPEC)
-
-
-class ParseHostSpec_Case(SimpleDistCC_Case):
-    def runtest(self):
-        """Check operation of dcc_parse_hosts_env.
-
-        Passes complex environment variables to h_hosts, which is a C wrapper
-        that calls the appropriate tests."""
-        spec="""localhost 127.0.0.1 @angry   ted@angry
-        \t@angry:/home/mbp/bin/distccd  angry:4204
-        ipv4-localhost
-        angry/44
-        angry:300/44
-        angry/44:300
-        angry,lzo
-        angry:3000,lzo    # some comment
-        angry/44,lzo
-        @angry,lzo#asdasd
-        # oh yeah nothing here
-        @angry:/usr/sbin/distccd,lzo
-        localhostbutnotreally
-        """
-
-        expected="""16
-   2 LOCAL
-   4 TCP 127.0.0.1 3632
-   4 SSH (no-user) angry (no-command)
-   4 SSH ted angry (no-command)
-   4 SSH (no-user) angry /home/mbp/bin/distccd
-   4 TCP angry 4204
-   4 TCP ipv4-localhost 3632
-  44 TCP angry 3632
-  44 TCP angry 300
-  44 TCP angry 300
-   4 TCP angry 3632
-   4 TCP angry 3000
-  44 TCP angry 3632
-   4 SSH (no-user) angry (no-command)
-   4 SSH (no-user) angry /usr/sbin/distccd
-   4 TCP localhostbutnotreally 3632
-"""
-        out, err = self.runcmd(("DISTCC_HOSTS=\"%s\" " % spec) + self.valgrind()
-                               + "h_hosts")
-        assert out == expected, "expected %s\ngot %s" % (repr(expected), repr(out))
-
-
 class Compilation_Case(WithDaemon_Case):
     '''Test distcc by actually compiling a file'''
     def setup(self):
@@ -2044,8 +1989,6 @@ tests = [
          DaemonBadPort_Case,
          AccessDenied_Case,
          NoServer_Case,
-         InvalidHostSpec_Case,
-         ParseHostSpec_Case,
          ImpliedOutput_Case,
          SyntaxError_Case,
          NoHosts_Case,
