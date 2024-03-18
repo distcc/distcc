@@ -64,6 +64,19 @@ pub unsafe fn argv_to_vec(argv: *mut *mut c_char) -> Vec<String> {
         .collect()
 }
 
+/// Convert a C string to a Rust string, or null to None.
+///
+/// # Safety
+///
+/// `cstr` must point to a null-terminated string, or be null.
+pub unsafe fn cstr_to_string(cstr: *const c_char) -> Option<String> {
+    if cstr.is_null() {
+        None
+    } else {
+        Some(CStr::from_ptr(cstr).to_str().unwrap().to_owned())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::ffi::CStr;
