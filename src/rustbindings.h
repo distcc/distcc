@@ -3,6 +3,7 @@
 // Include the header files currently accessed by Rust, as an input to bindgen.
 
 #include "distcc.h"
+#include "dotd.h"
 #include "exitcode.h"
 #include "hosts.h"
 #include "implicit.h"

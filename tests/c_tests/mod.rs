@@ -1,6 +1,7 @@
 mod arg_c;
 mod argutil_c;
 mod compress_c;
+mod dotd_c;
 mod filename;
 mod hosts_c;
 mod strip;
