@@ -218,7 +218,9 @@ PrintIncludeServerStatusMessage() {
 }
 
 Announce() {
-  echo "__________Using distcc-pump from $DISTCC_LOCATION"
+  if [ "$verbose" = 1 ]; then
+    echo "__________Using distcc-pump from $DISTCC_LOCATION"
+  fi
 }
 
 # Starts up the include server.  Sets $socket, $socket_dir, and
@@ -359,7 +361,9 @@ ShutDown() {
   # Always -- at exit -- shut down include_server and remove $socket_dir
   if [ -n "$include_server_pid" ] && \
     ps -p "$include_server_pid" > /dev/null; then
-    echo '__________Shutting down distcc-pump include server'
+    if [ "$verbose" = 1 ]; then
+      echo '__________Shutting down distcc-pump include server'
+    fi
     kill $include_server_pid
     # Wait until it's really dead.  We need to do this because the
     # include server may produce output after receiving SIGTERM.
@@ -507,6 +511,11 @@ Main() {
   CheckUsage "$@"
 
   Initialize
+
+  # Do not write on stdout if we're testing pump mode
+  if [ "0$DISTCC_TESTING_INCLUDE_SERVER" -ne "0" ]; then
+    verbose=0
+  fi
 
   case "$*" in
     --startup)
