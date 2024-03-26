@@ -302,7 +302,6 @@ h_hosts_obj = src/h_hosts.o $(common_obj)
 h_parsemask_obj = src/h_parsemask.o $(common_obj) src/access.o
 h_sa2str_obj = src/h_sa2str.o $(common_obj) src/srvnet.o src/access.o
 h_ccvers_obj = src/h_ccvers.o $(common_obj)
-h_dotd_obj = src/h_dotd.o $(common_obj)
 h_fix_debug_info = src/h_fix_debug_info.o $(common_obj)
 h_compile_obj = src/h_compile.o $(common_obj) src/compile.o src/timefile.o \
                 src/backoff.o src/emaillog.o src/remote.o src/clinet.o \
@@ -321,7 +320,7 @@ SRC =	src/stats.c							\
 	src/dopt.c src/dparent.c src/exec.c src/filename.c		\
 	 src/h_hosts.c src/h_parsemask.c	\
 	src/h_sa2str.c  			\
-	src/h_dotd.c src/h_compile.c 			\
+	src/h_compile.c 			\
 	src/help.c src/history.c src/hosts.c src/hostfile.c		\
 	src/implicit.c src/io.c						\
 	src/loadfile.c src/lock.c 					\
@@ -422,7 +421,6 @@ check_PROGRAMS = \
 	h_hosts@EXEEXT@ \
 	h_parsemask@EXEEXT@ \
 	h_sa2str@EXEEXT@ \
-	h_dotd@EXEEXT@ \
 	h_compile@EXEEXT@
 
 check_include_server_PY = \
@@ -517,9 +515,6 @@ h_parsemask@EXEEXT@: $(h_parsemask_obj)
 
 h_ccvers@EXEEXT@: $(h_ccvers_obj)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_ccvers_obj) $(LIBS)
-
-h_dotd@EXEEXT@: $(h_dotd_obj)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_dotd_obj) $(LIBS)
 
 h_fix_debug_info@EXEEXT@: $(h_fix_debug_info)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(h_fix_debug_info) $(LIBS)

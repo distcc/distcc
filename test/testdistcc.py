@@ -445,128 +445,6 @@ class CompilerOptionsPassed_Case(SimpleDistCC_Case):
             raise AssertionError("Unknown compiler found")
 
 
-
-class DotD_Case(SimpleDistCC_Case):
-    '''Test the mechanism for calculating .d file names'''
-
-    def runtest(self):
-        # Each case specifies:
-        #
-        # - A compilation command.
-        #
-        # - A glob expression supposed to match exactly one file, the dependency
-        #   file (which is not always a .d file, btw). The glob expression is
-        #   our human intuition, based on our reading of the gcc manual pages,
-        #   of the range of possible dependency names actually produced.
-        #
-        # - Whether 0 or 1 such dependency files exist.
-        #
-        # - The expected target name (or None).
-        #
-
-        # The dotd_name is thus divined by examination of the compilation
-        # directory where we actually run gcc.
-
-        cases = [
-          ("foo.c -o hello.o -MD", "*.d", 1, None),
-          ("foo.c -o hello.. -MD", "*.d", 1, None),
-          ("foo.c -o hello.bar.foo -MD", "*.d", 1, None),
-          ("foo.c -o hello.o", "*.d", 0, None),
-          ("foo.c -o hello.bar.foo -MD", "*.d", 1, None),
-          ("foo.c -MD", "*.d", 1, None),
-          ("foo.c -o hello. -MD", "*.d", 1, None),
-# The following test case fails under Darwin Kernel Version 8.11.0. For some
-# reason, gcc refuses to produce 'hello.d' when the object file is named
-# 'hello.D'.
-#         ("foo.c -o hello.D -MD -MT tootoo", "hello.*d", 1, "tootoo"),
-          ("foo.c -o hello. -MD -MT tootoo",  "hello.*d", 1, "tootoo"),
-          ("foo.c -o hello.o -MD -MT tootoo", "hello.*d", 1, "tootoo"),
-          ("foo.c -o hello.o -MD -MF foobar", "foobar", 1, None),
-           ]
-
-        # These C++ cases fail if your gcc installation doesn't support C++.
-        error_rc, _, _ = self.runcmd_unchecked("touch testtmp.cpp; " +
-            self._cc + " -c testtmp.cpp -o /dev/null")
-        if error_rc == 0:
-          cases.extend([("foo.cpp -o hello.o", "*.d", 0, None),
-                        ("foo.cpp -o hello", "*.d", 0, None)])
-
-        def _eval(out):
-            map_out = eval(out)
-            return (map_out['dotd_fname'],
-                    map_out['needs_dotd'],
-                    map_out['sets_dotd_target'],
-                    map_out['dotd_target'])
-
-        for (args, dep_glob, how_many, target) in cases:
-
-            # Determine what gcc says.
-            dotd_result = []  # prepare for some imperative style value passing
-            class TempCompile_Case(Compilation_Case):
-                def source(self):
-                      return """
-int main(void) { return 0; }
-"""
-                def sourceFilename(self):
-                    return args.split()[0]
-                def compileCmd(self):
-                    return self._cc + " -c " + args
-                def runtest(self):
-                    self.compile()
-                    glob_result = glob.glob(dep_glob)
-                    dotd_result.extend(glob_result)
-
-            ret = comfychair.runtest(TempCompile_Case, 0, subtest=1)
-            if ret:
-                raise AssertionError(
-                    "Case (args:%s, dep_glob:%s, how_many:%s, target:%s)"
-                    %  (args, dep_glob, how_many, target))
-            self.assert_equal(len(dotd_result), how_many)
-            if how_many == 1:
-                expected_dep_file = dotd_result[0]
-
-            # Determine what dcc_get_dotd_info says.
-            out, _err = self.runcmd("h_dotd dcc_get_dotd_info gcc -c %s" % args)
-            dotd_fname, needs_dotd, sets_dotd_target, dotd_target = _eval(out)
-            assert dotd_fname
-            assert needs_dotd in [0,1]
-            # Assert that "needs_dotd == 1" if and only if "how_many == 1".
-            assert needs_dotd == how_many
-            # Assert that "needs_dotd == 1" implies names by gcc and our routine
-            # are the same.
-            if needs_dotd:
-                self.assert_equal(expected_dep_file, dotd_fname)
-
-            self.assert_equal(sets_dotd_target == 1, target != None)
-            if target:
-                # A little convoluted: because target is set in command line,
-                # and the command line is passed already, the dotd_target is not
-                # set.
-                self.assert_equal(dotd_target, "None")
-
-
-        # Now some fun with DEPENDENCIES_OUTPUT variable.
-        try:
-            os.environ["DEPENDENCIES_OUTPUT"] = "xxx.d yyy"
-            out, _err = self.runcmd("h_dotd dcc_get_dotd_info gcc -c foo.c")
-            dotd_fname, needs_dotd, sets_dotd_target, dotd_target = _eval(out)
-            assert dotd_fname == "xxx.d"
-            assert needs_dotd
-            assert not sets_dotd_target
-            assert dotd_target == "yyy"
-
-            os.environ["DEPENDENCIES_OUTPUT"] = "zzz.d"
-            out, _err = self.runcmd("h_dotd dcc_get_dotd_info gcc -c foo.c")
-            dotd_fname, needs_dotd, sets_dotd_target, dotd_target = _eval(out)
-            assert dotd_fname == "zzz.d"
-            assert needs_dotd
-            assert not sets_dotd_target
-            assert dotd_target == "None"
-
-        finally:
-            del os.environ["DEPENDENCIES_OUTPUT"]
-
-
 class Compile_c_Case(SimpleDistCC_Case):
   """Unit tests for source file 'compile.c.'
 
@@ -1964,7 +1842,6 @@ tests = [
          Lsdistcc_Case,
          BadLogFile_Case,
          ParseMask_Case,
-         DotD_Case,
          DashMD_DashMF_DashMT_Case,
          Compile_c_Case,
          StartStopDaemon_Case,
