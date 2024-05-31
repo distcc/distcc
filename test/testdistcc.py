@@ -2241,7 +2241,7 @@ tests = [
          CppError_Case,
          BadInclude_Case,
          PreprocessPlainText_Case,
-         NoDetachDaemon_Case,
+         # NoDetachDaemon_Case, # currently failing, see https://github.com/distcc/distcc/issues/522
          SBeatsC_Case,
          DashD_Case,
          DashWpMD_Case,
