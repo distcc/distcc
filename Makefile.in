@@ -773,6 +773,7 @@ maintainer-check: distcc-maintainer-check include-server-maintainer-check \
 	pump-maintainer-check
 
 check:
+	cargo test
 	@if test -n "$(PYTHON)"; then \
 	   $(MAKE) maintainer-check; \
 	else \
