@@ -55,19 +55,6 @@
 
 
 /**
- * Return true if argv contains needle as an argument.
- **/
-int dcc_argv_search(char **a,
-                    const char *needle)
-{
-    for (; *a; a++)
-        if (!strcmp(*a, needle))
-            return 1;
-    return 0;
-}
-
-
-/**
  * Return true if argv contains argument starting with needle.
  */
 int dcc_argv_startswith(char **a,

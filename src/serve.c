@@ -71,6 +71,7 @@
 #include <sys/time.h>
 
 #include "distcc.h"
+#include "distcc_rs.h"
 #include "trace.h"
 #include "util.h"
 #include "stats.h"
@@ -590,7 +591,7 @@ static int tweak_arguments_for_server(char **argv,
     if ((ret = dcc_convert_mt_to_dotd_target(*tweaked_argv, dotd_target)))
       return 1;
 
-    if (!dcc_argv_search(*tweaked_argv, "-MD") && !dcc_argv_search(*tweaked_argv, "-MMD")) {
+    if (!argv_contains(*tweaked_argv, "-MD") && !argv_contains(*tweaked_argv, "-MMD")) {
         dcc_argv_append(*tweaked_argv, strdup("-MMD"));
     }
     dcc_argv_append(*tweaked_argv, strdup("-MF"));

@@ -12,3 +12,4 @@ path = "rust/lib.rs"
 
 [dependencies]
 cbindgen = "0.26.0"
+libc = "0.2.153"

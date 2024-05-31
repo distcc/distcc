@@ -262,7 +262,6 @@ int dcc_expand_preprocessor_options(char ***argv_ptr);
 
 /* argutil.c */
 unsigned int dcc_argv_len(char **a);
-int dcc_argv_search(char **a, const char *);
 int dcc_argv_startswith(char **a, const char *);
 int dcc_copy_argv(char **argv, char ***out_argv, int extra_args);
 int dcc_argv_append(char **argv, char *toadd);

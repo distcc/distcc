@@ -107,21 +107,6 @@ int str_startswith(const char *head, const char *worm)
 }
 
 
-
-/**
- * Skim through NULL-terminated @p argv, looking for @p s.
- **/
-int argv_contains(char **argv, const char *s)
-{
-    while (*argv) {
-        if (!strcmp(*argv, s))
-            return 1;
-        argv++;
-    }
-    return 0;
-}
-
-
 /**
  * Redirect a file descriptor into (or out of) a file.
  *
