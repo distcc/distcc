@@ -21,3 +21,11 @@ int argv_contains(char **argv, const char *needle);
  * `argv` must point to a malloced array of pointers to malloced strings, terminated by a null.
  */
 void dcc_free_argv(char **argv);
+
+/**
+ * Return the length of an argv list, not counting the null terminator.
+ *
+ * # Safety
+ * `argv` must point to a null-terminated array of pointers.
+ */
+int dcc_argv_len(char **argv);

@@ -71,7 +71,6 @@
 #include <sys/time.h>
 
 #include "distcc.h"
-#include "distcc_rs.h"
 #include "trace.h"
 #include "util.h"
 #include "stats.h"

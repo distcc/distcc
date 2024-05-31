@@ -261,7 +261,6 @@ int dcc_scan_args(char *argv[], /*@out@*/ /*@relnull@*/ char **orig_o,
 int dcc_expand_preprocessor_options(char ***argv_ptr);
 
 /* argutil.c */
-unsigned int dcc_argv_len(char **a);
 int dcc_argv_startswith(char **a, const char *);
 int dcc_copy_argv(char **argv, char ***out_argv, int extra_args);
 int dcc_argv_append(char **argv, char *toadd);
@@ -360,3 +359,6 @@ int dcc_map_input_file(int in_fd, off_t in_size, char **buf_ret);
 #ifndef WCOREDUMP
 #  define WCOREDUMP(status) 0
 #endif
+
+
+#include "distcc_rs.h"

@@ -81,9 +81,26 @@ pub unsafe extern "C" fn dcc_free_argv(argv: *mut *mut c_char) {
     }
 }
 
+/// Return the length of an argv list, not counting the null terminator.
+///
+/// # Safety
+/// `argv` must point to a null-terminated array of pointers.
+#[no_mangle]
+pub unsafe extern "C" fn dcc_argv_len(argv: *mut *mut c_char) -> c_int {
+    for i in 0.. {
+        if (*argv.add(i)).is_null() {
+            return i as c_int;
+        }
+    }
+    unreachable!("argv list was not null-terminated");
+}
+
+// TODO: argv_append, copy_argv
+
 #[cfg(test)]
 mod test {
     use std::ffi::CStr;
+    use std::iter::empty;
     use std::ptr::null_mut;
 
     use super::*;
@@ -99,9 +116,22 @@ mod test {
     fn test_argv_contains() {
         let (argc, argv) = alloc_argv(["hello", "world"].iter());
         assert_eq!(argc, 2);
-        assert!(unsafe { argv_contains(argv, c"hello".as_ptr()) == 1},);
-        assert!(unsafe { argv_contains(argv, c"world".as_ptr()) == 1},);
-        assert!(unsafe { argv_contains(argv, c"goodbye".as_ptr())  == 0},);
+        assert!(unsafe { argv_contains(argv, c"hello".as_ptr()) == 1 },);
+        assert!(unsafe { argv_contains(argv, c"world".as_ptr()) == 1 },);
+        assert!(unsafe { argv_contains(argv, c"goodbye".as_ptr()) == 0 },);
+        assert!(unsafe { argv_contains(argv, c"hello".as_ptr()) == 1 },);
+        assert!(unsafe { argv_contains(argv, c"world".as_ptr()) == 1 },);
+        assert!(unsafe { argv_contains(argv, c"goodbye".as_ptr()) == 0 },);
+        unsafe { dcc_free_argv(argv) };
+    }
+
+    #[test]
+    fn empty_argv() {
+        let (argc, argv) = alloc_argv(empty::<&str>());
+        assert_eq!(argc, 0);
+        assert!(!argv.is_null());
+        assert!(unsafe { (*argv).is_null() });
+        assert_eq!(unsafe { dcc_argv_len(argv) }, 0);
         unsafe { dcc_free_argv(argv) };
     }
 
@@ -119,6 +149,7 @@ mod test {
         );
         assert_eq!(unsafe { *argv.add(2) }, null_mut());
         assert_eq!(unsafe { argv_to_vec(argv) }, vec!["hello", "world"]);
+        assert_eq!(unsafe { dcc_argv_len(argv) }, 2);
         unsafe { dcc_free_argv(argv) };
     }
 }

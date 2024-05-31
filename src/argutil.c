@@ -67,15 +67,6 @@ int dcc_argv_startswith(char **a,
     return 0;
 }
 
-unsigned int dcc_argv_len(char **a)
-{
-    unsigned int i;
-
-    for (i = 0; a[i]; i++)
-        ;
-    return i;
-}
-
 
 /* Copy an argv array, adding extra NULL elements to the end to allow for
  * adding more arguments later.
