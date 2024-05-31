@@ -244,6 +244,7 @@ common_obj = src/arg.o src/argutil.o					\
 	src/hosts.o src/hostfile.o					\
 	src/implicit.o src/loadfile.o					\
 	lzo/minilzo.o                                                   \
+	target/debug/libdistcc_rs.a					\
 	@ZEROCONF_COMMON_OBJS@						\
 	@AUTH_COMMON_OBJS@
 
@@ -457,6 +458,18 @@ all: $(bin_PROGRAMS) $(sbin_PROGRAMS) pump include-server
 Makefile: Makefile.in src/config.h.in config.status
 	./config.status
 
+
+######################################################################
+## Rust library
+
+$(bin_PROGRAMS): target/debug/libdistcc_rs.a
+$(sbin_PROGRAMS): target/debug/libdistcc_rs.a
+
+src/distcc_rs.h: rust/*.rs cbindgen.toml Cargo.toml
+	cbindgen --config cbindgen.toml --crate distcc_rs --output src/distcc_rs.h
+
+target/debug/libdistcc_rs.a: Cargo.toml rust/*.rs
+	cargo build
 
 ######################################################################
 ## BUILD targets

@@ -42,6 +42,7 @@
 #include <signal.h>
 
 #include "distcc.h"
+#include "distcc_rs.h"
 #include "trace.h"
 #include "exitcode.h"
 #include "util.h"

@@ -1,0 +1,14 @@
+[package]
+name = "distcc_rs"
+version = "0.1.0"
+edition = "2021"
+publish = false
+authors = ["Martin Pool"]
+
+[lib]
+name = "distcc_rs"
+crate-type = ["staticlib"]
+path = "rust/lib.rs"
+
+[dependencies]
+cbindgen = "0.26.0"
