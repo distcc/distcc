@@ -12,3 +12,12 @@ void hello_rs(void);
  * argv must be a null-terminated array of C strings; needle must be a valid C string.
  */
 int argv_contains(char **argv, const char *needle);
+
+/**
+ * Free an arg list whose entries are themselves allocated on the C heap.
+ *
+ * # Safety
+ *
+ * `argv` must point to a malloced array of pointers to malloced strings, terminated by a null.
+ */
+void dcc_free_argv(char **argv);

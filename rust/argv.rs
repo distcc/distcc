@@ -66,7 +66,8 @@ pub unsafe fn argv_to_vec(argv: *mut *mut c_char) -> Vec<String> {
 /// # Safety
 ///
 /// `argv` must point to a malloced array of pointers to malloced strings, terminated by a null.
-pub unsafe fn free_argv(argv: *mut *mut c_char) {
+#[no_mangle]
+pub unsafe extern "C" fn dcc_free_argv(argv: *mut *mut c_char) {
     unsafe {
         for i in 0.. {
             let arg = *argv.add(i);
@@ -101,7 +102,7 @@ mod test {
         assert!(unsafe { argv_contains(argv, c"hello".as_ptr()) == 1},);
         assert!(unsafe { argv_contains(argv, c"world".as_ptr()) == 1},);
         assert!(unsafe { argv_contains(argv, c"goodbye".as_ptr())  == 0},);
-        unsafe { free_argv(argv) };
+        unsafe { dcc_free_argv(argv) };
     }
 
     #[test]
@@ -118,6 +119,6 @@ mod test {
         );
         assert_eq!(unsafe { *argv.add(2) }, null_mut());
         assert_eq!(unsafe { argv_to_vec(argv) }, vec!["hello", "world"]);
-        unsafe { free_argv(argv) };
+        unsafe { dcc_free_argv(argv) };
     }
 }

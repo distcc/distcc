@@ -461,8 +461,7 @@ Makefile: Makefile.in src/config.h.in config.status
 ######################################################################
 ## Rust library
 
-$(bin_PROGRAMS): target/debug/libdistcc_rs.a
-$(sbin_PROGRAMS): target/debug/libdistcc_rs.a
+$(sbin_PROGRAMS) $(bin_PROGRAMS) $(check_PROGRAMS): target/debug/libdistcc_rs.a
 
 src/distcc_rs.h: rust/*.rs cbindgen.toml Cargo.toml
 	cbindgen --config cbindgen.toml --crate distcc_rs --output src/distcc_rs.h

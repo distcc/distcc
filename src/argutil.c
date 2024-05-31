@@ -77,18 +77,6 @@ unsigned int dcc_argv_len(char **a)
 }
 
 
-/* Free a malloc'd argv structure.  Only safe when the array and all its
- * components were malloc'd. */
-void dcc_free_argv(char **argv)
-{
-    char **a;
-
-    for (a = argv; *a != NULL; a++)
-        free(*a);
-    free(argv);
-}
-
-
 /* Copy an argv array, adding extra NULL elements to the end to allow for
  * adding more arguments later.
  */
