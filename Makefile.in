@@ -584,6 +584,8 @@ include-server:
 	  SRCDIR="$(srcdir)"                            \
 	  CFLAGS="$(CFLAGS) $(PYTHON_CFLAGS)"           \
 	  CPPFLAGS="$(CPPFLAGS)"                        \
+	  LIBDIR="target/debug"                         \
+	  LIBS="distcc_rs"                              \
 	  $(PYTHON) "$(srcdir)/include_server/setup.py" \
 	      build 					\
 	        --build-base="$(include_server_builddir)"  \

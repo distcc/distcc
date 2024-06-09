@@ -155,8 +155,8 @@ ext = setuptools.Extension(
              ]],
     include_dirs=cpp_flags_includes,
     define_macros=[('_GNU_SOURCE', 1)],
-    library_dirs=[],
-    libraries=[],
+    library_dirs=['target/debug'],
+    libraries=['distcc_rs'],
     runtime_library_dirs=[],
     extra_objects=[],
     extra_compile_args=[]
