@@ -363,6 +363,7 @@ static void dcc_service_stats_request(int http_fd) {
     socklen_t cli_len = sizeof(cli_addr);
     double loadavg[3];
     int free_space_mb;
+    int free_mem_mb;
     ssize_t ret;
 
     const char replytemplate[] = "\
@@ -398,6 +399,7 @@ dcc_max_RSS %d\n\
 dcc_max_RSS_name %s\n\
 dcc_io_rate %d\n\
 dcc_free_space %d MB\n\
+dcc_free_mem %d MB\n\
 </distccstats>\n";
 
     dcc_stats_minutely_update(); /* force update to get fresh disk io data */
@@ -405,7 +407,7 @@ dcc_free_space %d MB\n\
     dcc_getloadavg(loadavg);
 
     free_space_mb = dcc_get_tmpdirinfo();
-    dcc_get_proc_stats(&num_D, &max_RSS, &max_RSS_name);
+    dcc_get_proc_stats(&num_D, &free_mem_mb, &max_RSS, &max_RSS_name);
 
     if (dcc_stats.longest_job_name[0] == 0)
         strcpy(dcc_stats.longest_job_name, "none");
@@ -437,7 +439,9 @@ dcc_free_space %d MB\n\
                                ct[0], ct[1], ct[2],
                                num_D, max_RSS, max_RSS_name,
                                dcc_stats.io_rate,
-                               free_space_mb);
+                               free_space_mb,
+                               free_mem_mb
+                               );
         dcc_set_nonblocking(acc_fd);
         ret = read(acc_fd, challenge, 1024); /* empty the receive queue */
         if (ret < 0) rs_log_info("read on acc_fd failed");
