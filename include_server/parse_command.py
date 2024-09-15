@@ -123,8 +123,8 @@ PATH_EXPR='[/a-zA-Z_0-9.]+' # regular expression for a partial file path
 
 # These are the cpp options that require regular expressions, m is Match.
 CPP_OPTIONS_REGULAR_EXPRESSIONS = {
-  '-Wa,(%s\.s)' % PATH_EXPR:     lambda ps, m: ps.include_files.append(m.group(1)),
-  '-Wa,\[(%s\.s)\]' % PATH_EXPR: lambda ps, m: ps.include_files.append(m.group(1)),
+  r'-Wa,(%s\.s)' % PATH_EXPR:     lambda ps, m: ps.include_files.append(m.group(1)),
+  r'-Wa,\[(%s\.s)\]' % PATH_EXPR: lambda ps, m: ps.include_files.append(m.group(1)),
 }
 
 CPP_OPTIONS_REGULAR_EXPRESSIONS_STARTS_WITH = '-Wa,'
