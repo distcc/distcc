@@ -27,6 +27,7 @@ extern const char *dcc_daemon_wd;
 int dcc_refuse_root(void);
 int dcc_set_lifetime(void);
 int dcc_log_daemon_started(const char *role);
+int dcc_should_be_inetd(void);
 
 
 /* dsignal.c */
