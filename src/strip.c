@@ -78,8 +78,15 @@ int dcc_strip_local_args(char **from, char ***out_argv)
 
     /* skip through argv, copying all arguments but skipping ones that
      * ought to be omitted */
+    int next_ok = 0;
     for (from_i = to_i = 0; from[from_i]; from_i++) {
-        if (str_equal("-D", from[from_i])
+        if (str_equal("-Xclang", from[from_i])) {
+            next_ok = 1;
+        }
+        else if (next_ok) {
+            next_ok = 0;
+        }
+        else if (str_equal("-D", from[from_i])
             || str_equal("-I", from[from_i])
             || str_equal("-U", from[from_i])
             || str_equal("-L", from[from_i])
@@ -98,6 +105,7 @@ int dcc_strip_local_args(char **from, char ***out_argv)
             /* skip next word, being option argument */
             if (from[from_i+1])
                 from_i++;
+            continue;
         }
         else if (str_startswith("-Wp,", from[from_i])
                  || str_startswith("-Wl,", from[from_i])
@@ -113,7 +121,7 @@ int dcc_strip_local_args(char **from, char ***out_argv)
                  || str_startswith("-stdlib", from[from_i])) {
             /* Something like "-DNDEBUG" or
              * "-Wp,-MD,.deps/nsinstall.pp".  Just skip this word */
-            ;
+            continue;
         }
         else if (str_equal("-undef", from[from_i])
                  || str_equal("-nostdinc", from[from_i])
@@ -123,11 +131,9 @@ int dcc_strip_local_args(char **from, char ***out_argv)
                  || str_equal("-MG", from[from_i])
                  || str_equal("-MP", from[from_i])) {
             /* Options that only affect cpp; skip */
-            ;
+            continue;
         }
-        else {
-            to[to_i++] = from[from_i];
-        }
+        to[to_i++] = from[from_i];
     }
 
     /* NULL-terminate */
