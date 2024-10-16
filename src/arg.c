@@ -199,9 +199,6 @@ int dcc_scan_args(char *argv[], char **input_file, char **output_file,
                     rs_trace("%s must be local", a);
                     return EXIT_DISTCC_FAILED;
                 }
-            } else if (str_startswith("-specs=", a)) {
-                rs_trace("%s must be local", a);
-                return EXIT_DISTCC_FAILED;
             } else if (!strcmp(a, "-S")) {
                 seen_opt_s = 1;
             } else if (!strcmp(a, "-fprofile-arcs")
