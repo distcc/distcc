@@ -105,9 +105,9 @@ if test "x${pump_mode}" = xyes; then
 fi
 
 AC_ARG_ENABLE(rfc2553,
-	AC_HELP_STRING([--enable-rfc2553], [use getaddrinfo, getnameinfo, etc]))
+	AC_HELP_STRING([--disable-rfc2553], [disable use of getaddrinfo, getnameinfo, etc]))
 
-if test x"$enable_rfc2553" = xyes
+if test x"$enable_rfc2553" != xno
 then
     AC_DEFINE(ENABLE_RFC2553,1,[use getaddrinfo(), getnameinfo(), etc])
 fi
