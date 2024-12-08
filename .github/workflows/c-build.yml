@@ -10,7 +10,7 @@ jobs:
   make_check:
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest] # , windows-latest]
+        os: [ubuntu-latest] # macOS-latest is disabled due to https://github.com/distcc/distcc/issues/524
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
