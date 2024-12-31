@@ -87,7 +87,7 @@ const char *stats_text[20] = { "TCP_ACCEPT", "REJ_BAD_REQ", "REJ_OVERLOAD",
     "OTHER" };
 
 /* Call this to initialize stats */
-int dcc_stats_init() {
+int dcc_stats_init(void) {
     if (arg_stats) {
         if (pipe(dcc_statspipe) == -1) {
             return -1;
@@ -99,7 +99,7 @@ int dcc_stats_init() {
 
 
 /* In the preforking model call this to initialize stats for forked children */
-void dcc_stats_init_kid() {
+void dcc_stats_init_kid(void) {
     if (arg_stats) {
         close(dcc_statspipe[0]);
     }
