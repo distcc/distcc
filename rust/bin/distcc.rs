@@ -1,5 +1,7 @@
 // Copyright 2024 Martin Pool
 
+#![warn(rust_2024_compatibility)]
+
 use std::env::args;
 use std::ffi::CStr;
 use std::process::ExitCode;
@@ -8,7 +10,7 @@ use distcc::c;
 use distcc::glue::malloc::alloc_argv;
 
 #[allow(non_upper_case_globals, unused)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 static rs_program_name: &CStr = c"distcc";
 
 fn main() -> ExitCode {
