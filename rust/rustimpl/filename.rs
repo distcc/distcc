@@ -5,7 +5,7 @@ use std::path::Path;
 use std::ptr::null_mut;
 
 /// Return true if the file extension identifies it as source file.
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
     let sfile_str = unsafe { CStr::from_ptr(sfile) };
     let path = Path::new(sfile_str.to_str().unwrap());
@@ -43,7 +43,7 @@ extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
  * Return a pointer to the extension (within the supplied buffer), including the dot, or NULL.
  * A filename ending in `.` returns NULL.
  **/
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn dcc_find_extension(path: *mut c_char) -> *mut c_char {
     let path_str = unsafe { CStr::from_ptr(path) }.to_str().unwrap();
     if let Some(dot_position) = path_str.rfind('.') {
@@ -58,7 +58,7 @@ extern "C" fn dcc_find_extension(path: *mut c_char) -> *mut c_char {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn dcc_find_extension_const(path: *const c_char) -> *const c_char {
     dcc_find_extension(path as *mut c_char)
 }

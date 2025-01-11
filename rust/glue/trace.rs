@@ -22,7 +22,7 @@ pub fn trace_to_stderr() {
             c::rs_trace_set_level(c::rs_loglevel_RS_LOG_DEBUG);
             c::rs_add_logger(
                 Some(c::rs_logger_file),
-                c::rs_loglevel_RS_LOG_DEBUG as i32,
+                c::rs_loglevel_RS_LOG_DEBUG.try_into().unwrap(), // statically safe, just the wrong type in the C header
                 null_mut(),
                 2, /* stderr */
             );

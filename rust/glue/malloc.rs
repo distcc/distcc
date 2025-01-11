@@ -66,17 +66,18 @@ pub unsafe fn free_argv(argv: *mut *mut c_char) {
 ///
 /// # Safety
 ///
-/// `argv` must point to an array of pointers to null-terminated strings.
+/// `argv` must point to an null-terminated array of pointers to null-terminated strings.
 ///
 /// # Panics
 ///
 /// * If any of the strings are not valid UTF-8.
 #[allow(clippy::maybe_infinite_iter)] // it won't be infinite
 pub unsafe fn argv_to_vec(argv: *mut *mut c_char) -> Vec<String> {
+    debug_assert!(!argv.is_null());
     (0..)
-        .map(|i| *argv.add(i))
+        .map(|i| unsafe { *argv.add(i) })
         .take_while(|a| !a.is_null())
-        .map(|a| {
+        .map(|a| unsafe {
             CStr::from_ptr(a)
                 .to_str()
                 .expect("argv elements are UTF-8")
@@ -99,12 +100,8 @@ pub unsafe fn cstr_to_string(cstr: *const c_char) -> Option<String> {
     if cstr.is_null() {
         None
     } else {
-        Some(
-            CStr::from_ptr(cstr)
-                .to_str()
-                .expect("String is not UTF-8")
-                .to_owned(),
-        )
+        let cstr = unsafe { CStr::from_ptr(cstr) };
+        Some(cstr.to_str().expect("String is not UTF-8").to_owned())
     }
 }
 
