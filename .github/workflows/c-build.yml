@@ -18,9 +18,9 @@ jobs:
       - uses: ConorMacBride/install-package@v1
         with:
           # aclocal is in homebrew automake
-          brew: automake
+          brew: automake popt
           # brew-cask: TODO
-          apt: python3-dev libiberty-dev clang libavahi-client-dev
+          apt: python3-dev libiberty-dev clang libavahi-client-dev libpopt-dev
           # choco: TODO
           # TODO(#507): Install gdb when the tests pass
       - run: python3 -m pip install --upgrade setuptools
