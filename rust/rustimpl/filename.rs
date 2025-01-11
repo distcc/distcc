@@ -13,7 +13,7 @@ extern "C" fn dcc_is_source(sfile: *const c_char) -> c_int {
     // not seem to ever be turned on, and the tests assert that they're not matched.
     path.extension()
         .and_then(|path| path.to_str())
-        .map_or(false, |ext| {
+        .is_some_and(|ext| {
             matches!(
                 ext,
                 "C" | "M"
