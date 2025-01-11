@@ -23,6 +23,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 [dev-dependencies]
 rusty-fork = "0.3"
 tempfile = "3.2"
+test-log = { version = "0.2.16", features = ["trace"] }
 
 [lib]
 path = "rust/lib.rs"
