@@ -6,6 +6,7 @@ use std::ffi::{c_char, c_int, c_void, CStr};
 use std::ptr::null_mut;
 use std::sync::Mutex;
 
+use libc::{malloc, size_t};
 use tracing::Level;
 
 use crate::c::{self, __va_list_tag};
@@ -40,26 +41,32 @@ pub fn route_c_trace_to_rust() {
 ///
 /// This implements the C prototype `rs_logger_fn`.
 unsafe extern "C" fn trace_message_to_logging(
-    _flags: c_int,
+    flags: c_int,
     function_name: *const c_char,
-    msg: *const c_char,
-    _va_list: *mut __va_list_tag,
+    msg_template: *const c_char,
+    va_list: *mut __va_list_tag,
     _private_ptr: *mut c_void,
     _private_int: c_int,
 ) {
+    const MAX_LEN: size_t = 1024;
     let fn_str = if function_name.is_null() {
         None
     } else {
         let cstr = unsafe { CStr::from_ptr(function_name) };
         Some(cstr.to_str().expect("function_name is not UTF-8"))
     };
-    debug_assert!(!msg.is_null(), "trace message is null");
+    debug_assert!(!msg_template.is_null(), "trace message is null");
     // let level = match (flags as u32) & RS_LOG_PRIMASK {
     //     _ => tracing::Level::DEBUG,
     // };
-    let msg_str = unsafe { CStr::from_ptr(msg) }.to_str().unwrap();
+    let msg_str = unsafe {
+        let buf: *mut c_char = malloc(MAX_LEN).cast();
+        assert!(!buf.is_null(), "malloc failed");
+        // TODO: Maybe set flags to not include program name etc.
+        c::rs_format_msg(buf, MAX_LEN, flags, function_name, msg_template, va_list);
+        CStr::from_ptr(buf).to_str().expect("msg is not UTF-8")
+    };
     // TODO: Get the right level; might require constructing a tracing Metadata object.
-    // TODO: Expand the format string from the va_list
     if let Some(fn_str) = fn_str {
         tracing::event!(target: "distcc", Level::DEBUG, "{fn_str}: {msg_str}");
     } else {
