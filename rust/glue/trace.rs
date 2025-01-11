@@ -10,8 +10,12 @@ static TRACE_CONFIGURED: Mutex<bool> = Mutex::new(false);
 /// Turn on trace to stderr, at the 'debug' level.
 ///
 /// For now, once turned on it cannot be turned off.
+///
+/// # Panics
+///
+/// * If internal state is corrupted.
 pub fn trace_to_stderr() {
-    let mut lock = TRACE_CONFIGURED.lock().unwrap();
+    let mut lock = TRACE_CONFIGURED.lock().expect("trace lock poisoned");
     if !*lock {
         *lock = true;
         unsafe {

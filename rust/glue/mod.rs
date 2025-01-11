@@ -1,6 +1,7 @@
 //! Glue code between Rust and C.
 
-// #![allow(clippy::missing_safety_doc)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::missing_safety_doc)]
 
 use std::ffi::{c_char, CStr};
 
