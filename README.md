@@ -51,12 +51,16 @@ kernel, rsync, KDE, GNOME (via GARNOME), Samba and Ethereal.  distcc
 is nearly linearly scalable for small numbers of machines: for a
 typical case, three machines are 2.6 times faster than one.
 
+## Rust implementation
+
+This tree contains a partial, experimental, in-place transition of the
+implementation from C to Rust. The `distcc` and `distccd` binaries are built
+from a combination of C and Rust.
+
 ## Licence
 
 distcc is distributed under the GNU General Public Licence v2.
 
 ## Resources
-
-* [Mailing list](https://lists.samba.org/mailman/listinfo/distcc)
 
 * [Stack Overflow questions](http://stackoverflow.com/questions/tagged/distcc)
