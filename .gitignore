@@ -28,3 +28,7 @@ man/*.gz
 _testtmp/
 __pycache__/
 /h_*
+
+# `make dist` products
+distcc-*.tar.*
+distcc-*.NEWS
