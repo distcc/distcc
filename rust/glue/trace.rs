@@ -19,7 +19,7 @@ static TRACE_CONFIGURED: Mutex<bool> = Mutex::new(false);
 /// # Panics
 ///
 /// * If internal state is corrupted.
-pub fn glue_trace() {
+pub fn route_c_trace_to_rust() {
     let mut configured = TRACE_CONFIGURED.lock().expect("trace lock poisoned");
     if !*configured {
         *configured = true;

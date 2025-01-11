@@ -6,11 +6,11 @@ use std::ptr::null_mut;
 use test_log::test;
 
 use distcc::c;
-use distcc::glue::trace::glue_trace;
+use distcc::glue::trace::route_c_trace_to_rust;
 use distcc::hostlist::HostDef;
 
 fn parse_host_list(hosts: &str) -> Result<Vec<HostDef>, i32> {
-    glue_trace();
+    route_c_trace_to_rust();
     let mut host_list = Vec::new();
     let hosts_c = CString::new(hosts).unwrap();
     let mut n_hosts = 0;
