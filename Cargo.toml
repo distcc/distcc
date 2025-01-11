@@ -35,3 +35,9 @@ path = "rust/bin/distcc.rs"
 [[bin]]
 name = "distccd"
 path = "rust/bin/distccd.rs"
+
+[profile.release]
+panic = "abort" # Avoid unwinding into C
+
+[profile.dev]
+panic = "abort" # Avoid unwinding into C
