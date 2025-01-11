@@ -2,7 +2,7 @@
 
 use std::ffi::{c_char, c_int, CStr};
 use std::path::Path;
-use std::ptr::null_mut;
+use std::ptr::{null, null_mut};
 
 /// Return true if the file extension identifies it as source file.
 #[unsafe(no_mangle)]
@@ -61,4 +61,27 @@ extern "C" fn dcc_find_extension(path: *mut c_char) -> *mut c_char {
 #[unsafe(no_mangle)]
 extern "C" fn dcc_find_extension_const(path: *const c_char) -> *const c_char {
     dcc_find_extension(path as *mut c_char)
+}
+
+/// Return a static string indicating what extension would be produced by
+/// preprocessing a file with extension `ext`.
+///
+/// The extension should include its leading dot, like `".c"`.
+///
+/// Returns null if the extension is unrecognized.
+#[unsafe(no_mangle)]
+extern "C" fn dcc_preproc_exten(source_ext: *const c_char) -> *const c_char {
+    assert!(!source_ext.is_null());
+    let ext = unsafe { CStr::from_ptr(source_ext) }.to_str().unwrap();
+    let pp = match ext {
+        ".c" | ".i" => ".i",
+        ".cc" | ".cpp" | ".cxx" | ".cp" | ".c++" | ".C" | ".ii" => ".ii",
+        ".m" | ".mi" => ".mi",
+        ".mm" | ".mii" | ".M" => ".mii",
+        ".s" => ".s",
+        _ => {
+            return null();
+        }
+    };
+    pp.as_ptr().cast()
 }

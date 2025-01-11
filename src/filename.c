@@ -21,7 +21,6 @@
  * USA.
  */
 
-
 #include <config.h>
 
 #include <stdio.h>
@@ -34,8 +33,6 @@
 #include "trace.h"
 #include "util.h"
 #include "exitcode.h"
-
-
 
 /**
  * @file
@@ -50,13 +47,12 @@
  * by the assembler.
  */
 
-
 /**
  * Return a pointer to the basename of the file (everything after the
  * last slash.)  If there is no slash, return the whole filename,
  * which is presumably in the current directory.
  **/
-const char * dcc_find_basename(const char *sfile)
+const char *dcc_find_basename(const char *sfile)
 {
     char *slash;
 
@@ -68,7 +64,7 @@ const char * dcc_find_basename(const char *sfile)
     if (slash == NULL || slash[1] == '\0')
         return sfile;
 
-    return slash+1;
+    return slash + 1;
 }
 
 /** Truncate the filename to its dirname (everything before the last slash).
@@ -81,13 +77,15 @@ void dcc_truncate_to_dirname(char *file)
 
     slash = strrchr(file, '/');
 
-    if (slash == NULL) {
-      file[0] = '\0';
-    } else {
+    if (slash == NULL)
+    {
+        file[0] = '\0';
+    }
+    else
+    {
         *slash = '\0';
     }
 }
-
 
 static int dcc_set_file_extension(const char *sfile,
                                   const char *new_ext,
@@ -96,16 +94,19 @@ static int dcc_set_file_extension(const char *sfile,
     char *dot, *o;
 
     o = strdup(sfile);
-    if (!o) {
+    if (!o)
+    {
         rs_log_error("strdup failed (out of memory?)");
         return EXIT_DISTCC_FAILED;
     }
     dot = dcc_find_extension(o);
-    if (!dot) {
+    if (!dot)
+    {
         rs_log_error("couldn't find extension in \"%s\"", o);
         return EXIT_DISTCC_FAILED;
     }
-    if (strlen(dot) < strlen(new_ext)) {
+    if (strlen(dot) < strlen(new_ext))
+    {
         rs_log_error("not enough space for new extension");
         return EXIT_DISTCC_FAILED;
     }
@@ -114,7 +115,6 @@ static int dcc_set_file_extension(const char *sfile,
 
     return 0;
 }
-
 
 /*
  * Apple extensions:
@@ -127,40 +127,37 @@ static int dcc_set_file_extension(const char *sfile,
  * http://developer.apple.com/techpubs/macosx/DeveloperTools/gcc3/gcc/Overall-Options.html
  */
 
-
-
-/**
- * If you preprocessed a file with extension @p e, what would you get?
- *
- * @param e original extension (e.g. ".c")
- *
- * @returns preprocessed extension, (e.g. ".i"), or NULL if
- * unrecognized.
- **/
-const char * dcc_preproc_exten(const char *e)
-{
-    if (e[0] != '.')
-        return NULL;
-    e++;
-    if (!strcmp(e, "i") || !strcmp(e, "c")) {
-        return ".i";
-    } else if (!strcmp(e, "c") || !strcmp(e, "cc")
-               || !strcmp(e, "cpp") || !strcmp(e, "cxx")
-               || !strcmp(e, "cp") || !strcmp(e, "c++")
-               || !strcmp(e, "C") || !strcmp(e, "ii")) {
-        return ".ii";
-    } else if(!strcmp(e,"mi") || !strcmp(e, "m")) {
-        return ".mi";
-    } else if(!strcmp(e,"mii") || !strcmp(e,"mm")
-                || !strcmp(e,"M")) {
-        return ".mii";
-    } else if (!strcasecmp(e, "s")) {
-        return ".s";
-    } else {
-        return NULL;
-    }
-}
-
+// /**
+//  * If you preprocessed a file with extension @p e, what would you get?
+//  *
+//  * @param e original extension (e.g. ".c")
+//  *
+//  * @returns preprocessed extension, (e.g. ".i"), or NULL if
+//  * unrecognized.
+//  **/
+// const char * dcc_preproc_exten(const char *e)
+// {
+//     if (e[0] != '.')
+//         return NULL;
+//     e++;
+//     if (!strcmp(e, "i") || !strcmp(e, "c")) {
+//         return ".i";
+//     } else if (!strcmp(e, "c") || !strcmp(e, "cc")
+//                || !strcmp(e, "cpp") || !strcmp(e, "cxx")
+//                || !strcmp(e, "cp") || !strcmp(e, "c++")
+//                || !strcmp(e, "C") || !strcmp(e, "ii")) {
+//         return ".ii";
+//     } else if(!strcmp(e,"mi") || !strcmp(e, "m")) {
+//         return ".mi";
+//     } else if(!strcmp(e,"mii") || !strcmp(e,"mm")
+//                 || !strcmp(e,"M")) {
+//         return ".mii";
+//     } else if (!strcasecmp(e, "s")) {
+//         return ".s";
+//     } else {
+//         return NULL;
+//     }
+// }
 
 /**
  * Does the extension of this file indicate that it is already
@@ -172,25 +169,23 @@ int dcc_is_preprocessed(const char *sfile)
     dot = dcc_find_extension_const(sfile);
     if (!dot)
         return 0;
-    ext = dot+1;
+    ext = dot + 1;
 
-    switch (ext[0]) {
+    switch (ext[0])
+    {
 #ifdef ENABLE_REMOTE_ASSEMBLE
     case 's':
         /* .S needs to be run through cpp; .s does not */
         return !strcmp(ext, "s");
 #endif
     case 'i':
-        return !strcmp(ext, "i")
-            || !strcmp(ext, "ii");
+        return !strcmp(ext, "i") || !strcmp(ext, "ii");
     case 'm':
-        return !strcmp(ext, "mi")
-            || !strcmp(ext, "mii");
+        return !strcmp(ext, "mi") || !strcmp(ext, "mii");
     default:
         return 0;
     }
 }
-
 
 /**
  * Decide whether @p filename is an object file, based on its
@@ -206,24 +201,21 @@ int dcc_is_object(const char *filename)
     return !strcmp(dot, ".o");
 }
 
-
 /* Some files should always be built locally... */
-int
-dcc_source_needs_local(const char *filename)
+int dcc_source_needs_local(const char *filename)
 {
     const char *p;
 
     p = dcc_find_basename(filename);
 
-    if (str_startswith("conftest.", p) || str_startswith("tmp.conftest.", p)) {
+    if (str_startswith("conftest.", p) || str_startswith("tmp.conftest.", p))
+    {
         rs_trace("autoconf tests are run locally: %s", filename);
         return EXIT_DISTCC_FAILED;
     }
 
     return 0;
 }
-
-
 
 /**
  * Work out the default object file name the compiler would use if -o
@@ -244,8 +236,9 @@ int dcc_output_from_source(const char *sfile,
     char *slash;
 
     if ((slash = strrchr(sfile, '/')))
-        sfile = slash+1;
-    if (strlen(sfile) < 3) {
+        sfile = slash + 1;
+    if (strlen(sfile) < 3)
+    {
         rs_log_error("source file %s is bogus", sfile);
         return EXIT_DISTCC_FAILED;
     }
