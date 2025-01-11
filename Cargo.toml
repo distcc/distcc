@@ -17,6 +17,8 @@ glob = "0.3"
 
 [dependencies]
 libc = "0.2.153"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 [dev-dependencies]
 rusty-fork = "0.3"
