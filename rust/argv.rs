@@ -27,7 +27,7 @@ pub unsafe extern "C" fn argv_contains(argv: *mut *mut c_char, needle: *const c_
     }
 }
 
-/// Make a new malloc'd argv// Allocate an argv-style array of strings terminated by null on the C heap.
+/// Make a new malloc'd argv array of strings terminated by null on the C heap.
 ///
 /// Both the strings and the argv array are allocated.
 ///
