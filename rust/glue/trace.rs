@@ -9,7 +9,7 @@ use std::sync::Mutex;
 use libc::{malloc, size_t};
 use tracing::Level;
 
-use crate::c::{self, __va_list_tag};
+use crate::c::{self, __va_list_tag, RS_LOG_NO_PROGRAM};
 
 static TRACE_CONFIGURED: Mutex<bool> = Mutex::new(false);
 
@@ -40,6 +40,7 @@ pub fn route_c_trace_to_rust() {
 /// Callback from C to Rust to emit messages.
 ///
 /// This implements the C prototype `rs_logger_fn`.
+#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 unsafe extern "C" fn trace_message_to_logging(
     flags: c_int,
     function_name: *const c_char,
@@ -59,17 +60,22 @@ unsafe extern "C" fn trace_message_to_logging(
     // let level = match (flags as u32) & RS_LOG_PRIMASK {
     //     _ => tracing::Level::DEBUG,
     // };
-    let msg_str = unsafe {
+    let mut msg = fn_str.map_or_else(String::new, |s| format!("{s}: "));
+    let formatted = unsafe {
         let buf: *mut c_char = malloc(MAX_LEN).cast();
         assert!(!buf.is_null(), "malloc failed");
-        // TODO: Maybe set flags to not include program name etc.
-        c::rs_format_msg(buf, MAX_LEN, flags, function_name, msg_template, va_list);
+        // TODO: maybe also RS_LOG_NO_PID
+        c::rs_format_msg(
+            buf,
+            MAX_LEN,
+            (flags as u32 | RS_LOG_NO_PROGRAM) as i32,
+            function_name,
+            msg_template,
+            va_list,
+        );
         CStr::from_ptr(buf).to_str().expect("msg is not UTF-8")
     };
+    msg += formatted;
     // TODO: Get the right level; might require constructing a tracing Metadata object.
-    if let Some(fn_str) = fn_str {
-        tracing::event!(target: "distcc", Level::DEBUG, "{fn_str}: {msg_str}");
-    } else {
-        tracing::event!(target: "distcc", Level::DEBUG, "{msg_str}");
-    }
+    tracing::event!(target: "distcc", Level::DEBUG, "{msg}");
 }

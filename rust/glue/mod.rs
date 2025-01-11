@@ -33,6 +33,8 @@ pub(crate) unsafe fn cstr_to_owned(s: *const c_char) -> Option<String> {
 pub fn wrap_main(main: unsafe extern "C" fn(c_int, *mut *mut c_char) -> c_int) -> ExitCode {
     // TODO: The C code later registers its own trace fn, so the messages all get duplicated. Perhaps we can just stop doing that from C.
     route_c_trace_to_rust();
+    // TODO: In inetd mode, stderr may be directed to the client socket and so we can't write trace to there.
+    // We ought to write to syslog instead, like in dcc_setup_startup_log.
     tracing_subscriber::registry()
         .with(fmt::layer())
         .with(EnvFilter::from_default_env())
