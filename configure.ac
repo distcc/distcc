@@ -543,6 +543,4 @@ cat <<EOF
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
     USA.
 
-After installing distcc, please complete the survey in the file "survey.txt".
-
 EOF
