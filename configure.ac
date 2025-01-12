@@ -89,9 +89,6 @@ AC_TRY_COMPILE([], [
 
 ### Checks for configure options
 
-AC_ARG_WITH(included-popt,
-	AC_HELP_STRING([--with-included-popt], [use bundled popt library, not from system]))
-
 AC_ARG_ENABLE(pump-mode,
 	AC_HELP_STRING([--disable-pump-mode],
 		[include server support (pump mode), requires python]),
@@ -185,7 +182,6 @@ AC_SUBST(UNINSTALL_GNOME)
 dnl Checks for programs
 AC_PROG_CC
 WERROR_CFLAGS=""
-POPT_CFLAGS=""
 PYTHON_CFLAGS=""
 if test x"$GCC" = xyes
 then
@@ -228,14 +224,9 @@ then
     PYTHON_CFLAGS="$PYTHON_CFLAGS -Wno-missing-prototypes -Wno-missing-declarations \
 -Wno-write-strings"
 
-    # For popt/*.c, we disable unused variable warnings.
-    # When using Apple GCC/Clang you have to explicitly disable unused parameters.
-    POPT_CFLAGS="-Wno-unused -Wno-unused-parameter"
-
     AC_MSG_NOTICE([Adding gcc options: $CFLAGS])
 fi
 AC_SUBST(WERROR_CFLAGS)
-AC_SUBST(POPT_CFLAGS)
 AC_SUBST(PYTHON_CFLAGS)
 AC_ISC_POSIX
 
@@ -247,8 +238,6 @@ AC_ISC_POSIX
 # This is needed for our included version of lzo.
 CPPFLAGS="$CPPFLAGS -DMINILZO_HAVE_CONFIG_H"
 
-# This is needed for our included version of popt.
-# TODO(csilvers): figure out what that above comment means, and if it's true.
 CPPFLAGS="$CPPFLAGS -DHAVE_CONFIG_H"
 
 # Needed to get various GNU-only functions.  They're all autodetected
@@ -264,8 +253,6 @@ AC_C_BIGENDIAN
 
 ########################################################################
 ### Checks for header files
-
-# Some of these are needed by popt (or other libraries included in the future).
 
 AC_CHECK_HEADERS([unistd.h sys/types.h sys/sendfile.h])
 AC_CHECK_HEADERS([ctype.h sys/resource.h sys/socket.h sys/select.h])
@@ -330,29 +317,7 @@ AC_SEARCH_LIBS(setsockopt, [socket])
 AC_SEARCH_LIBS(hstrerror, [resolv])
 AC_SEARCH_LIBS(inet_aton, [resolv])
 
-if test x"$with_included_popt" != x"yes"  && test x"$with_included_popt" != xno
-then
-    # If not explicitly requested, guess.
-    # People might have the library but not the header, in which case we
-    # still need to use the included copy.
-    AC_CHECK_LIB(popt, poptGetContext, , [with_included_popt=yes])
-    AC_CHECK_HEADER(popt.h, , [with_included_popt=yes])
-fi
-AC_CACHE_SAVE
-
-AC_MSG_CHECKING([whether to use included libpopt])
-if test x"$with_included_popt" = x"yes"
-then
-    AC_MSG_RESULT($srcdir/popt)
-    # popt_OBJS gets appended to distccd object list
-    BUILD_POPT='$(popt_OBJS)'
-    POPT_INCLUDES='-I"$(srcdir)/popt"'
-else
-    AC_MSG_RESULT(no)
-    POPT_INCLUDES=''
-    AC_CHECK_LIB(popt, poptGetContext, ,
-                 AC_MSG_ERROR([Cannot find system libpopt]))
-fi
+AC_CHECK_LIB(popt, poptGetContext, , AC_MSG_ERROR([Cannot find libpopt]))
 
 AC_ARG_WITH(libiberty,
         AC_HELP_STRING([--without-libiberty], [build without libiberty (no @file support)]))
@@ -545,7 +510,6 @@ AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(POPT_INCLUDES)
-AC_SUBST(BUILD_POPT)
 AC_SUBST(GNOME_BIN)
 
 
@@ -566,7 +530,7 @@ AC_DEFINE_UNQUOTED(NATIVE_COMPILER_TRIPLE, ["$native_compiler_triple"], [Native 
 AC_DEFINE_UNQUOTED(GNU_HOST, ["$host"], [Your gnu-style host triple])
 # The '.stamp-conf' files force creation of the containing directories in the
 # build tree.
-AC_CONFIG_FILES([Makefile] popt/.stamp-conf lzo/.stamp-conf)
+AC_CONFIG_FILES([Makefile]  lzo/.stamp-conf)
 AC_CONFIG_FILES([pump], [chmod +x pump])
 AC_OUTPUT
 
