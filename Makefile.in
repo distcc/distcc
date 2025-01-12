@@ -95,7 +95,6 @@ dist_files =							\
 	$(MEN)							\
 	$(pkgdoc_DOCS)						\
 	$(example_DOCS)						\
-	$(popt_EXTRA) $(popt_SRC) $(popt_HEADERS)		\
 	$(SRC) $(HEADERS)					\
 	$(update_distcc_symlinks_PY)				\
 	$(test_SOURCE)						\
@@ -387,17 +386,6 @@ MEN = $(man1_MEN)
 
 gnome_data = gnome/distccmon-gnome.png	\
 	gnome/distccmon-gnome.desktop
-
-popt_OBJS=popt/findme.o  popt/popt.o  popt/poptconfig.o \
-	popt/popthelp.o popt/poptparse.o
-
-popt_SRC=popt/findme.c  popt/popt.c  popt/poptconfig.c			 \
-	popt/popthelp.c popt/poptparse.c
-
-popt_HEADERS = popt/findme.h popt/popt.h popt/poptint.h popt/system.h
-
-popt_EXTRA = popt/README.popt popt/.stamp-conf.in
-
 
 # You might think that distccd ought to be in sbin, because it's a
 # daemon.  It is a grey area.  However, the Linux Filesystem Hierarchy
@@ -921,7 +909,7 @@ benchmark:
 # Also clean binaries which are optionally built. Also remove .d files; old ones
 # may confuse 'make'.
 clean: clean-autoconf clean-lzo clean-include-server
-	rm -f src/*.[od] popt/*.[od]
+	rm -f src/*.[od]
 	rm -f test/*.pyc
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS) $(sbin_PROGRAMS)
 	rm -f `echo $(man1_MEN) | sed -e 's/ /.gz /g' -e 's/$$/.gz/'`
@@ -959,7 +947,7 @@ maintainer-clean-autoconf:
 
 distclean-autoconf:
 	rm -f Makefile src/config.h src/config.h.stamp pump
-	rm -f popt/.stamp-conf lzo/.stamp-conf
+	rm -f lzo/.stamp-conf
 	rm -f config.status config.cache config.log aclocal.m4
 	rm -rf autom4te.cache
 
