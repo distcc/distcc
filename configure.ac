@@ -9,8 +9,8 @@ dnl Process this file with autoconf to produce a configure script
 # Copyright (C) 2002, 2003, 2004 by Martin Pool
 
 # As of 0.6cvs, distcc no longer uses automake, only autoconf.
-AC_PREREQ(2.69)
-AC_INIT(distcc, 3.4, https://github.com/distcc/distcc)
+AC_PREREQ([2.71])
+AC_INIT([distcc],[3.4],[https://github.com/distcc/distcc])
 
 AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_MACRO_DIRS([m4])
@@ -46,18 +46,18 @@ AC_CHECK_TYPE([socklen_t], ,[
 	dcc_cv_socklen_t_equiv=
 	for arg2 in "struct sockaddr_in" "struct sockaddr" void; do
 		for t in int size_t unsigned long "unsigned long"; do
-			AC_TRY_COMPILE([
+			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
 
 int getpeername (int, $arg2 *, $t *);
-],[
+]], [[
 $t len;
 getpeername(0,0,&len);
-],[
+]])],[
 	dcc_cv_socklen_t_equiv="$t"
 	break
-])
+],[])
 		done
 	done
 
@@ -74,24 +74,21 @@ getpeername(0,0,&len);
 dnl Android requires -llog for printf and friends
 dnl and will only run position independent executables
 AC_MSG_CHECKING([if building on Android])
-AC_TRY_COMPILE([], [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
   #ifdef __BIONIC__
   int ok;
   (void)ok;
   #else
   choke me
-  #endif],
-[AC_MSG_RESULT(yes)
- LDFLAGS="$LDFLAGS -llog -pie"],
-[AC_MSG_RESULT(no)])
+  #endif]])],[AC_MSG_RESULT(yes)
+ LDFLAGS="$LDFLAGS -llog -pie"],[AC_MSG_RESULT(no)])
 
 # TODO: Handle program transform rules by autoconf.
 
 ### Checks for configure options
 
 AC_ARG_ENABLE(pump-mode,
-	AC_HELP_STRING([--disable-pump-mode],
-		[include server support (pump mode), requires python]),
+	AS_HELP_STRING([--disable-pump-mode],[include server support (pump mode), requires python]),
 		[pump_mode=${enableval}], [pump_mode=yes])
 
 # We prefer to use the latest Python
@@ -102,7 +99,7 @@ if test "x${pump_mode}" = xyes; then
 fi
 
 AC_ARG_ENABLE(rfc2553,
-	AC_HELP_STRING([--enable-rfc2553], [use getaddrinfo, getnameinfo, etc]))
+	AS_HELP_STRING([--enable-rfc2553],[use getaddrinfo, getnameinfo, etc]))
 
 if test x"$enable_rfc2553" = xyes
 then
@@ -110,7 +107,7 @@ then
 fi
 
 AC_ARG_WITH(gnome,
-        AC_HELP_STRING([--with-gnome], [build GNOME-based monitor]))
+        AS_HELP_STRING([--with-gnome],[build GNOME-based monitor]))
 
 if test x"$with_gnome" = xyes
 then
@@ -119,7 +116,7 @@ then
 fi
 
 AC_ARG_WITH(gtk,
-        AC_HELP_STRING([--with-gtk], [build GTK+-based monitor]))
+        AS_HELP_STRING([--with-gtk],[build GTK+-based monitor]))
 if test x"$with_gtk" = xyes
 then
     GNOME_BIN=distccmon-gnome
@@ -127,7 +124,7 @@ then
 fi
 
 AC_ARG_ENABLE(profile,
-        AC_HELP_STRING([--enable-profile], [turn on gprof]))
+        AS_HELP_STRING([--enable-profile],[turn on gprof]))
 
 if test x"$enable_profile" = xyes
 then
@@ -135,7 +132,7 @@ then
 fi
 
 AC_ARG_ENABLE(Werror,
-        AC_HELP_STRING([--disable-Werror], [don't use gcc's -Werror option when building]))
+        AS_HELP_STRING([--disable-Werror],[don't use gcc's -Werror option when building]))
 
 # Now get the package configuration information for whatever packages
 # we need.  It's faster to just do it once during configuration.
@@ -228,7 +225,7 @@ then
 fi
 AC_SUBST(WERROR_CFLAGS)
 AC_SUBST(PYTHON_CFLAGS)
-AC_ISC_POSIX
+AC_SEARCH_LIBS([strerror],[cposix])
 
 
 # Apple's OS X gcc has a cpp-precomp "feature" that breaks standard
@@ -320,7 +317,7 @@ AC_SEARCH_LIBS(inet_aton, [resolv])
 AC_CHECK_LIB(popt, poptGetContext, , AC_MSG_ERROR([Cannot find libpopt]))
 
 AC_ARG_WITH(libiberty,
-        AC_HELP_STRING([--without-libiberty], [build without libiberty (no @file support)]))
+        AS_HELP_STRING([--without-libiberty],[build without libiberty (no @file support)]))
 
 if test x"$with_libiberty" != xno; then
     AC_CHECK_LIB([iberty], [expandargv],
@@ -336,7 +333,19 @@ fi
 
 ########################################################################
 # Check for types
-AC_TYPE_SIGNAL
+m4_warn([obsolete],
+[your code may safely assume C89 semantics that RETSIGTYPE is void.
+Remove this warning and the `AC_CACHE_CHECK' when you adjust the code.])dnl
+AC_CACHE_CHECK([return type of signal handlers],[ac_cv_type_signal],[AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([#include <sys/types.h>
+#include <signal.h>
+],
+		 [return *(signal (0, 0)) (0) == 1;])],
+		   [ac_cv_type_signal=int],
+		   [ac_cv_type_signal=void])])
+AC_DEFINE_UNQUOTED([RETSIGTYPE],[$ac_cv_type_signal],[Define as the return type of signal handlers
+		    (`int' or `void').])
+
 
 
 ########################################################################
@@ -365,17 +374,17 @@ AC_CHECK_FUNCS([fstatat])
 AC_CHECK_DECLS([snprintf, vsnprintf, vasprintf, asprintf, strndup])
 
 AC_MSG_CHECKING([if mmap() supports MAP_FAILED])
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <stddef.h>
 #ifdef HAVE_SYS_MMAN_H
 #  include <sys/mman.h>
-#endif],[
+#endif]], [[
 #ifdef HAVE_MMAP
 if (mmap (NULL, 0, 0, 0, 0, 0) == MAP_FAILED)
 	return 0;
 #else
 #error mmap unavailable
-#endif], AC_MSG_RESULT(yes), [
+#endif]])],[AC_MSG_RESULT(yes)],[
 	AC_MSG_RESULT(no)
 	AC_DEFINE([MAP_FAILED], [(void *)-1L],
 	[Define if MAP_FAILED constant not available])
@@ -385,29 +394,24 @@ dnl
 dnl Test if the preprocessor understand vararg macros
 dnl
 AC_MSG_CHECKING([for vararg macro support])
-AC_TRY_COMPILE([#define func(a, b...) do { } while (0)],
-[func("a"); func("a", "b"); func("a", "b", "c")],
-[AC_MSG_RESULT(yes)
- AC_DEFINE(HAVE_VARARG_MACROS, , [Define if your cpp has vararg macros])],
-[AC_MSG_RESULT(no)])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#define func(a, b...) do { } while (0)]], [[func("a"); func("a", "b"); func("a", "b", "c")]])],[AC_MSG_RESULT(yes)
+ AC_DEFINE(HAVE_VARARG_MACROS, , [Define if your cpp has vararg macros])],[AC_MSG_RESULT(no)])
 
 AC_CACHE_CHECK([for va_copy],dcc_cv_HAVE_VA_COPY,[
-AC_TRY_LINK([#include <stdarg.h>
-va_list ap1,ap2;], [va_copy(ap1,ap2);],
-dcc_cv_HAVE_VA_COPY=yes,dcc_cv_HAVE_VA_COPY=no)])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+va_list ap1,ap2;]], [[va_copy(ap1,ap2);]])],[dcc_cv_HAVE_VA_COPY=yes],[dcc_cv_HAVE_VA_COPY=no])])
 if test x"$dcc_cv_HAVE_VA_COPY" = x"yes"; then
     AC_DEFINE(HAVE_VA_COPY,1,[Whether va_copy() is available])
 fi
 AC_CACHE_CHECK([for __va_copy],dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY,[
-AC_TRY_LINK([#include <stdarg.h>
-va_list ap1,ap2;], [__va_copy(ap1,ap2);],
-dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY=yes,dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY=no)])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+va_list ap1,ap2;]], [[__va_copy(ap1,ap2);]])],[dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY=yes],[dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY=no])])
 if test x"$dcc_cv_HAVE_UNDERSCORE_UNDERSCORE_VA_COPY" = x"yes"; then
     AC_DEFINE(HAVE_UNDERSCORE_UNDERSCORE_VA_COPY,1,[Whether __va_copy() is available])
 fi
 
 AC_CACHE_CHECK([for C99 vsnprintf],rsync_cv_HAVE_C99_VSNPRINTF,[
-AC_TRY_RUN([
+AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -428,23 +432,21 @@ static int foo(const char *format, ...) {
        return 0;
 }
 int main() { return foo("hello"); }
-],
-rsync_cv_HAVE_C99_VSNPRINTF=yes,rsync_cv_HAVE_C99_VSNPRINTF=no,rsync_cv_HAVE_C99_VSNPRINTF=cross)])
+]])],[rsync_cv_HAVE_C99_VSNPRINTF=yes],[rsync_cv_HAVE_C99_VSNPRINTF=no],[rsync_cv_HAVE_C99_VSNPRINTF=cross])])
 if test x"$rsync_cv_HAVE_C99_VSNPRINTF" = x"yes"; then
     AC_DEFINE(HAVE_C99_VSNPRINTF, 1, [define if vsnprintf is C99 compliant])
 fi
 
 
 AC_CACHE_CHECK([for working socketpair],rsync_cv_HAVE_SOCKETPAIR,[
-AC_TRY_RUN([
+AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <sys/types.h>
 #include <sys/socket.h>
 
 int main() {
        int fd[2];
        return (socketpair(AF_UNIX, SOCK_STREAM, 0, fd) != -1) ? 0 : 1;
-}],
-rsync_cv_HAVE_SOCKETPAIR=yes,rsync_cv_HAVE_SOCKETPAIR=no,rsync_cv_HAVE_SOCKETPAIR=cross)])
+}]])],[rsync_cv_HAVE_SOCKETPAIR=yes],[rsync_cv_HAVE_SOCKETPAIR=no],[rsync_cv_HAVE_SOCKETPAIR=cross])])
 if test x"$rsync_cv_HAVE_SOCKETPAIR" = x"yes"; then
     AC_DEFINE(HAVE_SOCKETPAIR, 1, [define if you have a working socketpair])
 fi
@@ -455,7 +457,7 @@ AC_CHECK_MEMBER([struct sockaddr_storage.ss_family],
     [#include <sys/socket.h>])
 
 AC_ARG_WITH(avahi,
-        AC_HELP_STRING([--without-avahi], [build without avahi]))
+        AS_HELP_STRING([--without-avahi],[build without avahi]))
 
 dnl check for avahi
 if test x"$with_avahi" != xno; then
