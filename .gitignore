@@ -31,3 +31,4 @@ __pycache__/
 # `make dist` products
 distcc-*.tar.*
 distcc-*.NEWS
+*~
