@@ -17,12 +17,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ConorMacBride/install-package@v1
         with:
-          # aclocal is in homebrew automake
-          brew: automake popt
+          # Note: aclocal is packaged with automake in Homebrew, so we need it even though
+          # we don't use automake.
+          brew: automake popt gdb
+          apt: python3-dev libiberty-dev clang libavahi-client-dev libpopt-dev gdb
           # brew-cask: TODO
-          apt: python3-dev libiberty-dev clang libavahi-client-dev libpopt-dev
           # choco: TODO
-          # TODO(#507): Install gdb when the tests pass
       - run: python3 -m pip install --upgrade setuptools
       - run: ./autogen.sh
       - run: ./configure
