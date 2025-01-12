@@ -318,21 +318,6 @@ PKG_CHECK_MODULES(POPT, [popt >= 1.7])
 AC_SUBST(POPT_CFLAGS)
 AC_SUBST(POPT_LIBS)
 
-AC_ARG_WITH(libiberty,
-        AS_HELP_STRING([--without-libiberty],[build without libiberty (no @file support)]))
-
-if test x"$with_libiberty" != xno; then
-    AC_CHECK_LIB([iberty], [expandargv],
-                 ,
-                 AC_MSG_ERROR([Cannot find libiberty]))
-    AC_CHECK_HEADERS([libiberty.h libiberty/libiberty.h],
-                     [break])
-    if (test "$ac_cv_header_libiberty_h" != yes) &&
-       (test "$ac_cv_header_libiberty_libiberty_h" != yes); then
-        AC_MSG_ERROR([Cannot find libiberty.h])
-    fi
-fi
-
 ########################################################################
 # Checks for library functions, using libraries discovered above
 

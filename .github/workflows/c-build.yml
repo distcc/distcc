@@ -20,13 +20,10 @@ jobs:
           # Note: aclocal is packaged with automake in Homebrew, so we need it even though
           # we don't use automake.
           brew: automake popt gdb
-          apt: clang libavahi-client-dev libiberty-dev libpopt-dev gdb python3-dev python3-setuptools
+          apt: clang libavahi-client-dev libpopt-dev gdb python3-dev python3-setuptools
           # brew-cask: TODO
           # choco: TODO
       - run: ./autogen.sh
       - run: ./configure
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
-      - run: ./configure --without-libiberty
-        if: ${{ startsWith(matrix.os, 'macOS') }}
       - run: make
       - run: make check
