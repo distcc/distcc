@@ -69,7 +69,7 @@
  * from inetd. */
 volatile pid_t dcc_master_pid = 0;
 
-static RETSIGTYPE dcc_daemon_terminate(int);
+static void dcc_daemon_terminate(int);
 
 /**
  * Catch all relevant termination signals.  Set up in parent and also
@@ -111,7 +111,7 @@ void dcc_ignore_sighup(void)
  *
  * Some cleanup is done only if we're the master/parent daemon.
  **/
-static RETSIGTYPE dcc_daemon_terminate(int whichsig)
+static void dcc_daemon_terminate(int whichsig)
 {
     int am_parent;
 

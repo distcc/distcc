@@ -137,7 +137,7 @@ static void dcc_show_usage(void)
 }
 
 
-static RETSIGTYPE dcc_client_signalled (int whichsig)
+static void dcc_client_signalled (int whichsig)
 {
     signal(whichsig, SIG_DFL);
 
