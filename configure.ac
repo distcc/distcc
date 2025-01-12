@@ -314,7 +314,9 @@ AC_SEARCH_LIBS(setsockopt, [socket])
 AC_SEARCH_LIBS(hstrerror, [resolv])
 AC_SEARCH_LIBS(inet_aton, [resolv])
 
-AC_CHECK_LIB(popt, poptGetContext, , AC_MSG_ERROR([Cannot find libpopt]))
+PKG_CHECK_MODULES(POPT, [popt >= 1.7])
+AC_SUBST(POPT_CFLAGS)
+AC_SUBST(POPT_LIBS)
 
 AC_ARG_WITH(libiberty,
         AS_HELP_STRING([--without-libiberty],[build without libiberty (no @file support)]))
@@ -489,7 +491,6 @@ dnl ##### Output
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CPPFLAGS)
-AC_SUBST(POPT_INCLUDES)
 AC_SUBST(GNOME_BIN)
 
 

@@ -15,7 +15,7 @@ SHELL = @SHELL@
 # These autoconf variables may contain recursive Make expansions, and
 # so they have to be done here rather than written into config.h.
 
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ @POPT_CFLAGS@
 WERROR_CFLAGS = @WERROR_CFLAGS@
 PYTHON_CFLAGS = @PYTHON_CFLAGS@
 
@@ -64,7 +64,7 @@ GNOME_PACKAGES = @GNOME_PACKAGES@
 GNOME_CFLAGS = @GNOME_CFLAGS@
 GNOME_LIBS = @GNOME_LIBS@
 
-LIBS = @LIBS@
+LIBS = @LIBS@ @POPT_LIBS@
 
 DESTDIR =
 
