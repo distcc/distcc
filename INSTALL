@@ -14,7 +14,7 @@ QUICK SUMMARY
 
 0. Install prerequisites.  For example, on Debian or Ubuntu, you could use
 
-      sudo apt-get install gcc make python3 python3-dev python3-setuptools libiberty-dev autoconf
+      sudo apt-get install gcc make python3 python3-dev python3-setuptools autoconf
 
 1. Build and install
 
@@ -54,7 +54,6 @@ To build distcc you need
 
    GNU Make
    A C compiler
-   GNU libiberty (distributed with GNU Binutils and GCC)
 
 It is also highly desirable to have
 
@@ -342,10 +341,3 @@ NOTE: This use of ccache is incompatible with use of distcc's "pump" mode.
 
 (If you're using "pump" mode, it might be possible to use ccache on
 the distcc server machines. But we haven't tried that setup.)
-
-
-Complete the survey
--------------------
-
-Once you have distcc working for your own application, please complete
-and mail in the survey in survey.txt.

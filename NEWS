@@ -1,9 +1,16 @@
 distcc-3.z 2024-6-10
 
+  CHANGED:
+
+   * The popt library is no longer shipped: it must be separately installed
+     as a dependency before building.
+
   UNRELEASED FEATURES:
 
    * (Linux) Added dcc_free_mem reporting of available system memory in the
      "stats" output. PR #523 (Whisperity)
+
+  * Add `sysroot` option and allow the `-specs` option. PR #531 from @wzssyqa.
 
 distcc-3.4 "Lax lexer" 2021-4-11
 
@@ -173,11 +180,11 @@ distcc-3.0rc1 "My prices are insane."   2008-06-09
    * gcc debug option -d must be run locally because it produces
      secondary files.  Reported by Nadim Khemir.
 
-   * Improved checking for errors on socket connection.  Patch 
+   * Improved checking for errors on socket connection.  Patch
      from Dan Kegel.
 
 
-  PORTABILITY:	
+  PORTABILITY:
 
    * "Pump" code tested under Linux only.  Processing of object code
       rewrites debug info (so server paths are replaced with client
@@ -195,7 +202,7 @@ distcc-3.0rc1 "My prices are insane."   2008-06-09
    * Execute compiler with correctly redirected output using win32 apis on
      Cygwin/Mingw.  Place temporary files using GetTempPath.  (Alex Besogonov)
 
-   * Make distccmon-gnome link properly with gnu ld's new --as-needed 
+   * Make distccmon-gnome link properly with gnu ld's new --as-needed
      flag.  (Ben Skeggs, Lisa Seelye)
 
   OTHER CHANGES:
@@ -240,7 +247,7 @@ distcc-2.18.1  "Reality-based computing"  2004-11-03
     * gcc option -specs= must be run locally so that it can read the
       local spec file.  Reported by Chris Yeoh.
 
- 
+
   PORTABILITY:
 
     * Fix Solaris build problem reported by Dimitri Papadopoulos.
@@ -256,7 +263,7 @@ distcc-2.18  "Billionaires on stilts"  2004-10-12
     * Fix longjmp() bug that can cause distcc to crash when a timeout
       elapses.
 
-    * Fix compile-time problem with dcc_trace when configured with 
+    * Fix compile-time problem with dcc_trace when configured with
       --enable-rfc2553.  Reported by Greg Earle.
 
     * Fix warning about warn_unused_result for older versions of gcc.
@@ -273,20 +280,20 @@ distcc-2.18  "Billionaires on stilts"  2004-10-12
   CHANGES:
 
     * The --allow option is now mandatory for daemon mode.  As a
-      security feature, distccd will refuse to run without an IP 
+      security feature, distccd will refuse to run without an IP
       access control list.
 
     * conftest.* built by autoconf is always done locally, to make
       configure tests faster and safer.
 
-  
+
   DOCUMENTATION:
 
     * Better description of use with ccache.
 
-  
+
   PORTABILITY:
-  
+
     * Fix various warnings reported by Dimitri Papadopoulos.
 
     * Fix Tru64 build problem reported by Gary V. Vaughan.
@@ -313,7 +320,7 @@ distcc-2.17  "Divers Alarums"  2004-07-31
       of the compilation causing an exit with code >=128, retry
       compilation locally.  Patch from Jakub Stachowski.
 
-  
+
   DOCUMENTATION:
 
     * Manpage fix from Jean Delvare.
@@ -368,7 +375,7 @@ distcc-2.15  "feel good for ten seconds"  2004-07-06
   BUG FIXES:
 
     * Fix crash bug in receiving LZO compressed data into a mmapped
-      file.  Reported by Arkadiusz Miskiewicz.  
+      file.  Reported by Arkadiusz Miskiewicz.
 
     * Remove redundant temporary file cleanup in non-forking mode.
 
@@ -385,13 +392,13 @@ distcc-2.15  "feel good for ten seconds"  2004-07-06
       --no-prefork option has been removed.
 
     * mmap is no longer used for compressed data to simplify the code.
-  
-  
+
+
   PORTABILITY:
 
     * Additional fixes to Red Hat / Fedora scripts, by Colins Walters.
 
- 
+
   INTERNAL:
 
     * Daemon now chdirs to $TMPDIR at startup rather than /.  This
@@ -406,7 +413,7 @@ distcc-2.14  "Lake Albina"  2004-05-02
       to ~/.distcc/hosts.  The default for $DISTCC_DIR is still
       ~/.distcc.  Suggested by Sebastien Perochon.
 
-    * Source file name is included in success/failure messages, e.g. 
+    * Source file name is included in success/failure messages, e.g.
 
          distcc[6655] ERROR: compile ./cases/bad.c on cardhu failed
 
@@ -454,7 +461,7 @@ distcc-2.13  "Carnal Bunt"  2004-03-02
     * Hash comments are allowed in host list files.
 
 
-  INTERNAL: 
+  INTERNAL:
 
     * Use TCP_DEFER_ACCEPT on Linux to avoid some wasted context
       switching when a new connection comes in to the server.
@@ -554,7 +561,7 @@ distcc-2.12  "Figgy Pudding"  2003-12-19
       Saddi.
 
     * MAXPATHLEN is provided if it's not defined, which is the case on
-      GNU Hurd.  Reported by Santiago Vila as Debian #219600. 
+      GNU Hurd.  Reported by Santiago Vila as Debian #219600.
 
 
   BUG FIXES:
@@ -580,7 +587,7 @@ distcc-2.11.2  "Muscovado"  2003-10-23
     * Fatal signal handlers for client and daemon should reset the
       signal vector before doing anything else, to protect against an
       (unlikely) spin if the signal is re-sent.
-      
+
     * Corrections to .desktop file from Dag Wieers.
 
 
@@ -590,7 +597,7 @@ distcc-2.11.2  "Muscovado"  2003-10-23
       programs.
 
 
-  PORTABILITY:  
+  PORTABILITY:
 
     * IRIX portability fixes from Dimitri Papadopoulos.
 
@@ -634,7 +641,7 @@ distcc-2.11.1  "Burnt sugar"  2003-10-08
     * C++ compilation using -frepo must be local.  Reported by Andrew
       Slater.
 
-  
+
   PORTABILITY:
 
     * Don't use stdint.h, which is not available on FreeBSD 4-STABLE,
@@ -725,7 +732,7 @@ distcc-2.11  "Sugar fix"  2003-09-23
 
     * Describe where to put "localhost" in the host list.
 
-  
+
   PORTABILITY:
 
     * Fixes for BSD/OS (BSDi) from Nick Amato.
@@ -773,7 +780,7 @@ distcc-2.10  "Hunger is the best sauce"  2003-08-11
   PORTABILITY:
 
     * SCO/Caldera operating systems are no longer supported due to
-      their recent absurd attacks against Linux and IBM.  
+      their recent absurd attacks against Linux and IBM.
 
     * TMPDIR is no longer required to start with '/', so that Cygwin
       paths starting with a drive letter may be used.  Reported by
@@ -892,7 +899,7 @@ distcc-2.8  "Play in the traffic"  2003-07-09
   INTERNAL:
 
     * mon.h is now safe for inclusion in C++ programs, and protected
-      against multiple inclusion.  Suggestion from Frédérick Forjan.
+      against multiple inclusion.  Suggestion from Frï¿½dï¿½rick Forjan.
 
     * Increased timeout for nonblocking network IO apart from
       connections to 5 minutes.
@@ -1025,7 +1032,7 @@ distcc-2.5.1  "disable extra paranoia"  2003-06-05
 
     * Fix socklen_t compilation problem on Darwin.
 
-    * Fix compilation problems on Solaris 8.  Report from Tomas Ögren.
+    * Fix compilation problems on Solaris 8.  Report from Tomas ï¿½gren.
 
     * Fix compilation problems on IRIX.  (IRIX cannot accept a
       variable named "sa_len".)  Report from Peter Naulls.
@@ -1852,7 +1859,7 @@ distcc-0.13  "Armistice"  2002-11-11
       and also send a copy of messages to a buffer to be sent to the client.
       (Martin Pool)
 
-distcc-0.12  "Klein, kosten- und schnörkellos"  2002-10-07
+distcc-0.12  "Klein, kosten- und schnï¿½rkellos"  2002-10-07
 
   BUG FIXES:
 

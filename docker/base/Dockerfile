@@ -10,7 +10,6 @@ RUN apt-get update && \
     apt-get install -y autoconf \
                        python3-dev \
                        python-dev \
-                       libiberty-dev \
                        build-essential \
                        make \
                    && \

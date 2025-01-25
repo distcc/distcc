@@ -41,16 +41,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#if HAVE_LIBIBERTY
-#if defined (HAVE_LIBIBERTY_H)
-#include <libiberty.h>
-#elif defined (HAVE_LIBIBERTY_LIBIBERTY_H)
-#include <libiberty/libiberty.h>
-#else
-#error Need libiberty.h
-#endif
-#endif
-
 #include "distcc.h"
 #include "trace.h"
 #include "exitcode.h"
@@ -137,7 +127,7 @@ static void dcc_show_usage(void)
 }
 
 
-static RETSIGTYPE dcc_client_signalled (int whichsig)
+static void dcc_client_signalled (int whichsig)
 {
     signal(whichsig, SIG_DFL);
 
@@ -241,10 +231,7 @@ int main(int argc, char **argv)
 
     dcc_trace_version();
 
-#if HAVE_LIBIBERTY
-    /* Expand @FILE arguments. */
-    expandargv(&argc, &argv);
-#endif
+    /* TODO: Expand @file arguments? Previously this was done only when built with libiberty. */
 
     compiler_name = (char *) dcc_find_basename(argv[0]);
 
