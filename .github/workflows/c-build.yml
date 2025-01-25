@@ -2,6 +2,7 @@ name: C build
 
 on:
   push:
+  pull_request:
 
 jobs:
   make_check:
