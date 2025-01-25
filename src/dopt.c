@@ -114,6 +114,8 @@ int opt_lifetime = 0;
 const char *arg_pid_file = NULL;
 const char *arg_log_file = NULL;
 
+const char *arg_sysroot = NULL;
+
 int opt_job_lifetime = 0;
 
 /* Enumeration values for options that don't have single-letter name.  These
@@ -181,6 +183,7 @@ const struct poptOption options[] = {
 #endif
     { "make-me-a-botnet", 0, POPT_ARG_NONE, &opt_enable_tcp_insecure, 0, 0, 0 },
     { "enable-tcp-insecure", 0, POPT_ARG_NONE, &opt_enable_tcp_insecure, 0, 0, 0 },
+    { "sysroot", 0,   POPT_ARG_STRING, &arg_sysroot, 0, 0, 0 },
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 
@@ -214,6 +217,7 @@ static void distccd_show_usage(void)
 "    --blacklist=FILE           control client access through a blacklist\n"
 "    --whitelist=FILE           control client access through a whitelist\n"
 #endif
+"    --sysroot=DIR              search resource file in this directory\n"
 "    --stats                    enable statistics reporting via HTTP server\n"
 "    --stats-port PORT          TCP port to listen on for statistics requests\n"
 #ifdef HAVE_AVAHI

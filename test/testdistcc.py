@@ -312,6 +312,7 @@ as soon as that happens we can go ahead and start the client."""
         SimpleDistCC_Case.setup(self)
         self.daemon_pidfile = os.path.join(os.getcwd(), "daemonpid.tmp")
         self.daemon_logfile = os.path.join(os.getcwd(), "distccd.log")
+        self.daemon_sysroot = os.getcwd()
         self.server_port = DISTCC_TEST_PORT # random.randint(42000, 43000)
         self.startDaemon()
         self.setupEnv()
@@ -349,11 +350,13 @@ as soon as that happens we can go ahead and start the client."""
         """Return command to start the daemon"""
         return (self.distccd() +
                 "--verbose --lifetime=%d --daemon --log-file %s "
-                "--pid-file %s --port %d --allow 127.0.0.1 --enable-tcp-insecure"
+                "--pid-file %s --port %d --allow 127.0.0.1 --enable-tcp-insecure "
+		"--sysroot %s"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),
-                   self.server_port))
+                   self.server_port,
+                   _ShellSafe(self.daemon_sysroot)))
 
     def daemon_lifetime(self):
         # Enough for most tests, even on a fairly loaded machine.
@@ -558,7 +561,7 @@ class ScanArgs_Case(SimpleDistCC_Case):
                  ("gcc -xassembler-with-cpp -c foo.c", "local"),
                  ("gcc -x assembler-with-cpp -c foo.c", "local"),
 
-                 ("gcc -specs=foo.specs -c foo.c", "local"),
+                 ("gcc -specs=foo.specs -c foo.c", "distribute", "foo.c", "foo.o"),
 
                  # Fixed in 2.18.4 -- -dr writes rtl to a local file
                  ("gcc -dr -c foo.c", "local"),
@@ -1561,10 +1564,11 @@ class NoDetachDaemon_Case(CompileHello_Case):
         # port as an existing server, because we can't catch the error.
         cmd = (self.distccd() +
                "--no-detach --daemon --verbose --log-file %s --pid-file %s "
-               "--port %d --allow 127.0.0.1 --enable-tcp-insecure" %
+               "--port %d --allow 127.0.0.1 --enable-tcp-insecure --sysroot %s" %
                (_ShellSafe(self.daemon_logfile),
                 _ShellSafe(self.daemon_pidfile),
-                self.server_port))
+                self.server_port,
+                _ShellSafe(self.daemon_sysroot)))
         self.pid = self.runcmd_background(cmd)
         self.add_cleanup(self.killDaemon)
         # Wait until the server is ready for connections.
@@ -2058,11 +2062,13 @@ class AccessDenied_Case(CompileHello_Case):
     def daemon_command(self):
         return (self.distccd()
                 + "--verbose --lifetime=%d --daemon --log-file %s "
-                  "--pid-file %s --port %d --allow 127.0.0.2 --enable-tcp-insecure"
+                  "--pid-file %s --port %d --allow 127.0.0.2 --enable-tcp-insecure "
+                  "--sysroot %s"
                 % (self.daemon_lifetime(),
                    _ShellSafe(self.daemon_logfile),
                    _ShellSafe(self.daemon_pidfile),
-                   self.server_port))
+                   self.server_port,
+                   _ShellSafe(self.daemon_sysroot)))
 
     def compileCmd(self):
         """Return command to compile source and run tests"""

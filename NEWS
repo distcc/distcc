@@ -10,6 +10,8 @@ distcc-3.z 2024-6-10
    * (Linux) Added dcc_free_mem reporting of available system memory in the
      "stats" output. PR #523 (Whisperity)
 
+  * Add `sysroot` option and allow the `-specs` option. PR #531 from @wzssyqa.
+
 distcc-3.4 "Lax lexer" 2021-4-11
 
   FEATURES:

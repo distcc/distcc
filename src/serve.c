@@ -70,6 +70,8 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
+#include <alloca.h>
+
 #include "distcc.h"
 #include "trace.h"
 #include "util.h"
@@ -768,11 +770,27 @@ static int dcc_run_job(int in_fd,
        on securing https://godbolt.org/ */
     char *a;
     int i;
-    for (i = 0; (a = argv[i]); i++)
-        if (strncmp(a, "-fplugin=", strlen("-fplugin=")) == 0 ||
-            strncmp(a, "-specs=", strlen("-specs=")) == 0) {
-            rs_log_warning("-fplugin= and/or -specs= passed, which are insecure and not supported.");
+    for (i = 0; (a = argv[i]); i++) {
+        if (strncmp(a, "-fplugin=", strlen("-fplugin=")) == 0) {
+            rs_log_warning("-fplugin= passed, which are insecure and not supported.");
             goto out_cleanup;
+        }
+        if (strncmp(a, "-specs=", strlen("-specs=")) == 0) {
+            int fail = 1;
+            if (arg_sysroot) {
+                char *spec_file = strchr(a, '=') + 1;
+                char *spec_path = alloca(strlen(spec_file) + strlen(arg_sysroot) + 8);
+                sprintf(spec_path, "%s/%s", arg_sysroot, spec_file);
+                struct stat spec_stat;
+                if (stat(spec_path, &spec_stat) != -1 && (spec_stat.st_mode & S_IFMT) == S_IFREG) {
+                  fail = 0;
+                }
+            }
+            if (fail) {
+              rs_log_warning("-specs= passed, but we cannot find the specs.");
+              goto out_cleanup;
+            }
+       }
     }
 
     if ((compile_ret = dcc_spawn_child(argv, &cc_pid,

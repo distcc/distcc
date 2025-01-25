@@ -45,6 +45,7 @@ extern int opt_log_stderr;
 extern int opt_lifetime;
 extern char *opt_listen_addr;
 extern int opt_niceness;
+extern const char *arg_sysroot;
 
 #ifdef HAVE_LINUX
 extern int opt_oom_score_adj;
