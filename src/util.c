@@ -638,7 +638,7 @@ static int dcc_get_proc_meminfo_mem_available(FILE* f) {
 
     char key[128];
     long value;
-    char unit[4];
+    char unit[5];
     char magnitude;
 
     if (f == NULL)
