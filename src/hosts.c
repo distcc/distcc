@@ -109,6 +109,7 @@
 #ifdef HAVE_AVAHI
 #include "zeroconf.h"
 #define ZEROCONF_MAGIC "+zeroconf"
+#define ZEROCONF_ALL_MAGIC "+zeroconf.all"
 #endif
 
 const int dcc_default_port = DISTCC_DEFAULT_PORT;
@@ -557,7 +558,13 @@ int dcc_parse_hosts(const char *where, const char *source_name,
 #ifdef HAVE_AVAHI
         if (token_len == sizeof(ZEROCONF_MAGIC)-1 &&
             !strncmp(token_start, ZEROCONF_MAGIC, (unsigned) token_len)) {
-            if ((ret = dcc_zeroconf_add_hosts(ret_list, ret_nhosts, 4, ret_prev) != 0))
+            if ((ret = dcc_zeroconf_add_hosts(ret_list, ret_nhosts, 4, ret_prev, 0) != 0))
+                return ret;
+            goto skip;
+        }
+        if (token_len == sizeof(ZEROCONF_ALL_MAGIC)-1 &&
+            !strncmp(token_start, ZEROCONF_ALL_MAGIC, (unsigned) token_len)) {
+            if ((ret = dcc_zeroconf_add_hosts(ret_list, ret_nhosts, 4, ret_prev, 1) != 0))
                 return ret;
             goto skip;
         }

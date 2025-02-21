@@ -416,7 +416,7 @@ static void client_callback(AvahiClient *client, AvahiClientState state, void *u
 }
 
 /* The main function of the background daemon */
-static int daemon_proc(const char *host_file, const char *lock_file, int n_slots) {
+static int daemon_proc(const char *host_file, const char *lock_file, int n_slots, int add_all) {
     int ret = 1;
     int lock_fd = -1;
     struct daemon_data d;
@@ -472,7 +472,10 @@ static int daemon_proc(const char *host_file, const char *lock_file, int n_slots
         goto finish;
     }
 
-    if (dcc_get_gcc_version(version, sizeof(version)) &&
+    if (add_all) {
+        strncpy(stype, DCC_DNS_SERVICE_TYPE, sizeof(stype));
+        stype[sizeof(stype)-1] = 0;
+    } else if (dcc_get_gcc_version(version, sizeof(version)) &&
         dcc_get_gcc_machine(machine, sizeof(machine))) {
 
         dcc_make_dnssd_subtype(stype, sizeof(stype), version, machine);
@@ -558,7 +561,7 @@ static int get_zeroconf_dir(char **dir_ret) {
 }
 
 /* Get the host list from zeroconf */
-int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n_slots, struct dcc_hostdef **ret_prev) {
+int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n_slots, struct dcc_hostdef **ret_prev, int add_all) {
     char *host_file = NULL, *lock_file = NULL, *s = NULL;
     int lock_fd = -1, host_fd = -1;
     int fork_daemon = 0;
@@ -631,7 +634,7 @@ int dcc_zeroconf_add_hosts(struct dcc_hostdef **ret_list, int *ret_nhosts, int n
             if (ret != 0) {
                 rs_log_warning("chdir to '/' failed: %s", strerror(errno));
             }
-            _exit(daemon_proc(host_file, lock_file, n_slots));
+            _exit(daemon_proc(host_file, lock_file, n_slots, add_all));
         }
 
         /* Parent */
