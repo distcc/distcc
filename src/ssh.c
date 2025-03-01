@@ -78,7 +78,7 @@ static int fd_pair(int fd[2])
 {
     int ret;
 
-#if HAVE_SOCKETPAIR
+#ifdef HAVE_SOCKETPAIR
     ret = socketpair(AF_UNIX, SOCK_STREAM, 0, fd);
 #else
     ret = pipe(fd);

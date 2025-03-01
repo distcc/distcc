@@ -1,0 +1,101 @@
+target_sources(${PROJECT_NAME}_lib
+    PUBLIC
+        distcc.h
+    PRIVATE
+        access.c
+        arg.c
+        argutil.c
+        # TODO AUTH depends on HAVE_GSSAPI, it is enabled with "auth" arg
+        # auth_common.c
+        # auth_distcc.c
+        # auth_distccd.c
+        backoff.c
+        bulk.c
+        cleanup.c
+        climasq.c
+        clinet.c
+        clirpc.c
+        compile.c
+        compress.c
+        cpp.c
+        daemon.c
+        distcc.c
+        dopt.c
+        dotd.c
+        dparent.c
+        dsignal.c
+        emaillog.c
+        exec.c
+        filename.c
+        fix_debug_info.c
+        gcc-id.c
+        h_argvtostr.c
+        h_compile.c
+        h_dotd.c
+        help.c
+        h_exten.c
+        h_getline.c
+        h_hosts.c
+        h_issource.c
+        history.c
+        hostfile.c
+        hosts.c
+        h_parsemask.c
+        h_sa2str.c
+        h_scanargs.c
+        h_strip.c
+        implicit.c
+        include_server_if.c
+        io.c
+        loadfile.c
+        lock.c
+        lsdistcc.c
+        # TODO build these as a separate monitor target
+        # mon.c
+        # mon-gnome.c
+        # mon-notify.c
+        # mon-text.c
+        ncpus.c
+        netutil.c
+        prefork.c
+        pump.c
+        remote.c
+        # TODO build this with the monitor
+        # renderer.c
+        rpc.c
+        rslave.c
+        safeguard.c
+        sendfile.c
+        serve.c
+        setuid.c
+        snprintf.c
+        srvnet.c
+        srvrpc.c
+        ssh.c
+        state.c
+        stats.c
+        stringmap.c
+        strip.c
+        tempfile.c
+        timefile.c
+        timeval.c
+        trace.c
+        traceenv.c
+        util.c
+        where.c
+        # TODO This should be driven off of HAVE_AVAHI
+        # zeroconf.c
+        # zeroconf-reg.c
+)
+
+add_executable(${PROJECT_NAME})
+
+target_sources(${PROJECT_NAME}
+    PRIVATE
+        distcc.c
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        ${PROJECT_NAME}::${PROJECT_NAME}_lib
+)
