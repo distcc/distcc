@@ -4,6 +4,9 @@ project(distcc LANGUAGES C)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(POPT REQUIRED IMPORTED_TARGET popt)
 
+# Expose the find modules to our module path.
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # TODO
 # option(WITH_GNOME "Build GNOME-based monitor" OFF)
 
@@ -18,13 +21,20 @@ endif()
 # libavahi-common-dev, libavahi-client-dev
 option(WITH_AVAHI "Build with Avahi" ON)
 if(WITH_AVAHI)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     find_package(Avahi REQUIRED)
     set(HAVE_AVAHI ON)
 else()
     set(HAVE_AVAHI OFF)
 endif()
 option(WITH_AUTH "Provide mutual authentication services via GSS-API" OFF)
+
+# libkrb5-dev
+if(WITH_AUTH)
+    find_package(GSSAPI REQUIRED)
+    set(HAVE_GSSAPI ON)
+else()
+    set(HAVE_GSSAPI OFF)
+endif() 
 
 add_library(${PROJECT_NAME}_lib)
 add_library(${PROJECT_NAME}::${PROJECT_NAME}_lib ALIAS ${PROJECT_NAME}_lib)

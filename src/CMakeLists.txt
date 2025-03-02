@@ -5,8 +5,11 @@ else()
     set(ZEROCONF_SOURCES)
 endif()
 
-
-
+if(HAVE_GSSAPI)
+    list(APPEND AUTH_SOURCES auth_common.c auth_distcc.c auth_distccd.c)
+else()
+    set(AUTH_SOURCES)
+endif()
 
 target_sources(${PROJECT_NAME}_lib
     PUBLIC
@@ -15,10 +18,6 @@ target_sources(${PROJECT_NAME}_lib
         access.c
         arg.c
         argutil.c
-        # TODO AUTH depends on HAVE_GSSAPI, it is enabled with "auth" arg
-        # auth_common.c
-        # auth_distcc.c
-        # auth_distccd.c
         backoff.c
         bulk.c
         cleanup.c
@@ -87,11 +86,13 @@ target_sources(${PROJECT_NAME}_lib
         util.c
         where.c
         ${ZEROCONF_SOURCES}
+        ${AUTH_SOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME}_lib
     PRIVATE
         $<$<BOOL:${HAVE_AVAHI}>:Avahi::Avahi>
+        $<$<BOOL:${HAVE_GSSAPI}>:GSSAPI::GSSAPI>
 )
 
 add_executable(${PROJECT_NAME})
