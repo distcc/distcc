@@ -10,7 +10,10 @@
 // TODO this doesn't match yet
 #define GNU_HOST "@CMAKE_SYSTEM_PROCESSOR@-@CMAKE_SYSTEM_NAME@"
 
+#define ICONDIR "@ICONDIR@"
+
 #cmakedefine HAVE_AVAHI
+#cmakedefine WITH_GTK
 
 // TODO add HAVE_DECL* such as HAVE_DECL_ASPRINTF
 

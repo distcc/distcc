@@ -5,7 +5,9 @@ else()
     set(ZEROCONF_SOURCES)
 endif()
 
-message(STATUS "HAVE_AVAHI ${HAVE_AVAHI}")
+
+
+
 target_sources(${PROJECT_NAME}_lib
     PUBLIC
         distcc.h
@@ -94,6 +96,11 @@ target_sources(${PROJECT_NAME}_lib
         ${ZEROCONF_SOURCES}
 )
 
+target_link_libraries(${PROJECT_NAME}_lib
+    PRIVATE
+        $<$<BOOL:${HAVE_AVAHI}>:Avahi::Avahi>
+)
+
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME}
@@ -104,5 +111,38 @@ target_sources(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_NAME}::${PROJECT_NAME}_lib
-        $<$<BOOL:${HAVE_AVAHI}>:Avahi::Avahi>
+        
 )
+
+if(WITH_GTK)
+
+    add_executable(${PROJECT_NAME}mon-text)
+
+    target_sources(${PROJECT_NAME}mon-text
+        PRIVATE
+            mon-text.c
+            mon.c
+    )
+
+    target_link_libraries(${PROJECT_NAME}mon-text
+        PRIVATE
+            ${PROJECT_NAME}::${PROJECT_NAME}_lib
+    )
+
+    add_executable(${PROJECT_NAME}mon-gnome)
+
+    target_sources(${PROJECT_NAME}mon-gnome
+        PRIVATE
+            mon-gnome.c
+            mon.c
+            renderer.c
+    )
+
+    target_link_libraries(${PROJECT_NAME}mon-gnome
+        PRIVATE
+            ${PROJECT_NAME}::${PROJECT_NAME}_lib
+            $<$<BOOL:${WITH_GTK}>:PkgConfig::GTK3>
+    )
+
+    # TODO install distccmon-gnome.png and related files to icondir
+endif()
