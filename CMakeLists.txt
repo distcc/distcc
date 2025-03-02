@@ -21,8 +21,9 @@ option(WITH_AUTH "Provide mutual authentication services via GSS-API" OFF)
 add_library(${PROJECT_NAME}_lib)
 add_library(${PROJECT_NAME}::${PROJECT_NAME}_lib ALIAS ${PROJECT_NAME}_lib)
 
-# Set SYSCONFDIR to a standard path (default to /etc)
-set(SYSCONFDIR "/etc" CACHE PATH "System-wide configuration directory")
+# Set SYSCONFDIR to a standard path, but allow chancing it
+include(GNUInstallDirs)
+set(SYSCONFDIR "${CMAKE_INSTALL_SYSCONFDIR}" CACHE PATH "System-wide configuration directory")
 
 # Include config generation script
 include(${CMAKE_SOURCE_DIR}/cmake/create_config.cmake)
