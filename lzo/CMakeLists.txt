@@ -11,3 +11,6 @@ target_sources(lzo
         minilzo.c
         testmini.c
 )
+
+# TODO install COPYING file
+install(FILES COPYING DESTINATION ${CMAKE_INSTALL_DOCDIR}/lzo)

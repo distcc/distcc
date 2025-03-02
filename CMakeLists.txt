@@ -41,9 +41,15 @@ create_config(${PROJECT_NAME}_lib)
 
 add_subdirectory(src)
 add_subdirectory(lzo)
+add_subdirectory(gnome)
 
 target_link_libraries(${PROJECT_NAME}_lib
     PUBLIC
         ${PROJECT_NAME}::lzo
         PkgConfig::POPT
 )
+
+install(TARGETS ${PROJECT_NAME})
+
+install(FILES COPYING DESTINATION ${CMAKE_INSTALL_DOCDIR})
+# TODO install COPYING file

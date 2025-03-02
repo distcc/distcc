@@ -60,18 +60,11 @@ target_sources(${PROJECT_NAME}_lib
         loadfile.c
         lock.c
         lsdistcc.c
-        # TODO build these as a separate monitor target
-        # mon.c
-        # mon-gnome.c
-        # mon-notify.c
-        # mon-text.c
         ncpus.c
         netutil.c
         prefork.c
         pump.c
         remote.c
-        # TODO build this with the monitor
-        # renderer.c
         rpc.c
         rslave.c
         safeguard.c
@@ -144,5 +137,5 @@ if(WITH_GTK)
             $<$<BOOL:${WITH_GTK}>:PkgConfig::GTK3>
     )
 
-    # TODO install distccmon-gnome.png and related files to icondir
+    install(TARGETS ${PROJECT_NAME}mon-text ${PROJECT_NAME}mon-gnome)
 endif()
