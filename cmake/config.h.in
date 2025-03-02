@@ -7,6 +7,7 @@
 #cmakedefine ENABLE_RFC2553
 
 /* Your gnu-style host triple */
+// TODO this doesn't match yet
 #define GNU_HOST "@CMAKE_SYSTEM_PROCESSOR@-@CMAKE_SYSTEM_NAME@"
 
 /* Header file checks */
@@ -58,6 +59,7 @@
 #cmakedefine HAVE_SETREUID
 #cmakedefine HAVE_SETSID
 #cmakedefine HAVE_SETUID
+#cmakedefine HAVE_STRLCPY
 #cmakedefine HAVE_STRSEP
 #cmakedefine HAVE_SNPRINTF
 #cmakedefine HAVE_SOCKADDR_STORAGE
@@ -98,6 +100,12 @@
 // #cmakedefine HAVE_IN_ADDR_T
 // TODO
 #define HAVE_IN_ADDR_T 1
+
+// dnl Checks for structures
+// AC_CHECK_MEMBER([struct sockaddr_storage.ss_family],
+//     AC_DEFINE(HAVE_SOCKADDR_STORAGE, 1, [define if you have struct sockaddr_storage]),,
+//     [#include <sys/socket.h>])
+#cmakedefine HAVE_SOCKADDR_STORAGE
 
 /* Define the native compiler triple */
 #define NATIVE_COMPILER_TRIPLE "@NATIVE_COMPILER_TRIPLE@"

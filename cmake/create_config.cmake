@@ -65,6 +65,7 @@ function(create_config TARGET_NAME)
         snprintf
         socketpair
         strerror
+        strlcpy
         strndup
         strsep
         strsignal
@@ -96,6 +97,10 @@ function(create_config TARGET_NAME)
 
     # Check for the type in_addr_t
     check_symbol_exists(in_addr_t "netinet/in.h" HAVE_IN_ADDR_T)
+
+    # Check for the type sockaddr_storage
+    include(CheckStructHasMember)
+    check_struct_has_member("struct sockaddr_storage" ss_family "sys/socket.h" HAVE_SOCKADDR_STORAGE)
 
     # Set the compiler triple (architecture-system)
     set(NATIVE_COMPILER_TRIPLE "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}")
