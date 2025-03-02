@@ -1,3 +1,11 @@
+
+if(HAVE_AVAHI)
+    list(APPEND ZEROCONF_SOURCES zeroconf.c zeroconf-reg.c)
+else()
+    set(ZEROCONF_SOURCES)
+endif()
+
+message(STATUS "HAVE_AVAHI ${HAVE_AVAHI}")
 target_sources(${PROJECT_NAME}_lib
     PUBLIC
         distcc.h
@@ -83,9 +91,7 @@ target_sources(${PROJECT_NAME}_lib
         traceenv.c
         util.c
         where.c
-        # TODO This should be driven off of HAVE_AVAHI
-        # zeroconf.c
-        # zeroconf-reg.c
+        ${ZEROCONF_SOURCES}
 )
 
 add_executable(${PROJECT_NAME})
@@ -98,4 +104,5 @@ target_sources(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_NAME}::${PROJECT_NAME}_lib
+        $<$<BOOL:${HAVE_AVAHI}>:Avahi::Avahi>
 )

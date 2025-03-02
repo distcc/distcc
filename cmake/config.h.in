@@ -10,6 +10,10 @@
 // TODO this doesn't match yet
 #define GNU_HOST "@CMAKE_SYSTEM_PROCESSOR@-@CMAKE_SYSTEM_NAME@"
 
+#cmakedefine HAVE_AVAHI
+
+// TODO add HAVE_DECL* such as HAVE_DECL_ASPRINTF
+
 /* Header file checks */
 #cmakedefine HAVE_ALLOCA_H
 #cmakedefine HAVE_ARPA_NAMESER_H
