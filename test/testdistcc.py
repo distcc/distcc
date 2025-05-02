@@ -1356,9 +1356,7 @@ class Gdb_Case(CompileHello_Case):
             " -g -E -I.. -c ../%s | grep `pwd` >/dev/null" %
             self.sourceFilename())
         gcc_preprocessing_preserves_pwd = (error_rc == 0)
-        # NOTE(mbp 2025-01): Pump mode seems to always lose the full path to the file, for
-        # reasons I don't currently understand, so just don't test it in pump mode.
-        if (not pump_mode) and gcc_preprocessing_preserves_pwd:
+        if gcc_preprocessing_preserves_pwd:
             out, errs = self.runcmd("gdb -nh --batch --command=../gdb_commands "
                                     "./%s </dev/null" % testtmp_exe)
             if errs and errs not in ignorable_error_messages:
