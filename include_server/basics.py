@@ -220,6 +220,7 @@ opt_send_email = False
 opt_simple_algorithm = False
 opt_skip_parsing_system_files = False
 opt_stat_reset_triggers = {}
+opt_extra_d_opts = []
 opt_statistics = False
 opt_unsafe_absolute_includes = False
 opt_consider_unexpanded_macro_fns = True # inverse of CLI to avoid double negative

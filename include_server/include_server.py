@@ -83,6 +83,10 @@ OPTIONS:
                                2 = trace some functions
                              other powers of two: see basics.py.
 
+ -Dmacro[=value]             Provide extra macros for consideration when expanding
+                             macros in #include lines. Especially useful in combination
+                             with -S when using macros from skipped system headers.
+
  -e, --email                 Send email to discc-pump developers when include
                              server gets in trouble.
 
@@ -488,8 +492,8 @@ def _ParseCommandLineOptions():
   """
   try:
     opts, args = getopt.getopt(sys.argv[1:],
-                                "A:d:esStvwx",
-			       ["additional_system_dir=",
+                                "A:d:D:esStvwx",
+                               ["additional_system_dir=",
                                 "port=",
                                 "pid_file=",
                                 "debug_pattern=",
@@ -520,6 +524,8 @@ def _ParseCommandLineOptions():
         basics.opt_additional_system_dirs.append(arg)
       if opt in ("-d", "--debug_pattern"):
         basics.opt_debug_pattern = int(arg)
+      if opt in ("-D",):
+        basics.opt_extra_d_opts.append(arg.split("="))
       if opt in ("--port", ):
         include_server_port = arg
       if opt in ("--pid_file",):

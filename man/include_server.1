@@ -56,6 +56,14 @@ Bit vector for turning on warnings and debugging
     2 = trace some functions
  other powers of two: see include_server/basics.py.
 .TP
+.B -Dmacro[=value]
+Provide extra macro definition for the include_server to consider for
+possible expansions when calculating #include lines with macros used.
+Especially useful with -S if skipping system header parsing and using
+macros from system headers in include lines. For example, if boost is a
+system header, `#include BOOST_PP_STRINGIZE(foo.h)` will fail unless
+-D'BOOST_PP_STRINGIZE(x)=#x' is passed.
+.TP
 .B -e, --email
 Send email to 'distcc-pump-errors' or if defined, the value of environment
 variable DISTCC_EMAILLOG_WHOM_TO_BLAME, when include server gets in trouble.
