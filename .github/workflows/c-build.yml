@@ -1,16 +1,16 @@
 name: C build
 
 on:
-  push:
-  pull_request:
+  - push
+  - pull_request
 
 jobs:
   make_check:
     strategy:
       matrix:
         os:
-        - macOS-latest
-        - ubuntu-latest
+          - macOS-latest
+          - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
