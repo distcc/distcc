@@ -400,6 +400,8 @@ static int update_debug_info(const char *path, const char *search,
 
   update_section(path, base, st.st_size, ".debug_info", search, replace);
   update_section(path, base, st.st_size, ".debug_str", search, replace);
+  /* DWARF 5+ puts the DW_AT_comp_dir string in .debug_line_str */
+  update_section(path, base, st.st_size, ".debug_line_str", search, replace);
 
   return munmap_file(base, path, fd, &st);
 }
