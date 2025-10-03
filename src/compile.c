@@ -692,7 +692,8 @@ dcc_build_somewhere(char *argv[],
     char *input_fname = NULL, *output_fname, *cpp_fname, *deps_fname = NULL;
     char **files;
     char **server_side_argv = NULL;
-    int server_side_argv_deep_copied = 0;
+    char **localcpp_server_argv = NULL;
+    char **remotecpp_server_argv = NULL;
     char *server_stderr_fname = NULL;
     int needs_dotd = 0;
     int sets_dotd_target = 0;
@@ -822,25 +823,31 @@ dcc_build_somewhere(char *argv[],
         if ((ret = dcc_cpp_maybe(argv, input_fname, &cpp_fname, &cpp_pid) != 0))
             goto fallback;
 
-        if ((ret = dcc_strip_local_args(argv, &server_side_argv)))
-            goto fallback;
-
+        /* localcpp_server_argv may already be processed from a previous bad host */
+        if (localcpp_server_argv == NULL) {
+            if ((ret = dcc_strip_local_args(argv, &localcpp_server_argv)))
+                goto fallback;
+        }
+        server_side_argv = localcpp_server_argv;
     } else {
-        char *dotd_target = NULL;
         cpp_fname = NULL;
         cpp_pid = 0;
-        dcc_get_dotd_info(argv, &deps_fname, &needs_dotd,
-                          &sets_dotd_target, &dotd_target);
-        server_side_argv_deep_copied = 1;
-        if ((ret = dcc_copy_argv(argv, &server_side_argv, 2)))
-            goto fallback;
-        if (needs_dotd && !sets_dotd_target) {
-           dcc_argv_append(server_side_argv, strdup("-MT"));
-           if (dotd_target == NULL)
-               dcc_argv_append(server_side_argv, strdup(output_fname));
-           else
-               dcc_argv_append(server_side_argv, strdup(dotd_target));
+        /* remotecpp_server_argv may already be processed from a previous bad host */
+        if (remotecpp_server_argv == NULL) {
+            char *dotd_target = NULL;
+            dcc_get_dotd_info(argv, &deps_fname, &needs_dotd,
+                              &sets_dotd_target, &dotd_target);
+            if ((ret = dcc_copy_argv(argv, &remotecpp_server_argv, 2)))
+                goto fallback;
+            if (needs_dotd && !sets_dotd_target) {
+               dcc_argv_append(remotecpp_server_argv, strdup("-MT"));
+               if (dotd_target == NULL)
+                   dcc_argv_append(remotecpp_server_argv, strdup(output_fname));
+               else
+                   dcc_argv_append(remotecpp_server_argv, strdup(dotd_target));
+            }
         }
+        server_side_argv = remotecpp_server_argv;
     }
     if ((ret = dcc_compile_remote(server_side_argv,
                                   input_fname,
@@ -1011,12 +1018,11 @@ dcc_build_somewhere(char *argv[],
 
   clean_up:
     dcc_free_argv(argv);
-    if (server_side_argv_deep_copied) {
-        if (server_side_argv != NULL) {
-          dcc_free_argv(server_side_argv);
-        }
-    } else {
-        free(server_side_argv);
+    if (remotecpp_server_argv != NULL) {
+        dcc_free_argv(remotecpp_server_argv);
+    }
+    if (localcpp_server_argv != NULL) {
+        free(localcpp_server_argv);
     }
     free(discrepancy_filename);
     return ret;

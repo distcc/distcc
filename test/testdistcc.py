@@ -1860,6 +1860,30 @@ class NoServer_Case(CompileHello_Case):
                               msgs)
 
 
+class MixedServerPumpFallback_Case(CompileHello_Case):
+    """
+    Invalid server name with pump attributes with a fallback to a good server without
+
+    This covers the codepath in compile.c where the first host is a remote cpp
+    but fails and goto choose_host falls back to local cpp (which had a double free
+    on exit up to and including v3.4)
+    """
+    def setup(self):
+        CompileHello_Case.setup(self)
+        os.environ['DISTCC_HOSTS'] = f"no.such.host.here,lzo,cpp 127.0.0.1:{self.server_port}"
+        self.distcc_log = 'distcc.log'
+        os.environ['DISTCC_LOG'] = self.distcc_log
+        self.createSource()
+        self.initCompiler()
+
+    def runtest(self):
+        self.runcmd(self.distcc()
+                    + self._cc + " -c -o testtmp.o testtmp.c")
+        msgs = open(self.distcc_log, 'r').read()
+        self.assert_re_search(r'compile testtmp.c on 127.0.0.1:[0-9]* completed ok',
+                              msgs)
+
+
 class ImpliedOutput_Case(CompileHello_Case):
     """Test handling absence of -o"""
     def compileCmd(self):
@@ -2262,6 +2286,7 @@ tests = [
          DaemonBadPort_Case,
          AccessDenied_Case,
          NoServer_Case,
+         MixedServerPumpFallback_Case,
          InvalidHostSpec_Case,
          ParseHostSpec_Case,
          ImpliedOutput_Case,
