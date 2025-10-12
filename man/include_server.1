@@ -109,6 +109,18 @@ of existence of the header file is moot and the remote compilation is sound.
 This is often the case if such includes are meant for unusual configurations
 different from the actual configuration.
 .TP
+.B --unsafe_no_unexpanded_functions
+Because the include server does not follow #if branching, it must consider
+all possible values for macros, including the unexpanded macro name itself.
+This creates combinatorially large expansions when multiple functions
+are composed (as each can evaluate to their definition or their name).
+.IP
+At the risk of potentially missing headers to send in the closure, this
+option disables the consideration of function-type macro names in their
+unexpanded state to reduce the combinations considered. Errors should only
+occur if a function name collides with a token used in an include line,
+which should be rare in practice.
+.TP
 .B --no_force_dirs
 Do not force the creation of all directories used
 in an include path.  May improve performance for

@@ -48,6 +48,7 @@ class MacroEvalTest(unittest.TestCase):
 
 
   def tearDown(self):
+    basics.opt_consider_unexpanded_macro_fns = True  # reset to the default state
     shutil.rmtree(self.tmp)
 
 
@@ -60,7 +61,7 @@ class MacroEvalTest(unittest.TestCase):
       "c(b, aa)")
 
   def test_MassageAccordingToPoundSigns(self):
-    self.assertEqual(macro_eval._MassageAccordingToPoundSigns('#aa##bb'),
+    self.assertEqual(macro_eval._MassageAccordingToPoundSigns('#aa ## bb'),
                      '"aabb"')
     self.assertEqual(macro_eval._MassageAccordingToPoundSigns('# a(.)'),
                      '"a(.)"')
@@ -68,10 +69,10 @@ class MacroEvalTest(unittest.TestCase):
   def test__ParseArgs(self):
 
     self.assertEqual(macro_eval._ParseArgs("(a,m(c, n(d)), c)", 0),
-                     (["a", "m(c, n(d))", " c"], 17))
+                     (["a", "m(c, n(d))", "c"], 17))
 
     self.assertEqual(macro_eval._ParseArgs("""(a","m(c, n(d)), c)""", 0),
-                     (["""a","m(c, n(d))""", " c"], 19))
+                     (["""a","m(c, n(d))""", "c"], 19))
 
 
   def test__PrependToSet(self):
@@ -102,25 +103,42 @@ class MacroEvalTest(unittest.TestCase):
     self.assertEqual(
       macro_eval.EvalExpression("max(2, 4)",
 		      { 'max': [ ( ['x', 'y'], "x < y? y: x") ] }),
-      set(['max(2, 4)', '2 <  4?  4: 2']))
+      set(['max(2, 4)', '2 < 4? 4: 2']))
 
     self.assertEqual(
       macro_eval.EvalExpression("F(2, 4)",
 		      { 'F': ['max'],
 			'max': [ ( ['x', 'y'], "x < y? y: x") ] }),
-      set(['max(2, 4)', 'F(2, 4)', '2 <  4?  4: 2']))
+      set(['max(2, 4)', 'F(2, 4)', '2 < 4? 4: 2']))
 
     self.assertEqual(
       macro_eval.EvalExpression("max(max(1,2), 3)",
 		      { 'max': [ ( ['x', 'y'], "(x < y? y: x)") ] }),
-       set(['((1 < 2? 2: 1) <  3?  3: (1 < 2? 2: 1))',
+       set(['((1 < 2? 2: 1) < 3? 3: (1 < 2? 2: 1))',
             'max(max(1,2), 3)',
-            '(max(1,2) <  3?  3: max(1,2))',
+            '(max(1,2) < 3? 3: max(1,2))',
             'max((1 < 2? 2: 1), 3)']))
 
     self.assertEqual(
       macro_eval.EvalExpression("A", { 'A': ['"a.c"'] }),
       set(['A', '"a.c"']))
+
+
+    self.assertEqual(
+      macro_eval.EvalExpression(
+	"CAT(cfgdir,/)##hdrfile",
+	{ "CAT" : [ ( ['a','b'], "a ## b" ) ],
+	  "hdrfile" : [ "abc.h" ]}),
+      set(["CAT(cfgdir,/)##hdrfile", "CAT(cfgdir,/)##abc.h",
+           "cfgdir/abc.h", "cfgdir/hdrfile"]))
+
+    self.assertEqual(
+      macro_eval.EvalExpression(
+	"STR(foo)",
+	{ "STR" : [ ( ['text'], "STR_A((text))" ) ],
+	  "STR_A" : [ ( ['arg'], "STR_I arg" ) ],
+	  "STR_I" : [ ( ['text'], "#text" ) ] }),
+      set(["STR(foo)", "STR_A((foo))", "STR_I (foo)", "\"foo\""]))
 
     # The ## operator only works in rhs of function-like macros. Check
     # that it doesn't work stand-alone.
@@ -143,6 +161,72 @@ class MacroEvalTest(unittest.TestCase):
       set(['myfile(hello)',
            '"myplace/hello"',
            'myquote(myplace/hello)']))
+
+  def test_EvalExprDirs_UnsafeUnexpandedFunctions(self):
+    # Subset of the EvalExprDirs test to show how the parser behaves if
+    # opt_consider_unexpanded_macro_fns is set to False
+    basics.opt_consider_unexpanded_macro_fns = False
+
+    self.assertEqual(
+      macro_eval.EvalExpression("A", { 'A': ['b'] }),
+      set(['A', 'b']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("A", { 'A': ['B'], 'B': ['A'] }),
+      set(['A', 'B']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("A", { 'A': ['B'], 'B': ['c'] }),
+      set(['A', 'B', 'c']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("max(2, 4)",
+		      { 'max': [ ( ['x', 'y'], "x < y? y: x") ] }),
+      set(['2 < 4? 4: 2']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("F(2, 4)",
+		      { 'F': ['max'],
+			'max': [ ( ['x', 'y'], "x < y? y: x") ] }),
+      set(['F(2, 4)', '2 < 4? 4: 2']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("max(max(1,2), 3)",
+		      { 'max': [ ( ['x', 'y'], "(x < y? y: x)") ] }),
+       set(['((1 < 2? 2: 1) < 3? 3: (1 < 2? 2: 1))']))
+
+    # Edge Case 1: function macros are still unexpanded if they are after
+    # a string macro; the complexity is still reduced, but it's worth
+    # calling out that this option doesn't prevent all lack of expansion
+    self.assertEqual(
+      macro_eval.EvalExpression("foo max(max(1,2), 3)",
+              { 'foo': ["42"], 'max': [ ( ['x', 'y'], "(x < y? y: x)") ] }),
+       set([
+           'foo max(max(1,2), 3)',
+           '42 ((1 < 2? 2: 1) < 3? 3: (1 < 2? 2: 1))',
+           'foo ((1 < 2? 2: 1) < 3? 3: (1 < 2? 2: 1))'
+       ]))
+
+    # Edge Case 2: function macros being unexpanded could cause an issue
+    # in a case where we have a token that we want unexpanded, because the
+    # parser will believe it to be a function (even if its not due to #if)
+    ec2_symtab = {"JOIN": [(['x', 'y'], "STR(EXP(x)EXP(y))")],
+                                 "STR": [(['x'], "STR1(x)")],
+                                 "STR1": [(['x'], "#x")],
+                                 "EXP": [(['x'], "x")],}
+    # With no definition of foo, it works as expected
+    self.assertEqual(
+      macro_eval.EvalExpression("JOIN(foo,.h)", ec2_symtab), set(['"foo.h"']))
+    # If foo happens to be defined as a string, it also works
+    ec2_symtab["foo"] = ["bar"]
+    self.assertEqual(
+      macro_eval.EvalExpression("JOIN(foo,.h)", ec2_symtab), set(['"foo.h"', '"bar.h"']) )
+    # But if foo is a function, it fails to have anything, which could
+    # cause problems if a spurious #define foo(x) elsewhere in the codebase
+    # could trample a #include JOIN(foo,.h) (unlikely, but possible)
+    ec2_symtab["foo"] = [(["x"], "blah")]
+    self.assertEqual(
+      macro_eval.EvalExpression("JOIN(foo,.h)", ec2_symtab), set() )
 
 
   def test_FromCPPInternals(self):
@@ -213,6 +297,10 @@ class MacroEvalTest(unittest.TestCase):
            '"maps/foo.tpl.varnames.h"',
            'AS_STRING(maps/foo.tpl.varnames.h)',
            'AS_STRING_INTERNAL(maps/foo.tpl.varnames.h)']))
+
+    self.assertEqual(
+      macro_eval.EvalExpression("MULTI(12, 34, 56)", symbol_table),
+      set(['MULTI(12, 34, 56)', '12 + 34 + 56']))
 
     # Verify that resolving this expression yields one actual file (which we
     # have placed in test_data/map).

@@ -142,7 +142,7 @@ NotCoveredError = basics.NotCoveredError
 # REGULAR EXPRESSIONS
 
 SINGLE_POUND_RE = re.compile(r"\B#\s*(\S*)") # \B = here: not at end of word
-DOUBLE_POUND_RE = re.compile(r"##")
+DOUBLE_POUND_RE = re.compile(r"\s*##\s*")
 SYMBOL_RE = re.compile(r"\b\w+\b") # \b = word boundary \w = word constituent
 
 
@@ -184,6 +184,8 @@ def _ParseArgs(string, pos):
   # occurrences are deemed unlikely at this moment. Fix that so that parentheses
   # inside single quotes are ignored.
   open_parens = 0
+  while pos < len(string) and string[pos].isspace():
+    pos += 1
   if not pos < len(string) or string[pos] != '(':
     return (None, pos)
   # Prepare a list of comma and extremal positions.  The '(' at the left is the
@@ -212,7 +214,7 @@ def _ParseArgs(string, pos):
   commas.append(pos_end)  # the other extremal position
   args_list = []
   for i in range(len(commas) - 1):
-    args_list.append(string[commas[i] + 1 : commas[i + 1]])
+    args_list.append(string[commas[i] + 1 : commas[i + 1]].lstrip())
   return (args_list, pos_end + 1)
 
 
@@ -291,11 +293,13 @@ def _EvalExprHelper(expr, symbol_table, disabled):
     Here definition is either object-like or function-like.
     """
     # Consider that this symbol goes unevaluated.
-    value_set.update(
-      _PrependToSet(expr[:match.end()],
-                   _EvalExprHelper(expr[match.end():],
-                                   symbol_table,
-                                   disabled)))
+    if isinstance(definition, str) or basics.opt_consider_unexpanded_macro_fns:
+      value_set.update(
+        _PrependToSet(expr[:match.end()],
+                      _EvalExprHelper(expr[match.end():],
+                                      symbol_table,
+                                      disabled)))
+
     if isinstance(definition, str):
       # The expansion is the definition.
       _ReEvalRecursivelyForExpansion(definition, expr[match.end():])
@@ -322,7 +326,8 @@ def _EvalExprHelper(expr, symbol_table, disabled):
                        for arg in args_expand[i] ]
       for expansion in expansions:
         real_expansion = _MassageAccordingToPoundSigns(expansion)
-        _ReEvalRecursivelyForExpansion(real_expansion, expr[args_end:])
+        real_after = _MassageAccordingToPoundSigns(expr[args_end:])
+        _ReEvalRecursivelyForExpansion(real_expansion, real_after)
     else:
       assert False, "Definition '%s' is unexpected." % definition
 
@@ -352,12 +357,17 @@ def _EvalExprHelper(expr, symbol_table, disabled):
       # Now consider the set of meanings of this symbol.  But first
       # note that the string remaining unexpanded is always a
       # possibility, because we are doing a "forall" analysis.
-      value_set = set([expr])
+
+      defs = symbol_table[symbol]
+      if isinstance(defs[0], str) or basics.opt_consider_unexpanded_macro_fns:
+        value_set = set([expr])
+      else:
+        value_set = set()
+
       # Now carry out substitution on expr[match.start():match.end()],
       # the whole stretch of expr that consists of symbol and possibly
       # args with parentheses.
       if symbol not in disabled:
-        defs = symbol_table[symbol]
         for definition in defs:
           _EvalMacro(definition, disabled)
       return value_set

@@ -220,6 +220,7 @@ opt_simple_algorithm = False
 opt_stat_reset_triggers = {}
 opt_statistics = False
 opt_unsafe_absolute_includes = False
+opt_consider_unexpanded_macro_fns = True # inverse of CLI to avoid double negative
 opt_no_force_dirs = False
 opt_verify = False     # whether to compare calculated include closure to that
                        # produced by compiler

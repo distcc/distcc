@@ -11,4 +11,6 @@
 #define AS_STRING(x)   AS_STRING_INTERNAL(x)
 #define AS_STRING_INTERNAL(x)   #x
 
+#define MULTI(a, b, c) a + b + c
+
 #include TEMPLATE_VARNAME(foo)

@@ -117,6 +117,13 @@ OPTIONS:
                              include_server(1) man page for further information.
                              Using this option may lead to incorrect results.
 
+ --unsafe_no_unexpanded_functions
+                             Do not consider the unexpanded function macro name
+                             a possibility in the set of all possible macro
+                             expansions. Improves macro-heavy parsing performance
+                             significantly at the cost of possible edge cases.
+                             See the include_server(1) for more information.
+
  --no_force_dirs             Do not force the creation of all directories used
                              in an include path.  May improve performance for
                              some cases, but will break builds which use
@@ -485,6 +492,7 @@ def _ParseCommandLineOptions():
                                 "statistics",
                                 "time",
                                 "unsafe_absolute_includes",
+                                "unsafe_no_unexpanded_functions",
                                 "no_force_dirs",
                                 "verify",
                                 "write_include_closure"])
@@ -533,6 +541,8 @@ def _ParseCommandLineOptions():
         basics.opt_write_include_closure = True
       if opt in ("-x", "--exact_analysis"):
         basics.opt_exact_include_analysis = True
+      if opt in ("--unsafe_no_unexpanded_functions"):
+        basics.opt_consider_unexpanded_macro_fns = False
     except ValueError:
       Usage()
       sys.exit(1)
