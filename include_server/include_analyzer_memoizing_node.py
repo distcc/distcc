@@ -610,7 +610,8 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
     dir_map_string = self.directory_map.string
     if not node: return
     stack = ([node])          # TODO(csilvers): consider using a deque
-    if __debug__: statistics.len_calculated_closure_nonsys = 0
+    statistics.len_calculated_closure_nonsys = 0
+    statistics.len_calculated_closure = 0
     while stack:
       node = stack.pop(-1)
       id_ = id(node)
@@ -624,7 +625,7 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
       # so that the common case (that fp_real_idx is known to compiler)
       # is dispatched away with quickly:
       if node[0]:      # fp_real_idx
-        if __debug__: statistics.len_calculated_closure_nonsys += 1
+        statistics.len_calculated_closure += 1
         # We ignore "system" includes like /usr/include/stdio.h.
         # These files are not likely to change, so it's safe to skip them.
         if not starts_with_systemdir[node[0]]:
@@ -640,4 +641,4 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
       # TODO(csilvers): see if it speeds things up to append node[2],
       #                 so stack is a list of lists.
       stack.extend(node[2])
-    statistics.len_calculated_closure = len(include_closure)
+    statistics.len_calculated_closure_nonsys = len(include_closure)
