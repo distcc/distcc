@@ -36,6 +36,7 @@ import statistics
 import cache_basics
 import mirror_path
 import compress_files
+import include_server
 
 Debug = basics.Debug
 DEBUG_TRACE = basics.DEBUG_TRACE
@@ -285,20 +286,20 @@ class IncludeAnalyzer(object):
     if basics.opt_verify:
       # Invoke the real preprocessor.
       exact_no_system_header_dependency_set = (
-        ExactDependencies(" ".join(cmd),
+        include_server.ExactDependencies(" ".join(cmd),
                           realpath_map,
                           self.systemdir_prefix_cache,
                           translation_unit))
       if basics.opt_write_include_closure:
-        WriteDependencies(exact_no_system_header_dependency_set,
+        include_server.WriteDependencies(exact_no_system_header_dependency_set,
                           self.result_file_prefix + '.d_exact',
                           realpath_map)
-      VerifyExactDependencies(include_closure,
+      include_server.VerifyExactDependencies(include_closure,
                               exact_no_system_header_dependency_set,
                               realpath_map,
                               translation_unit)
     if basics.opt_write_include_closure:
-      WriteDependencies(include_closure,
+      include_server.WriteDependencies(include_closure,
                         self.result_file_prefix + '.d_approx',
                         realpath_map)
     return files_and_links
