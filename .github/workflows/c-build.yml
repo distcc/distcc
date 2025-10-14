@@ -19,14 +19,14 @@ jobs:
         with:
           # Note: aclocal is packaged with automake in Homebrew, so we need it
           # even though we don't use automake.
-          brew: autoconf automake popt python python3 python-setuptools
+          brew: autoconf automake popt python@3.13 python-setuptools
           # Note: no gdb on macOS because it's apparently not supported on arm64
           apt: clang libavahi-client-dev libpopt-dev gdb python3-dev python3-setuptools
           # brew-cask: TODO
           # choco: TODO
-      - run: which python3
+      - run: which python3.13 || which python3
       - run: ./autogen.sh
-      # Setting `python3` helps it find the Homebrew Python on macOS.
-      - run: ./configure PYTHON=python3
+      # python3 on macOS is 3.14, which breaks CI for unknown reasons, so we pin it back
+      - run: ./configure PYTHON="$(which python3.13 || which python3)"
       - run: make
       - run: make check

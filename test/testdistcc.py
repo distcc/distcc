@@ -1016,7 +1016,7 @@ class BackslashInMacro_Case(ComputedInclude_Case):
 #include <stdio.h>
 #if FALSE
   #define HEADER MAKE_HEADER(testhdr)
-  #define MAKE_HEADER(header_name) STRINGIZE(foobar\)
+  #define MAKE_HEADER(header_name) STRINGIZE(foobar\\)
   #define STRINGIZE(x) STRINGIZE2(x)
   #define STRINGIZE2(x) #x
 #else
@@ -1044,7 +1044,7 @@ class BackslashInFilename_Case(ComputedInclude_Case):
         return """
 #include <stdio.h>
 #define HEADER MAKE_HEADER(testhdr)
-#define MAKE_HEADER(header_name) STRINGIZE(subdir\header_name.h)
+#define MAKE_HEADER(header_name) STRINGIZE(subdir\\header_name.h)
 #define STRINGIZE(x) STRINGIZE2(x)
 #define STRINGIZE2(x) #x
 #include HEADER
