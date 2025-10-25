@@ -1623,6 +1623,31 @@ int main(void) {
         self.assert_equal(msgs, "hello DashD\n")
 
 
+class EmptyDefine_Case(Compilation_Case):
+    """
+    This test validates that empty definitions don't break the include_server
+    even when they share the same name as a real header.
+    """
+    def source(self):
+        return """
+#include <stdio.h>
+
+#define testhdr
+
+#define str(x) #x
+#include str(testhdr.h)
+
+int main(void) {
+    printf("%s\\n", "hello world");
+    return 0;
+}
+"""
+
+    def checkBuiltProgramMsgs(self, msgs):
+        self.assert_equal(msgs, "hello world\n")
+
+
+
 class DashMD_DashMF_DashMT_Case(CompileHello_Case):
     """Test -MD -MFfoo -MTbar"""
 
@@ -2272,6 +2297,7 @@ tests = [
          NoDetachDaemon_Case,
          SBeatsC_Case,
          DashD_Case,
+         EmptyDefine_Case,
          DashWpMD_Case,
          BinFalse_Case,
          BinTrue_Case,
