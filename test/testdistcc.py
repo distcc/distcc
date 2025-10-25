@@ -1576,7 +1576,12 @@ class NoDetachDaemon_Case(CompileHello_Case):
             time.sleep(0.2)
 
     def killDaemon(self):
-        os.kill(self.pid, signal.SIGTERM)
+        # Terminate the process specified by the pidfile.  That should kill
+        # the distccd process, any child distccd processes and the shell
+        # process used to launch distccd.
+        daemon_pid = int(open(self.daemon_pidfile, 'rt').read())
+        os.kill(daemon_pid, signal.SIGTERM)
+
         pid, ret = os.wait()
         self.assert_equal(self.pid, pid)
 
