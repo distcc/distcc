@@ -98,7 +98,7 @@ class CompressFiles(object):
           # change its name.
           prefix = ""
         try:
-          real_file_fd = open(realpath, "r", encoding='latin-1')
+          real_file_fd = open(realpath, "rb")
         except (IOError, OSError) as why:
           sys.exit("Could not open '%s' for reading: %s" % (realpath, why))
         try:
@@ -108,7 +108,7 @@ class CompressFiles(object):
         try:
           new_filepath_fd.write(
             distcc_pump_c_extensions.CompressLzo1xAlloc(
-              prefix + real_file_fd.read()))
+              prefix.encode() + real_file_fd.read()))
         except (IOError, OSError) as why:
           sys.exit("Could not write to '%s': %s" % (new_filepath, why))
         new_filepath_fd.close()
