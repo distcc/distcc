@@ -44,10 +44,10 @@ import include_analyzer_memoizing_node
 import statistics
 
 # The default size passed to listen by a streaming socket server of
-# socketserver is only 5. Make it 128 (which appears to be the hard
-# built-in limit for Linux). This enables requests to the include
-# server to be buffered better.
-REQUEST_QUEUE_SIZE = 128
+# socketserver is only 5. Make it 4096, which is the default net.core.somaxconn
+# setting as of Linux 5.4. This enables requests to the include server to be
+# buffered better before connections begin being refused. See also listen(2).
+REQUEST_QUEUE_SIZE = 4096
 
 Debug = basics.Debug
 DEBUG_TRACE = basics.DEBUG_TRACE
