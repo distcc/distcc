@@ -101,6 +101,7 @@ CPP_OPTIONS_MAYBE_TWO_WORDS = {
   '-MQ':            lambda ps, arg: None,
   '-arch':          lambda ps, arg: None,
   '-target':        lambda ps, arg: None,
+  '-iframework':    lambda ps, arg: None,
   '-include':       lambda ps, arg: ps.include_files.append(arg),
   '-imacros':       lambda ps, arg: ps.include_files.append(arg),
   '-idirafter':     lambda ps, arg: ps.after_system_dirs.append(arg),
@@ -151,6 +152,7 @@ CPP_OPTIONS_ALWAYS_TWO_WORDS = {
   '-Xassembler':    lambda ps, arg: None,
   '-Xlinker':       lambda ps, arg: None,
   '-Xclang':        lambda ps, arg: None,
+  '-framework':     lambda ps, arg: None,
 }
 
 # For efficiency, it's helpful to be able to combine the two above
