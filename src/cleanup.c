@@ -71,11 +71,7 @@ void dcc_cleanup_tempfiles_from_signal_handler(void)
  * If from_signal_handler (a boolean) is non-zero, it means that
  * we're being called from a signal handler, so we need to be
  * careful not to call malloc() or free() or any other functions
- * that might not be async-signal-safe.
- * (We do call the tracing functions, which is perhaps unsafe
- * because they call sprintf() if DISCC_VERBOSE=1 is enabled.
- * But in that case it is probably worth the very small risk
- * of a crash to get the full tracing output.)
+ * (including our tracing) that might not be async-signal-safe.
  *
  * If $DISTCC_SAVE_TEMPS is set to "1", then files are not actually
  * deleted, which can be good for debugging.  However, we still need
@@ -94,7 +90,8 @@ static void dcc_cleanup_tempfiles_inner(int from_signal_handler)
      /* tempus fugit */
     for (i = n_cleanups - 1; i >= 0; i--) {
         if (save) {
-            rs_trace("skip cleanup of %s", cleanups[i]);
+            if (!from_signal_handler)
+                rs_trace("skip cleanup of %s", cleanups[i]);
         } else {
             /* Try removing it as a directory first, and
              * if that fails, try removing is as a file.
@@ -102,7 +99,8 @@ static void dcc_cleanup_tempfiles_inner(int from_signal_handler)
              * if both fail. */
             if ((rmdir(cleanups[i]) == -1) &&
                 (unlink(cleanups[i]) == -1) &&
-                (errno != ENOENT)) {
+                (errno != ENOENT) &&
+                !from_signal_handler) {
                 rs_log_notice("cleanup %s failed: %s", cleanups[i],
                               strerror(errno));
             }
@@ -119,7 +117,8 @@ static void dcc_cleanup_tempfiles_inner(int from_signal_handler)
         cleanups[i] = NULL;
     }
 
-    rs_trace("deleted %d temporary files", done);
+    if (!from_signal_handler)
+        rs_trace("deleted %d temporary files", done);
 }
 
 

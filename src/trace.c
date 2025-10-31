@@ -448,3 +448,29 @@ void dcc_job_summary_append(const char *s) {
     if (len > 0)
         strncat(job_summary, s, len);
 }
+
+/* all logger_list loggers are unsafe in a signal handler due to printf(3); */
+void
+dcc_log_signal_termination(int whichsig)
+{
+    char buf[64];
+    size_t len;
+    ssize_t ret;
+    if (whichsig > 63 || whichsig < 0) {
+        strcpy(buf, "terminated by unknown signal");
+        len = strlen(buf);
+    } else {
+        strcpy(buf, "terminated by signal ");
+        len = strlen(buf);
+        if (whichsig > 9)
+            buf[len++] = (whichsig / 10) + '0';
+        buf[len++] = (whichsig % 10) + '0';
+    }
+
+    strcpy(&buf[len], "\n");
+
+    ret = write(STDERR_FILENO, buf, len + 1);
+    if (ret == -1) {
+        /* nothing to do here, exiting anyways; needed for -Wunused-result */
+    }
+}
