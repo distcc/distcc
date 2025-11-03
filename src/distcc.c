@@ -131,11 +131,7 @@ static void dcc_client_signalled (int whichsig)
 {
     signal(whichsig, SIG_DFL);
 
-#ifdef HAVE_STRSIGNAL
-    rs_log_info("%s", strsignal(whichsig));
-#else
-    rs_log_info("terminated by signal %d", whichsig);
-#endif
+    dcc_log_signal_termination(whichsig);
 
     dcc_cleanup_tempfiles_from_signal_handler();
 

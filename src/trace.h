@@ -231,3 +231,4 @@ extern const char *rs_program_name;
 void dcc_job_summary_clear(void);
 void dcc_job_summary(void);
 void dcc_job_summary_append(const char *s);
+void dcc_log_signal_termination(int);
