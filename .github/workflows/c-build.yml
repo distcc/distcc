@@ -13,6 +13,7 @@ jobs:
         - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: ConorMacBride/install-package@v1
