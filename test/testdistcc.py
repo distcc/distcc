@@ -1754,6 +1754,28 @@ class ScanIncludes_Case(CompileHello_Case):
           self.assert_equal(out, '')
           self.assert_equal(err, '')
 
+class ForceDirectory_Case(CompileHello_Case):
+    """
+    Test that the forcing_technique properly creates directories even if
+    no headers are used in them (i.e. #include foo/../bar.h creates foo)
+
+    Note that its sufficient to assert that the compile succeeds under
+    pump-mode; if the technique wasn't working, it would be a compilation error
+    """
+
+    def createSource(self):
+      CompileHello_Case.createSource(self)
+      self.runcmd("mv testhdr.h test_header.h")
+      self.runcmd("ln -s test_header.h testhdr.h")
+      self.runcmd("mkdir test_subdir")
+      self.runcmd("touch test_another_header.h")
+
+    def headerSource(self):
+        return """
+#define HELLO_WORLD "hello world"
+#include "test_subdir/../test_another_header.h"
+"""
+
 class AbsSourceFilename_Case(CompileHello_Case):
     """Test remote compilation of files with absolute names."""
 
@@ -2321,6 +2343,8 @@ tests = [
          DashD_Case,
          EmptyDefine_Case,
          DashWpMD_Case,
+         ScanIncludes_Case,
+         ForceDirectory_Case,
          BinFalse_Case,
          BinTrue_Case,
          VersionOption_Case,
