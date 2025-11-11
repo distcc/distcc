@@ -20,7 +20,7 @@
 
 """Tests for parse_file."""
 
-__author__ = "opensource@google.com"
+__author__ = "distcc@lists.samba.org"
 
 import unittest
 
