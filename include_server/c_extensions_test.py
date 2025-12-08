@@ -25,7 +25,7 @@ times the speed-up of using the libc versions of os.path.realpath and
 os.path.exists provided by distcc_pump_c_extensions.
 """
 
-__author__ = 'opensource@google.com'
+__author__ = 'distcc@lists.samba.org'
 
 import os.path
 import random

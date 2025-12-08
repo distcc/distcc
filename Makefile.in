@@ -191,8 +191,7 @@ dist_extra =							\
 	packaging/RedHat/init.d/distcc \
 	packaging/RedHat/xinetd.d/distcc \
 	packaging/deb.sh \
-	packaging/rpm.sh \
-	packaging/googlecode_upload.py
+	packaging/rpm.sh 
 
 
 mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
@@ -958,7 +957,7 @@ distclean: distclean-autoconf clean
 ######################################################################
 ## MAINTAINER targets
 
-.PHONY: man-html upload-man upload-dist rpm deb install-deb
+.PHONY: man-html upload-man rpm deb install-deb
 
 man-html: $(man_HTML)
 	mkdir -p doc/web/man
@@ -966,17 +965,6 @@ man-html: $(man_HTML)
 
 upload-man: man-html
 	svn commit doc/web/man
-
-# When uploading the package, we try to update the website as well.
-# However, that's just best-effort, and if we can't (because, say, we
-# don't have troff2html installed), we just upload the tarballs.
-upload-dist: alldist
-	-$(MAKE) upload-man
-	"$(srcdir)/packaging/googlecode_upload.py" \
-	    "$(tarball_gz)" \
-	    "$(tarball_bz2)" \
-	    packaging/$(rpm_glob_pattern) \
-	    packaging/$(deb_glob_pattern)
 
 rpm: dist packaging/rpm.sh packaging/RedHat/rpm.spec
 	cd packaging && ./rpm.sh $(PACKAGE) $(VERSION)
