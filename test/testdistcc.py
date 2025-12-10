@@ -262,7 +262,7 @@ class SimpleDistCC_Case(comfychair.TestCase):
         if "cpp" not in _server_options:
             return self.valgrind() + "distcc "
         else:
-            return "DISTCC_TESTING_INCLUDE_SERVER=1 " + self.valgrind() + "pump distcc "
+            return "DISTCC_TESTING_INCLUDE_SERVER=1 " + self.valgrind() + "distcc "
 
 
     def distccd(self):
