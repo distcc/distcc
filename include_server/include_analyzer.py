@@ -50,6 +50,14 @@ class IncludeAnalyzer(object):
     self.file_cache = {}
     # Make table for symbols in #define's.
     self.symbol_table = {}
+    # Seed the symbol table with any extra -D's passed via cli args
+    for d_opt in basics.opt_extra_d_opts:
+      if len(d_opt) == 1:
+        lhs, rhs = d_opt[0], "1"
+      elif len(d_opt) == 2:
+        [lhs, rhs] = d_opt
+      cb = lambda x: Debug(basics.DEBUG_TRACE, f"Adding extra -D opt {lhs} => {rhs}")
+      parse_file.InsertMacroDefInTable(lhs, rhs, self.symbol_table, cb)
     # Erect the edifice of caches.
     caches = self.caches = (
         cache_basics.SetUpCaches(self.client_root_keeper.client_root))

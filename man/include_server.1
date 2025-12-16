@@ -46,11 +46,23 @@ locally retried, see section \fBDISTCC DISCREPANCY SYMPTOMS\fR.
 .SH "OPTION SUMMARY"
 The following options are understood by include_server.py.
 .TP
+.B -A PATH, --additional_system_dir=PATH
+Add PATH as an additional "system directory" for the purpose of creating the
+symlink forest on the destination build server.
+.TP
 .B -dPAT, --debug_pattern=PAT
 Bit vector for turning on warnings and debugging
     1 = warnings
     2 = trace some functions
  other powers of two: see include_server/basics.py.
+.TP
+.B -Dmacro[=value]
+Provide extra macro definition for the include_server to consider for
+possible expansions when calculating #include lines with macros used.
+Especially useful with -S if skipping system header parsing and using
+macros from system headers in include lines. For example, if boost is a
+system header, `#include BOOST_PP_STRINGIZE(foo.h)` will fail unless
+-D'BOOST_PP_STRINGIZE(x)=#x' is passed.
 .TP
 .B -e, --email
 Send email to 'distcc-pump-errors' or if defined, the value of environment
@@ -83,6 +95,14 @@ filepaths, possibly containing simple globs (as allowed by Python's glob
 module). Print a warning whenever such a change happens (if warnings are
 enabled). This option allows limited exceptions to distcc_pump's normal
 assumption that source files are not modified during the build.
+.TP
+.B -S, --skip_parsing_system_files
+By default, system headers (those determined to be in "system directories" per
+the compiler defaults) are not sent to the remote build hosts but are parsed
+for their own macros and includes. Setting this option causes the macro parser
+to terminate parsing upon identifying a system file. This can speed up macro
+parsing, but is potentially unsafe, as the system headers may define macros
+used in include statements, causing missed dependencies.
 .TP
 .B -t, --time
 Print elapsed, user, and system time to stderr.
@@ -120,6 +140,15 @@ option disables the consideration of function-type macro names in their
 unexpanded state to reduce the combinations considered. Errors should only
 occur if a function name collides with a token used in an include line,
 which should be rare in practice.
+.TP
+.B -T N, --timeout N
+Sets the maximum user time the include server is allowed handling one request
+to N seconds. This is a critical parameter because all caches are reset if this
+time is exceeded. And if all caches are reset, then the next request may take
+much longer time, possibly again exceeding the quota.  The parameter is also of
+importance to builds that involve compilations that distcc-pump does not grok:
+an amount of time roughly equal to this quota is wasted before CPP is invoked
+instead. Default of 3.8 seconds.
 .TP
 .B --no_force_dirs
 Do not force the creation of all directories used
