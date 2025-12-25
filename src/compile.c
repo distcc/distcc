@@ -550,9 +550,10 @@ static void dcc_add_clang_target(char **argv)
 {
         /* defined by autoheader */
     const char *target = NATIVE_COMPILER_TRIPLE;
+    const char *basename = dcc_find_basename(argv[0]);
 
-    if (strcmp(argv[0], "clang") == 0 || strncmp(argv[0], "clang-", strlen("clang-")) == 0 ||
-        strcmp(argv[0], "clang++") == 0 || strncmp(argv[0], "clang++-", strlen("clang++-")) == 0)
+    if (strcmp(basename, "clang") == 0 || strncmp(basename, "clang-", strlen("clang-")) == 0 ||
+        strcmp(basename, "clang++") == 0 || strncmp(basename, "clang++-", strlen("clang++-")) == 0)
         ;
     else
         return;
@@ -581,9 +582,10 @@ static int dcc_gcc_rewrite_fqn(char **argv)
     char *newcmd, *t, *path;
     int pathlen = 0;
     int newcmd_len = 0;
+    const char *basename = dcc_find_basename(argv[0]);
 
-    if (strcmp(argv[0], "gcc") == 0 || strncmp(argv[0], "gcc-", strlen("gcc-")) == 0 ||
-        strcmp(argv[0], "g++") == 0 || strncmp(argv[0], "g++-", strlen("g++-")) == 0)
+    if (strcmp(basename, "gcc") == 0 || strncmp(basename, "gcc-", strlen("gcc-")) == 0 ||
+        strcmp(basename, "g++") == 0 || strncmp(basename, "g++-", strlen("g++-")) == 0)
         ;
     else
         return -ENOENT;
@@ -599,7 +601,7 @@ static int dcc_gcc_rewrite_fqn(char **argv)
 
 
     strcat(newcmd, "-");
-    strcat(newcmd, argv[0]);
+    strcat(newcmd, basename);
 
     /* TODO, is this the right PATH? */
     path = getenv("PATH");
