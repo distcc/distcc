@@ -262,7 +262,7 @@ class SimpleDistCC_Case(comfychair.TestCase):
         if "cpp" not in _server_options:
             return self.valgrind() + "distcc "
         else:
-            return "DISTCC_TESTING_INCLUDE_SERVER=1 " + self.valgrind() + "pump distcc "
+            return "DISTCC_TESTING_INCLUDE_SERVER=1 " + self.valgrind() + "distcc "
 
 
     def distccd(self):
@@ -2378,6 +2378,10 @@ tests = [
          HundredFold_Case,
          BigAssFile_Case]
 
+# On macOS, certain python installations set CPATH. distcc refuses to pump if
+# it is set (src/compile.c), so unset it here so that pump tests run as expected
+if "CPATH" in os.environ:
+  del os.environ["CPATH"]
 
 if __name__ == '__main__':
   while len(sys.argv) > 1 and sys.argv[1].startswith("--"):
