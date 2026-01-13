@@ -740,10 +740,8 @@ class BuildStatCache(object):
     except KeyError:    # We'll need to grow the relevant arrays
       currdir_stats = build_stat.setdefault(currdir_idx, {})
       currdir_realpaths = real_stat.setdefault(currdir_idx, {})
-      searchdir_stats = currdir_stats[includepath_idx] = \
-                        [None] * DIR_ARRAY_SIZE
-      searchdir_realpaths = currdir_realpaths[includepath_idx] = \
-                        [None] * DIR_ARRAY_SIZE
+      searchdir_stats = currdir_stats[includepath_idx] = {}
+      searchdir_realpaths = currdir_realpaths[includepath_idx] = {}
 
     # Try searchdir_idx if not None, then try every index in searchlist_idxs.
     # This inner loop may be executed tens of millions of times.
@@ -754,7 +752,7 @@ class BuildStatCache(object):
         if __debug__:
           statistics.search_counter += 1
           statistics.build_stat_counter += 1
-        try:
+        if sl_idx in searchdir_stats:
           # We expect that searchdir_stats[sl_idx] == False, because
           # we've usually seen sl_idx before for our includepath and
           # our currdir --- and includepath does not usually exist
@@ -764,32 +762,29 @@ class BuildStatCache(object):
           if searchdir_stats[sl_idx] == False:
             if __debug__: self._Verify(currdir_idx, sl_idx, includepath_idx)
             continue
-          if searchdir_stats[sl_idx]:
+          else:
             if __debug__: self._Verify(currdir_idx, sl_idx, includepath_idx)
             return ((sl_idx, includepath_idx), searchdir_realpaths[sl_idx])
-        except IndexError:   # DIR_ARRAY_SIZE wasn't big enough; let's double
-          searchdir_stats.extend([None] * max(sl_idx, len(searchdir_stats)))
-          searchdir_realpaths.extend([None] * max(sl_idx, len(searchdir_stats)))
-
-        # If we get here, result is not cached yet.
-        if __debug__: statistics.sys_stat_counter += 1
-        # We do not explicitly take into account currdir_idx, because
-        # of the check above that os.getcwd is set to current_dir.
-        relpath = dir_map_string[sl_idx] + includepath
-        if _OsPathIsFile(relpath):
-          searchdir_stats[sl_idx] = True
-          rpath = os.path.join(dir_map_string[currdir_idx], relpath)
-          realpath_idx = searchdir_realpaths[sl_idx] = (
-            self.realpath_map.Index(rpath))
-          # This is the place to catch errant files according to user defined
-          # regular expression path_observation_re.
-          if basics.opt_path_observation_re:
-            realpath = self.realpath_map.string[realpath_idx]
-            if basics.opt_path_observation_re.search(realpath):
-              self.path_observations.append((includepath, relpath, realpath))
-          return ((sl_idx, includepath_idx), realpath_idx)
         else:
-          searchdir_stats[sl_idx] = False
+          # If we get here, result is not cached yet.
+          if __debug__: statistics.sys_stat_counter += 1
+          # We do not explicitly take into account currdir_idx, because
+          # of the check above that os.getcwd is set to current_dir.
+          relpath = dir_map_string[sl_idx] + includepath
+          if _OsPathIsFile(relpath):
+            searchdir_stats[sl_idx] = True
+            rpath = os.path.join(dir_map_string[currdir_idx], relpath)
+            realpath_idx = searchdir_realpaths[sl_idx] = (
+              self.realpath_map.Index(rpath))
+            # This is the place to catch errant files according to user defined
+            # regular expression path_observation_re.
+            if basics.opt_path_observation_re:
+              realpath = self.realpath_map.string[realpath_idx]
+              if basics.opt_path_observation_re.search(realpath):
+                self.path_observations.append((includepath, relpath, realpath))
+            return ((sl_idx, includepath_idx), realpath_idx)
+          else:
+            searchdir_stats[sl_idx] = False
 
     if __debug__: Debug(DEBUG_TRACE2, "Resolve: failed")
     return (None, None)
