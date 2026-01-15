@@ -518,7 +518,7 @@ The syntax is
   OPTIONS = ,OPTION[OPTIONS]
   OPTION = lzo | cpp | auth[=AUTH_NAME]
   GLOBAL_OPTION = --randomize
-  ZEROCONF = +zeroconf
+  ZEROCONF = +zeroconf[.all]
 .fi
 .PP
 Here are some individual examples of the syntax:
@@ -592,6 +592,8 @@ When this special entry is present in the hosts list, distcc will use
 Avahi Zeroconf DNS Service Discovery (DNS-SD) to locate any available
 distccd servers on the local network.  This avoids the need to explicitly
 list the host names or IP addresses of the distcc server machines.
+By default, only machines with the same "cc --version" are found.
+Use "+zeroconf.all" to find visible machines regardless of their default compiler.
 The distccd servers must have been
 started with the "--zeroconf" option to distccd.
 An important caveat is that in the current implementation,
