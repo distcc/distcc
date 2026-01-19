@@ -19,7 +19,7 @@
 
 """Run with PYTHONPATH including appropriate place for extension module."""
 
-__author__ = "opensource@google.com"
+__author__ = "distcc@lists.samba.org"
 
 import os
 import sys

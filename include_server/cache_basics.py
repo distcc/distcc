@@ -185,7 +185,7 @@ This code is currently only tested by regression tests of modules
 using this one.
 """
 
-__author__ = "opensource@google.com (Nils Klarlund, Craig Silverstein)"
+__author__ = "distcc@lists.samba.org (Nils Klarlund, Craig Silverstein)"
 
 import os
 import os.path
