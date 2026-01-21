@@ -487,6 +487,49 @@ static int tweak_input_argument_for_server(char **argv,
 }
 
 
+static const char *prefix_map_options[] = {
+    "-ffile-prefix-map=",
+    "-fmacro-prefix-map=",
+    "-fdebug-prefix-map=",
+    "-fprofile-prefix-map=",
+    NULL
+};
+
+
+/**
+ * Prepend @p root_dir to arguments of -f*-prefix-map= options that are absolute.
+ **/
+static int tweak_prefix_map_arguments_for_server(char **argv,
+                                                 const char *root_dir)
+{
+    int index_of_first_filename_char = 0;
+    const char *prefix_map_option;
+    unsigned int i, j;
+    for (i = 0; argv[i]; ++i) {
+        for (j = 0; prefix_map_options[j]; ++j) {
+            if (str_startswith(prefix_map_options[j], argv[i])) {
+                prefix_map_option = prefix_map_options[j];
+                index_of_first_filename_char = strlen(prefix_map_option);
+                if (argv[i][index_of_first_filename_char] == '/') {
+                    char *buf;
+                    checked_asprintf(&buf, "%s%s%s",
+                                prefix_map_option,
+                                root_dir,
+                                argv[i] + index_of_first_filename_char);
+                    if (buf == NULL) {
+                        return EXIT_OUT_OF_MEMORY;
+                    }
+                    free(argv[i]);
+                    argv[i] = buf;
+                }
+                break;  /* from the inner loop; go look at the next argument */
+            }
+        }
+    }
+    return 0;
+}
+
+
 /**
  * Prepend @p root_dir to arguments of include options that are absolute.
  **/
@@ -599,6 +642,7 @@ static int tweak_arguments_for_server(char **argv,
     dcc_argv_append(*tweaked_argv, strdup(deps_fname));
 
     tweak_include_arguments_for_server(*tweaked_argv, root_dir);
+    tweak_prefix_map_arguments_for_server(*tweaked_argv, root_dir);
     tweak_input_argument_for_server(*tweaked_argv, root_dir);
     return 0;
 }

@@ -1263,7 +1263,7 @@ class Gdb_Case(CompileHello_Case):
 
     def compiler(self):
         """Command for compiling and linking."""
-        return self._cc + " -g ";
+        return self._cc + " -g "
 
     def compileCmd(self):
         """Return command to compile source"""
@@ -1309,6 +1309,9 @@ class Gdb_Case(CompileHello_Case):
 
         CompileHello_Case.runtest (self)
 
+    def gdbCommands(self):
+        return 'break main\nrun\nnext\n'
+
     def checkBuiltProgram(self):
         # On windows, the binary may be called testtmp.exe.  Check both
         if os.path.exists('link/testtmp.exe'):
@@ -1322,7 +1325,7 @@ class Gdb_Case(CompileHello_Case):
         # the gdb commands directly on the commandline using gdb --ex,
         # is not as portable since only newer gdb's support it.)
         f = open('gdb_commands', 'w')
-        f.write('break main\nrun\nnext\n')
+        f.write(self.gdbCommands())
         f.close()
         out, errs = self.runcmd("gdb -nh --batch --command=gdb_commands "
                                 "link/%s </dev/null" % testtmp_exe)
@@ -1413,6 +1416,20 @@ class GdbOpt3_Case(Gdb_Case):
     def compiler(self):
         """Command for compiling and linking."""
         return self._cc + " -g -O3 ";
+
+class GdbPrefixMap_Case(Gdb_Case):
+    def compiler(self):
+        """Command for compiling and linking."""
+        # Before GCC 6, the -fdebug-prefix-map=... option was recorded in the
+        # DW_AT_producer section: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=69821
+        # Here, use -gno-record-gcc-switches so that we do not see
+        # "replaced 1 occurrences of" from dcc_fix_debug_info in distccd.log.
+        # We could check this automatically, but it doesn't add much value.
+        return (self._cc + " -g -fdebug-prefix-map=%s=." % os.getcwd() +
+                " -gno-record-gcc-switches")
+
+    def gdbCommands(self):
+        return 'directory %s\n' % os.getcwd() + super().gdbCommands()
 
 class CompressedCompile_Case(CompileHello_Case):
     """Test compilation with compression.
@@ -2322,6 +2339,7 @@ tests = [
          GdbOpt1_Case,
          GdbOpt2_Case,
          GdbOpt3_Case,
+         GdbPrefixMap_Case,
          Lsdistcc_Case,
          BadLogFile_Case,
          ScanArgs_Case,
