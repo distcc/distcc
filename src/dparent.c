@@ -334,6 +334,42 @@ void dcc_remove_pid(void)
 
 
 /**
+ * Sets the niceness of this process's autogroup, if applicable.
+ *
+ * When Linux is running with autogroups enabled, each session gets allocated
+ * its own autogroup, and the task scheduler tries to allocate CPU time
+ * "fairly" among all such autogroups. The nicenesses of the processes within
+ * an autogroup is relevant only versus other processes within the same
+ * autogroup. Thus, when a process is the only task in its autogroup, or when
+ * all tasks in its autogroup have the same niceness, then the process's
+ * individual niceness is utterly irrelevant. To have the intended niceness
+ * apply relative to other autogroups, the niceness of the autogroup itself
+ * must be set. This function does that.
+ **/
+static void dcc_set_autogroup_niceness(int niceness)
+{
+#ifdef HAVE_LINUX
+    FILE *fp = fopen("/proc/self/autogroup", "r+");
+    int error = 0;
+
+    if (fp) {
+        if (fprintf(fp, "%d\n", niceness) < 0) {
+            error = errno;
+        } else {
+            rs_trace("autogroup niceness: %d", niceness);
+        }
+        if (fclose(fp) == EOF && !error)
+            error = errno;
+    } else if (errno != ENOENT) {
+        error = errno;
+    }
+    if (error)
+        rs_log_error("autogroup nice %d failed: %s", niceness, strerror(error));
+#endif
+}
+
+
+/**
  * Become a daemon, discarding the controlling terminal.
  *
  * Borrowed from rsync.
@@ -367,6 +403,7 @@ static void dcc_detach(void)
         rs_log_error("setsid failed: %s", strerror(errno));
     } else {
         rs_trace("setsid to session %d", (int) sid);
+        dcc_set_autogroup_niceness(opt_niceness);
     }
 #else /* no HAVE_SETSID */
 #ifdef TIOCNOTTY
