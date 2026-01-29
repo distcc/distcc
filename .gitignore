@@ -6,7 +6,7 @@
 /*.exe
 distcc
 distccd
-distccmon-text
+distccmon-*
 lsdistcc
 pump
 update-distcc-symlinks
@@ -32,3 +32,4 @@ __pycache__/
 distcc-*.tar.*
 distcc-*.NEWS
 *~
+
