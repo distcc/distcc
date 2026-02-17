@@ -14,7 +14,7 @@ QUICK SUMMARY
 
 0. Install prerequisites.  For example, on Debian or Ubuntu, you could use
 
-      sudo apt-get install gcc make python3 python3-dev python3-setuptools autoconf
+      sudo apt-get install gcc make python3 python3-dev python3-setuptools autoconf pkg-config libpopt-dev
 
 1. Build and install
 
@@ -54,6 +54,7 @@ To build distcc you need
 
    GNU Make
    A C compiler
+   libpopt
 
 It is also highly desirable to have
 
@@ -67,11 +68,6 @@ the corresponding Python.h file installed (e.g. sudo apt-get install python-dev)
 
 You can optionally have
 
-   libpopt
-
-     If this is not found on your system, the popt version that is part of
-     the distcc distribution will be statically linked in.
-
    linuxdoc SGML tools
 
      To rebuild the documentation from its SGML source.
@@ -79,6 +75,10 @@ You can optionally have
    autoconf >=2.5
 
      To rebuild the configure scripts if you edit configure.ac.
+
+   pkg-config
+
+     To find the libpopt library in the configure script.
 
 To build the optional GNOME monitor (--with-gnome), you need the
 GNOME2 development libraries, and in particular
