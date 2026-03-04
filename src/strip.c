@@ -57,6 +57,12 @@
  * passed directly to cpp.  When given to gcc they have different
  * meanings.
  *
+ * We also strip the -x flag, which specifies the source language.
+ * When compiling preprocessed files (.ii, .mi, etc.), the -x flag
+ * causes GCC to ignore line directives and record the temporary
+ * preprocessed filename in debug info instead of the original source.
+ * The file extension is sufficient for GCC to identify the language.
+ *
  * The value stored in '*out_argv' is malloc'd, but the arguments that
  * are pointed to by that array are aliased with the values pointed
  * to by 'from'.  The caller is responsible for calling free() on
@@ -94,7 +100,8 @@ int dcc_strip_local_args(char **from, char ***out_argv)
             || str_equal("-isystem", from[from_i])
             || str_equal("-iwithprefixbefore", from[from_i])
             || str_equal("-idirafter", from[from_i])
-            || str_equal("-Xpreprocessor", from[from_i])) {
+            || str_equal("-Xpreprocessor", from[from_i])
+            || str_equal("-x", from[from_i])) {
             /* skip next word, being option argument */
             if (from[from_i+1])
                 from_i++;
@@ -110,8 +117,9 @@ int dcc_strip_local_args(char **from, char ***out_argv)
                  || str_startswith("-MT", from[from_i])
                  || str_startswith("-MQ", from[from_i])
                  || str_startswith("-isystem", from[from_i])
-                 || str_startswith("-stdlib", from[from_i])) {
-            /* Something like "-DNDEBUG" or
+                 || str_startswith("-stdlib", from[from_i])
+                 || str_startswith("-x", from[from_i])) {
+            /* Something like "-DNDEBUG" or "-xc++" or
              * "-Wp,-MD,.deps/nsinstall.pp".  Just skip this word */
             ;
         }

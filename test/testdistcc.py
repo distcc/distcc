@@ -478,6 +478,14 @@ class StripArgs_Case(SimpleDistCC_Case):
                  # New options stripped in 0.11
                  ("cc -o nsinstall.o -c -DOSTYPE=\"Linux2.4\" -DOSARCH=\"Linux\" -DOJI -D_BSD_SOURCE -I../dist/include -I../dist/include -I/home/mbp/work/mozilla/mozilla-1.1/dist/include/nspr -I/usr/X11R6/include -fPIC -I/usr/X11R6/include -Wall -W -Wno-unused -Wpointer-arith -Wcast-align -pedantic -Wno-long-long -pthread -pipe -DDEBUG -D_DEBUG -DDEBUG_mbp -DTRACING -g -I/usr/X11R6/include -include ../config-defs.h -DMOZILLA_CLIENT -Wp,-MD,.deps/nsinstall.pp nsinstall.c",
                   "cc -o nsinstall.o -c -fPIC -Wall -W -Wno-unused -Wpointer-arith -Wcast-align -pedantic -Wno-long-long -pthread -pipe -g nsinstall.c"),
+
+                 # Test -x flag stripping
+                 ("gcc -x c++ -g -std=c++17 -c hello.ii -o hello.o",
+                  "gcc -g -std=c++17 -c hello.ii -o hello.o"),
+                 ("g++ -xc++ -g -c hello.ii -o hello.o",
+                  "g++ -g -c hello.ii -o hello.o"),
+                 ("gcc -xobjective-c++ -g -c hello.mii -o hello.o",
+                  "gcc -g -c hello.mii -o hello.o"),
                  )
         for cmd, expect in cases:
             o, err = self.runcmd("h_strip %s" % cmd)
