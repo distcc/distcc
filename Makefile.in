@@ -698,7 +698,7 @@ TESTDISTCC_OPTS =
 # TODO(klarlund): the outermost if assumes that the include-server target may be
 # satisfied w/o actually building an include server (or rather the C extension);
 # this logic needs to be verified or amended.
-maintainer-check-no-set-path:
+maintainer-check-no-set-path: pump
 	@if ! $(PYTHON) -c 'import sys; print(sys.version)'; then \
 	  echo "WARNING: python not found; tests skipped"; \
 	else \

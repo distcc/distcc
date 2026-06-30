@@ -221,6 +221,40 @@ PythonMajorMinorVersion() {
   "$PYTHON" -c 'import sys; print("%d.%d" % sys.version_info[:2])'
 }
 
+PythonIncludeServerCandidatePaths() {
+  "$PYTHON" - "$python_version" "$prefix" "$exec_prefix" "$distcc_parent" <<'PY'
+import sys
+import sysconfig
+
+version = sys.argv[1]
+roots = sys.argv[2:]
+python_version = "python%s" % version
+python_path_suffix = "/%s/" % python_version
+
+for root in roots:
+  if not root:
+    continue
+  for location in ("purelib", "platlib"):
+    libdir = sysconfig.get_path(
+        location, vars={"base": root, "platbase": root, "data": root})
+    if not libdir:
+      continue
+    print("%s/include_server/include_server.py" % libdir)
+    split_point = libdir.find(python_path_suffix)
+    if split_point == -1:
+      continue
+    python_root = libdir[:split_point]
+    remainder = libdir[split_point + len(python_path_suffix):]
+    if remainder:
+      print(
+          "%s/distcc-pump/%s/%s/include_server/include_server.py" %
+          (python_root.rstrip("/"), python_version, remainder))
+    else:
+      print("%s/distcc-pump/%s/include_server/include_server.py" %
+            (python_root.rstrip("/"), python_version))
+PY
+}
+
 ResolveInstalledIncludeServer() {
   if [ -n "$include_server" ] && [ -f "$include_server" ]; then
     return 0
@@ -234,27 +268,28 @@ ResolveInstalledIncludeServer() {
 
   distcc_parent=`dirname "$distcc_location"`
 
-  # Prefer the Python version used to configure this pump script.  This keeps
-  # path resolution deterministic when multiple Python versions are installed.
-  for candidate in \
-    "$prefix/lib/python$python_version/dist-packages/include_server/include_server.py" \
-    "$prefix/lib/python$python_version/site-packages/include_server/include_server.py" \
-    "$exec_prefix/lib/python$python_version/dist-packages/include_server/include_server.py" \
-    "$exec_prefix/lib/python$python_version/site-packages/include_server/include_server.py" \
-    "$distcc_parent/lib/python$python_version/dist-packages/include_server/include_server.py" \
-    "$distcc_parent/lib/python$python_version/site-packages/include_server/include_server.py" \
-    "$prefix/lib/distcc-pump/lib/python$python_version/dist-packages/include_server/include_server.py" \
-    "$prefix/lib/distcc-pump/lib/python$python_version/site-packages/include_server/include_server.py" \
-    "$exec_prefix/lib/distcc-pump/lib/python$python_version/dist-packages/include_server/include_server.py" \
-    "$exec_prefix/lib/distcc-pump/lib/python$python_version/site-packages/include_server/include_server.py" \
-    "$distcc_parent/lib/distcc-pump/lib/python$python_version/dist-packages/include_server/include_server.py" \
-    "$distcc_parent/lib/distcc-pump/lib/python$python_version/site-packages/include_server/include_server.py"
+  candidate_file=`mktemp "${TMPDIR:-/tmp}/distcc-pump-candidates.XXXXXX"` || {
+    echo "$program_name: error: can't create include_server candidate list" \
+      1>&2
+    return 1
+  }
+  if ! PythonIncludeServerCandidatePaths > "$candidate_file"; then
+    rm -f "$candidate_file"
+    echo "$program_name: error: can't query Python include_server paths" 1>&2
+    return 1
+  fi
+
+  # Prefer the Python version used to configure this pump script.  Reading the
+  # generated list line-by-line keeps paths with whitespace intact.
+  while IFS= read -r candidate
   do
     if [ -f "$candidate" ]; then
       include_server="$candidate"
+      rm -f "$candidate_file"
       return 0
     fi
-  done
+  done < "$candidate_file"
+  rm -f "$candidate_file"
 
   if [ -n "$include_server" ]; then
     echo "$program_name: error: can't find include_server.py at" \

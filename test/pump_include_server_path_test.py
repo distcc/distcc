@@ -10,10 +10,53 @@
 """Regression test for installed pump include_server path resolution."""
 
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import textwrap
+
+
+def BuildFakeIncludeServerPathCandidates(python, version, *search_roots):
+    script = """
+import sys
+import sysconfig
+
+version = sys.argv[1]
+search_roots = sys.argv[2:]
+python_version = 'python' + version
+marker = '/%s/' % python_version
+
+for search_root in search_roots:
+  if not search_root:
+    continue
+  for path_type in ('purelib', 'platlib'):
+    lib_dir = sysconfig.get_path(
+        path_type, vars={'base': search_root, 'platbase': search_root,
+                         'data': search_root})
+    if not lib_dir:
+      continue
+    print('%s/include_server/include_server.py' % lib_dir)
+    marker_pos = lib_dir.find(marker)
+    if marker_pos == -1:
+      continue
+    python_root = lib_dir[:marker_pos]
+    remainder = lib_dir[marker_pos + len(marker):]
+    if remainder:
+      print('%s/distcc-pump/%s/%s/include_server/include_server.py' %
+            (python_root.rstrip('/'), python_version, remainder))
+    else:
+      print('%s/distcc-pump/%s/include_server/include_server.py' %
+            (python_root.rstrip('/'), python_version))
+"""
+    output = subprocess.check_output(
+        [python, "-c", script, version] + list(search_roots),
+        universal_newlines=True)
+    candidates = []
+    for path in output.splitlines():
+        if path and path not in candidates:
+            candidates.append(path)
+    return candidates
 
 
 def WriteExecutable(path, contents):
@@ -43,24 +86,34 @@ def MakeFakeIncludeServer(path):
         import os
         import signal
         import socket
+        import sys
         import time
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--port", required=True)
-        parser.add_argument("--pid_file", required=True)
-        parser.add_argument("-d1", action="store_true")
-        args, _ = parser.parse_known_args()
+        port = None
+        pid_file_path = None
+        index = 1
+        while index < len(sys.argv):
+            if sys.argv[index] == "--port":
+                port = sys.argv[index + 1]
+                index += 2
+            elif sys.argv[index] == "--pid_file":
+                pid_file_path = sys.argv[index + 1]
+                index += 2
+            else:
+                index += 1
+        if not port or not pid_file_path:
+            raise SystemExit(2)
 
         child_pid = os.fork()
         if child_pid:
             for _ in range(100):
-                if os.path.exists(args.port) and os.path.exists(args.pid_file):
+                if os.path.exists(port) and os.path.exists(pid_file_path):
                     raise SystemExit(0)
                 time.sleep(0.01)
             raise SystemExit(1)
 
         server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        server_socket.bind(args.port)
+        server_socket.bind(port)
         server_socket.listen(1)
 
         def handle_signal(_signum, _frame):
@@ -69,7 +122,7 @@ def MakeFakeIncludeServer(path):
 
         signal.signal(signal.SIGTERM, handle_signal)
 
-        with open(args.pid_file, "w", encoding="utf-8") as pid_file:
+        with open(pid_file_path, "w") as pid_file:
             pid_file.write(str(os.getpid()))
 
         while True:
@@ -85,18 +138,21 @@ def Main():
     python = sys.argv[2]
     version = subprocess.check_output(
         [python, "-c", "import sys; print('%d.%d' % sys.version_info[:2])"],
-        text=True).strip()
+        universal_newlines=True).strip()
 
-    with tempfile.TemporaryDirectory(prefix="distcc-pump-path-test.") as tempdir:
+    tempdir = tempfile.mkdtemp(prefix="distcc-pump-path-test.")
+    try:
         bindir = os.path.join(tempdir, "bin")
         prefix = os.path.join(tempdir, "prefix")
-        include_server_dir = os.path.join(
-            prefix, "lib", "python%s" % version, "dist-packages",
-            "include_server")
         os.makedirs(bindir)
-        os.makedirs(include_server_dir)
+        include_server_paths = BuildFakeIncludeServerPathCandidates(
+            python, version, prefix, os.path.dirname(bindir))
+        for include_server_path in include_server_paths:
+            include_server_dir = os.path.dirname(include_server_path)
+            if not os.path.isdir(include_server_dir):
+                os.makedirs(include_server_dir)
 
-        with open(pump_template, encoding="utf-8") as input_file:
+        with open(pump_template) as input_file:
             pump_contents = input_file.read()
         pump_contents = ReplaceLine(
             pump_contents, "prefix=", "prefix=%s" % prefix)
@@ -114,24 +170,37 @@ def Main():
             exit 0
             """))
 
-        MakeFakeIncludeServer(
-            os.path.join(include_server_dir, "include_server.py"))
+        for include_server_path in include_server_paths:
+            MakeFakeIncludeServer(include_server_path)
 
         env = os.environ.copy()
+        for key in (
+            "DISTCC_FALLBACK",
+            "DISTCC_HOSTS",
+            "DISTCC_LOCATION",
+            "DISTCC_MAX_DISCREPANCY",
+            "DISTCC_POTENTIAL_HOSTS",
+            "INCLUDE_SERVER_ARGS",
+            "LSDISTCC_ARGS",
+        ):
+            env.pop(key, None)
         env["DISTCC_LOCATION"] = bindir
         env["DISTCC_HOSTS"] = "localhost,lzo,cpp"
 
-        result = subprocess.run(
+        process = subprocess.Popen(
             [os.path.join(bindir, "pump"), "echo", "ok"],
-            env=env, text=True, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, check=False)
+            env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True)
+        stdout, stderr = process.communicate()
 
-        if result.returncode != 0:
+        if process.returncode != 0:
             raise AssertionError(
                 "pump failed with status %d\nstdout:\n%s\nstderr:\n%s" %
-                (result.returncode, result.stdout, result.stderr))
-        if "ok\n" not in result.stdout:
+                (process.returncode, stdout, stderr))
+        if "ok\n" not in stdout:
             raise AssertionError("pump did not run the wrapped command")
+    finally:
+        shutil.rmtree(tempdir)
 
 
 if __name__ == "__main__":
