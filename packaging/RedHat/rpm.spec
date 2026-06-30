@@ -75,6 +75,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/distcc
 %{_bindir}/distccmon-text
 %{_bindir}/lsdistcc
+%{_sbindir}/update-distcc-symlinks
 %{_libdir}/distcc
 %{_bindir}/pump
 %dir %{_sysconfdir}/distcc
