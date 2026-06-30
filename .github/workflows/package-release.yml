@@ -1,0 +1,161 @@
+name: Package release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build_packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ConorMacBride/install-package@v1
+        with:
+          apt: autoconf automake build-essential elfutils fakeroot libpopt-dev pkg-config python3-dev python3-setuptools rpm alien
+
+      - name: Derive release metadata
+        id: meta
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+            release_title="distcc-ng ${version}"
+            image_tag="ghcr.io/${GITHUB_REPOSITORY_OWNER}/distcc-ng:${version}"
+          else
+            version="manual-${GITHUB_RUN_NUMBER}"
+            release_title="distcc-ng manual-${GITHUB_RUN_NUMBER}"
+            image_tag="ghcr.io/${GITHUB_REPOSITORY_OWNER}/distcc-ng:manual-${GITHUB_RUN_NUMBER}"
+          fi
+          printf 'version=%s\n' "${version}" >> "${GITHUB_OUTPUT}"
+          printf 'tag_name=%s\n' "${GITHUB_REF_NAME}" >> "${GITHUB_OUTPUT}"
+          printf 'release_title=%s\n' "${release_title}" >> "${GITHUB_OUTPUT}"
+          printf 'image_tag=%s\n' "${image_tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build release packages
+        shell: bash
+        run: |
+          ./scripts/build-release-packages.sh
+
+      - name: Generate build attestation
+        uses: actions/attest@c32b4b8b198b65d0bd9d63490e847ff7b53989d4
+        with:
+          subject-path: |
+            distcc-*.tar.gz
+            distcc-*.tar.bz2
+            packaging/*.rpm
+            packaging/*.deb
+
+      - name: Publish container image
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          VERSION_LABEL: ${{ steps.meta.outputs.version }}
+          VCS_REF: ${{ github.sha }}
+        run: |
+          printf '%s\n' "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          docker build \
+            --file docker/allinkl/Dockerfile \
+            --build-arg "VCS_REF=${VCS_REF}" \
+            --build-arg "VERSION=${VERSION_LABEL}" \
+            --tag "${IMAGE_TAG}" \
+            .
+          docker push "${IMAGE_TAG}"
+
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          RELEASE_TITLE: ${{ steps.meta.outputs.release_title }}
+          TAG_NAME: ${{ steps.meta.outputs.tag_name }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          shopt -s nullglob
+          assets=(distcc-*.tar.gz distcc-*.tar.bz2 packaging/*.rpm packaging/*.deb)
+
+          phase_title="Isolated production patch"
+          phase_text="This release only changes one focused area and is kept separate for easier review and verification."
+
+          case "${TAG_NAME}" in
+            v3.4.1-p01-include-server-path)
+              phase_title="Phase 1 — Include Server Path Resolution"
+              phase_text="This release fixes the include_server path lookup used by pump mode. The patch updates both C and Python startup paths so the included server is found correctly under Python 3.13 environments."
+              ;;
+            v3.4.1-p02-tcp-include)
+              phase_title="Phase 2 — TCP Include Activation"
+              phase_text="This release fixes option parsing so --enable-tcp-includes is consistently honored in distccd. TCP include mode is now activated when configured, instead of being silently ignored by command order issues."
+              ;;
+            v3.4.1-p03-header-prescan-race)
+              phase_title="Phase 3 — Header Pre-Scan Race"
+              phase_text="This release adds locking and deterministic ordering around pre-scan state in header processing. It removes the race window that could have produced unstable scan output under concurrent calls."
+              ;;
+            v3.4.1-p04-gcc-wrapper-args)
+              phase_title="Phase 4 — GCC Wrapper Argument Handling"
+              phase_text="This release corrects argument handling in the GCC wrapper path so include directories from -I and -isystem are propagated consistently. The change targets compile command generation only."
+              ;;
+            v3.4.1-p05-wrapper-env-inheritance)
+              phase_title="Phase 5 — Wrapper Environment Inheritance"
+              phase_text="This release restores key environment inheritance in the pump wrapper path so runtime settings are not lost between wrapper execution layers. It is intentionally scoped to wrapper boundary behavior."
+              ;;
+            v3.4.1-p06-include-server-deadlock)
+              phase_title="Phase 6 — Include Server Deadlock Repair"
+              phase_text="This release fixes queue handling in include_server.py that could block indefinitely. It adds safer wait and timeout behavior so include processing can recover from stalled work items."
+              ;;
+            v3.4.1-p07-job-limit-overflow)
+              phase_title="Phase 7 — Job Limit Counter Stability"
+              phase_text="This release protects the distccd job limiter from counter overflow and negative values. It makes the active-job accounting monotonic and deterministic across long-running sessions."
+              ;;
+            v3.4.1-p08-ssh-constant-args)
+              phase_title="Phase 8 — SSH Constant Arguments"
+              phase_text="This release applies a constant argument fix in SSH command handling so command strings are explicit and stable instead of relying on hidden preprocessor behavior."
+              ;;
+            v3.4.1-p09-test-infrastructure)
+              phase_title="Phase 9 — Test Infrastructure"
+              phase_text="This release adds and adjusts local test harness helpers to make CI-style checks reproducible. It does not change runtime execution paths, only build and validation flow."
+              ;;
+            v3.4.1-p10-testharness-no-detach-concurrent)
+              phase_title="Phase 10 — Test Harness Concurrency"
+              phase_text="This release isolates concurrency-sensitive checks for the no-detach harness behavior. It enables targeted validation of job lifetime and test cleanup behavior in parallel scenarios."
+              ;;
+          esac
+
+          notes_file="$(mktemp)"
+          {
+            printf '%s\n\n' "${RELEASE_TITLE}"
+            printf 'This branch release is a focused phase for validation and review.\n\n'
+            printf 'Phase: %s\n\n' "${phase_title}"
+            printf 'Description:\n%s\n\n' "${phase_text}"
+            printf 'Source commit: %s\n' "${GITHUB_SHA}"
+            printf 'Tag: %s\n\n' "${TAG_NAME}"
+            printf 'Container image: %s\n' "${IMAGE_TAG}"
+          } > "${notes_file}"
+
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
+            gh release edit "${TAG_NAME}" --title "${RELEASE_TITLE}" --notes-file "${notes_file}"
+          else
+            gh release create "${TAG_NAME}" "${assets[@]}" --title "${RELEASE_TITLE}" --notes-file "${notes_file}"
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: distcc-release-packages-${{ steps.meta.outputs.version }}
+          path: |
+            distcc-*.tar.gz
+            distcc-*.tar.bz2
+            packaging/*.rpm
+            packaging/*.deb
