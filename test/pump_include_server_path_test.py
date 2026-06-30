@@ -19,7 +19,7 @@ import textwrap
 def WriteExecutable(path, contents):
     with open(path, "w", encoding="utf-8") as output:
         output.write(contents)
-    os.chmod(path, 0o755)
+    os.chmod(path, 0o700)
 
 
 def ReplaceLine(contents, prefix, replacement):
