@@ -217,6 +217,56 @@ PrintIncludeServerStatusMessage() {
   fi
 }
 
+PythonMajorMinorVersion() {
+  "$PYTHON" -c 'import sys; print("%d.%d" % sys.version_info[:2])'
+}
+
+ResolveInstalledIncludeServer() {
+  if [ -n "$include_server" ] && [ -f "$include_server" ]; then
+    return 0
+  fi
+
+  python_version=`PythonMajorMinorVersion` || {
+    echo "$program_name: error: can't determine Python version from $PYTHON" \
+      1>&2
+    return 1
+  }
+
+  distcc_parent=`dirname "$distcc_location"`
+
+  # Prefer the Python version used to configure this pump script.  This keeps
+  # path resolution deterministic when multiple Python versions are installed.
+  for candidate in \
+    "$prefix/lib/python$python_version/dist-packages/include_server/include_server.py" \
+    "$prefix/lib/python$python_version/site-packages/include_server/include_server.py" \
+    "$exec_prefix/lib/python$python_version/dist-packages/include_server/include_server.py" \
+    "$exec_prefix/lib/python$python_version/site-packages/include_server/include_server.py" \
+    "$distcc_parent/lib/python$python_version/dist-packages/include_server/include_server.py" \
+    "$distcc_parent/lib/python$python_version/site-packages/include_server/include_server.py" \
+    "$prefix/lib/distcc-pump/lib/python$python_version/dist-packages/include_server/include_server.py" \
+    "$prefix/lib/distcc-pump/lib/python$python_version/site-packages/include_server/include_server.py" \
+    "$exec_prefix/lib/distcc-pump/lib/python$python_version/dist-packages/include_server/include_server.py" \
+    "$exec_prefix/lib/distcc-pump/lib/python$python_version/site-packages/include_server/include_server.py" \
+    "$distcc_parent/lib/distcc-pump/lib/python$python_version/dist-packages/include_server/include_server.py" \
+    "$distcc_parent/lib/distcc-pump/lib/python$python_version/site-packages/include_server/include_server.py"
+  do
+    if [ -f "$candidate" ]; then
+      include_server="$candidate"
+      return 0
+    fi
+  done
+
+  if [ -n "$include_server" ]; then
+    echo "$program_name: error: can't find include_server.py at" \
+      "'$include_server' or under the Python $python_version install paths" \
+      1>&2
+  else
+    echo "$program_name: error: can't find include_server.py under the" \
+      "Python $python_version install paths" 1>&2
+  fi
+  return 1
+}
+
 Announce() {
   if [ "$verbose" = 1 ]; then
     echo "__________Using distcc-pump from $DISTCC_LOCATION"
@@ -232,6 +282,7 @@ StartIncludeServer() {
   # installed pump (in /usr/local/bin somewhere or something), and
   # include_server points to the installed include_server.py.
   if [ -n "$include_server" ]; then
+    ResolveInstalledIncludeServer || return 1
     pythonpath=`dirname "$include_server"`
   else
     # We assume this script is run from the build directory.  We pick up .py
