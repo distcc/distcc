@@ -158,6 +158,13 @@ In uncommon situations, the include server fails to analyze very complicated
 macro expressions. The distcc client will use plain distcc mode.
 .PP
 .TP
+.B Preprocessing locally. Include server internal error:
+In uncommon situations, the include server fails to process, i.e. due to a
+Python processing issue for certain C macros. The message consists of the 
+Python exception from the include server (i.e. '<class 'SystemError'>:) and 
+the file being parsed when this event occured 'translation unit example.c'
+.PP
+.TP
 .B Warning: Filepath must be relative but isn't
 The include server does not accept absolute filepaths, such as
 /usr/include/stdio.h, in include directives, because there is no guarantee that
