@@ -1,16 +1,75 @@
-distcc-3.z 2024-6-10
+distcc-3.5 "Not dead yet" 2025-11-??
 
-  CHANGED:
+  SECURITY:
+
+    * Since v3.3, distccd has defaulted to open access despite warning it chose
+      --allow-private when no --allow* given (#451, Dominique Martinet)
+
+  CHANGES:
 
    * The popt library is no longer shipped: it must be separately installed
-     as a dependency before building.
+     as a dependency before building. (Martin Pool)
 
-  UNRELEASED FEATURES:
+   * The libiberty library is no longer a dependency; providing arguments via
+     @cmd_file syntax is no longer supported. (Martin Pool)
+
+   * The pump include_server now uses setuptools instead of distutils.
+     (#493, Alexey Sheplyakov)
+
+  FEATURES:
+
+   * (Linux) Added --oom-score-adj option to distccd to adjust the OOM Killer's
+     preferences in an out-of-memory scenario. (#439, Matt Whitlock)
 
    * (Linux) Added dcc_free_mem reporting of available system memory in the
-     "stats" output. PR #523 (Whisperity)
+     distccd "stats" output. (#523, Whisperity)
 
-  * Add `sysroot` option and allow the `-specs` option. PR #531 from @wzssyqa.
+   * Add `sysroot` option and allow the `-specs` option. (#531, YunQiang Su).
+
+   * Added a `--timeout` option to include_server to configure the total cpu
+     time it can take on a single closure calculation. (#559, Alex Karle)
+
+   * Added a `--additional_system_dir` option to include_server to mark
+     arbitrary directories as system directories (assumed present on all
+     machines). (#559, Alex Karle)
+
+   * Added a `--skip_parsing_system_files` option to include_server to avoid
+     parsing headers in system directories (a significant speedup, provided they
+     don't define macros used in include lines). (#559, Alex Karle)
+
+   * Added a `-D` option to include_server to define additional macros
+     (for macros needed from skipped system directories). (#559, Alex Karle)
+
+   * Added a `--unsafe_no_unexpanded_macro_fns` option to include_server to
+     reduce complex macro possible expansion permutations.
+     (#551, Alastair Rankine and Alex Karle)
+
+  ENHANCEMENTS
+
+   * Files with .incbin directives compiled locally (#461, Alexey Sheplyakov)
+   * Optimized include_server's directory forcing_technique (#567, Alex Karle)
+   * Increased include_server's connection limit (#556, Alex Karle)
+   * Support --target=arch clang cross-compilation (#417, Alexey Sheplyakov)
+   * distcc --jobs argument no longer capped at 200 (#458, @00gh)
+   * distccd properly handles -f*-prefix-map switches (#459, Rosen Matev)
+   * Masquerade symlinks now work on rpm-based systems (#436, Alexey Sheplyakov)
+
+  BUG FIXES:
+
+   * Fixed --allow-private when compiled without IPv6 (#451, Dominique Martinet)
+   * Fixed IPv4-based access control when listening on IPv6 (#444, Alexey Sheplyakov)
+   * Reduced RAM consumed by include server for large codebases (#566, Alex Karle)
+   * Fixed include_server mangling unicode characters in source (#549, Alex Karle)
+   * Fixed double free crash when distcc downgrades from pump (#552, Alex Karle)
+   * Fixed include_server --verify mode (#553, Alex Karle)
+   * Fixed distccd crash in signal handlers seen on macOS (#564, Alex Karle)
+   * Fixed distccd comp_dir path rewrite under DWARF 5 (#547, Alex Karle)
+   * Fixed include_server handling of empty macros (#557, Alex Karle)
+   * Fixed various bugs in the include_server macro parser (#551, Alastair Rankine)
+   * Set cap on max retries with DISTCC_BACKOFF=0 to prevent inf. loop (#438, Alexey Sheplyakov)
+   * Fixed cross-rewriting on non-x86 systems (#427, Alexey Sheplyakov)
+   * Fixed segfault in distcc when compiler not found (#511, GeorgeFrancisco, Martin Pool)
+   * Fixed heap corruption with gcc cross compilation (#425, Alexey Sheplyakov)
 
 distcc-3.4 "Lax lexer" 2021-4-11
 
