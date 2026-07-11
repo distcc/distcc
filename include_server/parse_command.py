@@ -19,7 +19,7 @@
 
 """Parsing of C and C++ commands and extraction of search paths."""
 
-__author__ = "opensource@google.com (Craig Silverstein, Nils Klarlund)"
+__author__ = "distcc@lists.samba.org (Craig Silverstein, Nils Klarlund)"
 
 import re
 import os
