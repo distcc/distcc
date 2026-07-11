@@ -329,6 +329,10 @@ StartIncludeServer() {
     # We got a number.  Tell the distcc clients where to find it.
     INCLUDE_SERVER_PORT="$socket"
     export INCLUDE_SERVER_PORT
+    # Export the PID as well, so that the child process (if any) can
+    # identify the include_server properly
+    INCLUDE_SERVER_PID="$include_server_pid"
+    export INCLUDE_SERVER_PID
   else
     # We got something that's not a number.  This indicates the
     # socket is not working.

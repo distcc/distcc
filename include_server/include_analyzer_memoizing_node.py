@@ -524,6 +524,12 @@ class IncludeAnalyzerMemoizingNode(include_analyzer.IncludeAnalyzer):
     # time to set it.
     support_record.valid = True
 
+    # Bail early if it's a system file
+    if basics.opt_skip_parsing_system_files \
+        and self.systemdir_prefix_cache.StartsWithSystemdir(fp_real_idx, self.realpath_map):
+      Debug(DEBUG_TRACE, "Skipped: %s", self.realpath_map.string[fp_real_idx])
+      return None
+
     # Try to get the cached result of parsing file.
     try:
       (quote_includes, angle_includes, expr_includes, next_includes) = (

@@ -73,10 +73,19 @@ server has been spawned.
 
 OPTIONS:
 
+ -A DIR, --additional_system_dir DIR
+                             Treat DIR as a system directory for the purpose of
+                             not sending those files to the build servers (and not
+                             parsing locally if --skip_parsing_system_files is given)
+
  -dPAT, --debug_pattern=PAT  Bit vector for turning on warnings and debugging
                                1 = warnings
                                2 = trace some functions
                              other powers of two: see basics.py.
+
+ -Dmacro[=value]             Provide extra macros for consideration when expanding
+                             macros in #include lines. Especially useful in combination
+                             with -S when using macros from skipped system headers.
 
  -e, --email                 Send email to discc-pump developers when include
                              server gets in trouble.
@@ -98,6 +107,11 @@ OPTIONS:
 
  -s, --statistics            Print information to stdout about include analysis.
 
+ -S, --skip_parsing_system_files
+                             Skips the parsing of system header files (those in
+                             system directories as determined by the compiler
+                             defaults).
+
  --stat_reset_triggers=LIST  Flush stat caches when the timestamp of any
                              filepath in LIST changes or the filepath comes in
                              or out of existence.  LIST is a colon separated
@@ -109,6 +123,9 @@ OPTIONS:
                              source files are not modified during the build.
 
  -t, --time                  Print elapsed, user, and system time to stderr.
+
+ -T N, --timeout=N           Wait N seconds on an individual request before
+                             timing out and clearing the include_server's cache.
 
  --unsafe_absolute_includes  Do preprocessing on the compilation server even if
                              includes of absolute filepaths are encountered.
@@ -478,8 +495,9 @@ def _ParseCommandLineOptions():
   """
   try:
     opts, args = getopt.getopt(sys.argv[1:],
-			       "d:estvwx",
-			       ["port=",
+                                "A:d:D:esStT:vwx",
+                               ["additional_system_dir=",
+                                "port=",
                                 "pid_file=",
                                 "debug_pattern=",
                                 "email",
@@ -489,8 +507,10 @@ def _ParseCommandLineOptions():
                                 "path_observation_re=",
                                 "stat_reset_triggers=",
                                 "simple_algorithm",
+                                "skip_parsing_system_files",
                                 "statistics",
                                 "time",
+                                "timeout=",
                                 "unsafe_absolute_includes",
                                 "unsafe_no_unexpanded_functions",
                                 "no_force_dirs",
@@ -504,8 +524,12 @@ def _ParseCommandLineOptions():
   include_server_port = None
   for opt, arg in opts:
     try:
+      if opt in ("-A", "--additional_system_dir"):
+        basics.opt_additional_system_dirs.append(arg)
       if opt in ("-d", "--debug_pattern"):
         basics.opt_debug_pattern = int(arg)
+      if opt in ("-D",):
+        basics.opt_extra_d_opts.append(arg.split("="))
       if opt in ("--port", ):
         include_server_port = arg
       if opt in ("--pid_file",):
@@ -533,8 +557,12 @@ def _ParseCommandLineOptions():
         basics.opt_no_force_dirs = True
       if opt in ("-s", "--statistics"):
         basics.opt_statistics = True
+      if opt in ("-S", "--skip_parsing_system_files"):
+        basics.opt_skip_parsing_system_files = True
       if opt in ("-t", "--time"):
         basics.opt_print_times = True
+      if opt in ("-T", "--timeout"):
+        basics.opt_user_time_quota = int(arg)
       if opt in ("-v", "--verify"):
         basics.opt_verify = True
       if opt in ("-w", "--write_include_closure"):
