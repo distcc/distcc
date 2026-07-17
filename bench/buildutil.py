@@ -28,7 +28,7 @@ def make_dir(d):
 
 def run_cmd(cmd, expected=0):
     import time, os
-    
+
     before = time.time()
     print '%% %s' % cmd
     result = os.system(cmd)
@@ -52,7 +52,7 @@ def count_hosts(hosts):
     """Parse a distcc Hosts Specification and count the number of hosts."""
     num_hosts = 0
     for host in hosts.split():
-      if host == '+zeroconf':
+      if host.startswith('+zeroconf'):
         raise ValueError, "Can't count hosts when +zeroconf is in DISTCC_HOSTS"
       if host.startswith('-'):
         # Don't count options such as '--randomize', '--localslots=N',
