@@ -395,7 +395,7 @@ int dcc_make_tmpnam(const char *prefix,
 
     random_bits = (unsigned long) getpid() << 16;
 
-# if HAVE_GETTIMEOFDAY
+# ifdef HAVE_GETTIMEOFDAY
     {
         struct timeval tv;
         gettimeofday(&tv, NULL);

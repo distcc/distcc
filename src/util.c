@@ -710,7 +710,7 @@ void dcc_get_proc_stats(int *num_D,
     /* If this doesn't cut it for you, see how CVS does it:
      * http://savannah.nongnu.org/cgi-bin/viewcvs/cvs/ccvs/lib/getpagesize.h */
     if (pagesize == -1) {
-#if HAVE_GETPAGESIZE
+#ifdef HAVE_GETPAGESIZE
         pagesize = getpagesize();
 #else
         pagesize = 8192;

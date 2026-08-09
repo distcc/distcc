@@ -427,7 +427,7 @@ void dcc_reset_signal(int whichsig)
 static int sys_wait4(pid_t pid, int *status, int options, struct rusage *rusage)
 {
 
-    /* Prefer use waitpid to wait4 for non-blocking wait with WNOHANG option */
+    /* Prefer using waitpid to wait4 for non-blocking wait with WNOHANG option */
 #ifdef HAVE_WAITPID
     /* Just doing getrusage(children) is not sufficient, because other
      * children may have exited previously. */
