@@ -247,7 +247,8 @@ int dcc_compile_remote(char **argv,
                        int local_cpu_lock_fd,
                        struct dcc_hostdef *host,
                        int *status,
-                       int *unsupported)
+                       int *unsupported,
+                       int *local_cpp_failed)
 {
     int to_net_fd = -1, from_net_fd = -1;
     int ret;
@@ -268,6 +269,7 @@ int dcc_compile_remote(char **argv,
      * be over pipes, which are one-way connections. */
 
     *status = 0;
+    *local_cpp_failed = 0;
     if ((ret = dcc_remote_connect(host, &to_net_fd, &from_net_fd, &ssh_pid)))
         goto out;
 
@@ -318,8 +320,11 @@ int dcc_compile_remote(char **argv,
             local_cpu_lock_fd = -1;
         }
 
-        if (*status != 0)
+        if (*status != 0) {
+            /* Local preprocessing failed before DOTI was sent. */
+            *local_cpp_failed = 1;
             goto out;
+        }
 
         if ((ret = dcc_x_file(to_net_fd, cpp_fname, "DOTI", host->compr,
                               &doti_size)))
@@ -383,7 +388,7 @@ int dcc_compile_remote(char **argv,
      * directives in the source. It may be unobvious that we check this after trying
      * remotely rather than before, but these are very rare, and scanning all the 
      * preprocessed source has a cost. */
-    if (ret == 0 && *status != 0) {
+    if (ret == 0 && *status != 0 && !*local_cpp_failed) {
         if ((ret = dcc_check_unsupported_directives(cpp_fname, input_fname))) {
             *unsupported = 1;
         }
