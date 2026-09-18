@@ -702,6 +702,7 @@ dcc_build_somewhere(char *argv[],
     int ret;
     int remote_ret = 0;
     int retry_count = 0, max_retries, remote_unsupported = 0;
+    int local_cpp_failed = 0;
     struct dcc_hostdef *host = NULL;
     char *discrepancy_filename = NULL;
     char **new_argv;
@@ -857,7 +858,8 @@ dcc_build_somewhere(char *argv[],
                                   needs_dotd ? deps_fname : NULL,
                                   server_stderr_fname,
                                   cpp_pid, local_cpu_lock_fd,
-                  host, status, &remote_unsupported)) != 0) {
+                                  host, status, &remote_unsupported,
+                                  &local_cpp_failed)) != 0) {
         /* Returns zero if we successfully ran the compiler, even if
          * the compiler itself bombed out. */
 
@@ -881,6 +883,16 @@ dcc_build_somewhere(char *argv[],
     }
     /* dcc_compile_remote() already unlocked local_cpu_lock_fd. */
     local_cpu_lock_fd = -1;
+
+    if (local_cpp_failed) {
+        /* No remote compilation occurred; preserve host health. */
+        dcc_unlock(cpu_lock_fd);
+        cpu_lock_fd = -1;
+        ret = WIFSIGNALED(*status)
+            ? 128 + WTERMSIG(*status)
+            : WEXITSTATUS(*status);
+        goto clean_up;
+    }
 
     dcc_enjoyed_host(host);
 

@@ -1520,6 +1520,103 @@ class BadInclude_Case(Compilation_Case):
                     error_rc)
 
 
+class ConnectionFailureBackoff_Case(SimpleDistCC_Case):
+    """A genuine TCP connection failure must put the host in backoff."""
+
+    def setup(self):
+        self.require('cpp' not in _server_options,
+                     "requires preprocessing on the client")
+        SimpleDistCC_Case.setup(self)
+
+        self.reservation = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.add_cleanup(self.reservation.close)
+        self.reservation.bind(('127.0.0.1', 0))
+        self.port = self.reservation.getsockname()[1]
+
+        os.environ['DISTCC_HOSTS'] = '127.0.0.1:%d' % self.port
+        os.environ['DISTCC_LOG'] = os.path.join(os.getcwd(), 'distcc.log')
+        os.environ['DISTCC_VERBOSE'] = '1'
+        os.environ['DISTCC_BACKOFF_PERIOD'] = '600'
+
+        with open('testtmp.c', 'w') as source:
+            source.write('int main(void) { return 0; }\n')
+
+    def runtest(self):
+        marker = os.path.join(
+            os.environ['DISTCC_DIR'],
+            'lock',
+            'backoff_tcp_127.0.0.1_%d_0' % self.port)
+
+        self.assert_no_file(marker)
+
+        cmd = (self.distcc_without_fallback() + self._cc +
+               ' -o testtmp.o -c testtmp.c')
+
+        result, out, err = self.runcmd_unchecked(cmd)
+
+        self.assert_(result != 0,
+                     "connection failure unexpectedly compiled successfully")
+
+        with open(os.environ['DISTCC_LOG'], 'r') as logfile:
+            log = logfile.read()
+
+        self.assert_re_search(
+            r'(failed to connect to|nonblocking connect to).*'
+            r'Connection refused',
+            log)
+
+        self.assert_(os.path.exists(marker),
+                     "genuine connection failure did not create backoff")
+
+
+class LocalCppHostHealth_Case(Compilation_Case):
+    """A local preprocessing error must not put a healthy host in backoff."""
+
+    def setup(self):
+        self.require('cpp' not in _server_options,
+                     "requires preprocessing on the client")
+        Compilation_Case.setup(self)
+        os.environ['DISTCC_BACKOFF_PERIOD'] = '600'
+
+    def source(self):
+        return '#include <centcom_missing_header_for_backoff_test.h>\n'
+
+    def runtest(self):
+        marker = os.path.join(
+            os.environ['DISTCC_DIR'],
+            'lock',
+            'backoff_tcp_127.0.0.1_%d_0' % self.server_port)
+
+        self.assert_no_file(marker)
+
+        cmd = self.compileCmd()
+        out, err = self.runcmd(cmd, expectedResult=1)
+
+        self.assert_equal(out, '')
+        self.assert_re_search(
+            'centcom_missing_header_for_backoff_test', err)
+        self.assert_no_file(marker)
+
+        with open(self.sourceFilename(), 'w') as source:
+            source.write('int main(void) { return 0; }\n')
+
+        out, err = self.runcmd(cmd)
+
+        self.assert_equal(out, '')
+        self.assert_equal(err, '')
+        self.assert_(os.path.exists('testtmp.o'),
+                     "successful compilation did not create an object")
+
+        with open(os.environ['DISTCC_LOG'], 'r') as logfile:
+            log = logfile.read()
+
+        self.assert_re_search(
+            r'compile testtmp.c on 127\.0\.0\.1:%d completed ok'
+            % self.server_port, log)
+
+        self.assert_no_file(marker)
+
+
 class PreprocessPlainText_Case(Compilation_Case):
     """Try using cpp on something that's not C at all"""
     def setup(self):
@@ -2337,6 +2434,8 @@ tests = [
          WriteDevNull_Case,
          CppError_Case,
          BadInclude_Case,
+        LocalCppHostHealth_Case,
+        ConnectionFailureBackoff_Case,
          PreprocessPlainText_Case,
          NoDetachDaemon_Case,
          SBeatsC_Case,
