@@ -140,6 +140,16 @@ CPP to a .d_exact file.
 .B -x, --exact_analysis
 Use CPP instead, do not omit system headers files.
 
+.SH "ENVIRONMENT"
+.TP
+.B DISTCC_PREINSTALLED_DIRS
+Colon-separated directories whose contents already exist unchanged at the same
+paths on every compilation server. Headers beneath them are not transferred.
+This does not add compiler include search paths.
+.IP
+For Nix builds, copy the required store paths to every server, then set
+DISTCC_PREINSTALLED_DIRS=/nix/store before starting \fBpump\fR(1).
+
 .SH "INCLUDE SERVER SYMPTOMS AND ISSUES"
 
 

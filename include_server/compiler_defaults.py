@@ -384,8 +384,16 @@ class CompilerDefaults(object):
       # Now summarize what we know and add to system_dirs_default_all.
       self.system_dirs_default_all |= (
           set(self.system_dirs_default[compiler][sysroot][language]))
+      # Preinstalled trees belong in the mirror, not the compiler search path.
+      preinstalled_dirs = [self.canonical_lookup(path) for path in
+                          os.environ.get('DISTCC_PREINSTALLED_DIRS', '').split(os.pathsep)
+                          if path]
+      self.system_dirs_default_all.update(
+          path.rstrip('/') + '/' for path in preinstalled_dirs)
+
       # Construct the symlink farm for the compiler default dirs.
-      for system_dir in self.system_dirs_default[compiler][sysroot][language]:
+      for system_dir in (self.system_dirs_default[compiler][sysroot][language]
+                         + preinstalled_dirs):
         _MakeLinkFromMirrorToRealLocation(system_dir, self.client_root,
                                           self.system_links)
     finally:
