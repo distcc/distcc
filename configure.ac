@@ -91,6 +91,19 @@ AC_ARG_ENABLE(pump-mode,
 	AS_HELP_STRING([--disable-pump-mode],[include server support (pump mode), requires python]),
 		[pump_mode=${enableval}], [pump_mode=yes])
 
+AS_IF([test "x$pump_mode" = xyes], [
+    PUMP_BUILD="pump include-server"
+    PUMP_INSTALL="install-include-server"
+    PUMP_CHECK="include-server-maintainer-check pump-maintainer-check"
+    PUMP_INSTALLCHECK="pump-installcheck"
+    PUMP_CLEAN="clean-include-server"
+])
+AC_SUBST(PUMP_BUILD)
+AC_SUBST(PUMP_INSTALL)
+AC_SUBST(PUMP_CHECK)
+AC_SUBST(PUMP_INSTALLCHECK)
+AC_SUBST(PUMP_CLEAN)
+
 AM_PATH_PYTHON([3.1],,[:])
 AC_ARG_VAR(PYTHON, [Python interpreter])
 AC_SUBST(PYTHON_RELATIVE_LIB)

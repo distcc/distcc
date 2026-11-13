@@ -451,7 +451,7 @@ check_include_server_PY = \
 
 ## NOTE: "all" must be the first (default) rule, aside from patterns.
 
-all: $(bin_PROGRAMS) $(sbin_PROGRAMS) pump include-server
+all: $(bin_PROGRAMS) $(sbin_PROGRAMS) @PUMP_BUILD@
 
 #  src/config.h.in is used by config.status
 Makefile: Makefile.in src/config.h.in config.status
@@ -757,8 +757,7 @@ pump-maintainer-check: pump include-server check_programs
 # Do distcc-maintainer-check, for non-pumped distcc, and try the include_server
 # check to check the include server's behavior, if applicable.  If the include
 # server exists, then carry out distcc-maintainer-check in pump-mode.
-maintainer-check: distcc-maintainer-check include-server-maintainer-check \
-	pump-maintainer-check
+maintainer-check: distcc-maintainer-check @PUMP_CHECK@
 
 check:
 	@if test -n "$(PYTHON)"; then \
@@ -843,7 +842,7 @@ pump-installcheck:
 # The maintainer-installcheck does not run the include server unit tests;
 # but the integration tests in 'test' are run in pump mode.
 maintainer-installcheck: verify-binaries-installcheck distcc-installcheck \
-	pump-installcheck
+	@PUMP_INSTALLCHECK@
 
 installcheck:
 	@if test -n "$(PYTHON)"; then \
@@ -909,7 +908,7 @@ benchmark:
 
 # Also clean binaries which are optionally built. Also remove .d files; old ones
 # may confuse 'make'.
-clean: clean-autoconf clean-lzo clean-include-server
+clean: clean-autoconf clean-lzo @PUMP_CLEAN@
 	rm -f src/*.[od]
 	rm -f test/*.pyc
 	rm -f $(check_PROGRAMS) $(bin_PROGRAMS) $(sbin_PROGRAMS)
@@ -1024,7 +1023,7 @@ showpaths:
 # tricky features so mkinstalldirs and cp will do
 
 install: showpaths install-doc install-man install-programs \
-	install-include-server install-example @INSTALL_GNOME@ install-conf
+	@PUMP_INSTALL@ install-example @INSTALL_GNOME@ install-conf
 
 install-programs: $(bin_PROGRAMS) $(sbin_PROGRAMS)
 	$(mkinstalldirs) "$(DESTDIR)$(bindir)"
